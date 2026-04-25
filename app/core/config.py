@@ -4,7 +4,9 @@ from pydantic_settings import BaseSettings, SettingsConfigDict
 
 
 class Settings(BaseSettings):
-    model_config = SettingsConfigDict(env_file=".env", case_sensitive=False, extra="ignore")
+    model_config = SettingsConfigDict(
+        env_file=".env", case_sensitive=False, extra="ignore"
+    )
 
     database_url: str
 
@@ -21,7 +23,7 @@ class Settings(BaseSettings):
     # LINE Login (optional — if unset, the LINE button returns 503).
     line_channel_id: Optional[str] = None
     line_channel_secret: Optional[str] = None
-    line_redirect_uri: str = "http://localhost:8000/auth/line/callback"
+    line_redirect_uri: str = "https://taemdee.com/auth/line/callback"
 
 
 settings = Settings()

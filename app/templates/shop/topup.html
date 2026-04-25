@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เติมเครดิต · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="td" x-data="{ pkg: 'popular' }">
+    <div class="td-badge">
+      <svg class="s" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      TAEMDEE
+    </div>
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s7-top">
+      <a href="/shop/dashboard" class="x">←</a>
+      <div class="help">ช่วยเหลือ?</div>
+    </div>
+
+    <div class="s7-balance">
+      <div class="lbl">ยอดของคุณ</div>
+      <div class="num-row">
+        <span class="num">{{ shop.credit_balance }}</span>
+        <span class="unit">เครดิต</span>
+      </div>
+      <div class="est">
+        ≈ <strong>ส่งดีรีชได้ {{ sends_remaining }} ครั้ง</strong> ครั้งละ ~50 เครดิต
+      </div>
+    </div>
+
+    <div class="s7-q">
+      <div class="ask">เลือก<em>แพ็คเกจ.</em></div>
+      <div class="sub">เลือกจำนวนเครดิตที่ต้องการ</div>
+    </div>
+
+    <div class="s7-packages">
+      {% for pkg_id, p in packages.items() %}
+        {% set total = p.credits + p.bonus %}
+        <button type="button" class="s7-pkg {% if pkg_id == 'popular' %}popular{% endif %}"
+                :class="{ 'is-selected': pkg === '{{ pkg_id }}' }"
+                @click="pkg = '{{ pkg_id }}'"
+                style="text-align:left;">
+          <div class="left">
+            <div class="credits">{{ total }}<span class="unit">เครดิต</span></div>
+            <div class="sub">{{ p.label }}</div>
+          </div>
+          <div class="right">
+            <div class="price"><span class="currency">฿</span>{{ p.price }}</div>
+            {% if p.bonus %}<div class="bonus">+{{ p.bonus }} โบนัส</div>{% endif %}
+          </div>
+        </button>
+      {% endfor %}
+    </div>
+
+    <div class="s7-method">
+      <div class="ic">PP</div>
+      <div class="meta">
+        <div class="name">PromptPay</div>
+        <div class="sub">สแกน จ่าย อัปโหลดสลิป</div>
+      </div>
+      <div class="check">✓</div>
+    </div>
+
+    <a class="s7-cta" :href="`/shop/topup/confirm?pkg=${pkg}`">
+      <span>ดำเนินการต่อ</span>
+      <span class="arrow">→</span>
+    </a>
+  </div>
+</body>
+</html>

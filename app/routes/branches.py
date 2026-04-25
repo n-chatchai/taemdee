@@ -1,9 +1,11 @@
-"""Branch CRUD — owner-only."""
+"""Branch CRUD — owner-only. Renders S12 page; mutations redirect back."""
 
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import SessionContext, get_current_shop, require_owner
@@ -12,15 +14,22 @@ from app.models import Branch, Shop
 from app.services.branch import create_branch, list_branches, update_branch
 
 router = APIRouter()
+templates = Jinja2Templates(directory="app/templates")
 
 
-@router.get("")
-async def list_(
+@router.get("", response_class=HTMLResponse)
+async def branches_page(
+    request: Request,
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(require_owner),
     db: AsyncSession = Depends(get_session),
 ):
-    return await list_branches(db, shop.id)
+    branches = await list_branches(db, shop.id)
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/branches.html",
+        context={"shop": shop, "branches": branches},
+    )
 
 
 @router.post("")
@@ -33,13 +42,13 @@ async def create(
     db: AsyncSession = Depends(get_session),
 ):
     try:
-        branch = await create_branch(db, shop, name, address, reward_mode)
+        await create_branch(db, shop, name, address, reward_mode)
     except ValueError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
-    return branch
+    return RedirectResponse(url="/shop/branches", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.patch("/{branch_id}")
+@router.post("/{branch_id}/edit")
 async def update(
     branch_id: UUID,
     name: Optional[str] = Form(None),
@@ -51,4 +60,5 @@ async def update(
     branch = await db.get(Branch, branch_id)
     if not branch or branch.shop_id != shop.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Branch not found")
-    return await update_branch(db, branch, name=name, address=address)
+    await update_branch(db, branch, name=name, address=address)
+    return RedirectResponse(url="/shop/branches", status_code=status.HTTP_303_SEE_OTHER)

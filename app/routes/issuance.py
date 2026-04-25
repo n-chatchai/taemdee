@@ -3,7 +3,9 @@
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi.responses import HTMLResponse
+from fastapi.templating import Jinja2Templates
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -16,12 +18,23 @@ from app.core.auth import (
 from app.core.database import get_session
 from app.models import Customer, Redemption, Shop, Stamp, StaffMember
 from app.models.util import utcnow
+from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_stamp, void_stamp
 from app.services.redemption import void_redemption
 
 router = APIRouter()
+templates = Jinja2Templates(directory="app/templates")
 
 VOID_WINDOW_SECONDS = 60
+
+
+@router.get("/issue", response_class=HTMLResponse)
+async def issue_page(request: Request, shop: Shop = Depends(get_current_shop)):
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/issue.html",
+        context={"shop": shop},
+    )
 
 
 @router.post("/issue")
@@ -69,6 +82,11 @@ async def staff_issue_stamp(
     except IssuanceError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
 
+    publish(
+        shop.id,
+        "feed-row",
+        feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+    )
     return {"stamp_id": str(stamp.id), "customer_id": str(customer.id)}
 
 
@@ -92,6 +110,7 @@ async def void_stamp_route(
         )
 
     await void_stamp(db, stamp, by_staff_id=ctx.staff_id)
+    publish(ctx.shop_id, "void", f'<span data-row="row-{stamp.id}"></span>')
     return {"voided": True, "stamp_id": str(stamp.id)}
 
 
@@ -115,4 +134,5 @@ async def void_redemption_route(
         )
 
     await void_redemption(db, redemption, by_staff_id=ctx.staff_id)
+    publish(ctx.shop_id, "void", f'<span data-row="row-{redemption.id}"></span>')
     return {"voided": True, "redemption_id": str(redemption.id)}

@@ -1,0 +1,56 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR ของ {{ shop.name }} · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/dashboard" class="x">←</a>
+      <div class="title-mid">QR ของร้าน</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="s8-actions">
+      <button class="pill primary" onclick="window.print()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="6 9 6 2 18 2 18 9"/>
+          <path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/>
+          <rect x="6" y="14" width="12" height="8"/>
+        </svg>
+        พิมพ์
+      </button>
+    </div>
+
+    <div class="s8-print">
+      <div class="stamp-here">— สแกนตรงนี้ —</div>
+      <div class="stamp-headline"><em>สแกนเลย</em><br>เก็บแต้มกับเรา</div>
+
+      <div class="s8-qr-wrap">
+        <div class="s8-qr">
+          {{ qr_svg|safe }}
+        </div>
+      </div>
+
+      <div class="reward-strip">
+        <div class="ll">{{ shop.reward_threshold }} แต้ม รับ</div>
+        <div class="vv">{{ shop.reward_description }}</div>
+      </div>
+
+      <div class="url-strip">{{ scan_url }}</div>
+    </div>
+
+    <div class="s8-tip">
+      <div class="tip-bulb">!</div>
+      <div>พิมพ์ใส่กระดาษเอ4 หรือสติ๊กเกอร์ก็ได้ ติดที่จุดที่ลูกค้าเห็นชัดที่สุด — เคาน์เตอร์, ประตู, หรือเมนู</div>
+    </div>
+  </div>
+</body>
+</html>

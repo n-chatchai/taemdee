@@ -1,26 +1,133 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ shop.name }} · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
 
-{% block title %}{{ shop.name }} — TaemDee{% endblock %}
-
-{% block content %}
-<div class="dashboard">
-    <h1>{{ shop.name }}</h1>
-
-    <div class="card">
-        <p class="label-small">Available Credits</p>
-        <p class="big-number">{{ shop.credit_balance }}</p>
-        <p class="muted">Credits are used only for outbound messages (DeeReach). Stamps are always free.</p>
-        <button>Top Up</button>
+    <div class="s3-top">
+      <div class="hi">
+        สวัสดี {{ shop.name }}
+        <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
+          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="day">วันนี้เริ่มต้นได้ดี</span>
+      </div>
+      <div class="actions">
+        <a href="/shop/issue" class="branch-pill" title="ออกแต้ม">+ แต้ม</a>
+        <a href="/shop/settings" class="avatar" title="ตั้งค่า" style="text-decoration:none;">{{ shop.name[0]|upper }}</a>
+      </div>
     </div>
 
-    <div class="card">
-        <p class="label-small">Reward Goal</p>
-        <p>{{ shop.reward_threshold }} stamps = <strong>{{ shop.reward_description }}</strong></p>
+    <div class="s3-hero">
+      <div class="label">✦ สัปดาห์นี้</div>
+      <div class="num">
+        <span class="accent">{{ customers_this_week }}</span>
+        <svg class="star" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+        </svg>
+      </div>
+      <div class="caption">ลูกค้ามาที่ร้าน</div>
     </div>
 
-    <div class="card">
-        <h2>Today's Activity</h2>
-        <p class="muted">No stamps issued yet today.</p>
+    <div class="s3-stats">
+      <div class="s3-stat"><div class="n">{{ stamps_total }}</div><div class="l">แต้ม</div></div>
+      <div class="s3-stat"><div class="n">{{ redemptions_total }}</div><div class="l">รับรางวัล</div></div>
+      <div class="s3-stat balance"><div class="n">{{ shop.credit_balance }}</div><div class="l">เครดิต</div></div>
     </div>
-</div>
-{% endblock %}
+
+    {% if suggestions %}
+      <div class="ph-section-h">
+        <div class="label">ดีรีช ✦</div>
+      </div>
+      {% for s in suggestions %}
+        {% set affordable = s.cost_credit <= shop.credit_balance %}
+        <div class="s3-reach" {% if not affordable %}style="opacity:0.7;"{% endif %}>
+          <div class="reach-kicker">{{ s.label }}</div>
+          <div class="reach-head">{{ s.head }}</div>
+          <div class="reach-body">{{ s.body }}</div>
+          <form method="POST" action="/shop/deereach/send" style="margin:0;">
+            <input type="hidden" name="kind" value="{{ s.kind }}">
+            <button class="reach-btn" type="submit" {% if not affordable %}disabled{% endif %}>
+              <span>{% if affordable %}ส่งเลย{% else %}เครดิตไม่พอ{% endif %}</span>
+              <span class="cost">{{ s.cost_credit }} เครดิต</span>
+            </button>
+          </form>
+        </div>
+      {% endfor %}
+    {% endif %}
+
+    <div class="ph-section-h">
+      <div class="label">ฟีดสด</div>
+      <div class="live">สด</div>
+    </div>
+
+    <div id="feed-rows">
+      {% if feed %}
+        {% for kind, item in feed %}
+          <div class="feed-row" id="row-{{ item.id }}">
+            <div class="t">{{ item.created_at.strftime('%H:%M') }}</div>
+            <div class="w">
+              {% if kind == 'stamp' %}
+                <span class="icon-mini">+</span><strong>1 แต้ม</strong>
+              {% else %}
+                <strong>รับรางวัล</strong>
+              {% endif %}
+              <span class="id">#{{ item.id.hex[:4]|upper }}</span>
+            </div>
+            <button class="void"
+                    data-void-url="/shop/{% if kind == 'stamp' %}stamps{% else %}redemptions{% endif %}/{{ item.id }}/void"
+                    data-row="row-{{ item.id }}">ยกเลิก</button>
+          </div>
+        {% endfor %}
+      {% endif %}
+    </div>
+    <div id="feed-empty" class="feed-empty" {% if feed %}style="display:none"{% endif %}>ยังไม่มีกิจกรรมวันนี้</div>
+
+    <div style="height: 24px;"></div>
+  </div>
+
+  <script>
+    // Live feed via SSE — new stamps/redemptions stream in from /shop/events.
+    const feedRows = document.getElementById('feed-rows');
+    const feedEmpty = document.getElementById('feed-empty');
+    const evt = new EventSource('/shop/events');
+
+    evt.addEventListener('feed-row', (e) => {
+      feedEmpty.style.display = 'none';
+      feedRows.insertAdjacentHTML('afterbegin', e.data);
+    });
+
+    evt.addEventListener('void', (e) => {
+      // Server emits a span with data-row pointing at the row that got voided.
+      const tmp = document.createElement('div');
+      tmp.innerHTML = e.data;
+      const rowId = tmp.firstElementChild?.dataset.row;
+      if (rowId) {
+        document.getElementById(rowId)?.classList.add('voided');
+      }
+    });
+
+    // Void button click — fetch the void endpoint, mark row on success.
+    feedRows.addEventListener('click', async (e) => {
+      const btn = e.target.closest('.void');
+      if (!btn) return;
+      const r = await fetch(btn.dataset.voidUrl, { method: 'POST' });
+      if (r.ok) {
+        document.getElementById(btn.dataset.row)?.classList.add('voided');
+      } else {
+        alert('ยกเลิกไม่สำเร็จ — อาจหมดเวลา 60 วินาทีแล้ว');
+      }
+    });
+  </script>
+</body>
+</html>

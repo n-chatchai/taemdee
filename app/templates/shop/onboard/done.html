@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เสร็จเรียบร้อย!</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="td">
+    <div class="td-badge">
+      <svg class="s" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      TAEMDEE
+    </div>
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s2-steps" style="margin-top:18px;">
+      <div class="step done"></div>
+      <div class="step done"></div>
+      <div class="step done"></div>
+      <div class="step active"></div>
+    </div>
+
+    <div class="s2-counter">
+      <span class="step-num"><strong>04</strong> / 04 · เสร็จ</span>
+    </div>
+
+    <div class="s2-done-hero">
+      <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+
+      <div class="s2-done-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="s2-done-title"><em>พร้อมใช้งาน</em><br>แล้วครับ!</div>
+      <div class="s2-done-sub">QR ของร้านคุณพร้อมแล้ว เริ่มออกแต้มได้เลย</div>
+    </div>
+
+    <a href="/shop/qr" class="s2-qr-prev">
+      <div class="mini-qr">{{ qr_svg|safe }}</div>
+      <div class="meta">
+        <div class="h">QR ของร้านพร้อมแล้ว</div>
+        <div class="s">พิมพ์ติดที่เคาน์เตอร์</div>
+      </div>
+      <div class="arrow">↗</div>
+    </a>
+
+    <form method="POST" action="/shop/onboard/done" style="margin:0;">
+      <button type="submit" class="s2-cta-final">
+        <span>ไปที่แดชบอร์ด</span>
+        <span class="arrow">→</span>
+      </button>
+    </form>
+    <a href="/shop/qr" class="s2-cta-secondary">พิมพ์ QR ก่อน</a>
+  </div>
+</body>
+</html>

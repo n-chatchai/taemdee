@@ -18,11 +18,22 @@ from sqlmodel.ext.asyncio.session import AsyncSession  # noqa: E402
 
 from app import models  # noqa: F401, E402 — registers all model tables
 from app.core.auth import SESSION_COOKIE_NAME  # noqa: E402
+from app.core.config import settings  # noqa: E402
 from app.core.database import get_session  # noqa: E402
 from app.models import Customer, Shop  # noqa: E402
 from app.services.auth import issue_session_token  # noqa: E402
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
+
+
+@pytest.fixture(autouse=True)
+def _clear_line_creds(monkeypatch):
+    """Tests should not depend on LINE creds in the developer's .env.
+
+    Tests that need LINE configured can re-set via their own monkeypatch.
+    """
+    monkeypatch.setattr(settings, "line_channel_id", None)
+    monkeypatch.setattr(settings, "line_channel_secret", None)
 
 
 @pytest.fixture

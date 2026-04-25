@@ -1,0 +1,97 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>บัตรของฉัน · TaemDee แต้มดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="c7-greet">
+      <div class="hi">
+        สวัสดี{% if customer.display_name %} {{ customer.display_name }}{% endif %}
+        <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
+          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <span class="day">มี {{ cards|length }} บัตรในกระเป๋า</span>
+      </div>
+      {# C6 account menu — placeholder until designer ships it #}
+      <a href="#" class="menu" title="เมนู">≡</a>
+    </div>
+
+    {% if cards %}
+      <div class="c7-stats">
+        <div class="ss-row">
+          <div class="ss-big">{{ total_stamps }}</div>
+          <div class="ss-meta">
+            <div class="label">แต้มทั้งหมด</div>
+            <div class="total">จาก {{ cards|length }} ร้าน</div>
+          </div>
+        </div>
+        {% if closest is not none %}
+        <div class="ss-bottom">
+          ใกล้สุด · <strong>อีก {{ closest }} แต้ม</strong> รับรางวัล
+        </div>
+        {% endif %}
+      </div>
+
+      <div class="c7-list-head">
+        <div class="label">
+          <svg class="star" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+          </svg>
+          บัตรของคุณ
+        </div>
+      </div>
+
+      {% for c in cards %}
+        {% set ready = c.stamp_count >= c.shop.reward_threshold %}
+        <a href="/card/{{ c.shop.id }}" class="c7-card {% if ready %}featured{% endif %}">
+          {% if ready %}
+            <div class="ready-tag"><span class="dot"></span>พร้อม!</div>
+          {% endif %}
+          <div class="logo">{{ c.shop.name[0]|upper }}</div>
+          <div class="info">
+            <div class="name">{{ c.shop.name }}<span class="dot">.</span></div>
+            <div class="reward">{{ c.shop.reward_description }}</div>
+          </div>
+          <div class="progress">
+            <div class="num">{{ c.stamp_count }}<span class="of">/{{ c.shop.reward_threshold }}</span></div>
+            <div class="bar"><div class="fill" style="width: {{ (c.ratio * 100)|round }}%"></div></div>
+          </div>
+        </a>
+      {% endfor %}
+
+      <div class="c7-spacer">
+        <div class="c7-add">
+          <div class="h">อยากได้บัตรเพิ่ม?</div>
+          <div class="s">สแกน QR แต้มดี ที่ร้านไหนก็ได้</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="c7-spacer">
+        <div class="c7-add">
+          <div class="h">ยังไม่มีบัตร</div>
+          <div class="s">สแกน QR แต้มดีที่ร้านเริ่มเก็บแต้มได้เลย</div>
+        </div>
+      </div>
+    {% endif %}
+
+    <div class="footer-mark">
+      <span class="brand">taemdee<span class="dot">.</span></span>
+      <svg class="smile-foot" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ออกแต้ม · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="td" x-data="{ method: null, phone: '', message: '', error: '' }">
+    <div class="td-badge">
+      <svg class="s" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      TAEMDEE
+    </div>
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s5-top">
+      <a href="/shop/dashboard" class="x">×</a>
+      <div class="branch">{{ shop.name }}</div>
+    </div>
+
+    <div class="s5-q">
+      <div class="ask">ออกแต้มให้<em>ลูกค้า.</em></div>
+      <div class="ask-th">เลือกวิธีที่ลูกค้ามาวันนี้</div>
+    </div>
+
+    <div class="s5-options">
+      {# Customer scans the shop's printed QR — fastest path; just navigate to the print page #}
+      <a href="/shop/qr" class="s5-option primary">
+        <div class="recommended-tag">เร็วสุด</div>
+        <div class="ic-bg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <div class="info">
+          <div class="opt-name">ลูกค้าสแกน</div>
+          <div class="opt-sub">โชว์ QR ของร้าน ให้ลูกค้าสแกน</div>
+        </div>
+        <div class="opt-arrow">→</div>
+      </a>
+
+      {# Shop scans customer's card QR — needs camera + decoder; deferred #}
+      <button type="button" class="s5-option" disabled
+              style="opacity:0.55;cursor:not-allowed;"
+              title="เร็วๆ นี้ — ต้องใช้กล้อง">
+        <div class="ic-bg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <circle cx="12" cy="15" r="2"/>
+          </svg>
+        </div>
+        <div class="info">
+          <div class="opt-name">ร้านสแกน <span style="font-size:10px;color:var(--ink-softer);">(เร็วๆ นี้)</span></div>
+          <div class="opt-sub">สแกนบัตรของลูกค้า</div>
+        </div>
+        <div class="opt-arrow">→</div>
+      </button>
+
+      {# Phone-entry: expand inline form #}
+      <button type="button" class="s5-option" @click="method = method === 'phone' ? null : 'phone'; message = ''; error = ''">
+        <div class="ic-bg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+        </div>
+        <div class="info">
+          <div class="opt-name">กรอกเบอร์</div>
+          <div class="opt-sub">พิมพ์เบอร์โทรลูกค้า</div>
+        </div>
+        <div class="opt-arrow">→</div>
+      </button>
+    </div>
+
+    <form x-show="method === 'phone'" x-cloak class="s5-phone-form"
+          @submit.prevent="
+            const fd = new FormData();
+            fd.append('method', 'phone_entry');
+            fd.append('phone', phone);
+            const r = await fetch('/shop/issue', { method: 'POST', body: fd });
+            if (r.ok) {
+              message = '✓ ออกแต้มเรียบร้อย — กลับไปดูที่แดชบอร์ด';
+              error = '';
+              phone = '';
+            } else {
+              const j = await r.json().catch(() => ({}));
+              error = j.detail || 'ออกแต้มไม่สำเร็จ';
+              message = '';
+            }
+          ">
+      <input type="tel" inputmode="numeric" x-model="phone" placeholder="0812345678" required>
+      <button type="submit">ออกแต้ม</button>
+      <div x-show="message" x-cloak class="ok" x-text="message"></div>
+      <div x-show="error" x-cloak class="err" x-text="error"></div>
+    </form>
+
+    <div class="s5-tip">
+      <div class="tip-bulb">!</div>
+      <div>วิธีแรกเร็วสุด ส่วนใหญ่ใช้แบบนี้แบบเดียวก็พอ</div>
+    </div>
+  </div>
+</body>
+</html>

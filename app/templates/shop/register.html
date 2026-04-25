@@ -1,40 +1,118 @@
-{% extends "layout.html" %}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบ · TaemDee แต้มดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="td" x-data="{ step: 'choose', phone: '', code: '', error: '{{ error|default('') }}', ref: '{{ ref_code|default('') }}' }">
+    <div class="topbar"><span></span><span></span></div>
 
-{% block title %}Shop Login / Register — TaemDee{% endblock %}
-
-{% block content %}
-<div class="card auth-card">
-    <h2>TaemDee Shop</h2>
-    <p class="subtitle">Login or register with your phone</p>
-
-    {% if error %}
-    <div class="error">{{ error }}</div>
-    {% endif %}
-
-    <div x-data="{ step: 'phone', phone: '' }">
-
-        <!-- Step 1: Phone -->
-        <div x-show="step === 'phone'" class="stack">
-            <div>
-                <label>Phone Number</label>
-                <input type="tel" x-model="phone" placeholder="0812345678">
-            </div>
-            <button class="full" @click="step = 'otp'">Send OTP</button>
-            <div class="divider">or continue with</div>
-            <a href="/auth/line/start" class="button secondary full">LINE Login</a>
-        </div>
-
-        <!-- Step 2: OTP (mock — submits to /shop/register dev shortcut) -->
-        <div x-show="step === 'otp'" x-cloak class="stack">
-            <p>Enter the 4-digit code sent to <strong x-text="phone"></strong></p>
-            <form action="/shop/register" method="POST" class="stack">
-                <input type="hidden" name="phone" :value="phone">
-                <input type="hidden" name="name" value="New Shop">
-                <input type="text" name="code" maxlength="4" placeholder="1234">
-                <button type="submit" class="full">Verify &amp; Enter</button>
-            </form>
-            <button @click="step = 'phone'" class="secondary full">Change number</button>
-        </div>
+    <!-- Tabs: shop tab is active in this template -->
+    <div class="s1-tabs">
+      <a href="/shop/register" class="s1-tab active">
+        ร้านค้า
+        <span class="tab-pill">จำเป็น</span>
+      </a>
+      <a href="/" class="s1-tab">
+        ลูกค้า
+        <span class="tab-pill optional">ไม่บังคับ</span>
+      </a>
     </div>
-</div>
-{% endblock %}
+
+    <!-- Hero — same on all sub-states -->
+    <div class="s1-hero">
+      <div class="s1-logo-mark">
+        <svg class="smile-big" viewBox="0 0 20 12" fill="none">
+          <circle cx="5" cy="3" r="1.7" fill="currentColor"/>
+          <circle cx="15" cy="3" r="1.7" fill="currentColor"/>
+          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+        </svg>
+        <svg class="star-corner" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+        </svg>
+      </div>
+      <div class="s1-name">แต้มดี<span class="dot">.</span></div>
+      <div class="s1-tag">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรีไม่มีค่ารายเดือน</div>
+    </div>
+
+    <div class="s1-required-notice">
+      <span class="dot-r"></span>
+      {% if referrer %}
+        เพื่อนแนะนำคุณ! คุณและ {{ referrer.name }} จะได้รับโบนัสเครดิตเมื่อสมัครเสร็จ
+      {% else %}
+        ร้านค้าต้องเข้าสู่ระบบเพื่อใช้แดชบอร์ด
+      {% endif %}
+    </div>
+
+    <!-- Step 1: choose login method -->
+    <div class="s1-buttons" x-show="step === 'choose'">
+      <a href="/auth/line/start" class="s1-btn s1-btn-line">
+        <svg viewBox="0 0 24 24" fill="currentColor">
+          <path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
+        </svg>
+        เข้าสู่ระบบด้วย LINE
+      </a>
+      <button type="button" class="s1-btn s1-btn-phone" @click="step = 'phone'; error = ''">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+        ใช้เบอร์โทร · รับ OTP
+      </button>
+    </div>
+
+    <!-- Step 2: phone entry -->
+    <form class="s1-otp-form"
+          x-show="step === 'phone'" x-cloak
+          @submit.prevent="
+            const fd = new FormData();
+            fd.append('phone', phone);
+            const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
+            if (r.ok) { step = 'otp'; error = ''; }
+            else { error = 'เบอร์โทรไม่ถูกต้อง ลองอีกครั้ง'; }
+          ">
+      <label for="phone-input">เบอร์โทรของคุณ</label>
+      <input id="phone-input" type="tel" inputmode="numeric"
+             x-model="phone" placeholder="0812345678" required>
+      <button type="submit" class="s1-btn s1-btn-phone">ส่ง OTP</button>
+      <button type="button" class="back" @click="step = 'choose'">เปลี่ยนวิธี</button>
+      <div x-show="error" x-cloak class="err" x-text="error"></div>
+    </form>
+
+    <!-- Step 3: OTP entry -->
+    <form class="s1-otp-form"
+          x-show="step === 'otp'" x-cloak
+          @submit.prevent="
+            const fd = new FormData();
+            fd.append('phone', phone);
+            fd.append('code', code);
+            fd.append('name', 'ร้านใหม่');
+            if (ref) { fd.append('ref', ref); }
+            const r = await fetch('/auth/otp/verify', { method: 'POST', body: fd });
+            if (r.ok) { window.location.href = '/shop/dashboard'; }
+            else { error = 'OTP ไม่ถูกต้องหรือหมดอายุ'; }
+          ">
+      <label>กรอก OTP ที่ส่งไปยัง <strong x-text="phone"></strong></label>
+      <input x-model="code" type="text" inputmode="numeric" maxlength="4"
+             placeholder="1234" required>
+      <button type="submit" class="s1-btn s1-btn-phone">ยืนยัน &amp; เข้าสู่ระบบ</button>
+      <button type="button" class="back" @click="step = 'phone'">เปลี่ยนเบอร์</button>
+      <div x-show="error" x-cloak class="err" x-text="error"></div>
+    </form>
+
+    <div class="s1-no-pwd">
+      <span class="icon">●</span> ไม่ต้องจำรหัสผ่าน — ใช้ OTP หรือ LINE เท่านั้น
+    </div>
+
+    <div class="s1-foot">
+      ถือว่ายอมรับ <a href="#">ข้อตกลง</a> และ <a href="#">นโยบายความเป็นส่วนตัว</a>
+    </div>
+  </div>
+</body>
+</html>

@@ -1,0 +1,79 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่าร้าน · 3/4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <form method="POST" action="/shop/onboard/theme" class="td"
+        x-data="{ theme: '{{ shop.theme_name }}' }">
+    <div class="td-badge">
+      <svg class="s" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      TAEMDEE
+    </div>
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s2-steps" style="margin-top:18px;">
+      <div class="step done"></div>
+      <div class="step done"></div>
+      <div class="step active"></div>
+      <div class="step"></div>
+    </div>
+
+    <div class="s2-counter">
+      <span class="step-num"><strong>03</strong> / 04 · ธีม</span>
+      <a href="/shop/onboard/done" class="skip">ข้าม</a>
+    </div>
+
+    <div class="s2-q">
+      <div class="ask">เลือก<em>ธีม.</em></div>
+      <div class="sub">หน้าตาบัตรสะสมแต้มของลูกค้า</div>
+    </div>
+
+    {% set theme_meta = {
+      'taemdee': ('แต้มดี', 'ครีม + ส้ม'),
+      'mono':    ('โมโน',  'ขาว + ดำ'),
+      'night':   ('กลางคืน', 'ดำ + เหลือง'),
+      'pastel':  ('พาสเทล', 'พีช + ส้ม'),
+    } %}
+    <div class="s2-themes">
+      {% for t in themes %}
+        <button type="button" class="s2-theme"
+                :class="{ selected: theme === '{{ t }}' }" @click="theme = '{{ t }}'">
+          <div class="s2-tprev {{ t }}">
+            <div class="num">7</div>
+            <div class="stamps-mini">
+              <div class="s on"></div><div class="s on"></div>
+              {% if t == 'taemdee' %}<div class="s b"></div>{% else %}<div class="s on"></div>{% endif %}
+              <div class="s on"></div><div class="s on"></div>
+            </div>
+          </div>
+          <div class="s2-tmeta">
+            <div class="name">{{ theme_meta[t][0] }}</div>
+            <div class="meta">{{ theme_meta[t][1] }}</div>
+          </div>
+        </button>
+      {% endfor %}
+    </div>
+
+    <input type="hidden" name="theme" :value="theme">
+
+    <div class="s2-foot">
+      <a href="/shop/onboard/logo" class="back">←</a>
+      <button type="submit" class="next">
+        <span>ถัดไป · พิมพ์ QR</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </form>
+</body>
+</html>

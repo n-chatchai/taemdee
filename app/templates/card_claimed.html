@@ -1,0 +1,91 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>รับรางวัลแล้ว · {{ shop.name }} · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="td c5">
+    <div class="td-badge">
+      <svg class="s" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      TAEMDEE
+    </div>
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="claimed-hero">
+      <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+
+      <div class="claimed-mark">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <div class="claimed-title"><em>รับรางวัล</em><br>เรียบร้อย!</div>
+
+      {# Live counter — anti-screenshot proof. JS bumps each second. #}
+      <div class="live-pulse">
+        <span class="pulse-dot"></span>
+        <span>สด · <span id="claim-counter">0</span> วิที่แล้ว</span>
+      </div>
+    </div>
+
+    <div class="voucher">
+      <div class="v-label">✦ คูปอง ✦</div>
+      <div class="v-title">{{ shop.reward_description }}</div>
+      <div class="v-id">#{{ redemption.id.hex[:8]|upper }} · {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
+    </div>
+
+    <div class="reset">
+      <div class="kicker">
+        <svg class="arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="5" x2="12" y2="19"/>
+          <polyline points="19 12 12 19 5 12"/>
+        </svg>
+        บัตรถัดไปเริ่มที่นี่
+      </div>
+      <a href="/card/{{ shop.id }}" class="mini-card" style="display:block; text-decoration:none; color:inherit;">
+        <div class="mini-num">0<span class="of">/{{ shop.reward_threshold }}</span></div>
+        <div class="mini-stamps">
+          {% for _ in range(shop.reward_threshold) %}
+            <div class="mini-stamp"></div>
+          {% endfor %}
+        </div>
+      </a>
+    </div>
+
+    <div class="farewell">เจอกันครั้งหน้านะ</div>
+
+    <div class="footer-mark">
+      <span class="brand">taemdee<span class="dot">.</span></span>
+      <svg class="smile-foot" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+  </div>
+
+  <script>
+    // Live counter — proves the screen is current (anti-screenshot).
+    const claimedAt = new Date('{{ redemption.created_at.isoformat() }}Z').getTime();
+    const counter = document.getElementById('claim-counter');
+    function tick() {
+      const secs = Math.max(0, Math.floor((Date.now() - claimedAt) / 1000));
+      counter.textContent = secs;
+    }
+    tick();
+    setInterval(tick, 1000);
+  </script>
+</body>
+</html>

@@ -1,9 +1,11 @@
-"""Team (staff) CRUD — owner-only."""
+"""Team (staff) CRUD — owner-only. Renders S11 page; mutations redirect back."""
 
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi.responses import HTMLResponse, RedirectResponse
+from fastapi.templating import Jinja2Templates
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import SessionContext, get_current_shop, require_owner
@@ -17,16 +19,22 @@ from app.services.team import (
 )
 
 router = APIRouter()
+templates = Jinja2Templates(directory="app/templates")
 
 
-@router.get("")
-async def list_(
+@router.get("", response_class=HTMLResponse)
+async def team_page(
+    request: Request,
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(require_owner),
     db: AsyncSession = Depends(get_session),
-    include_revoked: bool = False,
 ):
-    return await list_staff(db, shop.id, include_revoked=include_revoked)
+    members = await list_staff(db, shop.id)
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/team.html",
+        context={"shop": shop, "members": members},
+    )
 
 
 @router.post("")
@@ -43,7 +51,7 @@ async def invite(
     db: AsyncSession = Depends(get_session),
 ):
     try:
-        staff = await invite_staff(
+        await invite_staff(
             db, shop,
             phone=phone, line_id=line_id, display_name=display_name,
             can_void=can_void, can_deereach=can_deereach,
@@ -51,10 +59,10 @@ async def invite(
         )
     except ValueError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
-    return staff
+    return RedirectResponse(url="/shop/team", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.patch("/{staff_id}/permissions")
+@router.post("/{staff_id}/permissions")
 async def update_perms(
     staff_id: UUID,
     can_void: Optional[bool] = Form(None),
@@ -68,7 +76,6 @@ async def update_perms(
     staff = await db.get(StaffMember, staff_id)
     if not staff or staff.shop_id != shop.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Staff member not found")
-
     flags = {
         k: v for k, v in {
             "can_void": can_void,
@@ -77,7 +84,8 @@ async def update_perms(
             "can_settings": can_settings,
         }.items() if v is not None
     }
-    return await update_permissions(db, staff, **flags)
+    await update_permissions(db, staff, **flags)
+    return RedirectResponse(url="/shop/team", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/{staff_id}/revoke")
@@ -90,4 +98,5 @@ async def revoke(
     staff = await db.get(StaffMember, staff_id)
     if not staff or staff.shop_id != shop.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Staff member not found")
-    return await revoke_staff(db, staff)
+    await revoke_staff(db, staff)
+    return RedirectResponse(url="/shop/team", status_code=status.HTTP_303_SEE_OTHER)

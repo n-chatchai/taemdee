@@ -1,0 +1,81 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่าร้าน · 2/4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  {% set picked = shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith('text:') else 'lt-2' %}
+  <form method="POST" action="/shop/onboard/logo" class="td"
+        x-data="{ choice: '{{ picked }}' }">
+    <div class="td-badge">
+      <svg class="s" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+      TAEMDEE
+    </div>
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s2-steps" style="margin-top:18px;">
+      <div class="step done"></div>
+      <div class="step active"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+    </div>
+
+    <div class="s2-counter">
+      <span class="step-num"><strong>02</strong> / 04 · โลโก้</span>
+      <a href="/shop/onboard/theme" class="skip">ข้าม</a>
+    </div>
+
+    <div class="s2-q">
+      <div class="ask">เลือก<em>โลโก้.</em></div>
+      <div class="sub">เลือกแบบที่ใช่ที่สุดสำหรับร้านของคุณ</div>
+    </div>
+
+    {% set initial = shop.name[0]|lower if shop.name else 'm' %}
+    <div class="s2-logos">
+      <button type="button" class="s2-logo" :class="{ selected: choice === 'lt-1' }" @click="choice = 'lt-1'">
+        <span class="lt-1">{{ initial }}<span class="dot">.</span></span>
+      </button>
+      <button type="button" class="s2-logo" :class="{ selected: choice === 'lt-2' }" @click="choice = 'lt-2'">
+        <span class="lt-2">{{ shop.name[:5] if shop.name else 'Shop' }}</span>
+      </button>
+      <button type="button" class="s2-logo" :class="{ selected: choice === 'lt-3' }" @click="choice = 'lt-3'">
+        <span class="lt-3">{{ shop.name[:3] if shop.name else 'หมี' }}</span>
+      </button>
+    </div>
+
+    <div class="s2-helper">
+      สร้างจากชื่อ <em>"{{ shop.name }}"</em><br>
+      <span class="reroll" title="AI logo gen — Phase 3">↻ สร้างใหม่อีก 3 แบบ (เร็วๆ นี้)</span>
+    </div>
+
+    <div class="s2-upload" title="Upload — Phase 3">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      ใช้โลโก้ของฉันเอง (เร็วๆ นี้)
+    </div>
+
+    <input type="hidden" name="logo_choice" :value="choice">
+
+    <div class="s2-foot">
+      <a href="/shop/onboard/name" class="back">←</a>
+      <button type="submit" class="next">
+        <span>ถัดไป · เลือกธีม</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </form>
+</body>
+</html>

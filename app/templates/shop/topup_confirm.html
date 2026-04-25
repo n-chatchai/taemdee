@@ -1,0 +1,69 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เติมเครดิต · จ่าย</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/topup" class="x">←</a>
+      <div class="title-mid">เติมเครดิต</div>
+      <div class="right-action">ช่วยเหลือ</div>
+    </div>
+
+    <div class="s7c-meta">
+      <div class="label">คุณกำลังเติม</div>
+      <div class="pkg">
+        <span class="accent">{{ package.credits + package.bonus }}</span>
+        <span class="unit">เครดิต</span>
+      </div>
+      <div class="price">
+        ฿{{ package.price }}
+        {% if package.bonus %} · บวกโบนัส {{ package.bonus }} เครดิต{% endif %}
+      </div>
+    </div>
+
+    <div class="s7c-qr">
+      <div class="promptpay-logo">PromptPay</div>
+      <div class="qr-box">{{ qr_svg|safe }}</div>
+      <div class="recipient">บริษัท แต้มดี จำกัด</div>
+      <div class="recipient-id">PP · ตัวอย่างเพื่อสาธิต</div>
+    </div>
+
+    <div class="s7c-step active">
+      <div class="n">1</div>
+      <div class="text">
+        เปิดแอปธนาคาร แล้วสแกน QR
+        <span class="sub">ใช้ได้ทุกธนาคารในไทย</span>
+      </div>
+    </div>
+    <div class="s7c-step">
+      <div class="n">2</div>
+      <div class="text">
+        อัปโหลดสลิปการโอน
+        <span class="sub">ระบบตรวจสอบอัตโนมัติใน ~5 วินาที (Slip2Go มาในรุ่นถัดไป)</span>
+      </div>
+    </div>
+
+    <button class="s7c-upload-cta" type="button"
+            onclick="alert('Slip2Go integration: Phase 3 (R7). UI ready, backend wires up next.');">
+      <div class="l">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        จ่ายแล้ว · อัปโหลดสลิป
+      </div>
+      <span class="arrow">→</span>
+    </button>
+  </div>
+</body>
+</html>

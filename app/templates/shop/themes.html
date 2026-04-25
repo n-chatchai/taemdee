@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ธีม · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <form method="POST" action="/shop/themes" class="td"
+        x-data="{ theme: '{{ shop.theme_name }}' }">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/settings" class="x">←</a>
+      <div class="title-mid">ธีม</div>
+      <button type="submit" class="right-action" style="background:none;border:none;font:inherit;cursor:pointer;color:var(--accent);">
+        บันทึก
+      </button>
+    </div>
+
+    <div class="page-title">
+      <div class="h">เลือก<em>ธีม.</em></div>
+      <div class="sub">หน้าตาบัตรของลูกค้า</div>
+    </div>
+
+    {% set theme_meta = {
+      'taemdee': ('แต้มดี', 'ค่ามาตรฐาน · ครีม + ส้ม'),
+      'mono':    ('โมโน',  'ขาว + ดำ'),
+      'night':   ('กลางคืน', 'ดำ + เหลือง'),
+      'pastel':  ('พาสเทล', 'พีช + ส้ม'),
+    } %}
+    <div class="s9-grid">
+      {% for t in themes %}
+        <button type="button" class="theme-card"
+                :class="{ selected: theme === '{{ t }}' }" @click="theme = '{{ t }}'">
+          <div class="theme-preview {{ t }}">
+            <div class="num">7</div>
+            <div class="stamps">
+              <div class="s on"></div><div class="s on"></div>
+              {% if t == 'taemdee' %}<div class="s b"></div>{% else %}<div class="s on"></div>{% endif %}
+              <div class="s on"></div><div class="s on"></div>
+              {% if t == 'taemdee' %}<div class="s b"></div>{% else %}<div class="s on"></div>{% endif %}
+              <div class="s on"></div><div class="s"></div><div class="s"></div><div class="s"></div>
+            </div>
+          </div>
+          <div class="theme-meta">
+            <div class="name">{{ theme_meta[t][0] }}</div>
+            <div class="meta">{{ theme_meta[t][1] }}</div>
+          </div>
+        </button>
+      {% endfor %}
+    </div>
+
+    <input type="hidden" name="theme" :value="theme">
+
+    <div style="padding: 22px 20px 20px;">
+      <div style="font-style:italic;font-size:12px;color:var(--ink-soft);text-align:center;">
+        ธีมจะใช้กับบัตรของลูกค้าทุกคนทันที
+      </div>
+    </div>
+  </form>
+</body>
+</html>

@@ -10,6 +10,7 @@ from app.core.config import settings
 from app.core.database import get_session
 from app.models import Shop
 from app.services.auth import generate_and_send_otp, issue_session_token, verify_otp
+from app.services.referrals import consume_referral_on_signup, find_referral_by_code
 from app.services.line_login import (
     LineLoginError,
     build_authorize_url,
@@ -40,6 +41,7 @@ async def verify_and_login(
     phone: str = Form(...),
     code: str = Form(...),
     name: str = Form("New Shop"),
+    ref: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_session),
 ):
     if not await verify_otp(db, phone, code):
@@ -47,12 +49,19 @@ async def verify_and_login(
 
     result = await db.exec(select(Shop).where(Shop.phone == phone))
     shop = result.first()
+    is_new = shop is None
 
-    if not shop:
+    if is_new:
         shop = Shop(name=name, phone=phone)
         db.add(shop)
         await db.commit()
         await db.refresh(shop)
+
+        # Bind referral on first signup if a valid open code was passed.
+        if ref:
+            referral = await find_referral_by_code(db, ref)
+            if referral and referral.referee_shop_id is None:
+                await consume_referral_on_signup(db, referral, shop)
 
     _set_session_cookie(response, issue_session_token(shop.id))
     return {"ok": True, "shop_id": str(shop.id)}

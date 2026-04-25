@@ -5,7 +5,7 @@ from fastapi.staticfiles import StaticFiles
 from fastapi.templating import Jinja2Templates
 
 from app.core.database import engine
-from app.routes import auth, branches, customer, issuance, shops, team
+from app.routes import auth, branches, customer, deereach, issuance, shops, team
 
 
 @asynccontextmanager
@@ -23,9 +23,7 @@ templates = Jinja2Templates(directory="app/templates")
 
 @app.get("/")
 async def home(request: Request):
-    return templates.TemplateResponse(
-        request=request, name="index.html", context={"message": "Welcome to TaemDee"}
-    )
+    return templates.TemplateResponse(request=request, name="home.html")
 
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
@@ -34,3 +32,4 @@ app.include_router(shops.router, prefix="/shop", tags=["shops"])
 app.include_router(issuance.router, prefix="/shop", tags=["issuance"])
 app.include_router(branches.router, prefix="/shop/branches", tags=["branches"])
 app.include_router(team.router, prefix="/shop/team", tags=["team"])
+app.include_router(deereach.router, prefix="/shop/deereach", tags=["deereach"])
