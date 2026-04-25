@@ -20,4 +20,4 @@ jobs:
           username: ${{ secrets.DEPLOY_USER }}
           key: ${{ secrets.DEPLOY_SSH_KEY }}
           port: ${{ secrets.DEPLOY_PORT || 22 }}
-          script: /srv/taemdee/scripts/deploy.sh
+          script: ${{ secrets.DEPLOY_PATH }}/scripts/deploy.sh
