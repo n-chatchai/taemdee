@@ -1,0 +1,26 @@
+{% extends "layout.html" %}
+
+{% block title %}{{ shop.name }} — TaemDee{% endblock %}
+
+{% block content %}
+<div class="dashboard">
+    <h1>{{ shop.name }}</h1>
+
+    <div class="card">
+        <p class="label-small">Available Credits</p>
+        <p class="big-number">{{ shop.credit_balance }}</p>
+        <p class="muted">Credits are used only for outbound messages (DeeReach). Stamps are always free.</p>
+        <button>Top Up</button>
+    </div>
+
+    <div class="card">
+        <p class="label-small">Reward Goal</p>
+        <p>{{ shop.reward_threshold }} stamps = <strong>{{ shop.reward_description }}</strong></p>
+    </div>
+
+    <div class="card">
+        <h2>Today's Activity</h2>
+        <p class="muted">No stamps issued yet today.</p>
+    </div>
+</div>
+{% endblock %}

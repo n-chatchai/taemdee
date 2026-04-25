@@ -1,0 +1,33 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}TaemDee — แต้มดี{% endblock %}</title>
+    <link rel="stylesheet" href="/static/css/app.css">
+    <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+    <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+    {% block head %}{% endblock %}
+</head>
+<body>
+    <nav>
+        <div class="container">
+            <a href="/" class="brand">TaemDee <span class="muted">แต้มดี</span></a>
+            <div class="nav-actions">
+                <a href="/shop/register">Shop Login</a>
+                <a href="/shop/register" class="button">Get Started</a>
+            </div>
+        </div>
+    </nav>
+
+    <main>
+        {% block content %}{% endblock %}
+    </main>
+
+    <footer>
+        &copy; 2026 TaemDee — แต้มดี
+    </footer>
+
+    {% block scripts %}{% endblock %}
+</body>
+</html>

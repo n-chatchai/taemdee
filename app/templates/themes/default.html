@@ -1,0 +1,164 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{{ shop.name }} — Digital Stamp Card</title>
+    <style>
+        :root {
+            --primary: #2563eb;
+            --bg: #f1f5f9;
+            --card: #ffffff;
+            --text: #0f172a;
+            --muted: #64748b;
+            --border: #e2e8f0;
+            --success: #16a34a;
+        }
+        * { box-sizing: border-box; }
+        body {
+            margin: 0;
+            font-family: -apple-system, BlinkMacSystemFont, "Noto Sans Thai", "Inter", sans-serif;
+            background: var(--bg);
+            color: var(--text);
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 1rem;
+        }
+        .card {
+            max-width: 24rem;
+            width: 100%;
+            background: var(--card);
+            border-radius: 1.5rem;
+            box-shadow: 0 10px 30px rgba(0, 0, 0, 0.08);
+            overflow: hidden;
+        }
+        .header {
+            background: var(--primary);
+            color: white;
+            padding: 2rem;
+            text-align: center;
+        }
+        .logo, .logo-fallback {
+            width: 5rem;
+            height: 5rem;
+            border-radius: 50%;
+            border: 3px solid white;
+            background: white;
+            margin: 0 auto 1rem;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--primary);
+            font-size: 1.75rem;
+            font-weight: 700;
+        }
+        .logo { object-fit: cover; }
+        .header h1 { margin: 0; font-size: 1.5rem; }
+        .header p { margin: 0.25rem 0 0; opacity: 0.85; font-size: 0.875rem; }
+        .grid {
+            display: grid;
+            grid-template-columns: repeat(5, 1fr);
+            gap: 0.75rem;
+            padding: 2rem;
+        }
+        .slot {
+            aspect-ratio: 1;
+            border: 2px dashed var(--border);
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: var(--border);
+            font-weight: 600;
+            font-size: 1.125rem;
+        }
+        .slot.filled {
+            border: none;
+            background: var(--primary);
+            color: white;
+        }
+        .progress { padding: 0 2rem 1rem; }
+        .progress-text { text-align: center; color: var(--muted); margin: 0 0 0.5rem; }
+        .progress-bar {
+            height: 0.5rem;
+            background: var(--bg);
+            border-radius: 999px;
+            overflow: hidden;
+        }
+        .progress-fill {
+            height: 100%;
+            background: var(--primary);
+            transition: width 0.3s;
+        }
+        .cta { padding: 1.5rem 2rem 2rem; }
+        .redeem {
+            width: 100%;
+            padding: 1rem;
+            font-size: 1.125rem;
+            font-weight: 700;
+            background: var(--success);
+            color: white;
+            border: none;
+            border-radius: 1rem;
+            cursor: pointer;
+            font-family: inherit;
+        }
+        .almost {
+            background: var(--bg);
+            border-radius: 1rem;
+            padding: 1rem;
+            text-align: center;
+            color: var(--muted);
+        }
+        .footer {
+            padding: 0.75rem;
+            text-align: center;
+            background: var(--bg);
+            color: var(--muted);
+            font-size: 0.625rem;
+            text-transform: uppercase;
+            letter-spacing: 0.08em;
+        }
+    </style>
+</head>
+<body>
+    <div class="card">
+        <div class="header">
+            {% if shop.logo_url %}
+                <img src="{{ shop.logo_url }}" class="logo" alt="">
+            {% else %}
+                <div class="logo-fallback">{{ shop.name[0] }}</div>
+            {% endif %}
+            <h1>{{ shop.name }}</h1>
+            <p>{{ shop.reward_threshold }} stamps = {{ shop.reward_description }}</p>
+        </div>
+
+        <div class="grid">
+            {% for i in range(1, shop.reward_threshold + 1) %}
+                <div class="slot {% if i <= stamp_count %}filled{% endif %}">
+                    {% if i <= stamp_count %}✓{% else %}{{ i }}{% endif %}
+                </div>
+            {% endfor %}
+        </div>
+
+        <div class="progress">
+            <p class="progress-text">You have {{ stamp_count }} stamps</p>
+            <div class="progress-bar">
+                <div class="progress-fill" style="width: {{ (stamp_count / shop.reward_threshold * 100)|round }}%"></div>
+            </div>
+        </div>
+
+        <div class="cta">
+            {% if stamp_count >= shop.reward_threshold %}
+                <button class="redeem">REDEEM REWARD!</button>
+            {% else %}
+                <div class="almost">Only {{ shop.reward_threshold - stamp_count }} more to go!</div>
+            {% endif %}
+        </div>
+
+        <div class="footer">Powered by TaemDee</div>
+    </div>
+</body>
+</html>

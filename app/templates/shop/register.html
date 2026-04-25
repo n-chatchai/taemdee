@@ -1,0 +1,40 @@
+{% extends "layout.html" %}
+
+{% block title %}Shop Login / Register — TaemDee{% endblock %}
+
+{% block content %}
+<div class="card auth-card">
+    <h2>TaemDee Shop</h2>
+    <p class="subtitle">Login or register with your phone</p>
+
+    {% if error %}
+    <div class="error">{{ error }}</div>
+    {% endif %}
+
+    <div x-data="{ step: 'phone', phone: '' }">
+
+        <!-- Step 1: Phone -->
+        <div x-show="step === 'phone'" class="stack">
+            <div>
+                <label>Phone Number</label>
+                <input type="tel" x-model="phone" placeholder="0812345678">
+            </div>
+            <button class="full" @click="step = 'otp'">Send OTP</button>
+            <div class="divider">or continue with</div>
+            <a href="/auth/line/start" class="button secondary full">LINE Login</a>
+        </div>
+
+        <!-- Step 2: OTP (mock — submits to /shop/register dev shortcut) -->
+        <div x-show="step === 'otp'" x-cloak class="stack">
+            <p>Enter the 4-digit code sent to <strong x-text="phone"></strong></p>
+            <form action="/shop/register" method="POST" class="stack">
+                <input type="hidden" name="phone" :value="phone">
+                <input type="hidden" name="name" value="New Shop">
+                <input type="text" name="code" maxlength="4" placeholder="1234">
+                <button type="submit" class="full">Verify &amp; Enter</button>
+            </form>
+            <button @click="step = 'phone'" class="secondary full">Change number</button>
+        </div>
+    </div>
+</div>
+{% endblock %}

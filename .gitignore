@@ -1,0 +1,23 @@
+# Python-generated files
+__pycache__/
+*.py[oc]
+build/
+dist/
+wheels/
+*.egg-info
+
+# Virtual environments
+.venv
+
+# Environment
+.env
+
+# SQLite (legacy — we use PostgreSQL now)
+*.db
+
+# Coverage artifacts
+.coverage
+htmlcov/
+
+# Local TLS certs (mkcert — generated per-machine via dev.sh)
+*.pem
