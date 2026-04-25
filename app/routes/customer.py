@@ -5,7 +5,7 @@ from typing import Optional
 
 from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
-from fastapi.templating import Jinja2Templates
+from app.core.templates import templates
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -24,7 +24,6 @@ from app.services.redemption import RedemptionError, active_stamp_count, redeem
 from app.services.soft_wall import claim_by_phone
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
 
 
 # /card/save and /my-cards are literal — must be registered BEFORE /card/{shop_id}

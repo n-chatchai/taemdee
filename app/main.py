@@ -2,10 +2,10 @@ from contextlib import asynccontextmanager
 
 from fastapi import FastAPI, Request
 from fastapi.staticfiles import StaticFiles
-from fastapi.templating import Jinja2Templates
 
 from app.core.auth import SESSION_COOKIE_NAME
 from app.core.database import engine
+from app.core.templates import templates
 from app.routes import auth, branches, customer, deereach, issuance, shops, team
 from app.services.auth import decode_session_token
 
@@ -20,7 +20,6 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="TaemDee — Digital Stamp Cards", lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
-templates = Jinja2Templates(directory="app/templates")
 
 
 @app.get("/")

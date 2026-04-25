@@ -5,7 +5,7 @@ from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse
-from fastapi.templating import Jinja2Templates
+from app.core.templates import templates
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -23,7 +23,6 @@ from app.services.issuance import IssuanceError, issue_stamp, void_stamp
 from app.services.redemption import void_redemption
 
 router = APIRouter()
-templates = Jinja2Templates(directory="app/templates")
 
 VOID_WINDOW_SECONDS = 60
 
