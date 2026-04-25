@@ -3,7 +3,10 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 
-engine = create_async_engine(settings.database_url)
+engine = create_async_engine(
+    settings.database_url,
+    prepared_statement_cache_size=0,
+)
 
 
 async def get_session():
