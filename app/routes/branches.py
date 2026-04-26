@@ -1,10 +1,11 @@
 """Branch CRUD — owner-only. Renders S12 page; mutations redirect back."""
 
+import io
 from typing import Optional
 from uuid import UUID
 
 import segno
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -68,6 +69,30 @@ async def branch_qr(
         request=request,
         name="shop/qr.html",
         context={"shop": shop, "branch": branch, "scan_url": scan_url, "qr_svg": qr_svg},
+    )
+
+
+@router.get("/{branch_id}/qr.png")
+async def branch_qr_png(
+    request: Request,
+    branch_id: UUID,
+    shop: Shop = Depends(get_current_shop),
+    _: SessionContext = Depends(require_owner),
+    db: AsyncSession = Depends(get_session),
+):
+    """High-DPI PNG of the branch QR for the บันทึก (save) button on S8."""
+    branch = await db.get(Branch, branch_id)
+    if not branch or branch.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Branch not found")
+    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}?branch={branch.id}"
+    buf = io.BytesIO()
+    segno.make(scan_url, error="m").save(buf, kind="png", scale=20, border=2)
+    safe_shop = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
+    safe_branch = "".join(c if c.isalnum() else "-" for c in branch.name).strip("-").lower() or "branch"
+    return Response(
+        content=buf.getvalue(),
+        media_type="image/png",
+        headers={"Content-Disposition": f'attachment; filename="taemdee-qr-{safe_shop}-{safe_branch}.png"'},
     )
 
 

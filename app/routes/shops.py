@@ -489,3 +489,25 @@ async def shop_qr(
         name="shop/qr.html",
         context={"shop": shop, "scan_url": scan_url, "qr_svg": qr_svg},
     )
+
+
+@router.get("/qr.png")
+async def shop_qr_png(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+):
+    """High-DPI PNG of just the QR for the บันทึก (save) button on S8.
+
+    Browsers respect the Content-Disposition filename, so the file lands as
+    `taemdee-qr-<shop>.png` in the user's Downloads folder. Plain QR only —
+    the framing/reward card is for `window.print()` from the page itself.
+    """
+    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
+    buf = io.BytesIO()
+    segno.make(scan_url, error="m").save(buf, kind="png", scale=20, border=2)
+    safe_name = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
+    return Response(
+        content=buf.getvalue(),
+        media_type="image/png",
+        headers={"Content-Disposition": f'attachment; filename="taemdee-qr-{safe_name}.png"'},
+    )
