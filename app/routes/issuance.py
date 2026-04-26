@@ -68,7 +68,7 @@ async def issue_scan_grant(
     staff: Optional[StaffMember] = Depends(get_current_staff),
     db: AsyncSession = Depends(get_session),
 ):
-    """Convert a scanned QR string into a stamp via the shop_scan method.
+    """Convert a scanned QR string into a point via the shop_scan method.
 
     Accepts the URL the customer's /my-id page encodes — `https://<host>/c/<uuid>`.
     Anything else is rejected with a clear error so the staff knows the QR
@@ -106,7 +106,7 @@ async def issue_scan_grant(
         )
 
     try:
-        stamp = await issue_point(
+        point = await issue_point(
             db, shop, customer,
             method="shop_scan",
             staff_id=staff.id if staff else None,
@@ -117,33 +117,33 @@ async def issue_scan_grant(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
+        feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
     )
     new_count = await active_point_count(db, shop.id, customer.id)
     publish(
         shop.id,
         "point-toast",
-        point_toast_html(stamp.id, new_count, shop.reward_threshold),
+        point_toast_html(point.id, new_count, shop.reward_threshold),
     )
     return {
-        "stamp_id": str(stamp.id),
+        "point_id": str(point.id),
         "customer_id": str(customer.id),
         "customer_name": customer.display_name or "ลูกค้า",
         "current_count": new_count,
     }
 
 
-@router.get("/issue/search", response_class=HTMLResponse)
-async def issue_search_page(request: Request, shop: Shop = Depends(get_current_shop)):
-    """S3.search — search a known customer by name/phone and grant N stamps."""
+@router.get("/issue/grant", response_class=HTMLResponse)
+async def issue_grant_page(request: Request, shop: Shop = Depends(get_current_shop)):
+    """S3.grant — search a known customer by name/phone and grant N points."""
     return templates.TemplateResponse(
         request=request,
-        name="shop/issue_search.html",
+        name="shop/issue_grant.html",
         context={"shop": shop},
     )
 
 
-@router.get("/issue/search/customers")
+@router.get("/issue/grant/customers")
 async def search_customers(
     q: str,
     shop: Shop = Depends(get_current_shop),
@@ -195,15 +195,15 @@ async def search_customers(
     return {"results": out}
 
 
-@router.post("/issue/search/grant")
-async def issue_search_grant(
+@router.post("/issue/grant")
+async def issue_grant_action(
     customer_id: UUID = Form(...),
     points: int = Form(1),
     shop: Shop = Depends(get_current_shop),
     staff: Optional[StaffMember] = Depends(get_current_staff),
     db: AsyncSession = Depends(get_session),
 ):
-    """Issues `points` stamps (capped 1–10) to the picked customer. Each stamp
+    """Issues `points` points (capped 1–10) to the picked customer. Each point
     fires the SSE feed-row + toast pipeline, just like a customer scan.
     Uses method='system' to bypass cooldown — manual grants are intentional.
     """
@@ -215,34 +215,34 @@ async def issue_search_grant(
     issued_ids = []
     for _ in range(points):
         try:
-            stamp = await issue_point(
+            point = await issue_point(
                 db, shop, customer,
                 method="system",
                 staff_id=staff.id if staff else None,
             )
         except IssuanceError as e:
             raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
-        issued_ids.append(str(stamp.id))
+        issued_ids.append(str(point.id))
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
+            feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
         )
 
     new_count = await active_point_count(db, shop.id, customer.id)
     publish(
         shop.id,
         "point-toast",
-        point_toast_html(stamp.id, new_count, shop.reward_threshold),
+        point_toast_html(point.id, new_count, shop.reward_threshold),
     )
-    return {"granted": points, "stamp_ids": issued_ids, "customer_id": str(customer.id)}
+    return {"granted": points, "point_ids": issued_ids, "customer_id": str(customer.id)}
 
 
 @router.post("/issue/methods")
 async def save_issuance_methods(
     shop_scan: str = Form("0"),
     phone_entry: str = Form("0"),
-    search: str = Form("0"),
+    grant: str = Form("0"),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
@@ -252,7 +252,7 @@ async def save_issuance_methods(
     """
     shop.issue_method_shop_scan = shop_scan == "1"
     shop.issue_method_phone_entry = phone_entry == "1"
-    shop.issue_method_search = search == "1"
+    shop.issue_method_grant = grant == "1"
     db.add(shop)
     await db.commit()
     return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
@@ -268,7 +268,7 @@ async def staff_issue_point(
     staff: Optional[StaffMember] = Depends(get_current_staff),
     db: AsyncSession = Depends(get_session),
 ):
-    """Issue a stamp via shop_scan (provide customer_id) or phone_entry (provide phone).
+    """Issue a point via shop_scan (provide customer_id) or phone_entry (provide phone).
 
     For phone_entry, a Customer is created if none exists for that phone (claimed account).
     """
@@ -294,7 +294,7 @@ async def staff_issue_point(
         )
 
     try:
-        stamp = await issue_point(
+        point = await issue_point(
             db, shop, customer,
             method=method,
             branch_id=branch_id,
@@ -306,27 +306,27 @@ async def staff_issue_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
+        feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
     )
     new_count = await active_point_count(db, shop.id, customer.id)
     publish(
         shop.id,
         "point-toast",
-        point_toast_html(stamp.id, new_count, shop.reward_threshold),
+        point_toast_html(point.id, new_count, shop.reward_threshold),
     )
-    return {"stamp_id": str(stamp.id), "customer_id": str(customer.id)}
+    return {"point_id": str(point.id), "customer_id": str(customer.id)}
 
 
 @router.post("/issue/manual")
-async def staff_issue_manual_stamp(
+async def staff_issue_manual_point(
     branch_id: Optional[UUID] = Form(None),
     shop: Shop = Depends(get_current_shop),
     staff: Optional[StaffMember] = Depends(get_current_staff),
     db: AsyncSession = Depends(get_session),
 ):
-    """One-tap stamp for walk-in customers (no phone, no QR, no card).
+    """One-tap point for walk-in customers (no phone, no QR, no card).
 
-    Creates a fresh anonymous Customer per call so each manual stamp counts as
+    Creates a fresh anonymous Customer per call so each manual point counts as
     a distinct walk-in in the dashboard's "ลูกค้ากลับมา" headline. The customer
     is throwaway — no contact path back — so this is best-effort attribution.
     Same SSE pipe as the other issuance methods, so the live toast still fires.
@@ -337,7 +337,7 @@ async def staff_issue_manual_stamp(
     await db.refresh(customer)
 
     try:
-        stamp = await issue_point(
+        point = await issue_point(
             db, shop, customer,
             method="shop_scan",
             branch_id=branch_id,
@@ -349,39 +349,39 @@ async def staff_issue_manual_stamp(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
+        feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
     )
     new_count = await active_point_count(db, shop.id, customer.id)
     publish(
         shop.id,
         "point-toast",
-        point_toast_html(stamp.id, new_count, shop.reward_threshold),
+        point_toast_html(point.id, new_count, shop.reward_threshold),
     )
-    return {"stamp_id": str(stamp.id), "customer_id": str(customer.id)}
+    return {"point_id": str(point.id), "customer_id": str(customer.id)}
 
 
-@router.post("/stamps/{stamp_id}/void")
+@router.post("/points/{point_id}/void")
 async def void_point_route(
-    stamp_id: UUID,
+    point_id: UUID,
     ctx: SessionContext = Depends(require_permission("can_void")),
     db: AsyncSession = Depends(get_session),
 ):
-    stamp = await db.get(Point, stamp_id)
-    if not stamp:
+    point = await db.get(Point, point_id)
+    if not point:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Point not found")
-    if stamp.shop_id != ctx.shop_id:
+    if point.shop_id != ctx.shop_id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Cross-shop access denied")
 
-    age_seconds = (utcnow() - stamp.created_at).total_seconds()
+    age_seconds = (utcnow() - point.created_at).total_seconds()
     if age_seconds > VOID_WINDOW_SECONDS:
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
             f"Void window expired ({VOID_WINDOW_SECONDS}s)",
         )
 
-    await void_point(db, stamp, by_staff_id=ctx.staff_id)
-    publish(ctx.shop_id, "void", f'<span data-row="row-{stamp.id}"></span>')
-    return {"voided": True, "stamp_id": str(stamp.id)}
+    await void_point(db, point, by_staff_id=ctx.staff_id)
+    publish(ctx.shop_id, "void", f'<span data-row="row-{point.id}"></span>')
+    return {"voided": True, "point_id": str(point.id)}
 
 
 @router.post("/redemptions/{redemption_id}/void")

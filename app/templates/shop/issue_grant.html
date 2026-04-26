@@ -25,7 +25,7 @@
            const q = this.q.trim();
            if (!q) { this.results = []; return; }
            this._t = setTimeout(async () => {
-             const r = await fetch('/shop/issue/search/customers?q=' + encodeURIComponent(q));
+             const r = await fetch('/shop/issue/grant/customers?q=' + encodeURIComponent(q));
              if (r.ok) { const j = await r.json(); this.results = j.results || []; }
            }, 200);
          },
@@ -35,7 +35,7 @@
            const fd = new FormData();
            fd.append('customer_id', this.selected.id);
            fd.append('points', this.points);
-           const r = await fetch('/shop/issue/search/grant', { method: 'POST', body: fd });
+           const r = await fetch('/shop/issue/grant', { method: 'POST', body: fd });
            if (r.ok) {
              window.location.href = '/shop/dashboard';
            } else {
@@ -73,7 +73,7 @@
             <div class="sr-meta">
               <span x-text="c.phone || ''"></span>
               <span x-show="c.phone"> · </span>
-              <span x-text="c.active_stamps + ' แต้ม'"></span>
+              <span x-text="c.active_points + ' แต้ม'"></span>
             </div>
           </div>
         </a>
@@ -94,7 +94,7 @@
             <div class="sr-meta">
               <span x-text="selected?.phone || ''"></span>
               <span x-show="selected?.phone"> · </span>
-              <span x-text="selected?.active_stamps + ' แต้ม'"></span>
+              <span x-text="selected?.active_points + ' แต้ม'"></span>
             </div>
           </div>
           <span class="sr-check">✓</span>

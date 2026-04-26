@@ -25,27 +25,27 @@ async def test_shop_scan_uses_existing_customer(auth_client, db, shop, customer)
     assert response.status_code == 200
 
     result = await db.exec(select(Point).where(Point.customer_id == customer.id))
-    stamps = list(result.all())
-    assert len(stamps) == 1
-    assert stamps[0].issuance_method == "shop_scan"
+    points = list(result.all())
+    assert len(points) == 1
+    assert points[0].issuance_method == "shop_scan"
 
 
-async def test_manual_issue_creates_anonymous_customer_and_stamp(auth_client, db, shop):
+async def test_manual_issue_creates_anonymous_customer_and_point(auth_client, db, shop):
     from uuid import UUID
 
     response = await auth_client.post("/shop/issue/manual")
     assert response.status_code == 200
     body = response.json()
-    assert "stamp_id" in body
+    assert "point_id" in body
     assert "customer_id" in body
 
     customer = await db.get(Customer, UUID(body["customer_id"]))
     assert customer.is_anonymous is True
     assert customer.phone is None
 
-    stamp = await db.get(Point, UUID(body["stamp_id"]))
-    assert stamp.shop_id == shop.id
-    assert stamp.customer_id == customer.id
+    point = await db.get(Point, UUID(body["point_id"]))
+    assert point.shop_id == shop.id
+    assert point.customer_id == customer.id
 
 
 async def test_manual_issue_makes_each_call_a_fresh_walk_in(auth_client, db, shop):
@@ -55,15 +55,15 @@ async def test_manual_issue_makes_each_call_a_fresh_walk_in(auth_client, db, sho
     b = (await auth_client.post("/shop/issue/manual")).json()
     assert a["customer_id"] != b["customer_id"]
 
-    stamps = list((await db.exec(select(Point).where(Point.shop_id == shop.id))).all())
-    assert len(stamps) == 2
+    points = list((await db.exec(select(Point).where(Point.shop_id == shop.id))).all())
+    assert len(points) == 2
 
 
 async def test_save_issuance_methods_persists_toggles(auth_client, db, shop):
     """S5 toggle picker — POST /shop/issue/methods saves the 3 booleans."""
     response = await auth_client.post(
         "/shop/issue/methods",
-        data={"shop_scan": "1", "phone_entry": "1", "search": "0"},
+        data={"shop_scan": "1", "phone_entry": "1", "grant": "0"},
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -72,26 +72,26 @@ async def test_save_issuance_methods_persists_toggles(auth_client, db, shop):
     await db.refresh(shop)
     assert shop.issue_method_shop_scan is True
     assert shop.issue_method_phone_entry is True
-    assert shop.issue_method_search is False
+    assert shop.issue_method_grant is False
 
 
 async def test_save_issuance_methods_clears_when_all_off(auth_client, db, shop):
     shop.issue_method_shop_scan = True
     shop.issue_method_phone_entry = True
-    shop.issue_method_search = True
+    shop.issue_method_grant = True
     db.add(shop)
     await db.commit()
 
     response = await auth_client.post(
         "/shop/issue/methods",
-        data={"shop_scan": "0", "phone_entry": "0", "search": "0"},
+        data={"shop_scan": "0", "phone_entry": "0", "grant": "0"},
         follow_redirects=False,
     )
     assert response.status_code == 303
     await db.refresh(shop)
     assert shop.issue_method_shop_scan is False
     assert shop.issue_method_phone_entry is False
-    assert shop.issue_method_search is False
+    assert shop.issue_method_grant is False
 
 
 async def test_search_customers_returns_match_by_name(auth_client, db, shop):
@@ -102,7 +102,7 @@ async def test_search_customers_returns_match_by_name(auth_client, db, shop):
     db.add_all([c1, c2, c3])
     await db.commit()
 
-    r = await auth_client.get("/shop/issue/search/customers?q=สมศรี")
+    r = await auth_client.get("/shop/issue/grant/customers?q=สมศรี")
     assert r.status_code == 200
     body = r.json()
     names = [r["display_name"] for r in body["results"]]
@@ -117,18 +117,18 @@ async def test_search_customers_returns_match_by_phone(auth_client, db, shop):
     db.add(Customer(is_anonymous=False, display_name="X", phone="0812345678"))
     await db.commit()
 
-    r = await auth_client.get("/shop/issue/search/customers?q=0812")
+    r = await auth_client.get("/shop/issue/grant/customers?q=0812")
     assert r.status_code == 200
     assert any("0812345678" == r["phone"] for r in r.json()["results"])
 
 
 async def test_search_customers_empty_q_returns_empty(auth_client):
-    r = await auth_client.get("/shop/issue/search/customers?q=")
+    r = await auth_client.get("/shop/issue/grant/customers?q=")
     assert r.status_code == 200
     assert r.json() == {"results": []}
 
 
-async def test_search_grant_issues_n_stamps_and_publishes_toast(auth_client, db, shop, monkeypatch):
+async def test_search_grant_issues_n_points_and_publishes_toast(auth_client, db, shop, monkeypatch):
     from app.models import Customer
     from app.routes import issuance as issuance_routes
     received = []
@@ -140,25 +140,25 @@ async def test_search_grant_issues_n_stamps_and_publishes_toast(auth_client, db,
     await db.refresh(c)
 
     response = await auth_client.post(
-        "/shop/issue/search/grant",
+        "/shop/issue/grant",
         data={"customer_id": str(c.id), "points": "3"},
     )
     assert response.status_code == 200
     body = response.json()
     assert body["granted"] == 3
-    assert len(body["stamp_ids"]) == 3
+    assert len(body["point_ids"]) == 3
 
-    stamps = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
-    assert len(list(stamps)) == 3
+    points = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
+    assert len(list(points)) == 3
 
-    # 3 feed-row events + 1 stamp-toast (toast only fires once after the batch)
+    # 3 feed-row events + 1 point-toast (toast only fires once after the batch)
     assert sum(1 for n, _ in received if n == "feed-row") == 3
     assert sum(1 for n, _ in received if n == "point-toast") == 1
 
 
 async def test_issue_scan_grant_decodes_customer_url_and_issues(auth_client, db, shop):
     """S3.scan camera POST accepts the customer's `/c/<uuid>` URL, extracts
-    the id, and issues a stamp via shop_scan."""
+    the id, and issues a point via shop_scan."""
     from app.models import Customer
     c = Customer(is_anonymous=False, display_name="ส้มศรี", phone="0812345678")
     db.add(c)
@@ -229,7 +229,7 @@ async def test_search_grant_caps_points_at_10(auth_client, db, shop):
     await db.refresh(c)
 
     response = await auth_client.post(
-        "/shop/issue/search/grant",
+        "/shop/issue/grant",
         data={"customer_id": str(c.id), "points": "999"},
     )
     assert response.status_code == 200
@@ -270,9 +270,9 @@ async def test_void_within_window(auth_client, db, shop, customer):
     issued = await auth_client.post(
         "/shop/issue", data={"method": "shop_scan", "customer_id": str(customer.id)}
     )
-    stamp_id = issued.json()["stamp_id"]
+    point_id = issued.json()["point_id"]
 
-    response = await auth_client.post(f"/shop/stamps/{stamp_id}/void")
+    response = await auth_client.post(f"/shop/points/{point_id}/void")
     assert response.status_code == 200
     assert response.json()["voided"] is True
 
@@ -288,5 +288,5 @@ async def test_void_after_window_400(auth_client, db, shop, customer):
     await db.commit()
     await db.refresh(old)
 
-    response = await auth_client.post(f"/shop/stamps/{old.id}/void")
+    response = await auth_client.post(f"/shop/points/{old.id}/void")
     assert response.status_code == 400

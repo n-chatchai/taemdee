@@ -33,7 +33,7 @@ class Shop(SQLModel, table=True):
     # disable individual methods at /shop/issue.
     issue_method_shop_scan: bool = Field(default=True)
     issue_method_phone_entry: bool = Field(default=True)
-    issue_method_search: bool = Field(default=True)
+    issue_method_grant: bool = Field(default=True)
 
     # Anti-rescan: minimum minutes between stamps from the same customer at this shop.
     # 0 = no cooldown (every scan succeeds). No UI yet — set via SQL/admin until S10

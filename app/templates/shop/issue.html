@@ -15,10 +15,10 @@
         x-data="{
           shopScan: {{ 'true' if shop.issue_method_shop_scan else 'false' }},
           phoneEntry: {{ 'true' if shop.issue_method_phone_entry else 'false' }},
-          search: {{ 'true' if shop.issue_method_search else 'false' }},
+          grant: {{ 'true' if shop.issue_method_grant else 'false' }},
           dirty: false,
         }"
-        x-init="$watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('search', () => dirty = true);">
+        x-init="$watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
@@ -93,7 +93,7 @@
       <input type="hidden" name="phone_entry" :value="phoneEntry ? '1' : '0'">
 
       {# Search existing customer + give points #}
-      <label class="s5-toggle-row" @click.prevent="search = !search">
+      <label class="s5-toggle-row" @click.prevent="grant = !grant">
         <div class="t-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <circle cx="11" cy="11" r="8"/>
@@ -106,11 +106,11 @@
           <div class="t-name-row"><span class="t-name">ให้แต้มลูกค้า</span></div>
           <div class="t-sub">ค้นจากชื่อ/เบอร์ แล้วเพิ่มแต้ม</div>
         </div>
-        <div class="s5-toggle" :class="{ on: search }">
+        <div class="s5-toggle" :class="{ on: grant }">
           <div class="dot"></div>
         </div>
       </label>
-      <input type="hidden" name="search" :value="search ? '1' : '0'">
+      <input type="hidden" name="grant" :value="grant ? '1' : '0'">
     </div>
 
     <div class="s5-tip">

@@ -47,7 +47,7 @@
             {% set extras = [] %}
             {% if shop.issue_method_shop_scan %}{% set _ = extras.append('ร้านสแกน') %}{% endif %}
             {% if shop.issue_method_phone_entry %}{% set _ = extras.append('กรอกเบอร์') %}{% endif %}
-            {% if shop.issue_method_search %}{% set _ = extras.append('ให้แต้ม') %}{% endif %}
+            {% if shop.issue_method_grant %}{% set _ = extras.append('ให้แต้ม') %}{% endif %}
             ลูกค้าสแกน{% if extras %} · {{ extras|join(' · ') }}{% else %} · ค่ามาตรฐาน{% endif %}
           </div>
         </div>
