@@ -30,6 +30,7 @@ class Shop(SQLModel, table=True):
 
     theme_name: str = Field(default="taemdee")
     logo_url: Optional[str] = Field(default=None)
+    location: Optional[str] = Field(default=None)  # e.g., "เชียงใหม่"
 
     created_at: datetime = Field(default_factory=utcnow)
 

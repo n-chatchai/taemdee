@@ -92,7 +92,7 @@
           <div class="name">{{ branch.name }}</div>
           <div class="addr">{{ branch.address or '—' }}</div>
         </div>
-        <a href="/shop/qr" class="qr-link">ดู QR ↗</a>
+        <a href="/shop/branches/{{ branch.id }}/qr" class="qr-link">ดู QR ↗</a>
       </div>
     {% endfor %}
     {% endif %}

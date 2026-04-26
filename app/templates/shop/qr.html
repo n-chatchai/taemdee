@@ -13,8 +13,8 @@
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
-      <a href="/shop/dashboard" class="x">←</a>
-      <div class="title-mid">QR ของร้าน</div>
+      <a href="{% if branch %}/shop/branches{% else %}/shop/dashboard{% endif %}" class="x">←</a>
+      <div class="title-mid">{% if branch %}QR · {{ branch.name }}{% else %}QR ของร้าน{% endif %}</div>
       <div class="placeholder"></div>
     </div>
 

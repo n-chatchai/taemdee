@@ -42,6 +42,7 @@ body {
   color: var(--ink);
   background: var(--bg);
   min-height: 100vh;
+  min-height: 100dvh;        /* dvh respects iOS Safari toolbar */
   width: 100%;
   position: relative;
   overflow-x: hidden;
@@ -1114,11 +1115,14 @@ body {
 .stamps {
   display: grid;
   grid-template-columns: repeat(10, 1fr);
-  gap: 4px;
+  gap: 6px;
+  justify-items: center;
 }
 .stamp {
-  height: 22px;
-  border-radius: 7px;
+  width: 100%;
+  max-width: 36px;
+  aspect-ratio: 1 / 1;
+  border-radius: 50%;
   background: var(--line);
 }
 .stamp.on {
@@ -1138,10 +1142,10 @@ body {
 .stamp.on.butter { background: var(--butter); }
 .stamp.on.butter::after { background: rgba(17, 17, 17, 0.5); }
 
-/* If the reward goal isn't 10, switch to a flexible wrap so the grid still looks balanced. */
+/* Different goal counts keep the same circle shape; only the column count and max size shift. */
 .stamps[data-goal="8"]  { grid-template-columns: repeat(8, 1fr); }
 .stamps[data-goal="15"] { grid-template-columns: repeat(15, 1fr); gap: 3px; }
-.stamps[data-goal="15"] .stamp { height: 18px; border-radius: 6px; }
+.stamps[data-goal="15"] .stamp { max-width: 22px; }
 
 .encourage {
   text-align: center;
@@ -1215,7 +1219,8 @@ body {
 }
 
 .footer-mark {
-  padding: 12px 16px 12px;
+  padding: 12px 16px;
+  padding-bottom: max(12px, env(safe-area-inset-bottom));
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1223,7 +1228,7 @@ body {
   margin-top: auto;
   position: sticky;
   bottom: 0;
-  background: var(--bg);
+  background: rgba(246, 241, 229, 0.85);
   border-top: 1px solid rgba(17, 17, 17, 0.12);
   z-index: 5;
   backdrop-filter: blur(8px);

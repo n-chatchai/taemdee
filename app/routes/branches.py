@@ -3,6 +3,7 @@
 from typing import Optional
 from uuid import UUID
 
+import segno
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
@@ -45,6 +46,29 @@ async def create(
     except ValueError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
     return RedirectResponse(url="/shop/branches", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.get("/{branch_id}/qr", response_class=HTMLResponse)
+async def branch_qr(
+    request: Request,
+    branch_id: UUID,
+    shop: Shop = Depends(get_current_shop),
+    _: SessionContext = Depends(require_owner),
+    db: AsyncSession = Depends(get_session),
+):
+    """Per-branch printable QR. Encodes branch_id so scans tag the stamp to the branch."""
+    branch = await db.get(Branch, branch_id)
+    if not branch or branch.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Branch not found")
+    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}?branch={branch.id}"
+    qr_svg = segno.make(scan_url, error="m").svg_inline(
+        scale=8, dark="#111111", light="#ffffff", border=1, omitsize=True
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/qr.html",
+        context={"shop": shop, "branch": branch, "scan_url": scan_url, "qr_svg": qr_svg},
+    )
 
 
 @router.post("/{branch_id}/edit")
