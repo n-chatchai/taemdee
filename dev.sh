@@ -13,6 +13,7 @@ if [ ! -f "ssl/$CERT" ] || [ ! -f "ssl/$KEY" ]; then
     exit 1
 fi
 
+LOGIN_OTP_SIMULATE=True \
 uv run uvicorn app.main:app \
     --host 0.0.0.0 \
     --port 443 \

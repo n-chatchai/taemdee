@@ -175,7 +175,7 @@ img { max-width: 100%; }
   -webkit-backdrop-filter: blur(6px);
   z-index: 1000;
   display: none;
-  align-items: flex-end;
+  align-items: center;
   justify-content: center;
   padding: 16px;
   opacity: 0;
@@ -190,9 +190,6 @@ img { max-width: 100%; }
   inset: 0;
   display: block;
   cursor: default;
-}
-@media (min-width: 720px) {
-  .login-modal { align-items: center; }
 }
 .login-modal-card {
   background: var(--bg);
@@ -2765,6 +2762,10 @@ img { max-width: 100%; }
   padding: 16px 6px;
   position: relative;
   box-shadow: none;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
 }
 .how-c-step .step-num {
   display: inline-flex;
@@ -2795,6 +2796,10 @@ img { max-width: 100%; }
   font-size: 11.5px;
   color: var(--ink-soft);
   line-height: 1.45;
+  flex: 1;
+}
+.how-c-step .how-mini {
+  margin-top: auto;
 }
 @media (min-width: 768px) {
   .how-c-step {
@@ -2843,8 +2848,8 @@ img { max-width: 100%; }
   width: 100%;
   height: 100%;
   background: var(--bg);
-  border-radius: 13px;
-  padding: 14px 10px;
+  border-radius: 9px;
+  padding: 8px 6px;
   display: flex;
   flex-direction: column;
   align-items: center;
@@ -2853,46 +2858,66 @@ img { max-width: 100%; }
   position: relative;
   overflow: hidden;
 }
+@media (min-width: 768px) {
+  .how-mini-screen {
+    border-radius: 13px;
+    padding: 14px 10px;
+  }
+}
 
 /* Step 1 — QR */
 .how-mini-qr .qr-frame {
-  width: 78px;
-  height: 78px;
+  width: 50px;
+  height: 50px;
   background: #FDFAF2;
-  border: 1.5px solid #111;
-  border-radius: 6px;
-  padding: 4px;
-  margin-bottom: 8px;
+  border: 1px solid #111;
+  border-radius: 4px;
+  padding: 3px;
+  margin-bottom: 5px;
 }
 .how-mini-qr .qr-frame svg { display: block; width: 100%; height: 100%; }
 .how-mini-qr .how-mini-cap {
   font-family: 'Prompt', sans-serif;
-  font-size: 9px;
+  font-size: 7px;
   color: var(--ink-soft);
+  line-height: 1.2;
+}
+@media (min-width: 768px) {
+  .how-mini-qr .qr-frame {
+    width: 78px; height: 78px;
+    border-width: 1.5px;
+    border-radius: 6px;
+    padding: 4px;
+    margin-bottom: 8px;
+  }
+  .how-mini-qr .how-mini-cap { font-size: 9px; }
 }
 
 /* Step 2 — stamp card */
 .how-mini-stamp {
   background: var(--bg);
+  padding: 8px 6px;
+  gap: 4px;
+  justify-content: center;
 }
 .how-mini-stamp .hms-num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 32px;
+  font-size: 22px;
   letter-spacing: -0.04em;
   line-height: 1;
   color: var(--ink);
-  margin-bottom: 8px;
+  margin-bottom: 4px;
 }
 .how-mini-stamp .hms-sub {
-  font-size: 14px;
+  font-size: 10px;
   color: var(--ink-softer);
   margin-left: 1px;
 }
 .hms-stamps {
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 3px;
+  gap: 2px;
   width: 100%;
 }
 .hms-s {
@@ -2917,62 +2942,82 @@ img { max-width: 100%; }
 }
 .hms-toast {
   position: absolute;
-  bottom: 10px;
+  bottom: 6px;
   background: var(--accent);
   color: #FFF;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 10px;
-  padding: 4px 10px;
+  font-size: 7px;
+  padding: 2px 6px;
   border-radius: 999px;
-  border: 1.5px solid #111;
+  border: 1px solid #111;
   box-shadow: 1px 1px 0 #111;
+}
+@media (min-width: 768px) {
+  .how-mini-stamp { padding: 14px 10px; gap: 0; }
+  .how-mini-stamp .hms-num { font-size: 32px; margin-bottom: 8px; }
+  .how-mini-stamp .hms-sub { font-size: 14px; }
+  .hms-stamps { gap: 3px; }
+  .hms-toast { bottom: 10px; font-size: 10px; padding: 4px 10px; border-width: 1.5px; }
 }
 
 /* Step 3 — reward */
 .how-mini-reward {
   background: var(--butter);
+  padding: 10px 6px;
+  gap: 4px;
+  justify-content: center;
 }
 .how-mini-reward .hmr-badge {
-  width: 28px;
-  height: 28px;
+  width: 20px;
+  height: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
   color: var(--accent);
-  margin-bottom: 4px;
+  margin-bottom: 0;
 }
 .how-mini-reward .hmr-badge svg { width: 100%; height: 100%; }
 .how-mini-reward .hmr-num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 30px;
+  font-size: 22px;
   letter-spacing: -0.04em;
   line-height: 1;
   color: var(--ink);
 }
 .how-mini-reward .hms-sub {
-  font-size: 13px;
+  font-size: 10px;
   color: var(--ink);
   opacity: 0.55;
 }
 .how-mini-reward .hmr-msg {
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
-  font-size: 10.5px;
-  margin-top: 6px;
-  margin-bottom: 8px;
+  font-size: 8px;
+  margin-top: 0;
+  margin-bottom: 4px;
   color: var(--ink);
+  line-height: 1.2;
 }
 .how-mini-reward .hmr-btn {
   background: var(--ink);
   color: var(--butter);
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 10px;
-  padding: 7px 14px;
+  font-size: 8px;
+  padding: 4px 9px;
   border-radius: 999px;
-  border: 1.5px solid var(--ink);
+  border: 1px solid var(--ink);
+  white-space: nowrap;
+}
+@media (min-width: 768px) {
+  .how-mini-reward { padding: 14px 10px; gap: 6px; }
+  .how-mini-reward .hmr-badge { width: 26px; height: 26px; }
+  .how-mini-reward .hmr-num { font-size: 28px; }
+  .how-mini-reward .hms-sub { font-size: 12px; }
+  .how-mini-reward .hmr-msg { font-size: 10px; margin-bottom: 6px; }
+  .how-mini-reward .hmr-btn { font-size: 10px; padding: 6px 14px; border-width: 1.5px; }
 }
 
 .how-c-arrow {

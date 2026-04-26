@@ -336,8 +336,14 @@
   /* SHARED COMPONENTS                                           */
   /* ========================================================== */
   .app-bar {
-    padding: 48px 20px 0;
+    padding: 48px 20px 12px;
     display: flex; justify-content: space-between; align-items: center;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 5;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   .app-bar .x {
     width: 34px; height: 34px;
@@ -1439,6 +1445,7 @@
   .c6-profile-card {
     margin: 22px 20px 0;
     padding: 14px 16px;
+    min-height: 100px;
     background: var(--surface);
     border: 1.5px solid var(--ink);
     border-radius: 18px;
@@ -1555,8 +1562,14 @@
   /* C7 — My Cards                                               */
   /* ========================================================== */
   .c7-greet {
-    padding: 48px 20px 0;
+    padding: 48px 20px 12px;
     display: flex; justify-content: space-between; align-items: center;
+    position: sticky;
+    top: 0;
+    background: var(--bg);
+    z-index: 5;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
   }
   .c7-greet .hi {
     font-family: 'Prompt', sans-serif;
@@ -1587,6 +1600,7 @@
   .c7-stats {
     margin: 22px 20px 0;
     padding: 18px 18px;
+    min-height: 140px;
     background: var(--ink); color: var(--bg);
     border-radius: 22px;
     border: 1.5px solid var(--ink);
@@ -4602,12 +4616,7 @@
                 <div class="name">คุณแต้ม</div>
                 <div class="meta">
                   <span>+66 89 ••• 4523</span>
-                  <span class="dotsep"></span>
-                  <span class="verified">ยืนยันแล้ว</span>
                 </div>
-              </div>
-              <div class="edit">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
               </div>
             </div>
 

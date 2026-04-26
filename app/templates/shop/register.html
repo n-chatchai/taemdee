@@ -10,7 +10,7 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td" x-data="{ step: 'choose', phone: '', code: '', error: '{{ error|default('') }}', ref: '{{ ref_code|default('') }}' }">
+  <div class="td" x-data="{ step: 'choose', phone: '', code: '', error: '{{ error|default('') }}', ref: '{{ ref_code|default('') }}', simulatedCode: '' }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="s1-hero" style="padding: 56px 30px 16px;">
@@ -52,7 +52,11 @@
             const fd = new FormData();
             fd.append('phone', phone);
             const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
-            if (r.ok) { step = 'otp'; error = ''; }
+            const data = await r.json();
+            if (r.ok) { 
+              step = 'otp'; error = ''; 
+              if (data.code) { simulatedCode = data.code; }
+            }
             else { error = 'เบอร์โทรไม่ถูกต้อง ลองอีกครั้ง'; }
           ">
       <label for="phone-input">เบอร์โทรของคุณ</label>
@@ -77,6 +81,9 @@
             else { error = 'OTP ไม่ถูกต้องหรือหมดอายุ'; }
           ">
       <label>กรอก OTP ที่ส่งไปยัง <strong x-text="phone"></strong></label>
+      <div x-show="simulatedCode" class="err" style="background:#F6F1E5; color:#111; margin-bottom:12px; border:1px dashed var(--ink);">
+        OTP ทดสอบ: <strong x-text="simulatedCode"></strong>
+      </div>
       <input x-model="code" type="text" inputmode="numeric" maxlength="4"
              placeholder="1234" required>
       <button type="submit" class="s1-btn s1-btn-phone">ยืนยัน &amp; เข้าสู่ระบบ</button>

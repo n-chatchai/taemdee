@@ -1958,35 +1958,12 @@
     padding: 56px 30px 28px;
     position: relative;
   }
-  .s1-hero::before {
-    content: '';
-    position: absolute;
-    top: 60px; left: 50%;
-    transform: translateX(-50%);
-    width: 220px; height: 220px;
-    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
-    opacity: 0.55; border-radius: 50%; z-index: 0;
-  }
-  .s1-hero > * { position: relative; z-index: 1; }
   .s1-logo-mark {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 70px; height: 70px;
-    background: var(--ink); color: var(--accent);
-    border-radius: 22px;
-    border: 1.5px solid var(--ink);
-    box-shadow: 4px 4px 0 var(--ink);
     margin-bottom: 22px;
-    transform: rotate(-4deg);
     position: relative;
   }
-  .s1-logo-mark .smile-big { width: 30px; height: 18px; }
-  .s1-logo-mark .star-corner {
-    position: absolute;
-    top: -10px; right: -10px;
-    width: 18px; height: 18px;
-    color: var(--butter); stroke: var(--ink); stroke-width: 2;
-    transform: rotate(15deg);
-  }
+  .s1-logo-mark .smile-stamp { width: 72px; height: 72px; }
   .s1-name {
     font-family: 'Prompt', sans-serif;
     font-weight: 800;
@@ -4593,31 +4570,28 @@
         <div class="phone-screen">
           <div class="td">
 
-            <div class="s1-hero" style="padding: 56px 30px 16px;">
-              <div class="s1-logo-mark" style="margin-bottom:14px;">
-                <svg class="smile-big" viewBox="0 0 20 12" fill="none">
-                  <circle cx="5" cy="3" r="1.7" fill="#FF5E3A"/>
-                  <circle cx="15" cy="3" r="1.7" fill="#FF5E3A"/>
-                  <path d="M4 7 Q10 11 16 7" stroke="#FFD952" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+            <div class="s1-hero">
+              <div class="s1-logo-mark">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="72" height="72">
+                  <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+                  <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+                  <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+                  <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
                 </svg>
               </div>
-              <div class="s1-name" style="font-size:32px;">แต้มดี<span class="dot">.</span></div>
-              <div class="s1-tag" style="font-size:12px;">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรีไม่มีค่ารายเดือน</div>
+              <div class="s1-name">แต้มดี<span class="dot">.</span></div>
+              <div class="s1-tag">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรี · ไม่มีค่ารายเดือน</div>
             </div>
 
             <div class="s1-buttons">
               <button class="s1-btn s1-btn-line">
-                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#fff"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
                 เข้าสู่ระบบด้วย LINE
               </button>
               <button class="s1-btn s1-btn-phone">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
                 ใช้เบอร์โทร · รับ OTP
               </button>
-            </div>
-
-            <div class="s1-no-pwd">
-              <span class="icon">●</span> ไม่ต้องจำรหัสผ่าน — ใช้ OTP หรือ LINE เท่านั้น
             </div>
 
             <div class="s1-foot">

@@ -19,7 +19,7 @@ log = logging.getLogger(__name__)
 OTP_EXPIRY_MINUTES = 5
 
 
-async def generate_and_send_otp(db: AsyncSession, phone: str) -> None:
+async def generate_and_send_otp(db: AsyncSession, phone: str) -> str:
     """Generate a 4-digit OTP, store it, and 'send' it.
 
     In development the code is printed to stdout. In production this is where a real SMS
@@ -41,6 +41,7 @@ async def generate_and_send_otp(db: AsyncSession, phone: str) -> None:
         # development / test / staging — log to stdout
         print(f"\n>>> [OTP {settings.environment}] {phone} → {code}  (expires in {OTP_EXPIRY_MINUTES} min)\n", flush=True)
         log.info("otp issued env=%s phone=%s code=%s", settings.environment, phone, code)
+    return code
 
 
 async def verify_otp(db: AsyncSession, phone: str, code: str) -> bool:

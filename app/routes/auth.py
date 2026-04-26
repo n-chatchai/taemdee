@@ -31,8 +31,11 @@ async def request_otp(
     phone: str = Form(...),
     db: AsyncSession = Depends(get_session),
 ):
-    await generate_and_send_otp(db, phone)
-    return {"ok": True}
+    code = await generate_and_send_otp(db, phone)
+    res = {"ok": True}
+    if settings.login_otp_simulate:
+        res["code"] = code
+    return res
 
 
 @router.post("/otp/verify")

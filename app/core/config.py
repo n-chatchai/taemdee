@@ -24,6 +24,7 @@ class Settings(BaseSettings):
     line_channel_id: Optional[str] = None
     line_channel_secret: Optional[str] = None
     line_redirect_uri: str = "https://taemdee.com/auth/line/callback"
+    login_otp_simulate: bool = False
 
 
 settings = Settings()

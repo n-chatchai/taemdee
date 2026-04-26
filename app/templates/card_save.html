@@ -10,7 +10,7 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td c3" x-data="{ step: 'phone', phone: '', code: '', error: '' }">
+  <div class="td c3" x-data="{ step: 'phone', phone: '', code: '', error: '', simulatedCode: '' }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="c3-bar">
@@ -29,7 +29,11 @@
         <form @submit.prevent="
                 const fd = new FormData(); fd.append('phone', phone);
                 const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
-                if (r.ok) { step = 'otp'; error = ''; }
+                const data = await r.json();
+                if (r.ok) { 
+                  step = 'otp'; error = ''; 
+                  if (data.code) { simulatedCode = data.code; }
+                }
                 else { error = 'ส่งรหัสไม่สำเร็จ'; }
               ">
           <div class="phone-input">
@@ -66,6 +70,10 @@
             ">
         <div class="headline">ใส่<em>รหัสจาก SMS</em></div>
         <div class="body-copy">รหัสส่งไปที่ <strong x-text="phone"></strong></div>
+
+        <div x-show="simulatedCode" class="trust" style="background:#F6F1E5; color:#111; margin-bottom:12px; border:1px dashed var(--ink);">
+          OTP ทดสอบ: <strong x-text="simulatedCode"></strong>
+        </div>
 
         <input class="otp-input" type="text" inputmode="numeric" maxlength="4"
                x-model="code" placeholder="1234" required />
