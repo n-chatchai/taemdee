@@ -3,7 +3,7 @@
 Flow:
   1. Owner taps "Refer a shop" in S10 Settings → `create_referral_code` →
      a Referral row with referee_shop_id=NULL and a unique short code.
-  2. Owner shares the link `/shop/register?ref=<code>`.
+  2. Owner shares the link `/shop/login?ref=<code>`.
   3. New shop signs up → `consume_referral_on_signup` records the link.
   4. New shop completes onboarding → `complete_referral` issues credit_grant
      Offers to BOTH parties (via services.offers).

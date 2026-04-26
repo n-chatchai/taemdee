@@ -27,13 +27,19 @@ TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
 
 
 @pytest.fixture(autouse=True)
-def _clear_line_creds(monkeypatch):
-    """Tests should not depend on LINE creds in the developer's .env.
+def _isolate_dev_settings(monkeypatch):
+    """Strip dev-only env values from the developer's .env so tests are deterministic.
 
-    Tests that need LINE configured can re-set via their own monkeypatch.
+    LINE creds: tests assert "LINE not configured" by default; tests that
+    need it set should re-monkeypatch.
+
+    login_otp_simulate: when true the /auth/otp/request response carries the
+    code in JSON for the C3 page autofill. Tests assert the production-shape
+    `{"ok": true}` body.
     """
     monkeypatch.setattr(settings, "line_channel_id", None)
     monkeypatch.setattr(settings, "line_channel_secret", None)
+    monkeypatch.setattr(settings, "login_otp_simulate", False)
 
 
 @pytest.fixture
@@ -95,7 +101,9 @@ async def app_for_test(engine):
 @pytest.fixture
 async def client(app_for_test):
     transport = ASGITransport(app=app_for_test)
-    async with AsyncClient(transport=transport, base_url="http://test") as c:
+    # https:// base — Secure cookies (auth session, customer cookie) are only
+    # sent back on https URLs, and the production code now sets them Secure.
+    async with AsyncClient(transport=transport, base_url="https://test") as c:
         yield c
 
 

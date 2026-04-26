@@ -27,12 +27,16 @@ from app.services.referrals import (
 router = APIRouter()
 
 
-@router.get("/register", response_class=HTMLResponse)
-async def register_page(
+@router.get("/login", response_class=HTMLResponse)
+async def login_page(
     request: Request,
     ref: Optional[str] = None,
     db: AsyncSession = Depends(get_session),
 ):
+    """Shop login + first-time signup (same OTP/LINE form).
+
+    `?ref=<code>` carries through the Shop→Shop referral grant.
+    """
     referrer = None
     if ref:
         referral = await find_referral_by_code(db, ref)
@@ -45,7 +49,7 @@ async def register_page(
     )
 
 
-@router.post("/register")
+@router.post("/login")
 async def dev_login_or_register(
     request: Request,
     response: Response,
@@ -71,6 +75,14 @@ async def dev_login_or_register(
     redirect = RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
     _set_session_cookie(redirect, issue_session_token(shop.id))
     return redirect
+
+
+# Back-compat: /shop/register still works (referral links printed before the rename
+# point here). Preserves any ?ref= query string when forwarding.
+@router.get("/register")
+async def register_legacy_redirect(ref: Optional[str] = None):
+    target = "/shop/login" + (f"?ref={ref}" if ref else "")
+    return RedirectResponse(url=target, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/dashboard", response_class=HTMLResponse)
@@ -423,7 +435,7 @@ async def refer_page(
 ):
     referral = await create_referral_code(db, shop)
     base_url = str(request.base_url).rstrip("/")
-    share_url = f"{base_url}/shop/register?ref={referral.code}"
+    share_url = f"{base_url}/shop/login?ref={referral.code}"
     return templates.TemplateResponse(
         request=request,
         name="shop/refer.html",

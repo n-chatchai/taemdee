@@ -46,7 +46,7 @@ class Offer(SQLModel, table=True):
 class Referral(SQLModel, table=True):
     """Shop → Shop referral (PRD §14, v1 only direction).
 
-    Referrer generates a code; referee signs up via /shop/register?ref=<code>.
+    Referrer generates a code; referee signs up via /shop/login?ref=<code>.
     On referee onboarding completion, both parties receive a credit_grant Offer.
     """
 
