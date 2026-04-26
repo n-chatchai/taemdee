@@ -4597,17 +4597,15 @@ body {
    ========================================================== */
 
 .s3-issue-fab {
-  position: sticky;
-  /* Floats above the .footer-mark (which is sticky bottom: 0, ~46-58px tall
-     incl. safe-area). Without this offset the FAB would land directly on top
-     of the footer; the user wants the brand + "เพิ่มลงหน้าจอ" link visible
-     below the FAB. */
+  /* Truly floating — pinned to the same spot whether the dashboard has
+     content to scroll or not. Sits above the sticky .footer-mark
+     (~46-58px tall incl. safe-area) so the brand + "เพิ่มลงหน้าจอ" stay
+     visible below it. */
+  position: fixed;
+  left: 16px;
+  right: 16px;
   bottom: calc(56px + env(safe-area-inset-bottom));
-  /* margin-top: auto pushes the FAB to the bottom of .td (flex column) when
-     content is short — without it, sticky has nothing to anchor against on
-     a freshly-onboarded dashboard with no feed yet, so the FAB floats mid-
-     page. With long feeds, sticky still pins it as the user scrolls. */
-  margin: auto 16px 0;
+  z-index: 5;
   background: var(--ink);
   color: #fff;
   border: 1.5px solid var(--ink);
@@ -4618,7 +4616,6 @@ body {
   gap: 10px;
   box-shadow: 4px 4px 0 var(--accent);
   cursor: pointer;
-  z-index: 5;
   text-decoration: none;
 }
 .s3-issue-fab .fab-icon {
@@ -4651,6 +4648,10 @@ body {
   font-size: 16px;
   font-weight: 700;
 }
+/* Reserve scroll space so the bottom feed rows don't end up hidden behind
+   the position:fixed FAB. Roughly FAB-height (~58) + FAB bottom offset
+   (~56) + safe-area. */
+#feed-rows { padding-bottom: calc(120px + env(safe-area-inset-bottom)); }
 
 .issue-modal-overlay {
   position: fixed;
