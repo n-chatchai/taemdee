@@ -3380,6 +3380,164 @@ body {
 }
 
 /* ==========================================================
+   S2.1 — Branch toggle (single-branch hint, design 2026-04-26)
+   ========================================================== */
+
+.s2-branch-row {
+  margin: 16px 20px 0;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 2px 2px 0 var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.s2-branch-row .label-block { flex: 1; line-height: 1.3; }
+.s2-branch-row .label-block .h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+.s2-branch-row .label-block .s {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.s2-branch-toggle {
+  width: 38px; height: 22px;
+  background: var(--ink-softer);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  position: relative;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: background 0.2s;
+}
+.s2-branch-toggle .dot {
+  position: absolute;
+  top: 50%; transform: translateY(-50%);
+  left: 2px;
+  width: 14px; height: 14px;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  transition: left 0.2s;
+}
+.s2-branch-toggle.on { background: var(--accent); }
+.s2-branch-toggle.on .dot { left: 19px; background: var(--butter); }
+
+/* ==========================================================
+   S2.2 — Reward image picker (CSS-drawn AI mockups)
+   ========================================================== */
+
+.s2-rewards {
+  padding: 4px 20px 0;
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 10px;
+}
+.s2-reward {
+  aspect-ratio: 1;
+  border-radius: 16px;
+  border: 1.5px solid var(--ink);
+  background: var(--surface);
+  box-shadow: 2px 2px 0 var(--ink);
+  cursor: pointer;
+  position: relative;
+  overflow: hidden;
+}
+.s2-reward.selected { transform: translateY(-2px); }
+.s2-reward.selected::after {
+  content: '✓';
+  position: absolute;
+  top: 6px; right: 6px;
+  width: 20px; height: 20px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-size: 11px; font-weight: 700;
+  border: 1.5px solid var(--ink);
+  z-index: 2;
+}
+.s2-reward .reward-img {
+  width: 100%; height: 100%;
+  position: relative;
+}
+.s2-reward .r-coffee-cup {
+  background:
+    radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.4) 0%, transparent 40%),
+    radial-gradient(circle at 50% 50%, #6B3F1F 0%, #3D2510 70%);
+}
+.s2-reward .r-coffee-cup::before {
+  content: '';
+  position: absolute;
+  top: 28%; left: 50%; transform: translateX(-50%);
+  width: 60%; height: 8%;
+  background: radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, transparent 70%);
+  border-radius: 50%;
+  filter: blur(2px);
+}
+.s2-reward .r-coffee-cup::after {
+  content: '';
+  position: absolute;
+  inset: 30% 22% 18%;
+  background: linear-gradient(180deg, #C8A47A 0%, #8B5A2B 60%, #5C3A1A 100%);
+  border-radius: 50% 50% 8px 8px;
+  box-shadow: inset 0 4px 8px rgba(0,0,0,0.4);
+}
+.s2-reward .r-latte-art {
+  background: linear-gradient(135deg, #D9B591 0%, #B58450 50%, #8B5A2B 100%);
+}
+.s2-reward .r-latte-art::before {
+  content: '';
+  position: absolute;
+  top: 32%; left: 50%; transform: translateX(-50%);
+  width: 60%; aspect-ratio: 1;
+  background: radial-gradient(circle at 40% 40%, #FFF8E8 0%, #E8D8B5 35%, transparent 65%);
+  border-radius: 50%;
+}
+.s2-reward .r-latte-art::after {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%; transform: translate(-50%, -50%);
+  width: 18%; height: 14%;
+  background: #5C3A1A;
+  border-radius: 50% 50% 30% 30%;
+  box-shadow:
+    -10px -2px 0 -3px #5C3A1A,
+    10px -2px 0 -3px #5C3A1A;
+}
+.s2-reward .r-iced {
+  background: linear-gradient(180deg, #E8D8B5 0%, #C8A47A 40%, #8B5A2B 100%);
+}
+.s2-reward .r-iced::before {
+  content: '';
+  position: absolute;
+  top: 25%; left: 30%;
+  width: 18%; aspect-ratio: 1;
+  background: rgba(255,255,255,0.55);
+  border-radius: 4px;
+  transform: rotate(15deg);
+  box-shadow:
+    14px 8px 0 -2px rgba(255,255,255,0.45),
+    -2px 18px 0 -3px rgba(255,255,255,0.4);
+}
+.s2-reward .r-iced::after {
+  content: '';
+  position: absolute;
+  bottom: 12%; left: 50%; transform: translateX(-50%);
+  width: 70%; height: 6px;
+  background: #5C3A1A;
+  border-radius: 4px;
+  opacity: 0.4;
+}
+
+/* ==========================================================
    S2.2 — Logo picker (typography options + upload escape hatch)
    ========================================================== */
 

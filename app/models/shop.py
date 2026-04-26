@@ -19,6 +19,9 @@ class Shop(SQLModel, table=True):
     credit_balance: int = Field(default=0)
     reward_threshold: int = Field(default=10)
     reward_description: str = Field(default="Free Coffee")
+    # One of: "coffee_cup", "latte_art", "iced", or None (custom upload, future). The
+    # picker on S2.2 maps to a CSS-drawn icon shown in the customer DeeCard reward pill.
+    reward_image: Optional[str] = Field(default="coffee_cup")
     issuance_method: str = Field(default="all")  # customer_scan, shop_scan, phone_entry, or "all"
 
     # Multi-branch: "shared" = one reward across all branches; "separate" = one reward per branch.

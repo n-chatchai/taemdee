@@ -1,0 +1,98 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ตั้งค่าร้าน · 1/4</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  {% set picked = shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith('text:') else options[0].id %}
+  <form method="POST" action="/shop/onboard/identity" class="td"
+        x-data="{ choice: '{{ picked }}', singleBranch: true }">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s2-steps" style="margin-top:18px;">
+      <div class="step active"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+      <div class="step"></div>
+    </div>
+
+    <div class="s2-counter">
+      <span class="step-num"><strong>01</strong> / 04 · ตัวร้าน</span>
+      <a href="/shop/onboard/reward" class="skip">ข้าม</a>
+    </div>
+
+    <div class="s2-q">
+      <div class="ask">ตั้งค่า<em>ร้านของคุณ.</em></div>
+      <div class="sub">ใช้เวลาประมาณ 1 นาที</div>
+    </div>
+
+    <div class="s2-field">
+      <label class="label" for="onboard-name">ชื่อร้าน</label>
+      <input id="onboard-name" name="name" type="text" required
+             value="{% if shop.name not in ('ร้านใหม่', 'New Shop') %}{{ shop.name }}{% endif %}"
+             placeholder="เช่น ร้านกาแฟลุงหมี"
+             style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--ink);background:var(--surface);box-shadow:2px 2px 0 var(--ink);font:inherit;font-weight:600;font-size:16px;letter-spacing:-0.01em;color:var(--ink);">
+      <div class="s2-hint">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
+    </div>
+
+    <div class="s2-branch-row" @click="singleBranch = !singleBranch">
+      <div class="label-block">
+        <div class="h" x-text="singleBranch ? 'มีสาขาเดียว' : 'หลายสาขา'"></div>
+        <div class="s">เพิ่มสาขาภายหลังได้ในตั้งค่า</div>
+      </div>
+      <div class="s2-branch-toggle" :class="{ on: singleBranch }">
+        <div class="dot"></div>
+      </div>
+    </div>
+
+    <div class="s2-field" style="margin-top:18px;">
+      <div class="label">เลือกโลโก้</div>
+    </div>
+
+    <div class="s2-logos">
+      {% for opt in options %}
+      <button type="button" class="s2-logo" :class="{ selected: choice === '{{ opt.id }}' }" @click="choice = '{{ opt.id }}'">
+        <span class="{{ opt.css_class }}">{{ opt.text }}{% if opt.show_dot %}<span class="dot">.</span>{% endif %}</span>
+      </button>
+      {% endfor %}
+    </div>
+
+    {% if saved_pick %}
+    <div class="s2-logos" style="margin-top:8px;">
+      <button type="button" class="s2-logo" :class="{ selected: choice === '{{ saved_pick.id }}' }" @click="choice = '{{ saved_pick.id }}'" title="ที่คุณเลือกไว้">
+        <span class="{{ saved_pick.css_class }}">{{ saved_pick.text }}{% if saved_pick.show_dot %}<span class="dot">.</span>{% endif %}</span>
+      </button>
+    </div>
+    {% endif %}
+
+    <div class="s2-helper">
+      AI สร้างจากชื่อ <em>"{{ shop.name }}"</em><br>
+      <a href="/shop/onboard/identity?gen={{ next_gen }}" class="reroll">↻ สร้างใหม่อีก 3 แบบ</a>
+    </div>
+
+    <div class="s2-upload" title="อัปโหลดเอง — เร็วๆ นี้">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+      ใช้โลโก้ของฉันเอง (เร็วๆ นี้)
+    </div>
+
+    <input type="hidden" name="logo_choice" :value="choice">
+
+    <div class="s2-foot">
+      <button type="submit" class="next" style="flex:1;">
+        <span>ถัดไป · ตั้งรางวัล</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </form>
+</body>
+</html>

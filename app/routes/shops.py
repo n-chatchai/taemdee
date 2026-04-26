@@ -139,57 +139,44 @@ TOPUP_PACKAGES = {
 
 # --------- Onboarding wizard (4 steps) ---------
 
+VALID_REWARD_IMAGES = {"coffee_cup", "latte_art", "iced"}
+VALID_REWARD_GOALS = (5, 10, 20)
+
+
 @router.get("/onboard")
 async def onboard_redirect():
     """Back-compat: legacy single-page onboard now redirects into the wizard."""
-    return RedirectResponse(url="/shop/onboard/name", status_code=status.HTTP_303_SEE_OTHER)
+    return RedirectResponse(url="/shop/onboard/identity", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/onboard/name", response_class=HTMLResponse)
-async def onboard_name_get(request: Request, shop: Shop = Depends(get_current_shop)):
-    return templates.TemplateResponse(
-        request=request,
-        name="shop/onboard/name.html",
-        context={"shop": shop},
-    )
+# Legacy URLs from the previous wizard layout — redirect into the new flow.
+@router.get("/onboard/name")
+async def onboard_name_legacy_redirect():
+    return RedirectResponse(url="/shop/onboard/identity", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.post("/onboard/name")
-async def onboard_name_post(
-    name: str = Form(...),
-    reward_description: str = Form(...),
-    reward_threshold: int = Form(10),
-    shop: Shop = Depends(get_current_shop),
-    db: AsyncSession = Depends(get_session),
-):
-    if reward_threshold not in (8, 10, 15):
-        reward_threshold = 10
-    shop.name = name.strip() or shop.name
-    shop.reward_description = reward_description.strip() or shop.reward_description
-    shop.reward_threshold = reward_threshold
-    db.add(shop)
-    await db.commit()
-    return RedirectResponse(url="/shop/onboard/logo", status_code=status.HTTP_303_SEE_OTHER)
+@router.get("/onboard/logo")
+async def onboard_logo_legacy_redirect():
+    return RedirectResponse(url="/shop/onboard/reward", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/onboard/logo", response_class=HTMLResponse)
-async def onboard_logo_get(
+@router.get("/onboard/identity", response_class=HTMLResponse)
+async def onboard_identity_get(
     request: Request,
     gen: int = 0,
     shop: Shop = Depends(get_current_shop),
 ):
+    """Step 1/4 — shop name + AI logo picker on the same screen."""
     options = generate_logos(shop.name, seed=gen)
     picked_id = (
         shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith("text:") else None
     )
-    # If the saved pick isn't in the current trio, render it as a 4th "your pick" so
-    # the owner doesn't lose their previous choice when they hit regenerate.
     saved_pick = None
     if picked_id and picked_id not in {o["id"] for o in options} and picked_id in VALID_STYLE_IDS:
         saved_pick = render_style(shop.name, picked_id)
     return templates.TemplateResponse(
         request=request,
-        name="shop/onboard/logo.html",
+        name="shop/onboard/identity.html",
         context={
             "shop": shop,
             "options": options,
@@ -200,16 +187,51 @@ async def onboard_logo_get(
     )
 
 
-@router.post("/onboard/logo")
-async def onboard_logo_post(
+@router.post("/onboard/identity")
+async def onboard_identity_post(
+    name: str = Form(...),
     logo_choice: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
+    shop.name = name.strip() or shop.name
     if logo_choice in VALID_STYLE_IDS:
         shop.logo_url = f"text:{logo_choice}"
-        db.add(shop)
-        await db.commit()
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/onboard/reward", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.get("/onboard/reward", response_class=HTMLResponse)
+async def onboard_reward_get(request: Request, shop: Shop = Depends(get_current_shop)):
+    """Step 2/4 — reward description + image picker (3 CSS-drawn options) + threshold pills."""
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/onboard/reward.html",
+        context={
+            "shop": shop,
+            "reward_images": ["coffee_cup", "latte_art", "iced"],
+            "goals": VALID_REWARD_GOALS,
+        },
+    )
+
+
+@router.post("/onboard/reward")
+async def onboard_reward_post(
+    reward_description: str = Form(...),
+    reward_image: Optional[str] = Form(None),
+    reward_threshold: int = Form(10),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    shop.reward_description = reward_description.strip() or shop.reward_description
+    if reward_image in VALID_REWARD_IMAGES:
+        shop.reward_image = reward_image
+    # Allow the canonical pills (5/10/20) plus any custom value 1–99.
+    if 1 <= reward_threshold <= 99:
+        shop.reward_threshold = reward_threshold
+    db.add(shop)
+    await db.commit()
     return RedirectResponse(url="/shop/onboard/theme", status_code=status.HTTP_303_SEE_OTHER)
 
 
