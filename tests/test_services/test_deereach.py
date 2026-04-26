@@ -3,7 +3,7 @@ and dial the timestamps to land each customer in the right bucket."""
 
 from datetime import timedelta
 
-from app.models import Customer, Stamp
+from app.models import Customer, Point
 from app.models.util import utcnow
 from app.services.deereach import (
     compute_suggestions,
@@ -22,7 +22,7 @@ async def _customer(db, *, line_id: str | None = None, phone: str | None = None)
 
 
 async def _stamp(db, shop, customer, *, days_ago: int):
-    s = Stamp(
+    s = Point(
         shop_id=shop.id,
         customer_id=customer.id,
         issuance_method="customer_scan",

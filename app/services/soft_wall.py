@@ -11,7 +11,7 @@ from sqlalchemy import update
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Customer, Redemption, Stamp
+from app.models import Customer, Redemption, Point
 
 
 async def claim_by_phone(
@@ -60,8 +60,8 @@ async def _claim(
     if existing and existing.id != anonymous_customer.id:
         # Merge — move stamps + redemptions to the existing customer; delete anonymous
         await db.exec(
-            update(Stamp)
-            .where(Stamp.customer_id == anonymous_customer.id)
+            update(Point)
+            .where(Point.customer_id == anonymous_customer.id)
             .values(customer_id=existing.id)
         )
         await db.exec(

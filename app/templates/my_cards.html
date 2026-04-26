@@ -53,7 +53,7 @@
       </div>
 
       {% for c in cards %}
-        {% set ready = c.stamp_count >= c.shop.reward_threshold %}
+        {% set ready = c.point_count >= c.shop.reward_threshold %}
         <a href="/card/{{ c.shop.id }}" class="c7-card {% if ready %}featured{% endif %}">
           {% if ready %}
             <div class="ready-tag"><span class="dot"></span>พร้อม!</div>
@@ -68,7 +68,7 @@
             <div class="reward">{{ c.shop.reward_description }}</div>
           </div>
           <div class="progress">
-            <div class="num">{{ c.stamp_count }}<span class="of">/{{ c.shop.reward_threshold }}</span></div>
+            <div class="num">{{ c.point_count }}<span class="of">/{{ c.shop.reward_threshold }}</span></div>
             <div class="bar"><div class="fill" style="width: {{ (c.ratio * 100)|round }}%"></div></div>
           </div>
         </a>

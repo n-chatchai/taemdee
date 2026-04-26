@@ -3,7 +3,7 @@
 import pytest
 from sqlmodel import select
 
-from app.models import CreditLog, Offer, Stamp
+from app.models import CreditLog, Offer, Point
 from app.services.offers import (
     OfferError,
     grant_credit_to_shop,
@@ -52,7 +52,7 @@ async def test_redeem_free_stamp_creates_a_stamp(db, shop, customer):
     assert offer.status == "redeemed"
 
     stamps = (await db.exec(
-        select(Stamp).where(Stamp.shop_id == shop.id, Stamp.customer_id == customer.id)
+        select(Point).where(Point.shop_id == shop.id, Point.customer_id == customer.id)
     )).all()
     assert len(stamps) == 1
     assert stamps[0].issuance_method == "system"
@@ -63,7 +63,7 @@ async def test_redeem_bonus_stamp_count_creates_n(db, shop, customer):
     await redeem_offer(db, offer)
 
     stamps = (await db.exec(
-        select(Stamp).where(Stamp.customer_id == customer.id)
+        select(Point).where(Point.customer_id == customer.id)
     )).all()
     assert len(stamps) == 3
 

@@ -48,8 +48,8 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
 def feed_row_html(kind: str, item_id: UUID, when_iso: str) -> str:
     """Render one feed row used by the DeeBoard live feed (S3) and SSE stream."""
     short = item_id.hex[:4].upper()
-    label = '<span class="icon-mini">+</span><strong>1 แต้ม</strong>' if kind == "stamp" else "<strong>รับรางวัล</strong>"
-    void_url = f"/shop/{'stamps' if kind == 'stamp' else 'redemptions'}/{item_id}/void"
+    label = '<span class="icon-mini">+</span><strong>1 แต้ม</strong>' if kind == "point" else "<strong>รับรางวัล</strong>"
+    void_url = f"/shop/{'stamps' if kind == 'point' else 'redemptions'}/{item_id}/void"
     return (
         f'<div class="feed-row" id="row-{item_id}">'
         f'<div class="t">{when_iso}</div>'
@@ -59,7 +59,7 @@ def feed_row_html(kind: str, item_id: UUID, when_iso: str) -> str:
     )
 
 
-def stamp_toast_html(stamp_id: UUID, current_count: int, threshold: int) -> str:
+def point_toast_html(stamp_id: UUID, current_count: int, threshold: int) -> str:
     """Render the S6 stamp-notification toast pushed to the DeeBoard via SSE.
 
     Shows up briefly when a customer scans, with the customer's running progress

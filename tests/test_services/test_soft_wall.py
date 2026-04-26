@@ -1,4 +1,4 @@
-from app.models import Customer, Stamp
+from app.models import Customer, Point
 from app.services.soft_wall import claim_by_line, claim_by_phone
 
 
@@ -15,7 +15,7 @@ async def test_claim_promotes_anonymous_in_place(db, customer):
 async def test_claim_merges_into_existing(db, shop, customer):
     """Existing claimed customer with same phone absorbs the anonymous one."""
     # Anonymous customer has a stamp at `shop`
-    db.add(Stamp(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
     await db.commit()
 
     # A claimed customer already exists with this phone
@@ -32,7 +32,7 @@ async def test_claim_merges_into_existing(db, shop, customer):
     assert anon_gone is None
 
     from sqlmodel import select
-    stamps = (await db.exec(select(Stamp).where(Stamp.customer_id == existing.id))).all()
+    stamps = (await db.exec(select(Point).where(Point.customer_id == existing.id))).all()
     assert len(stamps) == 1
 
 

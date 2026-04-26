@@ -4,10 +4,10 @@ from app.models.customer import Customer
 from app.models.deereach import DeeReachCampaign
 from app.models.offer import Offer, Referral
 from app.models.otp import OtpCode
+from app.models.point import Point
 from app.models.redemption import Redemption
 from app.models.shop import Shop
 from app.models.staff import StaffMember
-from app.models.stamp import Stamp
 
 __all__ = [
     "Branch",
@@ -16,10 +16,10 @@ __all__ = [
     "DeeReachCampaign",
     "Offer",
     "OtpCode",
+    "Point",
     "Redemption",
     "Referral",
     "Shop",
     "StaffMember",
-    "Stamp",
     "TopupSlip",
 ]

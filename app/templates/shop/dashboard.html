@@ -47,7 +47,7 @@
     </div>
 
     <div class="s3-stats">
-      <div class="s3-stat"><div class="n">{{ stamps_total }}</div><div class="l">แต้ม</div></div>
+      <div class="s3-stat"><div class="n">{{ points_total }}</div><div class="l">แต้ม</div></div>
       <div class="s3-stat"><div class="n">{{ redemptions_total }}</div><div class="l">รับรางวัล</div></div>
       <div class="s3-stat balance"><div class="n">{{ shop.credit_balance }}</div><div class="l">เครดิต</div></div>
     </div>
@@ -92,7 +92,7 @@
           <div class="feed-row" id="row-{{ item.id }}">
             <div class="t">{{ item.created_at.strftime('%H:%M') }}</div>
             <div class="w">
-              {% if kind == 'stamp' %}
+              {% if kind == 'point' %}
                 <span class="icon-mini">+</span><strong>1 แต้ม</strong>
               {% else %}
                 <strong>รับรางวัล</strong>
@@ -100,7 +100,7 @@
               <span class="id">#{{ item.id.hex[:4]|upper }}</span>
             </div>
             <button class="void"
-                    data-void-url="/shop/{% if kind == 'stamp' %}stamps{% else %}redemptions{% endif %}/{{ item.id }}/void"
+                    data-void-url="/shop/{% if kind == 'point' %}stamps{% else %}redemptions{% endif %}/{{ item.id }}/void"
                     data-row="row-{{ item.id }}">ยกเลิก</button>
           </div>
         {% endfor %}
@@ -109,7 +109,7 @@
     <div id="feed-empty" class="feed-empty" {% if feed %}style="display:none"{% endif %}>ยังไม่มีกิจกรรมวันนี้</div>
 
     {# S6 stamp-notification toast mounts here; populated via SSE #}
-    <div id="stamp-toast-mount"></div>
+    <div id="point-toast-mount"></div>
 
     {# Inline error banner — replaces alert(); auto-dismisses #}
     <div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
@@ -137,7 +137,7 @@
     // Live feed via SSE — new stamps/redemptions stream in from /shop/events.
     const feedRows = document.getElementById('feed-rows');
     const feedEmpty = document.getElementById('feed-empty');
-    const toastMount = document.getElementById('stamp-toast-mount');
+    const toastMount = document.getElementById('point-toast-mount');
     const flash = document.getElementById('dash-flash');
     const evt = new EventSource('/shop/events');
 
@@ -176,7 +176,7 @@
       setTimeout(() => el.parentNode && el.parentNode.removeChild(el), 220);
     }
 
-    evt.addEventListener('stamp-toast', (e) => {
+    evt.addEventListener('point-toast', (e) => {
       // Replace any open toast with the newest scan.
       toastMount.innerHTML = e.data;
       const overlay = toastMount.firstElementChild;

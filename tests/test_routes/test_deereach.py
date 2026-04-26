@@ -5,19 +5,19 @@ from datetime import timedelta
 from sqlmodel import select
 
 from app.core.auth import SESSION_COOKIE_NAME
-from app.models import Customer, DeeReachCampaign, Stamp, StaffMember
+from app.models import Customer, DeeReachCampaign, Point, StaffMember
 from app.models.util import utcnow
 from app.services.auth import issue_session_token
 
 
 async def _seed_unredeemed(db, shop):
-    """Stamp count at goal, last visit ≥7 days ago — qualifies for unredeemed_reward."""
+    """Point count at goal, last visit ≥7 days ago — qualifies for unredeemed_reward."""
     c = Customer(is_anonymous=False, line_id="U_target")
     db.add(c)
     await db.commit()
     await db.refresh(c)
     for _ in range(shop.reward_threshold):
-        db.add(Stamp(
+        db.add(Point(
             shop_id=shop.id,
             customer_id=c.id,
             issuance_method="customer_scan",

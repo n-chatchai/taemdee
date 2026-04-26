@@ -16,11 +16,11 @@ from app.core.auth import (
     require_permission,
 )
 from app.core.database import get_session
-from app.models import Customer, Redemption, Shop, Stamp, StaffMember
+from app.models import Customer, Redemption, Shop, Point, StaffMember
 from app.models.util import utcnow
-from app.services.events import feed_row_html, publish, stamp_toast_html
-from app.services.issuance import IssuanceError, issue_stamp, void_stamp
-from app.services.redemption import active_stamp_count, void_redemption
+from app.services.events import feed_row_html, publish, point_toast_html
+from app.services.issuance import IssuanceError, issue_point, void_point
+from app.services.redemption import active_point_count, void_redemption
 
 router = APIRouter()
 
@@ -84,25 +84,25 @@ async def search_customers(
     for c in customers:
         active = (await db.exec(
             select(func.count())
-            .select_from(Stamp)
+            .select_from(Point)
             .where(
-                Stamp.shop_id == shop.id,
-                Stamp.customer_id == c.id,
-                Stamp.is_voided == False,  # noqa: E712
-                Stamp.redemption_id.is_(None),
+                Point.shop_id == shop.id,
+                Point.customer_id == c.id,
+                Point.is_voided == False,  # noqa: E712
+                Point.redemption_id.is_(None),
             )
         )).one()
         last_visit = (await db.exec(
-            select(Stamp.created_at)
-            .where(Stamp.shop_id == shop.id, Stamp.customer_id == c.id)
-            .order_by(Stamp.created_at.desc())
+            select(Point.created_at)
+            .where(Point.shop_id == shop.id, Point.customer_id == c.id)
+            .order_by(Point.created_at.desc())
             .limit(1)
         )).first()
         out.append({
             "id": str(c.id),
             "display_name": c.display_name or "ลูกค้า",
             "phone": c.phone or "",
-            "active_stamps": active,
+            "active_points": active,
             "last_visit_iso": last_visit.isoformat() if last_visit else None,
         })
     return {"results": out}
@@ -128,7 +128,7 @@ async def issue_search_grant(
     issued_ids = []
     for _ in range(points):
         try:
-            stamp = await issue_stamp(
+            stamp = await issue_point(
                 db, shop, customer,
                 method="system",
                 staff_id=staff.id if staff else None,
@@ -139,14 +139,14 @@ async def issue_search_grant(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+            feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
         )
 
-    new_count = await active_stamp_count(db, shop.id, customer.id)
+    new_count = await active_point_count(db, shop.id, customer.id)
     publish(
         shop.id,
-        "stamp-toast",
-        stamp_toast_html(stamp.id, new_count, shop.reward_threshold),
+        "point-toast",
+        point_toast_html(stamp.id, new_count, shop.reward_threshold),
     )
     return {"granted": points, "stamp_ids": issued_ids, "customer_id": str(customer.id)}
 
@@ -172,7 +172,7 @@ async def save_issuance_methods(
 
 
 @router.post("/issue")
-async def staff_issue_stamp(
+async def staff_issue_point(
     method: str = Form(...),
     customer_id: Optional[UUID] = Form(None),
     phone: Optional[str] = Form(None),
@@ -207,7 +207,7 @@ async def staff_issue_stamp(
         )
 
     try:
-        stamp = await issue_stamp(
+        stamp = await issue_point(
             db, shop, customer,
             method=method,
             branch_id=branch_id,
@@ -219,13 +219,13 @@ async def staff_issue_stamp(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+        feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
     )
-    new_count = await active_stamp_count(db, shop.id, customer.id)
+    new_count = await active_point_count(db, shop.id, customer.id)
     publish(
         shop.id,
-        "stamp-toast",
-        stamp_toast_html(stamp.id, new_count, shop.reward_threshold),
+        "point-toast",
+        point_toast_html(stamp.id, new_count, shop.reward_threshold),
     )
     return {"stamp_id": str(stamp.id), "customer_id": str(customer.id)}
 
@@ -250,7 +250,7 @@ async def staff_issue_manual_stamp(
     await db.refresh(customer)
 
     try:
-        stamp = await issue_stamp(
+        stamp = await issue_point(
             db, shop, customer,
             method="shop_scan",
             branch_id=branch_id,
@@ -262,26 +262,26 @@ async def staff_issue_manual_stamp(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+        feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
     )
-    new_count = await active_stamp_count(db, shop.id, customer.id)
+    new_count = await active_point_count(db, shop.id, customer.id)
     publish(
         shop.id,
-        "stamp-toast",
-        stamp_toast_html(stamp.id, new_count, shop.reward_threshold),
+        "point-toast",
+        point_toast_html(stamp.id, new_count, shop.reward_threshold),
     )
     return {"stamp_id": str(stamp.id), "customer_id": str(customer.id)}
 
 
 @router.post("/stamps/{stamp_id}/void")
-async def void_stamp_route(
+async def void_point_route(
     stamp_id: UUID,
     ctx: SessionContext = Depends(require_permission("can_void")),
     db: AsyncSession = Depends(get_session),
 ):
-    stamp = await db.get(Stamp, stamp_id)
+    stamp = await db.get(Point, stamp_id)
     if not stamp:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Stamp not found")
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Point not found")
     if stamp.shop_id != ctx.shop_id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Cross-shop access denied")
 
@@ -292,7 +292,7 @@ async def void_stamp_route(
             f"Void window expired ({VOID_WINDOW_SECONDS}s)",
         )
 
-    await void_stamp(db, stamp, by_staff_id=ctx.staff_id)
+    await void_point(db, stamp, by_staff_id=ctx.staff_id)
     publish(ctx.shop_id, "void", f'<span data-row="row-{stamp.id}"></span>')
     return {"voided": True, "stamp_id": str(stamp.id)}
 

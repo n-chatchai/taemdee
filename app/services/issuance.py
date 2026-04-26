@@ -1,4 +1,4 @@
-"""Stamp issuance — the core act across all 3 methods, plus void.
+"""Point issuance — the core act across all 3 methods, plus void.
 
 Anti-rescan policy is per-shop: `Shop.scan_cooldown_minutes` (default 0 = no
 cooldown). When > 0, a customer must wait that many minutes between stamps at
@@ -12,7 +12,7 @@ from uuid import UUID
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Customer, Shop, Stamp
+from app.models import Customer, Shop, Point
 from app.models.util import utcnow
 
 VALID_METHODS = {"customer_scan", "shop_scan", "phone_entry", "system"}
@@ -27,19 +27,19 @@ async def _has_recent_stamp(
 ) -> bool:
     """True if a non-voided stamp exists for (shop, customer) at or after `since`."""
     result = await db.exec(
-        select(Stamp.id)
+        select(Point.id)
         .where(
-            Stamp.shop_id == shop_id,
-            Stamp.customer_id == customer_id,
-            Stamp.created_at >= since,
-            Stamp.is_voided == False,  # noqa: E712
+            Point.shop_id == shop_id,
+            Point.customer_id == customer_id,
+            Point.created_at >= since,
+            Point.is_voided == False,  # noqa: E712
         )
         .limit(1)
     )
     return result.first() is not None
 
 
-async def issue_stamp(
+async def issue_point(
     db: AsyncSession,
     shop: Shop,
     customer: Customer,
@@ -47,7 +47,7 @@ async def issue_stamp(
     *,
     branch_id: Optional[UUID] = None,
     staff_id: Optional[UUID] = None,
-) -> Stamp:
+) -> Point:
     """Issue a stamp. Enforces the per-shop scan cooldown.
 
     `method`: customer_scan | shop_scan | phone_entry | system.
@@ -70,7 +70,7 @@ async def issue_stamp(
                 f"Scan cooldown not yet elapsed ({cooldown} min)"
             )
 
-    stamp = Stamp(
+    stamp = Point(
         shop_id=shop.id,
         customer_id=customer.id,
         branch_id=branch_id,
@@ -83,12 +83,12 @@ async def issue_stamp(
     return stamp
 
 
-async def void_stamp(
+async def void_point(
     db: AsyncSession,
-    stamp: Stamp,
+    stamp: Point,
     *,
     by_staff_id: Optional[UUID] = None,
-) -> Stamp:
+) -> Point:
     """Void a stamp. The 60-second window check is enforced by the caller (route layer)."""
     stamp.is_voided = True
     stamp.voided_at = utcnow()

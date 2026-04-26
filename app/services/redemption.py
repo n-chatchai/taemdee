@@ -15,7 +15,7 @@ from sqlalchemy import and_, or_
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Customer, Redemption, Shop, Stamp
+from app.models import Customer, Redemption, Shop, Point
 from app.models.util import utcnow
 
 
@@ -27,22 +27,22 @@ def _active_stamp_where(
     shop_id: UUID, customer_id: UUID, branch_id: Optional[UUID]
 ):
     conds = [
-        Stamp.shop_id == shop_id,
-        Stamp.customer_id == customer_id,
-        Stamp.is_voided == False,  # noqa: E712
+        Point.shop_id == shop_id,
+        Point.customer_id == customer_id,
+        Point.is_voided == False,  # noqa: E712
         or_(
-            Stamp.redemption_id.is_(None),
-            Stamp.redemption_id.in_(
+            Point.redemption_id.is_(None),
+            Point.redemption_id.in_(
                 select(Redemption.id).where(Redemption.is_voided == True)  # noqa: E712
             ),
         ),
     ]
     if branch_id is not None:
-        conds.append(Stamp.branch_id == branch_id)
+        conds.append(Point.branch_id == branch_id)
     return and_(*conds)
 
 
-async def active_stamp_count(
+async def active_point_count(
     db: AsyncSession,
     shop_id: UUID,
     customer_id: UUID,
@@ -54,7 +54,7 @@ async def active_stamp_count(
     """
     result = await db.exec(
         select(func.count())
-        .select_from(Stamp)
+        .select_from(Point)
         .where(_active_stamp_where(shop_id, customer_id, branch_id))
     )
     return result.one()
@@ -81,7 +81,7 @@ async def redeem(
 
     scope_branch = branch_id if shop.reward_mode == "separate" else None
 
-    count = await active_stamp_count(db, shop.id, customer.id, scope_branch)
+    count = await active_point_count(db, shop.id, customer.id, scope_branch)
     if count < shop.reward_threshold:
         raise RedemptionError(
             f"Not enough stamps to redeem: have {count}, need {shop.reward_threshold}"
@@ -89,9 +89,9 @@ async def redeem(
 
     # Pull the oldest active stamps to consume
     result = await db.exec(
-        select(Stamp)
+        select(Point)
         .where(_active_stamp_where(shop.id, customer.id, scope_branch))
-        .order_by(Stamp.created_at)
+        .order_by(Point.created_at)
         .limit(shop.reward_threshold)
     )
     stamps_to_consume = list(result.all())

@@ -4,7 +4,7 @@ from datetime import timedelta
 
 from sqlmodel import select
 
-from app.models import Customer, Stamp
+from app.models import Customer, Point
 from app.models.util import utcnow
 from app.services.pdpa import (
     delete_customer_account,
@@ -17,7 +17,7 @@ async def test_delete_scrubs_pii_keeps_stamps(db, shop):
     db.add(c)
     await db.commit()
     await db.refresh(c)
-    db.add(Stamp(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
+    db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
     await db.commit()
 
     await delete_customer_account(db, c)
@@ -28,7 +28,7 @@ async def test_delete_scrubs_pii_keeps_stamps(db, shop):
     assert c.display_name is None
     assert c.is_anonymous is True
 
-    stamps = (await db.exec(select(Stamp).where(Stamp.customer_id == c.id))).all()
+    stamps = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
     assert len(stamps) == 1
 
 
@@ -41,13 +41,13 @@ async def test_inactive_anonymous_finder(db, shop):
     await db.refresh(old)
     await db.refresh(fresh)
 
-    db.add(Stamp(
+    db.add(Point(
         shop_id=shop.id,
         customer_id=old.id,
         issuance_method="customer_scan",
         created_at=utcnow() - timedelta(days=400),
     ))
-    db.add(Stamp(
+    db.add(Point(
         shop_id=shop.id,
         customer_id=fresh.id,
         issuance_method="customer_scan",

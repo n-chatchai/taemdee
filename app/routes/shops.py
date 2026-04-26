@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import get_current_shop
 from app.core.database import get_session
-from app.models import Branch, Redemption, Shop, Stamp
+from app.models import Branch, Redemption, Shop, Point
 from app.models.util import utcnow
 from app.routes.auth import _set_session_cookie
 from app.services.auth import issue_session_token
@@ -100,22 +100,22 @@ async def dashboard(
 
     # Headline: distinct customers stamped this week (proxy for "came back")
     customers_this_week = (await db.exec(
-        select(func.count(func.distinct(Stamp.customer_id)))
-        .where(Stamp.shop_id == shop.id, Stamp.created_at >= week_ago, Stamp.is_voided == False)  # noqa: E712
+        select(func.count(func.distinct(Point.customer_id)))
+        .where(Point.shop_id == shop.id, Point.created_at >= week_ago, Point.is_voided == False)  # noqa: E712
     )).one()
     customers_last_week = (await db.exec(
-        select(func.count(func.distinct(Stamp.customer_id)))
+        select(func.count(func.distinct(Point.customer_id)))
         .where(
-            Stamp.shop_id == shop.id,
-            Stamp.created_at >= two_weeks_ago,
-            Stamp.created_at < week_ago,
-            Stamp.is_voided == False,  # noqa: E712
+            Point.shop_id == shop.id,
+            Point.created_at >= two_weeks_ago,
+            Point.created_at < week_ago,
+            Point.is_voided == False,  # noqa: E712
         )
     )).one()
     wow_delta = customers_this_week - customers_last_week
-    stamps_total = (await db.exec(
-        select(func.count()).select_from(Stamp)
-        .where(Stamp.shop_id == shop.id, Stamp.is_voided == False)  # noqa: E712
+    points_total = (await db.exec(
+        select(func.count()).select_from(Point)
+        .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
     )).one()
     redemptions_total = (await db.exec(
         select(func.count()).select_from(Redemption)
@@ -135,17 +135,17 @@ async def dashboard(
 
     weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
 
-    # Live feed: most recent 8 stamps + redemptions, merged
-    recent_stamps = (await db.exec(
-        select(Stamp).where(Stamp.shop_id == shop.id)
-        .order_by(Stamp.created_at.desc()).limit(8)
+    # Live feed: most recent 8 points + redemptions, merged
+    recent_points = (await db.exec(
+        select(Point).where(Point.shop_id == shop.id)
+        .order_by(Point.created_at.desc()).limit(8)
     )).all()
     recent_redemptions = (await db.exec(
         select(Redemption).where(Redemption.shop_id == shop.id)
         .order_by(Redemption.created_at.desc()).limit(4)
     )).all()
     feed = sorted(
-        [("stamp", s) for s in recent_stamps] + [("redemption", r) for r in recent_redemptions],
+        [("point", p) for p in recent_points] + [("redemption", r) for r in recent_redemptions],
         key=lambda x: x[1].created_at,
         reverse=True,
     )[:8]
@@ -159,7 +159,7 @@ async def dashboard(
             "shop": shop,
             "customers_this_week": customers_this_week,
             "wow_delta": wow_delta,
-            "stamps_total": stamps_total,
+            "points_total": points_total,
             "redemptions_total": redemptions_total,
             "feed": feed,
             "suggestions": suggestions,

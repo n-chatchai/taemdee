@@ -2,7 +2,7 @@ from datetime import timedelta
 
 from sqlmodel import select
 
-from app.models import Customer, Stamp
+from app.models import Customer, Point
 from app.models.util import utcnow
 
 
@@ -24,7 +24,7 @@ async def test_shop_scan_uses_existing_customer(auth_client, db, shop, customer)
     )
     assert response.status_code == 200
 
-    result = await db.exec(select(Stamp).where(Stamp.customer_id == customer.id))
+    result = await db.exec(select(Point).where(Point.customer_id == customer.id))
     stamps = list(result.all())
     assert len(stamps) == 1
     assert stamps[0].issuance_method == "shop_scan"
@@ -43,7 +43,7 @@ async def test_manual_issue_creates_anonymous_customer_and_stamp(auth_client, db
     assert customer.is_anonymous is True
     assert customer.phone is None
 
-    stamp = await db.get(Stamp, UUID(body["stamp_id"]))
+    stamp = await db.get(Point, UUID(body["stamp_id"]))
     assert stamp.shop_id == shop.id
     assert stamp.customer_id == customer.id
 
@@ -55,7 +55,7 @@ async def test_manual_issue_makes_each_call_a_fresh_walk_in(auth_client, db, sho
     b = (await auth_client.post("/shop/issue/manual")).json()
     assert a["customer_id"] != b["customer_id"]
 
-    stamps = list((await db.exec(select(Stamp).where(Stamp.shop_id == shop.id))).all())
+    stamps = list((await db.exec(select(Point).where(Point.shop_id == shop.id))).all())
     assert len(stamps) == 2
 
 
@@ -148,12 +148,12 @@ async def test_search_grant_issues_n_stamps_and_publishes_toast(auth_client, db,
     assert body["granted"] == 3
     assert len(body["stamp_ids"]) == 3
 
-    stamps = (await db.exec(select(Stamp).where(Stamp.customer_id == c.id))).all()
+    stamps = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
     assert len(list(stamps)) == 3
 
     # 3 feed-row events + 1 stamp-toast (toast only fires once after the batch)
     assert sum(1 for n, _ in received if n == "feed-row") == 3
-    assert sum(1 for n, _ in received if n == "stamp-toast") == 1
+    assert sum(1 for n, _ in received if n == "point-toast") == 1
 
 
 async def test_search_grant_caps_points_at_10(auth_client, db, shop):
@@ -186,7 +186,7 @@ async def test_manual_issue_publishes_toast_event(auth_client, db, shop, monkeyp
 
     event_names = [n for n, _ in received]
     assert "feed-row" in event_names
-    assert "stamp-toast" in event_names
+    assert "point-toast" in event_names
 
 
 async def test_invalid_method_400(auth_client):
@@ -213,7 +213,7 @@ async def test_void_within_window(auth_client, db, shop, customer):
 
 
 async def test_void_after_window_400(auth_client, db, shop, customer):
-    old = Stamp(
+    old = Point(
         shop_id=shop.id,
         customer_id=customer.id,
         issuance_method="shop_scan",

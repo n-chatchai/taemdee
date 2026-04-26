@@ -52,7 +52,7 @@ class Shop(SQLModel, table=True):
 
     created_at: datetime = Field(default_factory=utcnow)
 
-    stamps: List["Stamp"] = Relationship(back_populates="shop")
+    points: List["Point"] = Relationship(back_populates="shop")
     topup_slips: List["TopupSlip"] = Relationship(back_populates="shop")
     branches: List["Branch"] = Relationship(back_populates="shop")
     staff_members: List["StaffMember"] = Relationship(back_populates="shop")

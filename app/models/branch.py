@@ -15,5 +15,5 @@ class Branch(SQLModel, table=True):
     created_at: datetime = Field(default_factory=utcnow)
 
     shop: "Shop" = Relationship(back_populates="branches")
-    stamps: List["Stamp"] = Relationship(back_populates="branch")
+    points: List["Point"] = Relationship(back_populates="branch")
     redemptions: List["Redemption"] = Relationship(back_populates="branch")

@@ -15,4 +15,4 @@ class Customer(SQLModel, table=True):
     display_name: Optional[str] = Field(default="Guest")
     created_at: datetime = Field(default_factory=utcnow)
 
-    stamps: List["Stamp"] = Relationship(back_populates="customer")
+    points: List["Point"] = Relationship(back_populates="customer")

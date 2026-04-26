@@ -17,7 +17,7 @@ async def lifespan(app: FastAPI):
     await engine.dispose()
 
 
-app = FastAPI(title="TaemDee — Digital Stamp Cards", lifespan=lifespan)
+app = FastAPI(title="TaemDee — Digital Point Cards", lifespan=lifespan)
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

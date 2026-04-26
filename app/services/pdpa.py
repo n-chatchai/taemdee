@@ -12,7 +12,7 @@ from uuid import UUID
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Customer, Stamp
+from app.models import Customer, Point
 from app.models.util import utcnow
 
 ANONYMOUS_INACTIVITY_DAYS = 365
@@ -44,8 +44,8 @@ async def find_inactive_anonymous_customers(
     cutoff = utcnow() - timedelta(days=inactivity_days)
 
     last_stamp = (
-        select(Stamp.customer_id, func.max(Stamp.created_at).label("last_at"))
-        .group_by(Stamp.customer_id)
+        select(Point.customer_id, func.max(Point.created_at).label("last_at"))
+        .group_by(Point.customer_id)
         .subquery()
     )
 
@@ -63,7 +63,7 @@ async def find_inactive_anonymous_customers(
 
 
 # NOTE: actual deletion (`purge_inactive_anonymous`) deferred until we decide
-# whether to (a) cascade-delete the stamps, (b) make Stamp.customer_id nullable
+# whether to (a) cascade-delete the stamps, (b) make Point.customer_id nullable
 # and orphan, or (c) reassign to a "deleted-customers" placeholder. The
 # `find_inactive_anonymous_customers` query above is the input that whichever
 # policy ends up doing.

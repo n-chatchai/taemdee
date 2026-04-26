@@ -15,12 +15,12 @@ from app.core.auth import (
     set_customer_cookie,
 )
 from app.core.database import get_session
-from app.models import Branch, Redemption, Shop, Stamp
+from app.models import Branch, Redemption, Shop, Point
 from app.services.auth import verify_otp
-from app.services.events import feed_row_html, publish, stamp_toast_html
-from app.services.issuance import IssuanceError, issue_stamp
+from app.services.events import feed_row_html, publish, point_toast_html
+from app.services.issuance import IssuanceError, issue_point
 from app.services.pdpa import delete_customer_account
-from app.services.redemption import RedemptionError, active_stamp_count, redeem
+from app.services.redemption import RedemptionError, active_point_count, redeem
 from app.services.soft_wall import claim_by_phone
 
 router = APIRouter()
@@ -58,25 +58,25 @@ async def account_menu(
         return RedirectResponse(url="/card/save", status_code=status.HTTP_303_SEE_OTHER)
 
     cards_count = (await db.exec(
-        select(func.count(func.distinct(Stamp.shop_id)))
+        select(func.count(func.distinct(Point.shop_id)))
         .where(
-            Stamp.customer_id == customer.id,
-            Stamp.is_voided == False,  # noqa: E712
-            Stamp.redemption_id.is_(None),
+            Point.customer_id == customer.id,
+            Point.is_voided == False,  # noqa: E712
+            Point.redemption_id.is_(None),
         )
     )).one()
 
     ready_count = 0
-    stamps_per_shop = (await db.exec(
-        select(Stamp.shop_id, func.count().label("active_count"))
+    points_per_shop = (await db.exec(
+        select(Point.shop_id, func.count().label("active_count"))
         .where(
-            Stamp.customer_id == customer.id,
-            Stamp.is_voided == False,  # noqa: E712
-            Stamp.redemption_id.is_(None),
+            Point.customer_id == customer.id,
+            Point.is_voided == False,  # noqa: E712
+            Point.redemption_id.is_(None),
         )
-        .group_by(Stamp.shop_id)
+        .group_by(Point.shop_id)
     )).all()
-    for shop_id, active_count in stamps_per_shop:
+    for shop_id, active_count in points_per_shop:
         shop = await db.get(Shop, shop_id)
         if shop and active_count >= shop.reward_threshold:
             ready_count += 1
@@ -121,14 +121,14 @@ async def _resolve_branch(
         if b and b.shop_id == shop_id:
             return b
     last_branch_id = (await db.exec(
-        select(Stamp.branch_id)
+        select(Point.branch_id)
         .where(
-            Stamp.shop_id == shop_id,
-            Stamp.customer_id == customer_id,
-            Stamp.is_voided == False,  # noqa: E712
-            Stamp.branch_id.is_not(None),
+            Point.shop_id == shop_id,
+            Point.customer_id == customer_id,
+            Point.is_voided == False,  # noqa: E712
+            Point.branch_id.is_not(None),
         )
-        .order_by(Stamp.created_at.desc())
+        .order_by(Point.created_at.desc())
         .limit(1)
     )).first()
     if last_branch_id:
@@ -150,13 +150,13 @@ async def view_card(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Shop not found")
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
-    stamp_count = await active_stamp_count(db, shop.id, customer.id)
+    point_count = await active_point_count(db, shop.id, customer.id)
     branch_obj = await _resolve_branch(db, shop.id, branch, customer.id)
 
     # First-visit detection: no redemptions yet AND only 1 active stamp.
     # Surfaces the C2 welcome banner + "save my stamps" CTA above the stamp grid.
     is_first_visit = False
-    if stamp_count == 1:
+    if point_count == 1:
         prior_redemptions = (await db.exec(
             select(func.count())
             .select_from(Redemption)
@@ -169,7 +169,7 @@ async def view_card(
         name="themes/default.html",
         context={
             "shop": shop,
-            "stamp_count": stamp_count,
+            "point_count": point_count,
             "customer": customer,
             "is_first_visit": is_first_visit,
             "branch": branch_obj,
@@ -210,7 +210,7 @@ async def scan(
 
     just_stamped = False
     try:
-        stamp = await issue_stamp(
+        stamp = await issue_point(
             db, shop, customer,
             method="customer_scan",
             branch_id=branch_obj.id if branch_obj else None,
@@ -218,14 +218,14 @@ async def scan(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+            feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
         )
         # S6: live toast on the shop's DeeBoard with customer's running progress.
-        new_count = await active_stamp_count(db, shop.id, customer.id)
+        new_count = await active_point_count(db, shop.id, customer.id)
         publish(
             shop.id,
-            "stamp-toast",
-            stamp_toast_html(stamp.id, new_count, shop.reward_threshold),
+            "point-toast",
+            point_toast_html(stamp.id, new_count, shop.reward_threshold),
         )
         just_stamped = True
     except IssuanceError:
@@ -346,31 +346,31 @@ async def my_cards(
         return RedirectResponse(url="/card/save", status_code=status.HTTP_303_SEE_OTHER)
 
     # Active stamps grouped by shop. Same active-stamp rule as redemption service.
-    stamps_per_shop = (await db.exec(
-        select(Stamp.shop_id, func.count().label("active_count"))
+    points_per_shop = (await db.exec(
+        select(Point.shop_id, func.count().label("active_count"))
         .where(
-            Stamp.customer_id == customer.id,
-            Stamp.is_voided == False,  # noqa: E712
-            Stamp.redemption_id.is_(None),
+            Point.customer_id == customer.id,
+            Point.is_voided == False,  # noqa: E712
+            Point.redemption_id.is_(None),
         )
-        .group_by(Stamp.shop_id)
+        .group_by(Point.shop_id)
     )).all()
 
     cards = []
-    for shop_id, active_count in stamps_per_shop:
+    for shop_id, active_count in points_per_shop:
         shop = await db.get(Shop, shop_id)
         if shop is None:
             continue
         cards.append({
             "shop": shop,
-            "stamp_count": active_count,
+            "point_count": active_count,
             "ratio": active_count / shop.reward_threshold if shop.reward_threshold else 0,
         })
     cards.sort(key=lambda c: c["ratio"], reverse=True)
 
-    total_stamps = sum(c["stamp_count"] for c in cards)
+    total_stamps = sum(c["point_count"] for c in cards)
     closest = max(
-        ((c["shop"].reward_threshold - c["stamp_count"]) for c in cards if c["stamp_count"] < c["shop"].reward_threshold),
+        ((c["shop"].reward_threshold - c["point_count"]) for c in cards if c["point_count"] < c["shop"].reward_threshold),
         default=None,
     )
 

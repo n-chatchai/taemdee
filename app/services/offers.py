@@ -6,7 +6,7 @@ v1 grants:
 
 Redeem semantics:
   credit_grant — bumps shop.credit_balance + writes CreditLog (auto-redeemed at grant)
-  free_stamp / bonus_stamp_count — issues Stamp rows via services.issuance
+  free_stamp / bonus_stamp_count — issues Point rows via services.issuance
   free_item — banner only; no DB-side effect (cashier hands the item over)
 """
 
@@ -16,9 +16,9 @@ from uuid import UUID
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import CreditLog, Customer, Offer, Shop, Stamp
+from app.models import CreditLog, Customer, Offer, Shop, Point
 from app.models.util import utcnow
-from app.services.issuance import issue_stamp
+from app.services.issuance import issue_point
 
 
 class OfferError(Exception):
@@ -125,7 +125,7 @@ async def redeem_offer(db: AsyncSession, offer: Offer) -> Offer:
             raise OfferError("free_stamp offer missing target customer / source shop")
         shop = await db.get(Shop, offer.source_shop_id)
         customer = await db.get(Customer, offer.target_customer_id)
-        await issue_stamp(db, shop, customer, method="system")
+        await issue_point(db, shop, customer, method="system")
 
     elif offer.kind == "bonus_stamp_count":
         if not offer.amount or offer.target_type != "customer":
@@ -133,7 +133,7 @@ async def redeem_offer(db: AsyncSession, offer: Offer) -> Offer:
         shop = await db.get(Shop, offer.source_shop_id)
         customer = await db.get(Customer, offer.target_customer_id)
         for _ in range(offer.amount):
-            await issue_stamp(db, shop, customer, method="system")
+            await issue_point(db, shop, customer, method="system")
 
     elif offer.kind == "free_item":
         # No DB-side effect — cashier hands the item over IRL.

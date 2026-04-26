@@ -9,7 +9,7 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
-  {% set is_full = stamp_count >= shop.reward_threshold %}
+  {% set is_full = point_count >= shop.reward_threshold %}
   {% set logo = shop_logo(shop) %}
   <div class="td theme-{{ shop.theme_name|default('taemdee') }} {% if is_full %}c4{% endif %} {% if just_stamped %}cel-shake{% endif %}">
     {% if just_stamped %}{% include "_partials/scan_celebration.html" %}{% endif %}
@@ -66,20 +66,20 @@
       </div>
 
       <div class="redeem-num">
-        <div class="big">{{ stamp_count }}</div>
+        <div class="big">{{ point_count }}</div>
         <div class="done">บัตรเต็มแล้ว</div>
       </div>
     {% else %}
       <div class="hero-num-wrap"{% if is_first_visit %} style="padding-top:16px;"{% endif %}>
         <div class="hero-label">แต้มของคุณ</div>
         <div class="hero-num"{% if is_first_visit %} style="font-size:100px;"{% endif %}>
-          {{ stamp_count }}
+          {{ point_count }}
           <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
           </svg>
         </div>
         <div class="hero-num-sub">
-          <em>อีก {{ shop.reward_threshold - stamp_count }} แต้ม</em>
+          <em>อีก {{ shop.reward_threshold - point_count }} แต้ม</em>
           <span class="of">/ จาก {{ shop.reward_threshold }}</span>
         </div>
       </div>
@@ -88,7 +88,7 @@
     <div class="stamps-wrap">
       <div class="stamps" data-goal="{{ shop.reward_threshold }}">
         {% for i in range(1, shop.reward_threshold + 1) %}
-          <div class="stamp {% if i <= stamp_count %}on{% if i % 3 == 0 %} butter{% endif %}{% endif %}"></div>
+          <div class="stamp {% if i <= point_count %}on{% if i % 3 == 0 %} butter{% endif %}{% endif %}"></div>
         {% endfor %}
       </div>
     </div>
@@ -132,14 +132,14 @@
         <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor">
           <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
         </svg>
-        อีก {{ shop.reward_threshold - stamp_count }} แต้ม รับ{{ shop.reward_description }}
+        อีก {{ shop.reward_threshold - point_count }} แต้ม รับ{{ shop.reward_description }}
         <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor">
           <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
         </svg>
       </div>
 
       <div class="reward-pill">
-        {% if stamp_count * 10 >= shop.reward_threshold * 7 %}
+        {% if point_count * 10 >= shop.reward_threshold * 7 %}
           <div class="badge-tilted">ใกล้แล้ว!</div>
         {% endif %}
         <div class="gift">

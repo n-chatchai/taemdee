@@ -2,7 +2,7 @@ from uuid import uuid4
 
 from sqlmodel import select
 
-from app.models import Stamp
+from app.models import Point
 
 
 async def test_scan_creates_stamp_and_redirects(client, shop):
@@ -14,7 +14,7 @@ async def test_scan_creates_stamp_and_redirects(client, shop):
 
 async def test_scan_persists_stamp(client, db, shop):
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    result = await db.exec(select(Stamp).where(Stamp.shop_id == shop.id))
+    result = await db.exec(select(Point).where(Point.shop_id == shop.id))
     stamps = list(result.all())
     assert len(stamps) == 1
     assert stamps[0].issuance_method == "customer_scan"
@@ -26,7 +26,7 @@ async def test_scan_twice_with_default_cooldown_creates_two_stamps(client, db, s
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
     response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
     assert response.status_code == 303
-    result = await db.exec(select(Stamp).where(Stamp.shop_id == shop.id))
+    result = await db.exec(select(Point).where(Point.shop_id == shop.id))
     assert len(list(result.all())) == 2
 
 
@@ -41,7 +41,7 @@ async def test_scan_blocked_silently_when_cooldown_set(client, db, shop):
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
     response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
     assert response.status_code == 303
-    result = await db.exec(select(Stamp).where(Stamp.shop_id == shop.id))
+    result = await db.exec(select(Point).where(Point.shop_id == shop.id))
     assert len(list(result.all())) == 1
 
 
@@ -85,8 +85,8 @@ async def test_scan_publishes_stamp_toast_event(client, db, shop, monkeypatch):
 
     event_names = [name for name, _ in received]
     assert "feed-row" in event_names
-    assert "stamp-toast" in event_names
-    toast_html = next(html for name, html in received if name == "stamp-toast")
+    assert "point-toast" in event_names
+    toast_html = next(html for name, html in received if name == "point-toast")
     assert "s6-toast" in toast_html
     assert "ออกแต้มสำเร็จ" in toast_html
     assert "ms just-now" in toast_html
@@ -95,7 +95,7 @@ async def test_scan_publishes_stamp_toast_event(client, db, shop, monkeypatch):
 async def test_card_no_celebration_on_first_visit(client, shop):
     """First visit shows the C2 banner instead — celebration overlay is suppressed
     so the two effects don't stack on each other."""
-    # Single scan ⇒ stamp_count==1 ⇒ is_first_visit==True
+    # Single scan ⇒ point_count==1 ⇒ is_first_visit==True
     response = await client.get(f"/scan/{shop.id}", follow_redirects=True)
     assert response.status_code == 200
     body = response.text

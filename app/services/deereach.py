@@ -20,7 +20,7 @@ from uuid import UUID
 from sqlmodel import and_, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import CreditLog, Customer, DeeReachCampaign, Redemption, Shop, Stamp
+from app.models import CreditLog, Customer, DeeReachCampaign, Redemption, Shop, Point
 from app.models.util import utcnow
 
 log = logging.getLogger(__name__)
@@ -76,11 +76,11 @@ async def find_lapsed_customers(
 
     last_stamp = (
         select(
-            Stamp.customer_id.label("cid"),
-            func.max(Stamp.created_at).label("last_at"),
+            Point.customer_id.label("cid"),
+            func.max(Point.created_at).label("last_at"),
         )
-        .where(Stamp.shop_id == shop.id, Stamp.is_voided == False)  # noqa: E712
-        .group_by(Stamp.customer_id)
+        .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
+        .group_by(Point.customer_id)
         .subquery()
     )
 
@@ -112,21 +112,21 @@ async def find_almost_there_customers(
     # Active stamps per customer (matches services/redemption._active_stamp_where).
     active = (
         select(
-            Stamp.customer_id.label("cid"),
+            Point.customer_id.label("cid"),
             func.count().label("active_count"),
-            func.max(Stamp.created_at).label("last_at"),
+            func.max(Point.created_at).label("last_at"),
         )
         .where(
-            Stamp.shop_id == shop.id,
-            Stamp.is_voided == False,  # noqa: E712
+            Point.shop_id == shop.id,
+            Point.is_voided == False,  # noqa: E712
             or_(
-                Stamp.redemption_id.is_(None),
-                Stamp.redemption_id.in_(
+                Point.redemption_id.is_(None),
+                Point.redemption_id.in_(
                     select(Redemption.id).where(Redemption.is_voided == True)  # noqa: E712
                 ),
             ),
         )
-        .group_by(Stamp.customer_id)
+        .group_by(Point.customer_id)
         .subquery()
     )
 
@@ -158,21 +158,21 @@ async def find_unredeemed_reward_customers(
 
     active = (
         select(
-            Stamp.customer_id.label("cid"),
+            Point.customer_id.label("cid"),
             func.count().label("active_count"),
-            func.max(Stamp.created_at).label("last_at"),
+            func.max(Point.created_at).label("last_at"),
         )
         .where(
-            Stamp.shop_id == shop.id,
-            Stamp.is_voided == False,  # noqa: E712
+            Point.shop_id == shop.id,
+            Point.is_voided == False,  # noqa: E712
             or_(
-                Stamp.redemption_id.is_(None),
-                Stamp.redemption_id.in_(
+                Point.redemption_id.is_(None),
+                Point.redemption_id.in_(
                     select(Redemption.id).where(Redemption.is_voided == True)  # noqa: E712
                 ),
             ),
         )
-        .group_by(Stamp.customer_id)
+        .group_by(Point.customer_id)
         .subquery()
     )
 

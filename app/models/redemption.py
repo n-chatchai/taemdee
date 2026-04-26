@@ -8,9 +8,9 @@ from app.models.util import utcnow
 
 
 class Redemption(SQLModel, table=True):
-    """A customer claiming a reward. Groups the stamps that were consumed.
+    """A customer claiming a reward. Groups the points that were consumed.
 
-    Voiding sets `is_voided` — the stamps become available again.
+    Voiding sets `is_voided` — the points become available again.
     """
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
@@ -24,5 +24,5 @@ class Redemption(SQLModel, table=True):
 
     created_at: datetime = Field(default_factory=utcnow)
 
-    stamps: List["Stamp"] = Relationship(back_populates="redemption")
+    points: List["Point"] = Relationship(back_populates="redemption")
     branch: Optional["Branch"] = Relationship(back_populates="redemptions")
