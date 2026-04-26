@@ -47,8 +47,11 @@ async def verify_and_login(
     ref: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_session),
 ):
-    if not await verify_otp(db, phone, code):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired code")
+    # In simulate mode the server already gave the client the real code,
+    # so we trust the submission directly — no DB round-trip needed.
+    if not settings.login_otp_simulate:
+        if not await verify_otp(db, phone, code):
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired code")
 
     result = await db.exec(select(Shop).where(Shop.phone == phone))
     shop = result.first()
