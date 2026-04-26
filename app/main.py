@@ -1,14 +1,16 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request, status
+from fastapi import Depends, FastAPI, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
+from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import SESSION_COOKIE_NAME, SessionAuthError
-from app.core.database import engine
+from app.core.auth import CUSTOMER_COOKIE_NAME, SESSION_COOKIE_NAME, SessionAuthError
+from app.core.database import engine, get_session
 from app.core.templates import templates
+from app.models import Customer
 from app.routes import auth, branches, customer, deereach, issuance, shops, team
-from app.services.auth import decode_session_token
+from app.services.auth import decode_customer_token, decode_session_token
 
 
 @asynccontextmanager
@@ -51,13 +53,31 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/")
-async def home(request: Request):
-    session_cookie = request.cookies.get(SESSION_COOKIE_NAME)
-    is_logged_in = bool(session_cookie and decode_session_token(session_cookie))
+async def home(request: Request, db: AsyncSession = Depends(get_session)):
+    """Marketing home for guests. Logged-in users get sent to their app —
+    matters most for PWA installs (Add to Home Screen): the saved icon should
+    open the user's dashboard, not the marketing pitch they've already seen.
+    """
+    shop_cookie = request.cookies.get(SESSION_COOKIE_NAME)
+    if shop_cookie and decode_session_token(shop_cookie):
+        return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+
+    customer_cookie = request.cookies.get(CUSTOMER_COOKIE_NAME)
+    if customer_cookie:
+        customer_id = decode_customer_token(customer_cookie)
+        if customer_id:
+            customer = await db.get(Customer, customer_id)
+            if customer:
+                # Anonymous (auto-created on first /scan) → /my-id so they at
+                # least see their identity QR; /my-cards is meaningless without
+                # a claimed account.
+                target = "/my-cards" if not customer.is_anonymous else "/my-id"
+                return RedirectResponse(url=target, status_code=status.HTTP_303_SEE_OTHER)
+
     return templates.TemplateResponse(
         request=request,
         name="home.html",
-        context={"is_logged_in": is_logged_in},
+        context={"is_logged_in": False},
     )
 
 

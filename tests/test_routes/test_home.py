@@ -9,14 +9,43 @@ async def test_home_renders_logged_out(client):
     assert 'href="/shop/dashboard"' not in body
 
 
-async def test_home_swaps_nav_to_dashboard_when_logged_in(auth_client):
-    response = await auth_client.get("/")
-    assert response.status_code == 200
-    body = response.text
-    assert 'href="/shop/dashboard"' in body
-    assert "แดชบอร์ด" in body
-    # The modal trigger link only appears for logged-out visitors
-    assert 'href="#login-modal"' not in body
+async def test_home_redirects_logged_in_shop_to_dashboard(auth_client):
+    """PWA-installed shops should land in their dashboard, not the marketing
+    pitch they've already seen during onboarding."""
+    response = await auth_client.get("/", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/shop/dashboard"
+
+
+async def test_home_redirects_claimed_customer_to_my_cards(client, db, shop):
+    """A customer who has claimed their account lands on /my-cards — their
+    actual stamp collection — instead of the marketing pitch."""
+    from sqlmodel import select
+
+    from app.models import Customer
+
+    # /scan creates an anonymous customer cookie; flip is_anonymous to simulate
+    # a claimed account (skips the OTP+SoftWall flow which is tested elsewhere).
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    customer = (await db.exec(select(Customer))).first()
+    customer.is_anonymous = False
+    customer.phone = "0812345678"
+    db.add(customer)
+    await db.commit()
+
+    response = await client.get("/", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/my-cards"
+
+
+async def test_home_redirects_anonymous_customer_to_my_id(client, shop):
+    """An auto-created anonymous customer (just scanned a QR, never claimed)
+    has no stamp-collection page — send them to their identity QR instead."""
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+
+    response = await client.get("/", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/my-id"
 
 
 async def test_legacy_register_redirects_to_login(client):
