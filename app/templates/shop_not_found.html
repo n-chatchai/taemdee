@@ -1,0 +1,47 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ไม่พบร้านนี้ · TaemDee แต้มดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="not-found">
+      <div class="nf-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+        </svg>
+      </div>
+      <div class="nf-title">ไม่พบ<em>ร้านนี้</em></div>
+      <div class="nf-sub">
+        ร้านอาจถูกปิดไปแล้ว หรือ QR ที่สแกนเป็นของเก่า
+        <br>ลองสแกน QR ใหม่อีกครั้งที่เคาน์เตอร์
+      </div>
+
+      <div class="nf-actions">
+        <a href="/my-cards" class="nf-btn primary">
+          <span>ดูบัตรของฉัน</span>
+          <span class="arrow">→</span>
+        </a>
+        <a href="/" class="nf-btn">กลับหน้าแรก</a>
+      </div>
+
+      <div class="nf-debug">
+        <span>รหัสที่ส่งมา:</span>
+        <code>{{ shop_id }}</code>
+      </div>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

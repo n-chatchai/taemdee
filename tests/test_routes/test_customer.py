@@ -104,14 +104,24 @@ async def test_card_no_celebration_on_first_visit(client, shop):
     assert 'class="scan-cel"' not in body
 
 
-async def test_scan_unknown_shop_404(client):
-    response = await client.get(f"/scan/{uuid4()}", follow_redirects=False)
-    assert response.status_code == 404
+async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):
+    """Scanning a QR for a deleted shop forwards to /card/{id}, which renders
+    the Thai "ไม่พบร้านนี้" page (404) — not a JSON dead-end."""
+    bogus = uuid4()
+    response = await client.get(f"/scan/{bogus}", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/card/{bogus}"
 
 
-async def test_card_unknown_shop_404(client):
-    response = await client.get(f"/card/{uuid4()}")
+async def test_card_unknown_shop_renders_friendly_page(client):
+    bogus = uuid4()
+    response = await client.get(f"/card/{bogus}")
     assert response.status_code == 404
+    body = response.text
+    assert "ไม่พบ" in body  # Thai "not found" copy
+    assert "shop_not_found" not in body or "ไม่พบร้านนี้" in body or "ร้านนี้" in body
+    assert "/my-cards" in body  # CTA to my-cards is present
+    assert str(bogus) in body  # debug shop_id rendered
 
 
 async def test_claim_phone_with_valid_otp(client, db, shop):

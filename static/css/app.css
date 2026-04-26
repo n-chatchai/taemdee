@@ -4756,6 +4756,103 @@ body {
 }
 
 /* ==========================================================
+   shop_not_found.html — friendly Thai page when a customer scans
+   a QR for a deleted/missing shop instead of a JSON 404.
+   ========================================================== */
+
+.not-found {
+  margin: auto;
+  padding: 18vh 28px 24px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.not-found .nf-icon {
+  width: 72px;
+  height: 72px;
+  border-radius: 50%;
+  background: var(--accent-soft);
+  border: 1.5px solid var(--ink);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-bottom: 18px;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.not-found .nf-icon svg { width: 32px; height: 32px; }
+.not-found .nf-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 26px;
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+}
+.not-found .nf-title em { color: var(--accent); font-style: normal; }
+.not-found .nf-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  max-width: 320px;
+  margin-bottom: 24px;
+}
+.not-found .nf-actions {
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+  width: 100%;
+  max-width: 280px;
+  margin-bottom: 18px;
+}
+.not-found .nf-btn {
+  padding: 13px 18px;
+  border-radius: 14px;
+  border: 1.5px solid var(--ink);
+  text-decoration: none;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  background: var(--surface);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.not-found .nf-btn.primary {
+  background: var(--ink);
+  color: var(--bg);
+  box-shadow: 3px 3px 0 var(--accent);
+}
+.not-found .nf-btn .arrow {
+  width: 26px;
+  height: 26px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.not-found .nf-debug {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9.5px;
+  color: var(--ink-softer);
+  letter-spacing: 0.04em;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  align-items: center;
+  opacity: 0.55;
+}
+.not-found .nf-debug code {
+  font-size: 9px;
+  word-break: break-all;
+  max-width: 320px;
+}
+
+/* ==========================================================
    Inline flash — replaces alert(); auto-dismisses on dashboard
    ========================================================== */
 

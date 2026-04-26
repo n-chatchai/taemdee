@@ -22,6 +22,32 @@ CUSTOMER_COOKIE_NAME = "customer"
 CUSTOMER_COOKIE_MAX_AGE = 365 * 24 * 3600  # 1 year
 
 
+class SessionAuthError(HTTPException):
+    """401 raised when the shop session is missing / invalid / orphaned.
+
+    Carries a `reason` slug so handlers can distinguish cases without string-
+    matching the human-readable detail. The detail itself is informative
+    (specific cause + Thai-ready hint) so it's also useful in logs / API
+    JSON responses.
+    """
+
+    REASONS = {
+        "session_missing": "ยังไม่ได้เข้าสู่ระบบ — กรุณาเข้าสู่ระบบเพื่อใช้แดชบอร์ด",
+        "session_invalid": "Session ไม่ถูกต้องหรือหมดอายุ — กรุณาเข้าสู่ระบบใหม่",
+        "session_shop_missing": "ไม่พบร้านค้าตามที่ session อ้างถึง (อาจถูกลบไปแล้ว) — กรุณาเข้าสู่ระบบใหม่",
+        "session_staff_revoked": "พนักงานคนนี้ถูกถอนสิทธิ์การเข้าใช้งานแล้ว — ติดต่อเจ้าของร้าน",
+    }
+
+    def __init__(self, reason: str):
+        if reason not in self.REASONS:
+            raise ValueError(f"Unknown SessionAuthError reason: {reason}")
+        self.reason = reason
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=self.REASONS[reason],
+        )
+
+
 @dataclass
 class SessionContext:
     shop_id: UUID
@@ -37,11 +63,11 @@ async def get_session_context(
     session_cookie: Optional[str] = Cookie(None, alias=SESSION_COOKIE_NAME),
 ) -> SessionContext:
     if not session_cookie:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Not authenticated")
+        raise SessionAuthError("session_missing")
 
     payload = decode_session_token(session_cookie)
     if not payload:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Invalid session")
+        raise SessionAuthError("session_invalid")
 
     return SessionContext(
         shop_id=UUID(payload["shop_id"]),
@@ -56,7 +82,7 @@ async def get_current_shop(
 ) -> Shop:
     shop = await db.get(Shop, ctx.shop_id)
     if not shop:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Shop not found")
+        raise SessionAuthError("session_shop_missing")
     return shop
 
 
@@ -69,7 +95,7 @@ async def get_current_staff(
         return None
     staff = await db.get(StaffMember, ctx.staff_id)
     if not staff or staff.revoked_at is not None:
-        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "Staff access revoked")
+        raise SessionAuthError("session_staff_revoked")
     return staff
 
 

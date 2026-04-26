@@ -1,9 +1,10 @@
 from contextlib import asynccontextmanager
 
-from fastapi import FastAPI, Request
+from fastapi import FastAPI, Request, status
+from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 
-from app.core.auth import SESSION_COOKIE_NAME
+from app.core.auth import SESSION_COOKIE_NAME, SessionAuthError
 from app.core.database import engine
 from app.core.templates import templates
 from app.routes import auth, branches, customer, deereach, issuance, shops, team
@@ -18,6 +19,33 @@ async def lifespan(app: FastAPI):
 
 
 app = FastAPI(title="TaemDee — Digital Point Cards", lifespan=lifespan)
+
+
+@app.exception_handler(SessionAuthError)
+async def session_auth_error_handler(request: Request, exc: SessionAuthError):
+    """When a session is missing/invalid/points at a deleted shop:
+
+    - HTML browser requests → 303 redirect to /shop/login + clear the bad cookie.
+      The destination page can show `?reason=...` if it ever wants to surface
+      the specific cause.
+    - JSON / API clients → standard 401 with the informative `detail` string.
+
+    Detection is by exception TYPE (not string match), so detail messages can
+    evolve freely without breaking the handler.
+    """
+    accept = request.headers.get("accept", "")
+    if "text/html" in accept:
+        response = RedirectResponse(
+            url=f"/shop/login?reason={exc.reason}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+        response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+        return response
+
+    from fastapi.exception_handlers import http_exception_handler
+
+    return await http_exception_handler(request, exc)
+
 
 app.mount("/static", StaticFiles(directory="static"), name="static")
 

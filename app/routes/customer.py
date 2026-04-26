@@ -147,7 +147,14 @@ async def view_card(
 ):
     shop = await db.get(Shop, shop_id)
     if not shop:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Shop not found")
+        # Friendly HTML page rather than a JSON 404 — customer most likely
+        # arrived via an old QR or a deleted shop's bookmark.
+        return templates.TemplateResponse(
+            request=request,
+            name="shop_not_found.html",
+            context={"shop_id": shop_id},
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     point_count = await active_point_count(db, shop.id, customer.id)
@@ -198,13 +205,17 @@ async def scan(
     """
     shop = await db.get(Shop, shop_id)
     if not shop:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Shop not found")
+        # Forward to /card/{shop_id} so the friendly "ไม่พบร้านนี้" page renders.
+        return RedirectResponse(url=f"/card/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
 
     branch_obj: Optional[Branch] = None
     if branch:
         branch_obj = await db.get(Branch, branch)
         if not branch_obj or branch_obj.shop_id != shop.id:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "Branch not found for this shop")
+            raise HTTPException(
+                status.HTTP_404_NOT_FOUND,
+                "ไม่พบสาขานี้ในร้าน — QR ที่สแกนอาจเป็นของสาขาที่ปิดไปแล้ว",
+            )
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
 
@@ -253,7 +264,10 @@ async def redeem_reward(
 ):
     shop = await db.get(Shop, shop_id)
     if not shop:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Shop not found")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            "ไม่พบร้านค้านี้ — อาจถูกลบไปแล้ว ไม่สามารถรับรางวัลได้",
+        )
 
     customer, _ = await find_or_create_customer(customer_cookie, db)
 
@@ -285,11 +299,20 @@ async def reward_claimed(
     """C5 — celebration screen shown right after a redemption."""
     shop = await db.get(Shop, shop_id)
     if not shop:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Shop not found")
+        # Customer landed on /claimed for a deleted shop — friendly page wins.
+        return templates.TemplateResponse(
+            request=request,
+            name="shop_not_found.html",
+            context={"shop_id": shop_id},
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
 
     redemption = await db.get(Redemption, r)
     if not redemption or redemption.shop_id != shop.id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "Redemption not found")
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            "ไม่พบรายการรับรางวัลนี้ — อาจถูกยกเลิกหรือลิงก์เก่าไปแล้ว",
+        )
 
     return templates.TemplateResponse(
         request=request,
@@ -310,7 +333,10 @@ async def claim_phone(
     anonymous account to a claimed one. Refreshes the customer cookie since the
     resulting customer_id may change (merge case)."""
     if not await verify_otp(db, phone, code):
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired code")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "รหัส OTP ไม่ถูกต้องหรือหมดอายุแล้ว — กรุณากดส่งใหม่",
+        )
 
     customer, _ = await find_or_create_customer(customer_cookie, db)
     claimed = await claim_by_phone(db, customer, phone, display_name=display_name)
