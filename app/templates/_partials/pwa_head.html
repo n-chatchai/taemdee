@@ -14,3 +14,8 @@
 <link rel="icon" type="image/png" sizes="512x512" href="/static/taemdee-icons/taemdee-icon-512.png">
 <link rel="apple-touch-icon" sizes="192x192" href="/static/taemdee-icons/taemdee-icon-192.png">
 <link rel="apple-touch-icon" sizes="512x512" href="/static/taemdee-icons/taemdee-icon-512.png">
+{# Hide the "เพิ่มลงหน้าจอ" footer link when the page is opened from an already-
+   installed PWA. CSS media query covers modern browsers; the JS line handles
+   older iOS Safari which uses the non-standard navigator.standalone instead. #}
+<style>@media (display-mode: standalone){.footer-mark .fm-install{display:none}}.pwa-standalone .footer-mark .fm-install{display:none}</style>
+<script>if(window.navigator.standalone)document.documentElement.classList.add('pwa-standalone');</script>

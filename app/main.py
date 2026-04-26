@@ -8,7 +8,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.auth import CUSTOMER_COOKIE_NAME, SESSION_COOKIE_NAME, SessionAuthError
 from app.core.database import engine, get_session
 from app.core.templates import templates
-from app.models import Customer
+from app.models import Customer, Shop
 from app.routes import auth, branches, customer, deereach, issuance, shops, team
 from app.services.auth import decode_customer_token, decode_session_token
 
@@ -58,9 +58,20 @@ async def home(request: Request, db: AsyncSession = Depends(get_session)):
     matters most for PWA installs (Add to Home Screen): the saved icon should
     open the user's dashboard, not the marketing pitch they've already seen.
     """
+    from uuid import UUID
+
     shop_cookie = request.cookies.get(SESSION_COOKIE_NAME)
-    if shop_cookie and decode_session_token(shop_cookie):
-        return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+    if shop_cookie:
+        payload = decode_session_token(shop_cookie)
+        # Verify the referenced shop still exists before redirecting — otherwise
+        # /shop/dashboard would just raise SessionAuthError → /shop/login, which
+        # strands an anonymous customer behind a login wall they don't need.
+        if payload and (shop_id := payload.get("shop_id")):
+            try:
+                if await db.get(Shop, UUID(shop_id)):
+                    return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+            except ValueError:
+                pass  # Malformed shop_id in token — fall through to customer check.
 
     customer_cookie = request.cookies.get(CUSTOMER_COOKIE_NAME)
     if customer_cookie:
