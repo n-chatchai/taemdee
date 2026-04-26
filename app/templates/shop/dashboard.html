@@ -131,9 +131,11 @@
     </a>
 
     {% include "_partials/footer_mark.html" %}
-  </div>
 
-  {% include "_partials/issue_choose.html" %}
+    {# Modal must live INSIDE .td so the CSS custom properties (--bg, --surface,
+       --ink) it relies on resolve. Variables are scoped to .td, not :root. #}
+    {% include "_partials/issue_choose.html" %}
+  </div>
 
   <script>
     // Live feed via SSE — new stamps/redemptions stream in from /shop/events.
