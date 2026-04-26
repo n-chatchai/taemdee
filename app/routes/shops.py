@@ -112,12 +112,14 @@ async def dashboard(
     branches_count = (await db.exec(
         select(func.count()).select_from(Branch).where(Branch.shop_id == shop.id)
     )).one()
-    primary_branch_name = None
-    if branches_count >= 2:
-        first_branch = (await db.exec(
-            select(Branch).where(Branch.shop_id == shop.id).order_by(Branch.created_at)
-        )).first()
-        primary_branch_name = first_branch.name if first_branch else None
+    first_branch = (await db.exec(
+        select(Branch).where(Branch.shop_id == shop.id).order_by(Branch.created_at)
+    )).first()
+    # Always surface a "current context" pill — branch name → shop location → "ทุกสาขา".
+    branch_label = (
+        first_branch.name if first_branch
+        else (shop.location or "ทุกสาขา")
+    )
 
     weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
 
@@ -151,7 +153,7 @@ async def dashboard(
             "suggestions": suggestions,
             "weekday_th": weekday_th,
             "branches_count": branches_count,
-            "primary_branch_name": primary_branch_name,
+            "branch_label": branch_label,
         },
     )
 
