@@ -276,6 +276,40 @@ async def onboard_reward_post(
     return RedirectResponse(url="/shop/onboard/theme", status_code=status.HTTP_303_SEE_OTHER)
 
 
+# Settings-context reward editor — same fields as the onboarding step, but with
+# app-bar chrome (back to /shop/settings, single "บันทึก" button) instead of the
+# wizard's step counter and "ถัดไป · เลือกธีม" advance.
+@router.get("/reward", response_class=HTMLResponse)
+async def reward_edit_get(request: Request, shop: Shop = Depends(get_current_shop)):
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/reward_edit.html",
+        context={
+            "shop": shop,
+            "reward_images": ["coffee_cup", "latte_art", "iced"],
+            "goals": VALID_REWARD_GOALS,
+        },
+    )
+
+
+@router.post("/reward")
+async def reward_edit_post(
+    reward_description: str = Form(...),
+    reward_image: Optional[str] = Form(None),
+    reward_threshold: int = Form(10),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    shop.reward_description = reward_description.strip() or shop.reward_description
+    if reward_image in VALID_REWARD_IMAGES:
+        shop.reward_image = reward_image
+    if 1 <= reward_threshold <= 99:
+        shop.reward_threshold = reward_threshold
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.get("/onboard/theme", response_class=HTMLResponse)
 async def onboard_theme_get(
     request: Request,

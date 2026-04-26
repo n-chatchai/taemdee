@@ -683,6 +683,232 @@
   }
 
   /* ========================================================== */
+  /* S3v — Floating bottom CTA (when method ≠ ลูกค้าสแกน)      */
+  /* ========================================================== */
+  .s3-issue-fab {
+    position: sticky;
+    bottom: 12px;
+    margin: 16px 16px 0;
+    background: var(--ink); color: #FFF;
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 12px 18px 12px 14px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 4px 4px 0 var(--accent);
+    cursor: pointer;
+    z-index: 5;
+  }
+  .s3-issue-fab .fab-icon {
+    width: 32px; height: 32px;
+    background: var(--accent); color: #FFF;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .s3-issue-fab .fab-icon svg { width: 16px; height: 16px; }
+  .s3-issue-fab .fab-text { flex: 1; line-height: 1.2; }
+  .s3-issue-fab .fab-text .fab-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px; letter-spacing: -0.01em;
+  }
+  .s3-issue-fab .fab-text .fab-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    color: var(--ink-softer);
+    margin-top: 1px;
+  }
+  .s3-issue-fab .fab-arrow {
+    color: var(--butter); font-size: 16px; font-weight: 700;
+  }
+
+  /* ========================================================== */
+  /* IssueScan — Manual point issuing (ร้านสแกน)               */
+  /* IssuePhone — Manual point issuing (กรอกเบอร์)             */
+  /* ========================================================== */
+  .issue-modal-overlay {
+    position: absolute; inset: 0;
+    background: rgba(17,17,17,0.6);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    z-index: 10;
+  }
+  .issue-modal-sheet {
+    position: absolute;
+    left: 0; right: 0; bottom: 0;
+    background: var(--bg);
+    border-top: 1.5px solid var(--ink);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 12px 0 16px;
+    z-index: 11;
+  }
+  .issue-modal-handle {
+    width: 38px; height: 4px;
+    background: var(--ink-softer);
+    border-radius: 999px;
+    margin: 0 auto 14px;
+    opacity: 0.5;
+  }
+  .issue-modal-head {
+    padding: 0 20px 14px;
+    border-bottom: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .issue-modal-head .title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: -0.015em;
+  }
+  .issue-modal-head .x-btn {
+    width: 28px; height: 28px;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    background: var(--surface);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* Scan modal — camera viewfinder */
+  .scan-viewfinder {
+    margin: 18px 20px 14px;
+    aspect-ratio: 1;
+    background: linear-gradient(135deg, #1a1a1a 0%, #2a2a2a 100%);
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    position: relative;
+    overflow: hidden;
+  }
+  .scan-viewfinder::before {
+    content: '';
+    position: absolute;
+    top: 12%; left: 12%; right: 12%; bottom: 12%;
+    border: 2px solid var(--butter);
+    border-radius: 14px;
+  }
+  .scan-viewfinder::after {
+    content: '';
+    position: absolute;
+    top: 12%; left: 12%; right: 12%; height: 2px;
+    background: var(--accent);
+    box-shadow: 0 0 8px var(--accent);
+    animation: scan-line 2s ease-in-out infinite;
+  }
+  @keyframes scan-line {
+    0%, 100% { top: 12%; }
+    50% { top: calc(88% - 2px); }
+  }
+  .scan-corners {
+    position: absolute;
+    top: 12%; left: 12%; right: 12%; bottom: 12%;
+  }
+  .scan-corners > span {
+    position: absolute;
+    width: 18px; height: 18px;
+    border-color: var(--butter);
+    border-style: solid;
+    border-width: 0;
+  }
+  .scan-corners .tl { top: -2px; left: -2px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 8px; }
+  .scan-corners .tr { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 8px; }
+  .scan-corners .bl { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 8px; }
+  .scan-corners .br { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 8px; }
+  .scan-hint {
+    margin: 0 20px 14px;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px; color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .scan-fallback {
+    margin: 0 20px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+    text-align: center;
+  }
+  .scan-fallback a {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px; color: var(--ink);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+  }
+
+  /* Phone modal — number input + numpad */
+  .phone-display {
+    margin: 18px 20px 12px;
+    padding: 16px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    text-align: center;
+  }
+  .phone-display .label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px; letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-softer);
+    margin-bottom: 4px;
+  }
+  .phone-display .number {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: 0.02em;
+    color: var(--ink);
+  }
+  .phone-display .number .placeholder {
+    color: var(--ink-softer); opacity: 0.4;
+  }
+  .phone-display .number .cursor {
+    display: inline-block;
+    width: 2px; height: 22px;
+    background: var(--accent);
+    vertical-align: middle;
+    margin-left: 1px;
+    animation: blink 1.1s infinite;
+  }
+  .phone-numpad {
+    margin: 0 20px 14px;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .phone-numpad .key {
+    aspect-ratio: 2 / 1.1;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 18px;
+    color: var(--ink);
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .phone-numpad .key.del {
+    background: var(--bg);
+    color: var(--ink-soft);
+    box-shadow: none;
+  }
+  .phone-numpad .key.del svg { width: 18px; height: 18px; }
+  .phone-confirm {
+    margin: 0 20px;
+    padding: 14px 16px;
+    background: var(--accent); color: #FFF;
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    text-align: center;
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: pointer;
+  }
+  .phone-confirm.disabled {
+    background: var(--surface); color: var(--ink-softer);
+    box-shadow: 2px 2px 0 var(--ink-softer);
+    border-color: var(--ink-softer);
+  }
+
+  /* ========================================================== */
   /* C2 — First-stamp celebration banner                         */
   /* ========================================================== */
   .c2-celebration {
@@ -4415,7 +4641,7 @@
     </div>
     <div class="cover-meta">
       Design v1<br>
-      ร้าน · 16 หน้า<br>
+      ร้าน · 19 หน้า<br>
       มือถือ · ภาษาไทย
     </div>
   </div>
@@ -4431,7 +4657,7 @@
 
     <div class="cover-stats">
       <div class="cover-stat">
-        <div class="n">16</div>
+        <div class="n">19</div>
         <div class="l">หน้าจอร้าน</div>
       </div>
       <div class="cover-stat">
@@ -5018,7 +5244,7 @@
       <div class="num">03</div>
       <h2>ร้าน · <em>ใช้งานประจำวัน</em></h2>
     </div>
-    <div class="desc">2 หน้าจอ — แดชบอร์ดประจำวัน และแจ้งเตือนเมื่อมีแต้มเข้า/รับรางวัล</div>
+    <div class="desc">5 หน้าจอ — แดชบอร์ดประจำวัน, variant เมื่อร้านออกแต้มเอง, modal สแกน QR หรือกรอกเบอร์, และแจ้งเตือนแต้ม</div>
   </div>
 
   <div class="grid">
@@ -5104,6 +5330,198 @@
         </div>
       </div>
     </div>
+    <!-- S3v — DeeBoard variant (when issue method = ร้านสแกน or กรอกเบอร์) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S3v</span>แดชบอร์ด · มีปุ่มออกแต้ม</div>
+        <h3>เมื่อร้านเลือก "ร้านสแกน" หรือ "กรอกเบอร์"</h3>
+        <p>เพิ่ม floating button "ออกแต้มลูกค้า" ติด bottom ของหน้าจอ — sticky pill ดำ orange shadow มอง thumb-reach ได้ตลอด · กดแล้วเปิด modal สแกน QR หรือกรอกเบอร์ตาม method ที่ shop config ใน S5</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s3-top">
+              <div class="hi">
+                สวัสดีพี่หมี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="day">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              </div>
+              <div class="actions">
+                <div class="branch-pill">นิมมาน</div>
+                <div class="avatar">ม</div>
+              </div>
+            </div>
+
+            <div class="s3-hero">
+              <div class="label">✦ สัปดาห์นี้</div>
+              <div class="num">
+                <span class="accent">23</span>
+                <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              </div>
+              <div class="caption">ลูกค้ากลับมา</div>
+              <div class="delta">↑ +8 จากสัปดาห์ที่แล้ว</div>
+            </div>
+
+            <div class="s3-stats">
+              <div class="s3-stat"><div class="n">147</div><div class="l">แต้ม</div></div>
+              <div class="s3-stat"><div class="n">6</div><div class="l">รับรางวัล</div></div>
+              <div class="s3-stat balance"><div class="n">412</div><div class="l">เครดิต</div></div>
+            </div>
+
+            <div class="ph-section-h">
+              <div class="label">ฟีดสด</div>
+              <div class="live">สด</div>
+            </div>
+            <div class="feed-row">
+              <div class="t">09:38</div>
+              <div class="w"><span class="icon-mini">+</span><strong>1 แต้ม</strong> <span class="id">#A72B</span></div>
+              <button class="void">ยกเลิก</button>
+            </div>
+            <div class="feed-row">
+              <div class="t">09:31</div>
+              <div class="w"><strong>รับรางวัล</strong> <span class="id">#F04C</span></div>
+              <button class="void">ยกเลิก</button>
+            </div>
+
+            <div class="s3-issue-fab">
+              <div class="fab-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <div class="fab-text">
+                <div class="fab-name">ออกแต้มลูกค้า</div>
+                <div class="fab-meta">สแกน · กรอกเบอร์</div>
+              </div>
+              <span class="fab-arrow">→</span>
+            </div>
+
+                        <div class="footer-mark">
+              <span class="fm-brand">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span class="brand">taemdee<span class="dot">.</span></span>
+              </span>
+              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3.scan — Manual point issuing modal (ร้านสแกน) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S3.scan</span>ออกแต้ม · สแกน QR ลูกค้า</div>
+        <h3>โหมดร้านสแกน</h3>
+        <p>เปิดเมื่อกดปุ่ม "ออกแต้มลูกค้า" ใน S3v ถ้า config = ร้านสแกน — bottom sheet เปิดกล้อง viewfinder พร้อม corner markers + animated scan line + fallback "กรอกเบอร์แทน"</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s3-top">
+              <div class="hi">
+                สวัสดีพี่หมี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="day">วันศุกร์</span>
+              </div>
+              <div class="actions">
+                <div class="branch-pill">นิมมาน</div>
+                <div class="avatar">ม</div>
+              </div>
+            </div>
+
+            <div class="s3-hero">
+              <div class="label">✦ สัปดาห์นี้</div>
+              <div class="num"><span class="accent">23</span></div>
+              <div class="caption">ลูกค้ากลับมา</div>
+            </div>
+
+            <div class="issue-modal-overlay"></div>
+            <div class="issue-modal-sheet">
+              <div class="issue-modal-handle"></div>
+              <div class="issue-modal-head">
+                <div class="title">สแกน QR ลูกค้า</div>
+                <div class="x-btn">×</div>
+              </div>
+
+              <div class="scan-viewfinder">
+                <div class="scan-corners">
+                  <span class="tl"></span><span class="tr"></span>
+                  <span class="bl"></span><span class="br"></span>
+                </div>
+              </div>
+
+              <div class="scan-hint">วาง QR ของลูกค้าให้อยู่ในกรอบ<br>กล้องจะอ่านอัตโนมัติ</div>
+
+              <div class="scan-fallback">
+                <a>ลูกค้าไม่มี QR · กรอกเบอร์แทน</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3.phone — Manual point issuing modal (กรอกเบอร์) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S3.phone</span>ออกแต้ม · กรอกเบอร์</div>
+        <h3>โหมดกรอกเบอร์</h3>
+        <p>เปิดเมื่อกดปุ่ม "ออกแต้มลูกค้า" ใน S3v ถ้า config = กรอกเบอร์ (หรือ fallback จาก scan modal) — bottom sheet กับ phone display + custom numpad + ปุ่ม "ออกแต้ม" disabled จนกรอกครบ 10 หลัก</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s3-top">
+              <div class="hi">
+                สวัสดีพี่หมี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="day">วันศุกร์</span>
+              </div>
+              <div class="actions">
+                <div class="branch-pill">นิมมาน</div>
+                <div class="avatar">ม</div>
+              </div>
+            </div>
+
+            <div class="issue-modal-overlay"></div>
+            <div class="issue-modal-sheet">
+              <div class="issue-modal-handle"></div>
+              <div class="issue-modal-head">
+                <div class="title">กรอกเบอร์ลูกค้า</div>
+                <div class="x-btn">×</div>
+              </div>
+
+              <div class="phone-display">
+                <div class="label">เบอร์โทรลูกค้า</div>
+                <div class="number">081 234<span class="placeholder"> ____</span><span class="cursor"></span></div>
+              </div>
+
+              <div class="phone-numpad">
+                <div class="key">1</div>
+                <div class="key">2</div>
+                <div class="key">3</div>
+                <div class="key">4</div>
+                <div class="key">5</div>
+                <div class="key">6</div>
+                <div class="key">7</div>
+                <div class="key">8</div>
+                <div class="key">9</div>
+                <div class="key" style="visibility:hidden;"></div>
+                <div class="key">0</div>
+                <div class="key del">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2zM18 9l-6 6M12 9l6 6"/></svg>
+                </div>
+              </div>
+
+              <div class="phone-confirm disabled">ออกแต้ม · กรอกเบอร์ให้ครบ 10 หลัก</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- S6 Stamp notification -->
     <div class="mockup">
       <div class="mockup-caption">
@@ -5279,7 +5697,29 @@
             </div>
 
             <button class="s10-logout">ออกจากระบบ</button>
-                      <div class="footer-mark">
+            <div class="s3-issue-fab">
+              <div class="fab-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <div class="fab-text">
+                <div class="fab-name">ออกแต้มลูกค้า</div>
+                <div class="fab-meta">สแกน · กรอกเบอร์</div>
+              </div>
+              <span class="fab-arrow">→</span>
+            </div>
+
+            <div class="s3-issue-fab">
+              <div class="fab-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <div class="fab-text">
+                <div class="fab-name">ออกแต้มลูกค้า</div>
+                <div class="fab-meta">สแกน · กรอกเบอร์</div>
+              </div>
+              <span class="fab-arrow">→</span>
+            </div>
+
+                                              <div class="footer-mark">
                         <span class="fm-brand">
                           <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
                           <span class="brand">taemdee<span class="dot">.</span></span>
@@ -5975,7 +6415,7 @@
     <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
     <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
   </svg>
-  <h3>ครบ 16 หน้าจอร้าน <span class="accent">·</span> Design v1</h3>
+  <h3>ครบ 19 หน้าจอร้าน <span class="accent">·</span> Design v1</h3>
   <p>
     เริ่มจาก HM (หน้าแรกบนมือถือ) → S1 (เข้าสู่ระบบ) → S2.1-S2.4 (ตั้งค่าร้าน 60 วินาที) ใช้งานประจำวันที่ S3/S5/S6/S7 และจัดการตั้งค่าที่ S10/S8/S9/S11/S12 — ทำหลังจากฝั่งลูกค้าเสร็จ
   </p>
