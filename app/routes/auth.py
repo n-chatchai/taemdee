@@ -140,7 +140,7 @@ def _set_session_cookie(response: Response, token: str) -> None:
         key=SESSION_COOKIE_NAME,
         value=token,
         httponly=True,
-        secure=settings.environment == "production",
+        secure=True,  # always Secure — local dev uses HTTPS (mkcert), prod uses HTTPS
         samesite="lax",
         max_age=settings.session_expire_days * 24 * 3600,
         path="/",

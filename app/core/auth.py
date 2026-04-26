@@ -110,7 +110,7 @@ def set_customer_cookie(response: Response, customer_id: UUID) -> None:
         key=CUSTOMER_COOKIE_NAME,
         value=issue_customer_token(customer_id),
         httponly=True,
-        secure=settings.environment == "production",
+        secure=True,  # always Secure — local dev uses HTTPS (mkcert), prod uses HTTPS
         samesite="lax",
         max_age=CUSTOMER_COOKIE_MAX_AGE,
         path="/",
