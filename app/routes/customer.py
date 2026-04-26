@@ -226,9 +226,10 @@ async def view_card(
             "is_first_visit": is_first_visit,
             "branch": branch_obj,
             # `?stamped=1` from the scan redirect — triggers the celebration
-            # overlay once. Suppressed when is_first_visit (C2 banner already
-            # carries the celebration energy for that case).
-            "just_stamped": bool(stamped) and not is_first_visit,
+            # overlay once. Fires on first visits too: the C2 banner is a
+            # contextual "this is your first one here" note, not a substitute
+            # for the confetti moment every stamp deserves.
+            "just_stamped": bool(stamped),
         },
     )
     if was_created:

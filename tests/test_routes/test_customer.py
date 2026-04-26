@@ -92,16 +92,16 @@ async def test_scan_publishes_stamp_toast_event(client, db, shop, monkeypatch):
     assert "ms just-now" in toast_html
 
 
-async def test_card_no_celebration_on_first_visit(client, shop):
-    """First visit shows the C2 banner instead — celebration overlay is suppressed
-    so the two effects don't stack on each other."""
+async def test_card_celebration_on_first_visit(client, shop):
+    """First visit gets BOTH the C2 banner (contextual "your first stamp here")
+    AND the scan-cel confetti overlay — the most special stamp deserves the
+    same celebration as later ones, not less."""
     # Single scan ⇒ point_count==1 ⇒ is_first_visit==True
     response = await client.get(f"/scan/{shop.id}", follow_redirects=True)
     assert response.status_code == 200
     body = response.text
-    # C2 banner is present, but the standalone scan-cel overlay is not
     assert "c2-celebration" in body
-    assert 'class="scan-cel"' not in body
+    assert 'class="scan-cel"' in body
 
 
 async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):
