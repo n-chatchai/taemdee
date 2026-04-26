@@ -1,0 +1,122 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ให้แต้มลูกค้า · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="td"
+       x-data="{
+         q: '',
+         results: [],
+         selected: null,
+         points: 1,
+         flash: '',
+         flashKind: 'is-ok',
+         _t: null,
+         search() {
+           clearTimeout(this._t);
+           const q = this.q.trim();
+           if (!q) { this.results = []; return; }
+           this._t = setTimeout(async () => {
+             const r = await fetch('/shop/issue/search/customers?q=' + encodeURIComponent(q));
+             if (r.ok) { const j = await r.json(); this.results = j.results || []; }
+           }, 200);
+         },
+         pick(c) { this.selected = c; this.results = []; this.q = c.display_name; },
+         async grant() {
+           if (!this.selected) return;
+           const fd = new FormData();
+           fd.append('customer_id', this.selected.id);
+           fd.append('points', this.points);
+           const r = await fetch('/shop/issue/search/grant', { method: 'POST', body: fd });
+           if (r.ok) {
+             window.location.href = '/shop/dashboard';
+           } else {
+             const j = await r.json().catch(() => ({}));
+             this.flash = j.detail || 'ออกแต้มไม่สำเร็จ';
+             this.flashKind = 'is-error';
+           }
+         }
+       }">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">ให้แต้มลูกค้า</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="search-box">
+      <div class="search-input">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input type="text" x-model="q" @input="search(); selected = null;"
+               placeholder="ค้นจากชื่อหรือเบอร์โทร" autofocus>
+      </div>
+    </div>
+
+    <div class="search-results" x-show="results.length > 0" x-cloak>
+      <template x-for="c in results" :key="c.id">
+        <a href="#" class="search-result" @click.prevent="pick(c)">
+          <div class="sr-avatar" x-text="(c.display_name || 'ล')[0]"></div>
+          <div class="sr-info">
+            <div class="sr-name" x-text="c.display_name"></div>
+            <div class="sr-meta">
+              <span x-text="c.phone || ''"></span>
+              <span x-show="c.phone"> · </span>
+              <span x-text="c.active_stamps + ' แต้ม'"></span>
+            </div>
+          </div>
+        </a>
+      </template>
+    </div>
+
+    <div class="search-empty" x-show="q.trim() && results.length === 0 && !selected" x-cloak>
+      ไม่พบลูกค้าตามคำค้น<br>
+      <em>ลองพิมพ์เบอร์หรือชื่อให้ครบขึ้น</em>
+    </div>
+
+    <div x-show="selected" x-cloak>
+      <div class="search-results">
+        <div class="search-result selected">
+          <div class="sr-avatar" x-text="(selected?.display_name || 'ล')[0]"></div>
+          <div class="sr-info">
+            <div class="sr-name" x-text="selected?.display_name"></div>
+            <div class="sr-meta">
+              <span x-text="selected?.phone || ''"></span>
+              <span x-show="selected?.phone"> · </span>
+              <span x-text="selected?.active_stamps + ' แต้ม'"></span>
+            </div>
+          </div>
+          <span class="sr-check">✓</span>
+        </div>
+      </div>
+
+      <div class="point-amount">
+        <div class="pa-label">จำนวนแต้ม</div>
+        <div class="pa-stepper">
+          <button type="button" class="pa-btn" @click="points = Math.max(1, points - 1)">−</button>
+          <span class="pa-num" x-text="points"></span>
+          <button type="button" class="pa-btn" @click="points = Math.min(10, points + 1)">+</button>
+        </div>
+      </div>
+
+      <button type="button" class="phone-confirm" @click="grant()">
+        <span x-text="'ให้ ' + points + ' แต้มแก่ ' + (selected?.display_name || '')"></span>
+      </button>
+    </div>
+
+    <div class="dash-flash" :class="flashKind" x-show="flash" x-cloak x-text="flash"></div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

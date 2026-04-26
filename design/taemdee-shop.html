@@ -908,6 +908,183 @@
     border-color: var(--ink-softer);
   }
 
+  /* Method picker (S3.choose) */
+  .method-picker {
+    margin: 14px 16px 12px;
+    display: flex; flex-direction: column;
+    gap: 8px;
+  }
+  .method-row {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    cursor: pointer;
+  }
+  .method-row:first-child {
+    background: var(--ink); color: #FFF;
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+  .method-row .method-icon {
+    width: 36px; height: 36px;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .method-row .method-icon.primary {
+    background: var(--accent); border-color: var(--accent); color: #FFF;
+  }
+  .method-row .method-icon svg { width: 18px; height: 18px; }
+  .method-row .method-info {
+    flex: 1; line-height: 1.25;
+  }
+  .method-row .method-info .method-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .method-row .method-info .method-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-softer);
+    margin-top: 1px;
+  }
+  .method-row:first-child .method-meta { color: var(--butter); opacity: 0.95; }
+  .method-row .method-arrow {
+    font-size: 18px; color: var(--ink-softer);
+    flex-shrink: 0;
+  }
+  .method-row:first-child .method-arrow { color: var(--butter); }
+
+  .method-foot {
+    margin: 0 20px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-softer);
+  }
+
+  /* S3.search — search customer + give points */
+  .search-box {
+    margin: 14px 16px 10px;
+  }
+  .search-input {
+    display: flex; align-items: center; gap: 10px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 15px;
+  }
+  .search-input svg {
+    width: 16px; height: 16px;
+    color: var(--ink-softer);
+    flex-shrink: 0;
+  }
+  .search-input .cursor {
+    display: inline-block;
+    width: 2px; height: 18px;
+    background: var(--accent);
+    animation: blink 1.1s infinite;
+  }
+  .search-results {
+    margin: 0 16px 12px;
+    display: flex; flex-direction: column;
+    gap: 6px;
+  }
+  .search-result {
+    display: flex; align-items: center; gap: 10px;
+    padding: 10px 12px;
+    background: transparent;
+    border: 1.5px solid var(--line);
+    border-radius: 12px;
+    cursor: pointer;
+  }
+  .search-result.selected {
+    background: var(--surface);
+    border-color: var(--ink);
+    box-shadow: 2px 2px 0 var(--accent);
+  }
+  .search-result .sr-avatar {
+    width: 32px; height: 32px;
+    background: var(--accent); color: #FFF;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    flex-shrink: 0;
+  }
+  .search-result .sr-info {
+    flex: 1; line-height: 1.25;
+  }
+  .search-result .sr-info .sr-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    letter-spacing: -0.01em;
+  }
+  .search-result .sr-info .sr-name em {
+    font-style: normal;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .search-result .sr-info .sr-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-softer);
+    margin-top: 1px;
+  }
+  .search-result .sr-check {
+    color: var(--accent);
+    font-size: 16px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .point-amount {
+    margin: 4px 16px 14px;
+    padding: 12px 14px;
+    background: var(--bg);
+    border: 1.5px dashed var(--ink-softer);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 12px;
+  }
+  .point-amount .pa-label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 13px;
+    color: var(--ink);
+  }
+  .point-amount .pa-stepper {
+    display: flex; align-items: center; gap: 14px;
+  }
+  .point-amount .pa-btn {
+    width: 30px; height: 30px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 16px;
+    color: var(--ink);
+    box-shadow: 1px 1px 0 var(--ink);
+    cursor: pointer;
+  }
+  .point-amount .pa-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    min-width: 28px;
+    text-align: center;
+  }
+
   /* ========================================================== */
   /* C2 — First-stamp celebration banner                         */
   /* ========================================================== */
@@ -2863,6 +3040,16 @@
   }
   .s2-upload svg { width: 14px; height: 14px; }
 
+  /* S9 — customer view label above theme preview */
+  .s9-preview-frame .s9-pf-label {
+    margin: 0 18px 6px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-softer);
+  }
+
   /* S2 step 3 — themes */
   /* S2.3 — Theme picker (big live preview + swatch row) */
   .s2-theme-preview {
@@ -3058,43 +3245,107 @@
     line-height: 1.5;
     margin-bottom: 24px;
   }
-  .s2-qr-prev {
-    margin: 0 22px 22px;
-    padding: 14px 16px;
-    background: var(--ink);
-    color: var(--bg);
-    border-radius: 18px;
-    border: 1.5px solid var(--ink);
-    box-shadow: 3px 3px 0 var(--ink);
-    display: flex; align-items: center; gap: 14px;
-    text-align: left;
+  /* S2.4 — Customer view preview (mini phone) */
+  .s2-customer-preview {
+    margin: 0 22px 18px;
+    text-align: center;
   }
-  .s2-qr-prev .mini-qr {
-    width: 56px; height: 56px;
-    background: #fff;
-    border-radius: 10px;
-    flex-shrink: 0;
-    padding: 6px;
-    border: 1.5px solid var(--bg);
-  }
-  .s2-qr-prev .mini-qr svg { width: 100%; height: 100%; }
-  .s2-qr-prev .meta { flex: 1; line-height: 1.3; }
-  .s2-qr-prev .meta .h {
+  .s2-customer-preview .cp-label {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
-    margin-bottom: 1px;
-  }
-  .s2-qr-prev .meta .s {
-    font-family: 'Prompt', sans-serif;
-    font-weight: 400; font-size: 11px;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
     color: var(--ink-softer);
+    margin-bottom: 10px;
   }
-  .s2-qr-prev .arrow {
-    width: 28px; height: 28px;
-    background: var(--accent); color: #fff;
+  .s2-customer-preview .cp-phone-wrap {
+    display: flex; justify-content: center;
+  }
+  .s2-customer-preview .cp-phone {
+    width: 130px;
+    aspect-ratio: 9 / 17;
+    background: #111;
+    border: 1.5px solid #111;
+    border-radius: 18px;
+    padding: 6px;
+    box-shadow: 4px 4px 0 var(--accent);
+  }
+  .s2-customer-preview .cp-screen {
+    width: 100%; height: 100%;
+    background: var(--bg);
+    border-radius: 12px;
+    padding: 10px 8px;
+    display: flex; flex-direction: column;
+    align-items: center;
+    text-align: center;
+  }
+  .cp-shop {
+    display: flex; flex-direction: column; align-items: center;
+    gap: 4px;
+    margin-bottom: 4px;
+  }
+  .cp-shop .cp-logo { width: 16px; height: 16px; }
+  .cp-shop .cp-shop-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 8px;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .cp-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 28px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    margin: 2px 0;
+  }
+  .cp-num .cp-sub {
+    font-size: 12px;
+    color: var(--ink-softer);
+    margin-left: 1px;
+  }
+  .cp-msg {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 7px;
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 6px;
+  }
+  .cp-stamps {
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+    width: 100%;
+    margin-bottom: 4px;
+  }
+  .cp-s {
+    aspect-ratio: 1;
+    border: 1px dashed var(--ink-softer);
     border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-size: 14px; flex-shrink: 0;
+    background: transparent;
+  }
+  .cp-s.on {
+    background: var(--ink);
+    border-color: var(--ink);
+    border-style: solid;
+  }
+  .cp-reward {
+    margin-top: auto;
+    padding: 3px 6px;
+    background: var(--butter);
+    border: 1px solid var(--ink);
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 6.5px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .s2-customer-preview .cp-hint {
+    margin-top: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-soft);
   }
   .s2-cta-final {
     margin: 0 22px 12px;
@@ -3365,76 +3616,105 @@
     font-weight: 500; font-size: 13px;
     color: var(--ink-soft);
   }
-  .s5-options {
+  .s5-toggles {
     padding: 22px 20px 0;
     display: flex;
     flex-direction: column;
     gap: 10px;
   }
-  .s5-option {
+  .s5-toggle-row {
     background: var(--surface);
     border: 1.5px solid var(--ink);
-    border-radius: 18px;
-    box-shadow: 3px 3px 0 var(--ink);
-    padding: 16px 16px;
+    border-radius: 16px;
+    padding: 12px 14px;
     display: grid;
-    grid-template-columns: 48px 1fr 22px;
-    gap: 14px;
+    grid-template-columns: 40px 1fr 38px;
+    gap: 12px;
     align-items: center;
     cursor: pointer;
-    position: relative;
   }
-  .s5-option.primary {
-    background: var(--ink);
-    color: var(--bg);
+  .s5-toggle-row.primary {
+    background: var(--bg);
+    border-style: solid;
+    box-shadow: 2px 2px 0 var(--ink);
   }
-  .s5-option.primary .ic-bg {
-    background: var(--butter); color: var(--ink);
-  }
-  .s5-option.primary .opt-arrow {
-    background: var(--accent); color: #fff; border-color: var(--accent);
-  }
-  .s5-option.primary .recommended-tag {
-    position: absolute;
-    top: -10px; right: 14px;
-    transform: rotate(5deg);
-    background: var(--butter); color: var(--ink);
-    border: 1.5px solid var(--ink);
-    padding: 3px 10px;
-    border-radius: 999px;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 9px;
-    letter-spacing: 0.06em;
-  }
-  .s5-option .ic-bg {
-    width: 48px; height: 48px;
-    border-radius: 14px;
+  .s5-toggle-row .t-icon {
+    width: 40px; height: 40px;
+    border-radius: 11px;
     background: var(--accent-soft);
     color: var(--accent);
-    display: flex; align-items: center; justify-content: center;
     border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
   }
-  .s5-option .ic-bg svg { width: 22px; height: 22px; }
-  .s5-option .opt-name {
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 15px;
-    letter-spacing: -0.015em;
+  .s5-toggle-row .t-icon svg { width: 18px; height: 18px; }
+  .s5-toggle-row .t-info { line-height: 1.25; min-width: 0; }
+  .s5-toggle-row .t-name-row {
+    display: flex; align-items: center; gap: 6px;
     margin-bottom: 1px;
+    flex-wrap: wrap;
   }
-  .s5-option.primary .opt-name { color: var(--bg); }
-  .s5-option .opt-sub {
+  .s5-toggle-row .t-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .s5-toggle-row .t-tag {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 9px;
+    letter-spacing: 0.05em;
+    background: var(--butter);
+    color: var(--ink);
+    padding: 2px 7px;
+    border-radius: 999px;
+    border: 1px solid var(--ink);
+  }
+  .s5-toggle-row .t-sub {
     font-family: 'Prompt', sans-serif;
     font-size: 11px; color: var(--ink-soft);
     line-height: 1.3;
   }
-  .s5-option.primary .opt-sub { color: var(--ink-softer); }
-  .s5-option .opt-arrow {
-    width: 22px; height: 22px;
-    border-radius: 50%;
+
+  /* Toggle switch */
+  .s5-toggle {
+    width: 38px; height: 22px;
+    background: var(--ink-softer);
     border: 1.5px solid var(--ink);
-    display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
+    border-radius: 999px;
+    position: relative;
+    flex-shrink: 0;
+    cursor: pointer;
+    transition: background 0.2s;
+    justify-self: end;
   }
+  .s5-toggle .dot {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    left: 2px;
+    width: 14px; height: 14px;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    transition: left 0.2s;
+  }
+  .s5-toggle.on { background: var(--accent); }
+  .s5-toggle.on .dot { left: 19px; background: var(--butter); }
+  .s5-toggle.locked {
+    cursor: not-allowed;
+    opacity: 0.85;
+  }
+  .s5-toggle.locked::after {
+    content: '🔒';
+    position: absolute;
+    top: -6px; right: -6px;
+    font-size: 9px;
+    background: var(--ink);
+    color: var(--butter);
+    width: 14px; height: 14px;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    border: 1px solid var(--ink);
+  }
+
   .s5-tip {
     margin: 22px 20px 0;
     padding: 12px 14px;
@@ -4641,7 +4921,7 @@
     </div>
     <div class="cover-meta">
       Design v1<br>
-      ร้าน · 19 หน้า<br>
+      ร้าน · 20 หน้า<br>
       มือถือ · ภาษาไทย
     </div>
   </div>
@@ -4657,7 +4937,7 @@
 
     <div class="cover-stats">
       <div class="cover-stat">
-        <div class="n">19</div>
+        <div class="n">20</div>
         <div class="l">หน้าจอร้าน</div>
       </div>
       <div class="cover-stat">
@@ -5145,7 +5425,7 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S2.4</span>ตั้งค่าร้าน · 4/4</div>
         <h3>เสร็จเรียบร้อย!</h3>
-        <p>ขั้นสุดท้าย ตั้งร้านสำเร็จ มีคำชมและพรีวิว QR ของร้าน พร้อมปุ่มไปดูแดชบอร์ด</p>
+        <p>ขั้นสุดท้าย — celebration พร้อม preview "มุมมองลูกค้า" บนมือถือ ให้เจ้าของร้านเห็นว่าลูกค้าจะเห็นอะไรหลังสแกน QR ก่อนเริ่มใช้งานจริง</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5175,44 +5455,27 @@
               <div class="s2-done-sub">QR ของร้านคุณพร้อมแล้ว เริ่มออกแต้มได้เลย</div>
             </div>
 
-            <div class="s2-qr-prev">
-              <div class="mini-qr">
-                <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
-                  <rect x="0" y="0" width="60" height="60" fill="#fff"/>
-                  <g fill="#111">
-                    <rect x="4" y="4" width="14" height="14" rx="1.5"/>
-                    <rect x="42" y="4" width="14" height="14" rx="1.5"/>
-                    <rect x="4" y="42" width="14" height="14" rx="1.5"/>
-                  </g>
-                  <g fill="#fff">
-                    <rect x="7" y="7" width="8" height="8"/>
-                    <rect x="45" y="7" width="8" height="8"/>
-                    <rect x="7" y="45" width="8" height="8"/>
-                  </g>
-                  <g fill="#111">
-                    <rect x="9" y="9" width="4" height="4"/>
-                    <rect x="47" y="9" width="4" height="4"/>
-                    <rect x="9" y="47" width="4" height="4"/>
-                    <rect x="22" y="6" width="3" height="3"/>
-                    <rect x="28" y="6" width="3" height="3"/>
-                    <rect x="34" y="6" width="3" height="3"/>
-                    <rect x="22" y="22" width="3" height="3"/>
-                    <rect x="28" y="22" width="3" height="3"/>
-                    <rect x="40" y="22" width="3" height="3"/>
-                    <rect x="22" y="34" width="3" height="3"/>
-                    <rect x="34" y="34" width="3" height="3"/>
-                    <rect x="46" y="34" width="3" height="3"/>
-                    <rect x="22" y="46" width="3" height="3"/>
-                    <rect x="28" y="46" width="3" height="3"/>
-                    <rect x="40" y="46" width="3" height="3"/>
-                  </g>
-                </svg>
+            <div class="s2-customer-preview">
+              <div class="cp-label">มุมมองลูกค้า · หลังสแกน QR</div>
+              <div class="cp-phone-wrap">
+                <div class="cp-phone">
+                  <div class="cp-screen">
+                    <div class="cp-shop">
+                      <svg class="cp-logo" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                      <div class="cp-shop-name">ร้านกาแฟลุงหมี</div>
+                    </div>
+                    <div class="cp-num">1<span class="cp-sub">/10</span></div>
+                    <div class="cp-msg">ยินดีต้อนรับ! ได้แต้มแรกแล้ว ✦</div>
+                    <div class="cp-stamps">
+                      <div class="cp-s on"></div>
+                      <div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div>
+                      <div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div>
+                    </div>
+                    <div class="cp-reward">✦ กาแฟ Signature ฟรี ✦</div>
+                  </div>
+                </div>
               </div>
-              <div class="meta">
-                <div class="h">QR ของร้านพร้อมแล้ว</div>
-                <div class="s">พิมพ์ติดที่เคาน์เตอร์</div>
-              </div>
-              <div class="arrow">↗</div>
+              <div class="cp-hint">ลูกค้าเห็นบัตรนี้บนมือถือ — ไม่ต้องโหลดแอป</div>
             </div>
 
             <button class="s2-cta-final">
@@ -5244,7 +5507,7 @@
       <div class="num">03</div>
       <h2>ร้าน · <em>ใช้งานประจำวัน</em></h2>
     </div>
-    <div class="desc">5 หน้าจอ — แดชบอร์ดประจำวัน, variant เมื่อร้านออกแต้มเอง, modal สแกน QR หรือกรอกเบอร์, และแจ้งเตือนแต้ม</div>
+    <div class="desc">6 หน้าจอ — แดชบอร์ดประจำวันมี FAB ออกแต้ม, sheet เลือกวิธี (สแกน/กรอกเบอร์/ให้แต้ม), modal สแกน QR, modal กรอกเบอร์, modal ค้นลูกค้า + ให้แต้ม, แจ้งเตือนแต้ม</div>
   </div>
 
   <div class="grid">
@@ -5254,7 +5517,7 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S3</span>แดชบอร์ดร้าน</div>
         <h3>หน้าหลักของร้าน</h3>
-        <p>ตัวเลขใหญ่บอกลูกค้าที่กลับมาสัปดาห์นี้ การ์ดเหลือง DeeReach ชวนลูกค้าเก่ากลับมา ฟีดสดด้านล่าง</p>
+        <p>ตัวเลขใหญ่บอกลูกค้าที่กลับมาสัปดาห์นี้ การ์ดเหลือง DeeReach ชวนลูกค้าเก่ากลับมา ฟีดสดด้านล่าง · floating ปุ่ม "ออกแต้มลูกค้า" อยู่ติด bottom เสมอ — ลูกค้าสแกน QR เป็นค่าหลัก แต่ร้านเลือกออกแต้มเองได้สำหรับเคสพิเศษ</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5319,23 +5582,36 @@
               <div class="t">09:22</div>
               <div class="w"><span class="icon-mini">+</span><strong>1 แต้ม</strong> <span class="id">#B19D</span></div>
               <button class="void">ยกเลิก</button>
-            </div>                      <div class="footer-mark">
-                        <span class="fm-brand">
-                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                          <span class="brand">taemdee<span class="dot">.</span></span>
-                        </span>
-                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-                      </div>
+            </div>
+
+            <div class="s3-issue-fab">
+              <div class="fab-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <div class="fab-text">
+                <div class="fab-name">ออกแต้มลูกค้า</div>
+                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
+              </div>
+              <span class="fab-arrow">→</span>
+            </div>
+
+            <div class="footer-mark">
+              <span class="fm-brand">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span class="brand">taemdee<span class="dot">.</span></span>
+              </span>
+              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- S3v — DeeBoard variant (when issue method = ร้านสแกน or กรอกเบอร์) -->
+    <!-- S3.choose — Manual point issuing · method picker -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3v</span>แดชบอร์ด · มีปุ่มออกแต้ม</div>
-        <h3>เมื่อร้านเลือก "ร้านสแกน" หรือ "กรอกเบอร์"</h3>
-        <p>เพิ่ม floating button "ออกแต้มลูกค้า" ติด bottom ของหน้าจอ — sticky pill ดำ orange shadow มอง thumb-reach ได้ตลอด · กดแล้วเปิด modal สแกน QR หรือกรอกเบอร์ตาม method ที่ shop config ใน S5</p>
+        <div class="kicker"><span class="n">S3.choose</span>ออกแต้มลูกค้า · เลือกวิธี</div>
+        <h3>เปิดเมื่อกด FAB "ออกแต้มลูกค้า"</h3>
+        <p>Bottom sheet โชว์ 1-3 วิธีตามที่ shop เปิดใช้ใน S5 — case ปกติ "ลูกค้าสแกน" เป็นค่าหลัก, ร้านยังออกแต้มเองได้สำหรับเคสพิเศษ (ลูกค้าลืมโทรศัพท์, ลูกค้าใหม่ที่ยังไม่มีบัตร)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5345,7 +5621,7 @@
               <div class="hi">
                 สวัสดีพี่หมี
                 <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+                <span class="day">วันศุกร์</span>
               </div>
               <div class="actions">
                 <div class="branch-pill">นิมมาน</div>
@@ -5355,33 +5631,8 @@
 
             <div class="s3-hero">
               <div class="label">✦ สัปดาห์นี้</div>
-              <div class="num">
-                <span class="accent">23</span>
-                <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-              </div>
+              <div class="num"><span class="accent">23</span></div>
               <div class="caption">ลูกค้ากลับมา</div>
-              <div class="delta">↑ +8 จากสัปดาห์ที่แล้ว</div>
-            </div>
-
-            <div class="s3-stats">
-              <div class="s3-stat"><div class="n">147</div><div class="l">แต้ม</div></div>
-              <div class="s3-stat"><div class="n">6</div><div class="l">รับรางวัล</div></div>
-              <div class="s3-stat balance"><div class="n">412</div><div class="l">เครดิต</div></div>
-            </div>
-
-            <div class="ph-section-h">
-              <div class="label">ฟีดสด</div>
-              <div class="live">สด</div>
-            </div>
-            <div class="feed-row">
-              <div class="t">09:38</div>
-              <div class="w"><span class="icon-mini">+</span><strong>1 แต้ม</strong> <span class="id">#A72B</span></div>
-              <button class="void">ยกเลิก</button>
-            </div>
-            <div class="feed-row">
-              <div class="t">09:31</div>
-              <div class="w"><strong>รับรางวัล</strong> <span class="id">#F04C</span></div>
-              <button class="void">ยกเลิก</button>
             </div>
 
             <div class="s3-issue-fab">
@@ -5390,17 +5641,55 @@
               </div>
               <div class="fab-text">
                 <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">สแกน · กรอกเบอร์</div>
+                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
               </div>
               <span class="fab-arrow">→</span>
             </div>
 
-                        <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            <div class="issue-modal-overlay"></div>
+            <div class="issue-modal-sheet">
+              <div class="issue-modal-handle"></div>
+              <div class="issue-modal-head">
+                <div class="title">ออกแต้มลูกค้า</div>
+                <div class="x-btn">×</div>
+              </div>
+
+              <div class="method-picker">
+                <div class="method-row">
+                  <div class="method-icon primary">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><circle cx="12" cy="15" r="2"/></svg>
+                  </div>
+                  <div class="method-info">
+                    <div class="method-name">สแกนบัตรลูกค้า</div>
+                    <div class="method-meta">เปิดกล้องร้าน · สแกน QR ลูกค้า</div>
+                  </div>
+                  <span class="method-arrow">›</span>
+                </div>
+
+                <div class="method-row">
+                  <div class="method-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                  </div>
+                  <div class="method-info">
+                    <div class="method-name">กรอกเบอร์ลูกค้า</div>
+                    <div class="method-meta">พิมพ์เบอร์โทรลูกค้าด้วยตัวเอง</div>
+                  </div>
+                  <span class="method-arrow">›</span>
+                </div>
+
+                <div class="method-row">
+                  <div class="method-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
+                  </div>
+                  <div class="method-info">
+                    <div class="method-name">ให้แต้มลูกค้า</div>
+                    <div class="method-meta">ค้นหาลูกค้าจากชื่อ/เบอร์ แล้วเพิ่มแต้ม</div>
+                  </div>
+                  <span class="method-arrow">›</span>
+                </div>
+              </div>
+
+              <div class="method-foot">เปิด/ปิดวิธีได้ที่ Settings → วิธีออกแต้ม</div>
             </div>
           </div>
         </div>
@@ -5434,6 +5723,17 @@
               <div class="label">✦ สัปดาห์นี้</div>
               <div class="num"><span class="accent">23</span></div>
               <div class="caption">ลูกค้ากลับมา</div>
+            </div>
+
+            <div class="s3-issue-fab">
+              <div class="fab-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <div class="fab-text">
+                <div class="fab-name">ออกแต้มลูกค้า</div>
+                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
+              </div>
+              <span class="fab-arrow">→</span>
             </div>
 
             <div class="issue-modal-overlay"></div>
@@ -5485,6 +5785,17 @@
               </div>
             </div>
 
+            <div class="s3-issue-fab">
+              <div class="fab-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <div class="fab-text">
+                <div class="fab-name">ออกแต้มลูกค้า</div>
+                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
+              </div>
+              <span class="fab-arrow">→</span>
+            </div>
+
             <div class="issue-modal-overlay"></div>
             <div class="issue-modal-sheet">
               <div class="issue-modal-handle"></div>
@@ -5516,6 +5827,96 @@
               </div>
 
               <div class="phone-confirm disabled">ออกแต้ม · กรอกเบอร์ให้ครบ 10 หลัก</div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3.search — Manual point issuing · search customer + give points -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S3.search</span>ออกแต้ม · ให้แต้มลูกค้า</div>
+        <h3>ค้นลูกค้าแล้วให้คะแนน</h3>
+        <p>เปิดเมื่อกด "ให้แต้มลูกค้า" จาก S3.choose — ค้นจากชื่อหรือเบอร์ → เลือกลูกค้า → ระบุจำนวนแต้ม → ยืนยัน · ใช้กับเคสลูกค้าเก่าที่ลืมโทรศัพท์ หรือลูกค้าที่ร้านอยากให้แต้มย้อนหลัง</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s3-top">
+              <div class="hi">
+                สวัสดีพี่หมี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="day">วันศุกร์</span>
+              </div>
+              <div class="actions">
+                <div class="branch-pill">นิมมาน</div>
+                <div class="avatar">ม</div>
+              </div>
+            </div>
+
+            <div class="s3-hero">
+              <div class="label">✦ สัปดาห์นี้</div>
+              <div class="num"><span class="accent">23</span></div>
+              <div class="caption">ลูกค้ากลับมา</div>
+            </div>
+
+            <div class="s3-issue-fab">
+              <div class="fab-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+              </div>
+              <div class="fab-text">
+                <div class="fab-name">ออกแต้มลูกค้า</div>
+                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
+              </div>
+              <span class="fab-arrow">→</span>
+            </div>
+
+            <div class="issue-modal-overlay"></div>
+            <div class="issue-modal-sheet">
+              <div class="issue-modal-handle"></div>
+              <div class="issue-modal-head">
+                <div class="title">ให้แต้มลูกค้า</div>
+                <div class="x-btn">×</div>
+              </div>
+
+              <div class="search-box">
+                <div class="search-input">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                  <span>สมศรี</span>
+                  <span class="cursor"></span>
+                </div>
+              </div>
+
+              <div class="search-results">
+                <div class="search-result selected">
+                  <div class="sr-avatar">ส</div>
+                  <div class="sr-info">
+                    <div class="sr-name">สมศรี <em>ม.</em></div>
+                    <div class="sr-meta">081-234-5678 · 7 แต้ม · มาล่าสุด 3 วันที่แล้ว</div>
+                  </div>
+                  <span class="sr-check">✓</span>
+                </div>
+                <div class="search-result">
+                  <div class="sr-avatar">ส</div>
+                  <div class="sr-info">
+                    <div class="sr-name">สมศักดิ์ <em>พ.</em></div>
+                    <div class="sr-meta">089-555-0142 · 2 แต้ม · มาล่าสุด 14 วันที่แล้ว</div>
+                  </div>
+                </div>
+              </div>
+
+              <div class="point-amount">
+                <div class="pa-label">จำนวนแต้ม</div>
+                <div class="pa-stepper">
+                  <button class="pa-btn">−</button>
+                  <span class="pa-num">1</span>
+                  <button class="pa-btn">+</button>
+                </div>
+              </div>
+
+              <button class="phone-confirm">ให้ 1 แต้มแก่ สมศรี ม.</button>
             </div>
           </div>
         </div>
@@ -5697,27 +6098,6 @@
             </div>
 
             <button class="s10-logout">ออกจากระบบ</button>
-            <div class="s3-issue-fab">
-              <div class="fab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </div>
-              <div class="fab-text">
-                <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">สแกน · กรอกเบอร์</div>
-              </div>
-              <span class="fab-arrow">→</span>
-            </div>
-
-            <div class="s3-issue-fab">
-              <div class="fab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </div>
-              <div class="fab-text">
-                <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">สแกน · กรอกเบอร์</div>
-              </div>
-              <span class="fab-arrow">→</span>
-            </div>
 
                                               <div class="footer-mark">
                         <span class="fm-brand">
@@ -5734,8 +6114,8 @@
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S5</span>วิธีออกแต้ม</div>
-        <h3>เลือกวิธีออกแต้มหลัก</h3>
-        <p>เข้าจาก Settings → "วิธีออกแต้ม" — กำหนดว่าร้านจะออกแต้มยังไง: ลูกค้าสแกน (default) ร้านสแกนบัตร หรือกรอกเบอร์ ถ้าเลือก 2 หรือ 3 จะมีปุ่ม "ออกแต้ม" ปรากฏที่หน้าแดชบอร์ด</p>
+        <h3>เปิด/ปิดวิธีออกแต้ม</h3>
+        <p>เข้าจาก Settings → "วิธีออกแต้ม" — toggle เปิดปิดแต่ละวิธีได้อิสระ · "ลูกค้าสแกน" default = on (ลบไม่ได้) · วิธีอื่นเปิดเพิ่มได้ตามต้องการ — วิธีที่เปิดจะปรากฏใน FAB sheet หน้า S3.choose</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5749,13 +6129,12 @@
 
             <div class="s5-q">
               <div class="ask">วิธี<em>ออกแต้ม.</em></div>
-              <div class="ask-th">ลูกค้าสะสมแต้มผ่านวิธีไหน · เปลี่ยนได้ตลอด</div>
+              <div class="ask-th">เปิดวิธีที่ร้านอยากใช้ · ปิดได้ตลอด</div>
             </div>
 
-            <div class="s5-options">
-              <div class="s5-option primary">
-                <div class="recommended-tag">ค่ามาตรฐาน</div>
-                <div class="ic-bg">
+            <div class="s5-toggles">
+              <div class="s5-toggle-row primary">
+                <div class="t-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7" rx="1"/>
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -5763,46 +6142,73 @@
                     <rect x="14" y="14" width="7" height="7" rx="1"/>
                   </svg>
                 </div>
-                <div class="info">
-                  <div class="opt-name">ลูกค้าสแกน</div>
-                  <div class="opt-sub">ติด QR ที่เคาน์เตอร์ ลูกค้าสแกนเอง · ไม่ต้องทำอะไรในแอป</div>
+                <div class="t-info">
+                  <div class="t-name-row">
+                    <span class="t-name">ลูกค้าสแกน</span>
+                    <span class="t-tag">ค่ามาตรฐาน</span>
+                  </div>
+                  <div class="t-sub">ติด QR ที่เคาน์เตอร์ ลูกค้าสแกนเอง</div>
                 </div>
-                <div class="opt-arrow">✓</div>
+                <div class="s5-toggle on locked">
+                  <div class="dot"></div>
+                </div>
               </div>
 
-              <div class="s5-option">
-                <div class="ic-bg">
+              <div class="s5-toggle-row">
+                <div class="t-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="18" height="18" rx="2"/>
                     <line x1="3" y1="9" x2="21" y2="9"/>
                     <circle cx="12" cy="15" r="2"/>
                   </svg>
                 </div>
-                <div class="info">
-                  <div class="opt-name">ร้านสแกนบัตร</div>
-                  <div class="opt-sub">เปิดกล้องสแกน QR/บาร์โค้ดบนมือถือลูกค้า</div>
+                <div class="t-info">
+                  <div class="t-name-row"><span class="t-name">สแกนบัตรลูกค้า</span></div>
+                  <div class="t-sub">เปิดกล้องร้าน · สแกน QR ลูกค้า</div>
                 </div>
-                <div class="opt-arrow">○</div>
+                <div class="s5-toggle on">
+                  <div class="dot"></div>
+                </div>
               </div>
 
-              <div class="s5-option">
-                <div class="ic-bg">
+              <div class="s5-toggle-row">
+                <div class="t-icon">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
                     <line x1="12" y1="18" x2="12.01" y2="18"/>
                   </svg>
                 </div>
-                <div class="info">
-                  <div class="opt-name">กรอกเบอร์</div>
-                  <div class="opt-sub">พิมพ์เบอร์โทรลูกค้าด้วยตัวเอง</div>
+                <div class="t-info">
+                  <div class="t-name-row"><span class="t-name">กรอกเบอร์ลูกค้า</span></div>
+                  <div class="t-sub">พิมพ์เบอร์โทรลูกค้าด้วยตัวเอง</div>
                 </div>
-                <div class="opt-arrow">○</div>
+                <div class="s5-toggle">
+                  <div class="dot"></div>
+                </div>
+              </div>
+
+              <div class="s5-toggle-row">
+                <div class="t-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                    <line x1="11" y1="8" x2="11" y2="14"/>
+                    <line x1="8" y1="11" x2="14" y2="11"/>
+                  </svg>
+                </div>
+                <div class="t-info">
+                  <div class="t-name-row"><span class="t-name">ให้แต้มลูกค้า</span></div>
+                  <div class="t-sub">ค้นจากชื่อ/เบอร์ แล้วเพิ่มแต้ม</div>
+                </div>
+                <div class="s5-toggle">
+                  <div class="dot"></div>
+                </div>
               </div>
             </div>
 
             <div class="s5-tip">
               <div class="tip-bulb">!</div>
-              <div>วิธีแรกเร็วสุด ส่วนใหญ่ใช้แบบนี้แบบเดียวก็พอ</div>
+              <div>เปิดมากกว่า 1 วิธี → ปุ่ม "ออกแต้มลูกค้า" หน้าแดชบอร์ดจะ list ตัวเลือกให้เลือก</div>
             </div>
                       <div class="footer-mark">
                         <span class="fm-brand">
@@ -6162,8 +6568,8 @@
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S9</span>เปลี่ยนธีม</div>
-        <h3>เลือกธีม</h3>
-        <p>เข้าจาก Settings → ธีม — พรีวิวบัตรลูกค้าจริงด้านบน เปลี่ยนสีทันทีจาก swatch 4 ธีมด้านล่าง (ใช้ pattern เดียวกับ S2.3 ใน onboarding)</p>
+        <h3>เลือกธีม + มุมมองลูกค้า</h3>
+        <p>เข้าจาก Settings → ธีม — preview คือ <strong>มุมมองลูกค้าจริง</strong>ที่เห็นบนมือถือ ไม่ใช่ mockup เลือกธีมแล้วเปลี่ยนสีทันที (ใช้ pattern เดียวกับ S2.3 ใน onboarding)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -6177,29 +6583,32 @@
 
             <div class="page-title">
               <div class="h">เลือก<em>ธีม.</em></div>
-              <div class="sub">หน้าตาบัตรของลูกค้า · เปลี่ยนได้ทันที</div>
+              <div class="sub">มุมมองลูกค้า — เปลี่ยนสีทันที</div>
             </div>
 
-            <div class="s2-theme-preview t-taemdee">
-              <div class="preview-shop">
-                <div class="preview-shop-name">ร้านกาแฟลุงหมี</div>
-                <div class="preview-shop-sub">mhee. · เชียงใหม่</div>
+            <div class="s9-preview-frame">
+              <div class="s9-pf-label">มุมมองลูกค้า · บนมือถือ</div>
+              <div class="s2-theme-preview t-taemdee">
+                <div class="preview-shop">
+                  <div class="preview-shop-name">ร้านกาแฟลุงหมี</div>
+                  <div class="preview-shop-sub">mhee. · เชียงใหม่</div>
+                </div>
+                <div class="preview-num">7</div>
+                <div class="preview-meta">อีก 3 แต้มรับรางวัล</div>
+                <div class="preview-stamps">
+                  <div class="ps on"></div>
+                  <div class="ps on"></div>
+                  <div class="ps butter"></div>
+                  <div class="ps on"></div>
+                  <div class="ps on"></div>
+                  <div class="ps butter"></div>
+                  <div class="ps on"></div>
+                  <div class="ps"></div>
+                  <div class="ps"></div>
+                  <div class="ps"></div>
+                </div>
+                <div class="preview-reward">✦ กาแฟ Signature ฟรี 1 แก้ว ✦</div>
               </div>
-              <div class="preview-num">7</div>
-              <div class="preview-meta">อีก 3 แต้มรับรางวัล</div>
-              <div class="preview-stamps">
-                <div class="ps on"></div>
-                <div class="ps on"></div>
-                <div class="ps butter"></div>
-                <div class="ps on"></div>
-                <div class="ps on"></div>
-                <div class="ps butter"></div>
-                <div class="ps on"></div>
-                <div class="ps"></div>
-                <div class="ps"></div>
-                <div class="ps"></div>
-              </div>
-              <div class="preview-reward">✦ กาแฟ Signature ฟรี 1 แก้ว ✦</div>
             </div>
 
             <div class="s2-theme-swatches">
@@ -6415,7 +6824,7 @@
     <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
     <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
   </svg>
-  <h3>ครบ 19 หน้าจอร้าน <span class="accent">·</span> Design v1</h3>
+  <h3>ครบ 20 หน้าจอร้าน <span class="accent">·</span> Design v1</h3>
   <p>
     เริ่มจาก HM (หน้าแรกบนมือถือ) → S1 (เข้าสู่ระบบ) → S2.1-S2.4 (ตั้งค่าร้าน 60 วินาที) ใช้งานประจำวันที่ S3/S5/S6/S7 และจัดการตั้งค่าที่ S10/S8/S9/S11/S12 — ทำหลังจากฝั่งลูกค้าเสร็จ
   </p>

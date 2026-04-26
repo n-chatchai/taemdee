@@ -1,0 +1,67 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>กรอกเบอร์ลูกค้า · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="td"
+       x-data="{ phone: '', flash: '', flashKind: 'is-ok' }">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">กรอกเบอร์ลูกค้า</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="phone-display">
+      <div class="label">เบอร์โทรลูกค้า</div>
+      <div class="number">
+        <span x-text="phone || '____-____-__'"></span>
+        <span class="cursor"></span>
+      </div>
+    </div>
+
+    <div class="phone-numpad">
+      {% for n in [1,2,3,4,5,6,7,8,9] %}
+      <div class="key" @click="if (phone.length < 10) phone += '{{ n }}'">{{ n }}</div>
+      {% endfor %}
+      <div class="key" style="visibility:hidden;"></div>
+      <div class="key" @click="if (phone.length < 10) phone += '0'">0</div>
+      <div class="key del" @click="phone = phone.slice(0, -1)">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2zM18 9l-6 6M12 9l6 6"/>
+        </svg>
+      </div>
+    </div>
+
+    <button class="phone-confirm" :class="{ disabled: phone.length < 10 }"
+            :disabled="phone.length < 10"
+            @click="
+              const fd = new FormData();
+              fd.append('method', 'phone_entry');
+              fd.append('phone', phone);
+              const r = await fetch('/shop/issue', { method: 'POST', body: fd });
+              if (r.ok) {
+                window.location.href = '/shop/dashboard';
+              } else {
+                const j = await r.json().catch(() => ({}));
+                flash = j.detail || 'ออกแต้มไม่สำเร็จ'; flashKind = 'is-error';
+              }
+            ">
+      <span x-show="phone.length === 10" x-cloak x-text="'ออกแต้ม · ' + phone"></span>
+      <span x-show="phone.length !== 10">ออกแต้ม · กรอกเบอร์ให้ครบ 10 หลัก</span>
+    </button>
+
+    <div class="dash-flash" :class="flashKind" x-show="flash" x-cloak x-text="flash"></div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

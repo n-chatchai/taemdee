@@ -117,11 +117,21 @@
     {% include "_partials/footer_mark.html" %}
   </div>
 
-  {# Floating manual-issue button — one tap, walk-in stamp #}
-  <button id="manual-issue-fab" class="manual-fab" type="button" title="ออกแต้มเอง (ไม่ต้องใช้เบอร์)">
-    <span class="plus">+</span>
-    <span class="lbl">แต้ม</span>
-  </button>
+  {# S3 manual-issue FAB — opens the S3.choose sheet which lists the methods
+     enabled in S5. The customer-scan method is the printed QR (not on the sheet). #}
+  <a href="#" class="s3-issue-fab" id="s3-issue-fab"
+     onclick="document.getElementById('issue-choose').classList.add('open'); return false;">
+    <div class="fab-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+    </div>
+    <div class="fab-text">
+      <div class="fab-name">ออกแต้มลูกค้า</div>
+      <div class="fab-meta">เลือกวิธีออกแต้ม</div>
+    </div>
+    <span class="fab-arrow">→</span>
+  </a>
+
+  {% include "_partials/issue_choose.html" %}
 
   <script>
     // Live feed via SSE — new stamps/redemptions stream in from /shop/events.
@@ -191,22 +201,6 @@
         cd && (cd.textContent = secsLeft + ' วิ');
       }, 1000);
       overlay.dataset.timerId = timerId;
-    });
-
-    // Manual-issue FAB — POST to /shop/issue/manual; SSE delivers the toast.
-    const fab = document.getElementById('manual-issue-fab');
-    fab && fab.addEventListener('click', async () => {
-      fab.disabled = true;
-      try {
-        const r = await fetch('/shop/issue/manual', { method: 'POST' });
-        if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          showFlash(j.detail || 'ออกแต้มไม่สำเร็จ', 'error');
-        }
-      } finally {
-        // Brief debounce so a double-tap doesn't issue 2 stamps.
-        setTimeout(() => { fab.disabled = false; }, 600);
-      }
     });
 
     // Single delegated click handler covers feed-row void buttons AND the toast's void button.

@@ -42,7 +42,13 @@
         </div>
         <div class="row-info">
           <div class="row-name">วิธีออกแต้ม</div>
-          <div class="row-meta">{% if shop.issuance_method == 'customer_scan' %}ลูกค้าสแกน · ค่ามาตรฐาน{% elif shop.issuance_method == 'shop_scan' %}ร้านสแกน{% elif shop.issuance_method == 'phone_entry' %}กรอกเบอร์{% else %}ลูกค้าสแกน · ค่ามาตรฐาน{% endif %}</div>
+          <div class="row-meta">
+            {% set extras = [] %}
+            {% if shop.issue_method_shop_scan %}{% set _ = extras.append('ร้านสแกน') %}{% endif %}
+            {% if shop.issue_method_phone_entry %}{% set _ = extras.append('กรอกเบอร์') %}{% endif %}
+            {% if shop.issue_method_search %}{% set _ = extras.append('ให้แต้ม') %}{% endif %}
+            ลูกค้าสแกน{% if extras %} · {{ extras|join(' · ') }}{% else %} · ค่ามาตรฐาน{% endif %}
+          </div>
         </div>
         <div class="arrow-r">›</div>
       </a>

@@ -4,9 +4,9 @@ from typing import Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
-from fastapi.responses import HTMLResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
-from sqlmodel import select
+from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import (
@@ -34,6 +34,141 @@ async def issue_page(request: Request, shop: Shop = Depends(get_current_shop)):
         name="shop/issue.html",
         context={"shop": shop},
     )
+
+
+@router.get("/issue/phone", response_class=HTMLResponse)
+async def issue_phone_page(request: Request, shop: Shop = Depends(get_current_shop)):
+    """S3.phone — manual issuance via custom numpad. POSTs back to /shop/issue."""
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/issue_phone.html",
+        context={"shop": shop},
+    )
+
+
+@router.get("/issue/search", response_class=HTMLResponse)
+async def issue_search_page(request: Request, shop: Shop = Depends(get_current_shop)):
+    """S3.search — search a known customer by name/phone and grant N stamps."""
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/issue_search.html",
+        context={"shop": shop},
+    )
+
+
+@router.get("/issue/search/customers")
+async def search_customers(
+    q: str,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Returns up to 8 claimed customers matching `q` against display_name or
+    phone. Anonymous customers aren't surfaced (they have no contact info to
+    distinguish). Each row carries the active stamp count at this shop and
+    the most-recent visit timestamp so the search list can show context.
+    """
+    q = (q or "").strip()
+    if not q:
+        return {"results": []}
+    like = f"%{q}%"
+    result = await db.exec(
+        select(Customer)
+        .where(
+            Customer.is_anonymous == False,  # noqa: E712
+            ((Customer.display_name.ilike(like)) | (Customer.phone.ilike(like))),
+        )
+        .limit(8)
+    )
+    customers = list(result.all())
+    out = []
+    for c in customers:
+        active = (await db.exec(
+            select(func.count())
+            .select_from(Stamp)
+            .where(
+                Stamp.shop_id == shop.id,
+                Stamp.customer_id == c.id,
+                Stamp.is_voided == False,  # noqa: E712
+                Stamp.redemption_id.is_(None),
+            )
+        )).one()
+        last_visit = (await db.exec(
+            select(Stamp.created_at)
+            .where(Stamp.shop_id == shop.id, Stamp.customer_id == c.id)
+            .order_by(Stamp.created_at.desc())
+            .limit(1)
+        )).first()
+        out.append({
+            "id": str(c.id),
+            "display_name": c.display_name or "ลูกค้า",
+            "phone": c.phone or "",
+            "active_stamps": active,
+            "last_visit_iso": last_visit.isoformat() if last_visit else None,
+        })
+    return {"results": out}
+
+
+@router.post("/issue/search/grant")
+async def issue_search_grant(
+    customer_id: UUID = Form(...),
+    points: int = Form(1),
+    shop: Shop = Depends(get_current_shop),
+    staff: Optional[StaffMember] = Depends(get_current_staff),
+    db: AsyncSession = Depends(get_session),
+):
+    """Issues `points` stamps (capped 1–10) to the picked customer. Each stamp
+    fires the SSE feed-row + toast pipeline, just like a customer scan.
+    Uses method='system' to bypass cooldown — manual grants are intentional.
+    """
+    customer = await db.get(Customer, customer_id)
+    if not customer:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Customer not found")
+    points = max(1, min(int(points or 1), 10))
+
+    issued_ids = []
+    for _ in range(points):
+        try:
+            stamp = await issue_stamp(
+                db, shop, customer,
+                method="system",
+                staff_id=staff.id if staff else None,
+            )
+        except IssuanceError as e:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
+        issued_ids.append(str(stamp.id))
+        publish(
+            shop.id,
+            "feed-row",
+            feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+        )
+
+    new_count = await active_stamp_count(db, shop.id, customer.id)
+    publish(
+        shop.id,
+        "stamp-toast",
+        stamp_toast_html(stamp.id, new_count, shop.reward_threshold),
+    )
+    return {"granted": points, "stamp_ids": issued_ids, "customer_id": str(customer.id)}
+
+
+@router.post("/issue/methods")
+async def save_issuance_methods(
+    shop_scan: str = Form("0"),
+    phone_entry: str = Form("0"),
+    search: str = Form("0"),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """S5 settings — persist the manual-issuance toggles. customer_scan is
+    implicit (every shop has a printable QR); only the 3 opt-in methods
+    are stored.
+    """
+    shop.issue_method_shop_scan = shop_scan == "1"
+    shop.issue_method_phone_entry = phone_entry == "1"
+    shop.issue_method_search = search == "1"
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/issue")

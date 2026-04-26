@@ -22,7 +22,17 @@ class Shop(SQLModel, table=True):
     # One of: "coffee_cup", "latte_art", "iced", or None (custom upload, future). The
     # picker on S2.2 maps to a CSS-drawn icon shown in the customer DeeCard reward pill.
     reward_image: Optional[str] = Field(default="coffee_cup")
-    issuance_method: str = Field(default="all")  # customer_scan, shop_scan, phone_entry, or "all"
+    # Legacy single-value field — superseded by the four method toggles below.
+    # Kept nullable for back-compat with existing rows; no longer read at runtime.
+    issuance_method: str = Field(default="all")
+
+    # S5 issuance method toggles (multi-select per design 2026-04-26):
+    # `customer_scan` is implicit — every shop has a printable QR; not stored.
+    # The other three are opt-in and surface on the S3.choose bottom sheet
+    # when the dashboard FAB is tapped.
+    issue_method_shop_scan: bool = Field(default=False)
+    issue_method_phone_entry: bool = Field(default=False)
+    issue_method_search: bool = Field(default=False)
 
     # Anti-rescan: minimum minutes between stamps from the same customer at this shop.
     # 0 = no cooldown (every scan succeeds). No UI yet — set via SQL/admin until S10
