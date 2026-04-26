@@ -1,0 +1,16 @@
+{# PWA install metadata — manifest, app icons, theme color.
+   Include in every template's <head> so iOS / Chrome / Android recognise the
+   page as installable from any route, not just the landing page. The install
+   bottom sheet (_partials/install_sheet.html) walks the user through the
+   browser-specific steps. #}
+<meta name="theme-color" content="#FF5E3A">
+<meta name="mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="แต้มดี">
+<link rel="manifest" href="/static/manifest.json">
+<link rel="icon" type="image/png" sizes="32x32" href="/static/taemdee-icons/taemdee-icon-32.png">
+<link rel="icon" type="image/png" sizes="192x192" href="/static/taemdee-icons/taemdee-icon-192.png">
+<link rel="icon" type="image/png" sizes="512x512" href="/static/taemdee-icons/taemdee-icon-512.png">
+<link rel="apple-touch-icon" sizes="192x192" href="/static/taemdee-icons/taemdee-icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="/static/taemdee-icons/taemdee-icon-512.png">

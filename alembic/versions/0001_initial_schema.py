@@ -30,8 +30,32 @@ branch_labels: Union[str, Sequence[str], None] = None
 depends_on: Union[str, Sequence[str], None] = None
 
 
+_LEGACY_TABLES = (
+    # Stale names from the previous, now-deleted migration chain.
+    # Listed so a prod DB stamped at any earlier revision gets cleaned up.
+    "stamp",            # → renamed to point
+    "staffmember",      # → renamed to staff_members
+    "creditlog",        # → renamed to credit_logs
+    "topupslip",        # → renamed to topup_slips
+    "deereachcampaign", # → renamed to deereach_campaigns
+    "otpcode",          # → renamed to otp_codes
+)
+
+
 def upgrade() -> None:
-    SQLModel.metadata.create_all(bind=op.get_bind())
+    """Rebuilds the schema from scratch.
+
+    Self-healing: drops any pre-existing tables (current names AND legacy
+    singular names from the old migration chain) before recreating from the
+    SQLModel metadata. This is intentional — coordinated with a data wipe.
+    """
+    bind = op.get_bind()
+    # Drop legacy tables alembic doesn't know about anymore.
+    for tname in _LEGACY_TABLES:
+        op.execute(f'DROP TABLE IF EXISTS "{tname}" CASCADE')
+    # Drop current-name tables if they exist with stale columns
+    SQLModel.metadata.drop_all(bind=bind)
+    SQLModel.metadata.create_all(bind=bind)
 
 
 def downgrade() -> None:
