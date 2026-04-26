@@ -1,0 +1,67 @@
+<div class="install-sheet-overlay" id="install-sheet" onclick="this.classList.remove('open');">
+  <div class="install-sheet" onclick="event.stopPropagation();">
+    <div class="sheet-handle"></div>
+
+    <div class="sheet-pitch">
+      <svg class="stamp-big" viewBox="0 0 100 100" width="44" height="44">
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </svg>
+      <div class="pitch-h">เพิ่ม<em>แต้มดี</em>ลงหน้าจอ</div>
+      <div class="pitch-s">เปิดเหมือนแอป · เปิดเร็วทุกครั้ง</div>
+    </div>
+
+    <div class="platforms">
+      <div class="plat-tile">
+        <div class="plat-h">iPhone · Safari</div>
+        <div class="plat-step">
+          <div class="step-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
+            </svg>
+          </div>
+          <div class="step-txt">กด Share</div>
+        </div>
+        <div class="plat-step">
+          <div class="step-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
+              <line x1="12" y1="5" x2="12" y2="19"/>
+              <line x1="5" y1="12" x2="19" y2="12"/>
+            </svg>
+          </div>
+          <div class="step-txt">"Add to Home Screen"</div>
+        </div>
+      </div>
+
+      <div class="plat-tile">
+        <div class="plat-h">Android · Chrome</div>
+        <div class="plat-step">
+          <div class="step-ico">
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <circle cx="12" cy="5" r="2"/>
+              <circle cx="12" cy="12" r="2"/>
+              <circle cx="12" cy="19" r="2"/>
+            </svg>
+          </div>
+          <div class="step-txt">กด ⋮ menu</div>
+        </div>
+        <div class="plat-step">
+          <div class="step-ico">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+              <polyline points="7 10 12 15 17 10"/>
+              <line x1="12" y1="15" x2="12" y2="3"/>
+            </svg>
+          </div>
+          <div class="step-txt">"ติดตั้งแอป"</div>
+        </div>
+      </div>
+    </div>
+
+    <button class="sheet-close" onclick="document.getElementById('install-sheet').classList.remove('open');">เข้าใจแล้ว</button>
+  </div>
+</div>

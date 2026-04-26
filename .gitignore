@@ -21,3 +21,6 @@ htmlcov/
 
 # Local TLS certs (mkcert — generated per-machine via dev.sh)
 *.pem
+
+# macOS metadata
+.DS_Store

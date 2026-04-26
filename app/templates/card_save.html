@@ -3,87 +3,59 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>บันทึกแต้มไว้ · TaemDee แต้มดี</title>
+  <title>ยืนยันเบอร์โทร · TaemDee แต้มดี</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td c3" x-data="{ step: 'choose', phone: '', code: '', error: '' }">
+  <div class="td c3" x-data="{ step: 'phone', phone: '', code: '', error: '' }">
     <div class="topbar"><span></span><span></span></div>
-    <a href="javascript:history.back()" class="close-x">×</a>
+
+    <div class="c3-bar">
+      <a href="javascript:history.back()" class="back" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+      </a>
+      <div class="c3-title" x-text="step === 'otp' ? 'ใส่รหัส OTP' : 'ยืนยันเบอร์โทร'"></div>
+    </div>
 
     <div class="sheet">
-      <div class="illo">
-        <svg class="sparkle-illo s1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="sparkle-illo s2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="sparkle-illo s3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <div class="illo-card a">
-          <div class="dots">
-            <div class="d on"></div><div class="d on"></div>
-            <div class="d on"></div><div class="d"></div>
-            <div class="d"></div><div class="d"></div>
-          </div>
-        </div>
-        <div class="illo-card b">
-          <div class="dots">
-            <div class="d on"></div><div class="d on"></div>
-            <div class="d on"></div><div class="d on"></div>
-            <div class="d"></div><div class="d"></div>
-          </div>
-        </div>
-        <div class="illo-card c">
-          <div class="dots">
-            <div class="d on"></div><div class="d"></div>
-            <div class="d"></div><div class="d"></div>
-            <div class="d"></div><div class="d"></div>
-          </div>
-        </div>
-      </div>
+      {# Step 1: phone entry → request OTP #}
+      <div x-show="step === 'phone'">
+        <div class="headline">ใส่<em>เบอร์ของคุณ</em></div>
+        <div class="body-copy">เราจะส่ง OTP ทาง SMS เพื่อยืนยัน — เก็บแต้มไว้กับเบอร์นี้ถาวร</div>
 
-      <div class="headline">เก็บแต้ม<em>ไว้ทุกเครื่อง.</em></div>
-      <div class="body-copy">เชื่อมต่อ LINE หรือยืนยันเบอร์ แต้มจะไม่หาย แม้เปลี่ยนเครื่อง</div>
+        <form @submit.prevent="
+                const fd = new FormData(); fd.append('phone', phone);
+                const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
+                if (r.ok) { step = 'otp'; error = ''; }
+                else { error = 'ส่งรหัสไม่สำเร็จ'; }
+              ">
+          <div class="phone-input">
+            <span class="prefix">+66</span>
+            <input type="tel" inputmode="numeric"
+                   x-model="phone" placeholder="08X-XXX-XXXX" required />
+          </div>
 
-      {# Step 1: choose method #}
-      <div x-show="step === 'choose'">
-        <button class="btn btn-line" disabled title="เร็วๆ นี้">
-          <svg viewBox="0 0 24 24" fill="currentColor">
-            <path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
-          </svg>
-          เชื่อมต่อ LINE (เร็วๆ นี้)
-        </button>
-        <button type="button" class="btn btn-phone" @click="step = 'phone'; error = ''">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2"/>
-            <line x1="12" y1="18" x2="12.01" y2="18"/>
-          </svg>
-          ยืนยันเบอร์โทร
-        </button>
+          <button type="submit" class="btn btn-primary">
+            ส่ง OTP
+            <span class="arr">→</span>
+          </button>
+        </form>
 
-        <a href="javascript:history.back()" class="skip">ไว้ทีหลัง</a>
+        <div class="alt-line">
+          หรือ <a class="alt-link" title="เร็วๆ นี้">เก็บกับ LINE แทน</a> (เร็วกว่า)
+        </div>
 
         <div class="trust">
-          <span class="lock">◉</span> ใช้เพื่อยืนยันตัวตนเท่านั้น
+          <span class="lock">◉</span> ใช้เพื่อยืนยันตัวตนเท่านั้น · ไม่ส่งโฆษณา · ลบบัญชีได้ตลอด
         </div>
+
+        <div x-show="error" x-cloak class="trust" style="background:var(--accent-soft); color:var(--ink);" x-text="error"></div>
       </div>
 
-      {# Step 2: phone entry → request OTP #}
-      <form x-show="step === 'phone'" x-cloak
-            @submit.prevent="
-              const fd = new FormData(); fd.append('phone', phone);
-              const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
-              if (r.ok) { step = 'otp'; error = ''; }
-              else { error = 'ส่งรหัสไม่สำเร็จ'; }
-            ">
-        <input class="otp-input" type="tel" inputmode="numeric"
-               x-model="phone" placeholder="0812345678" required>
-        <button type="submit" class="btn btn-phone">ส่ง OTP</button>
-        <a href="#" class="skip" @click.prevent="step = 'choose'">เปลี่ยนวิธี</a>
-        <div x-show="error" x-cloak class="trust" style="background:var(--accent-soft);" x-text="error"></div>
-      </form>
-
-      {# Step 3: OTP entry → claim → /my-cards #}
+      {# Step 2: OTP entry → claim → /my-cards #}
       <form x-show="step === 'otp'" x-cloak
             @submit.prevent="
               const fd = new FormData();
@@ -92,12 +64,22 @@
               if (r.ok) { window.location.href = '/my-cards'; }
               else { error = 'OTP ไม่ถูกต้องหรือหมดอายุ'; }
             ">
-        <div class="body-copy" style="margin-bottom:10px;">รหัสส่งไปที่ <strong x-text="phone"></strong></div>
+        <div class="headline">ใส่<em>รหัสจาก SMS</em></div>
+        <div class="body-copy">รหัสส่งไปที่ <strong x-text="phone"></strong></div>
+
         <input class="otp-input" type="text" inputmode="numeric" maxlength="4"
-               x-model="code" placeholder="1234" required>
-        <button type="submit" class="btn btn-phone">ยืนยัน</button>
-        <a href="#" class="skip" @click.prevent="step = 'phone'">เปลี่ยนเบอร์</a>
-        <div x-show="error" x-cloak class="trust" style="background:var(--accent-soft);" x-text="error"></div>
+               x-model="code" placeholder="1234" required />
+
+        <button type="submit" class="btn btn-primary">
+          ยืนยัน
+          <span class="arr">→</span>
+        </button>
+
+        <div class="alt-line">
+          <a href="#" class="alt-link" @click.prevent="step = 'phone'; code = ''; error = ''">เปลี่ยนเบอร์</a>
+        </div>
+
+        <div x-show="error" x-cloak class="trust" style="background:var(--accent-soft); color:var(--ink);" x-text="error"></div>
       </form>
     </div>
   </div>

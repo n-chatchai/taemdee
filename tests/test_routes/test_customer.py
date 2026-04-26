@@ -61,3 +61,48 @@ async def test_claim_phone_with_valid_otp(client, db, shop):
     )
     assert response.status_code == 200
     assert response.json()["claimed"] is True
+
+
+async def test_account_anonymous_redirects_to_claim(client):
+    response = await client.get("/card/account", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/card/save"
+
+
+async def test_account_renders_for_claimed_customer(client, db, shop):
+    await client.post("/auth/otp/request", data={"phone": "0844444444"})
+    from app.models import OtpCode
+    otp = (await db.exec(select(OtpCode).where(OtpCode.phone == "0844444444"))).first()
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post(
+        "/card/claim/phone",
+        data={"phone": "0844444444", "code": otp.code, "display_name": "Ploy"},
+    )
+
+    response = await client.get("/card/account")
+    assert response.status_code == 200
+    body = response.text
+    assert "บัญชีของฉัน" in body
+    assert "Ploy" in body
+    # last 4 digits of phone shown, middle masked
+    assert "4444" in body
+    assert "ออกจากระบบ" in body
+
+
+async def test_account_logout_clears_cookie(client, db, shop):
+    await client.post("/auth/otp/request", data={"phone": "0855555555"})
+    from app.models import OtpCode
+    otp = (await db.exec(select(OtpCode).where(OtpCode.phone == "0855555555"))).first()
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post(
+        "/card/claim/phone",
+        data={"phone": "0855555555", "code": otp.code},
+    )
+
+    response = await client.post("/card/account/logout", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == "/"
+    # Logout clears the cookie — next /card/account should redirect to /card/save again
+    follow = await client.get("/card/account", follow_redirects=False)
+    assert follow.status_code == 303
+    assert follow.headers["location"] == "/card/save"

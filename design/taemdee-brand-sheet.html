@@ -1,0 +1,1317 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แต้มดี · Brand Sheet v1.0</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='6' y='6' width='88' height='88' rx='22' fill='%23111'/><circle cx='36' cy='42' r='6' fill='%23FF5E3A'/><circle cx='64' cy='42' r='6' fill='%23FF5E3A'/><path d='M30 62 Q50 80 70 62' stroke='%23FFD952' stroke-width='6' fill='none' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,700&family=Prompt:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+:root {
+  --bg: #F6F1E5;
+  --surface: #FDFAF2;
+  --ink: #111111;
+  --ink-soft: #6B6660;
+  --ink-softer: #A39D92;
+  --accent: #FF5E3A;
+  --butter: #FFD952;
+  --line-green: #06C755;
+  --line: rgba(17,17,17,0.08);
+}
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: var(--bg);
+  color: var(--ink);
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px;
+  line-height: 1.6;
+  -webkit-font-smoothing: antialiased;
+}
+.container {
+  max-width: 1200px;
+  margin: 0 auto;
+  padding: 0 32px;
+}
+
+/* === COVER === */
+.cover {
+  padding: 80px 0 100px;
+  border-bottom: 1.5px solid var(--ink);
+  position: relative;
+}
+.cover-meta {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 60px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.cover-meta .ver { color: var(--accent); font-weight: 700; }
+.cover-stage {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 60px;
+  align-items: end;
+}
+.cover-mark {
+  width: 320px; height: 320px;
+  filter: drop-shadow(8px 8px 0 var(--ink));
+}
+.cover-mark svg { width: 100%; height: 100%; display: block; }
+.cover-text h1 {
+  font-family: 'Host Grotesk', sans-serif;
+  font-size: clamp(48px, 8vw, 88px);
+  font-weight: 800;
+  letter-spacing: -0.045em;
+  line-height: 0.95;
+  margin-bottom: 24px;
+}
+.cover-text h1 em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 800;
+}
+.cover-text .lead {
+  font-size: 17px;
+  color: var(--ink-soft);
+  max-width: 460px;
+  line-height: 1.55;
+}
+
+/* === SECTION === */
+section {
+  padding: 80px 0;
+  border-bottom: 1.5px solid var(--ink);
+}
+.sec-head {
+  display: grid;
+  grid-template-columns: 80px 1fr;
+  gap: 24px;
+  margin-bottom: 48px;
+  align-items: start;
+}
+.sec-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 60px;
+  color: var(--accent);
+  line-height: 0.85;
+  letter-spacing: -0.04em;
+}
+.sec-head h2 {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 42px;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+}
+.sec-head h2 em { font-style: italic; color: var(--accent); }
+.sec-head .sec-desc {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin-top: 8px;
+  max-width: 540px;
+  line-height: 1.55;
+}
+
+/* === ANATOMY === */
+.anatomy-stage {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  padding: 60px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+  min-height: 420px;
+}
+.anatomy-mark {
+  width: 240px; height: 240px;
+  position: relative;
+}
+.anatomy-mark svg { width: 100%; height: 100%; }
+.anatomy-callout {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.anatomy-callout::before {
+  content: '';
+  width: 32px; height: 1px;
+  background: var(--ink);
+}
+.anatomy-callout.left::before {
+  order: 2;
+}
+.anatomy-callout.left {
+  flex-direction: row-reverse;
+}
+.callout-1 { top: 30%; left: calc(50% + 130px); }
+.callout-2 { top: 50%; left: calc(50% + 130px); }
+.callout-3 { top: 70%; left: calc(50% + 130px); }
+.callout-4 { top: 50%; right: calc(50% + 130px); }
+.callout-4::before { background: var(--ink); }
+
+/* === VARIANTS === */
+.variant-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.variant-card {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.variant-stage {
+  background: var(--surface);
+  padding: 60px 24px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 200px;
+  border-bottom: 1px dashed var(--line);
+}
+.variant-info {
+  padding: 16px 22px 20px;
+}
+.variant-name {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.015em;
+  margin-bottom: 4px;
+}
+.variant-desc {
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.variant-tag {
+  display: inline-block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  letter-spacing: 0.14em;
+  text-transform: uppercase;
+  background: var(--bg);
+  padding: 3px 8px;
+  border-radius: 999px;
+  margin-bottom: 8px;
+  color: var(--ink-soft);
+}
+
+.wordmark-display {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 56px;
+  letter-spacing: -0.045em;
+  color: var(--ink);
+  line-height: 1;
+}
+.wordmark-display .dot { color: var(--accent); }
+
+.lockup-h { display: inline-flex; align-items: center; gap: 12px; }
+.lockup-h .wordmark-display { font-size: 40px; }
+
+.lockup-v { display: inline-flex; flex-direction: column; align-items: center; gap: 12px; }
+.lockup-v .wordmark-display { font-size: 28px; }
+
+/* === COLOR VARIANTS === */
+.color-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.color-card {
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.color-stage {
+  padding: 50px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 170px;
+}
+.color-info {
+  padding: 12px 18px 14px;
+  background: var(--surface);
+  border-top: 1.5px solid var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+}
+.color-info .label { color: var(--ink); font-weight: 600; }
+.color-info .val { color: var(--ink-soft); margin-top: 2px; font-size: 9px; }
+.bg-light { background: var(--bg); }
+.bg-surface { background: var(--surface); }
+.bg-dark { background: var(--ink); }
+.bg-accent { background: var(--accent); }
+.bg-butter { background: var(--butter); }
+.bg-line-green { background: var(--line-green); }
+
+/* === SPACING === */
+.spacing-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 24px;
+}
+.spacing-stage {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  padding: 50px 40px;
+  text-align: center;
+  position: relative;
+  min-height: 320px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.spacing-stage h3 {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+  margin-bottom: 32px;
+  letter-spacing: -0.02em;
+}
+.clearspace-demo {
+  position: relative;
+  display: inline-block;
+}
+.clearspace-demo .mark-wrap {
+  width: 100px;
+  height: 100px;
+  position: relative;
+  z-index: 2;
+}
+.clearspace-demo .mark-wrap svg { width: 100%; height: 100%; }
+.clearspace-demo::before {
+  content: '';
+  position: absolute;
+  inset: -25px;
+  border: 1.5px dashed var(--accent);
+  border-radius: 30px;
+  pointer-events: none;
+}
+.clearspace-x {
+  position: absolute;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--accent);
+  font-weight: 700;
+}
+.clearspace-x.top { top: -42px; left: 50%; transform: translateX(-50%); }
+.clearspace-x.right { right: -55px; top: 50%; transform: translateY(-50%); }
+.clearspace-rule {
+  position: absolute; bottom: 18px; left: 50%; transform: translateX(-50%);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+.minsize-row {
+  display: flex;
+  align-items: center;
+  gap: 32px;
+  justify-content: center;
+}
+.minsize-step {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
+}
+.minsize-step svg { display: block; }
+.minsize-label {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.1em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+.minsize-step.min .minsize-label { color: var(--accent); font-weight: 700; }
+
+/* === DON'TS === */
+.donts-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 14px;
+}
+.dont-card {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  overflow: hidden;
+  position: relative;
+}
+.dont-stage {
+  background: var(--surface);
+  padding: 40px 20px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 160px;
+  position: relative;
+}
+.dont-x {
+  position: absolute;
+  top: 12px; right: 12px;
+  width: 26px; height: 26px;
+  background: var(--accent);
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 14px;
+  z-index: 5;
+}
+.dont-info {
+  padding: 12px 18px 16px;
+  border-top: 1px dashed var(--line);
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.dont-info strong {
+  color: var(--ink);
+  font-weight: 700;
+  font-family: 'Host Grotesk', sans-serif;
+  display: block;
+  margin-bottom: 2px;
+  font-size: 13px;
+}
+
+/* === PALETTE === */
+.palette-grid {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 12px;
+}
+.swatch {
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  overflow: hidden;
+}
+.swatch-fill {
+  height: 140px;
+  display: flex;
+  align-items: flex-end;
+  padding: 14px;
+}
+.swatch-name {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+.swatch-info {
+  padding: 12px 14px 14px;
+  background: var(--surface);
+  border-top: 1.5px solid var(--ink);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  line-height: 1.5;
+  color: var(--ink-soft);
+}
+.swatch-info .hex { color: var(--ink); font-weight: 700; }
+.swatch-info .role { font-size: 9px; letter-spacing: 0.1em; text-transform: uppercase; margin-top: 4px; }
+
+/* === TYPOGRAPHY === */
+.type-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 16px;
+}
+.type-card {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  padding: 28px 24px 24px;
+}
+.type-spec {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+}
+.type-spec .num { color: var(--accent); font-weight: 700; }
+.type-name {
+  font-size: 36px;
+  margin-bottom: 14px;
+  letter-spacing: -0.03em;
+  font-weight: 800;
+  line-height: 1;
+}
+.type-name.host { font-family: 'Host Grotesk', sans-serif; }
+.type-name.prompt { font-family: 'Prompt', sans-serif; font-weight: 700; }
+.type-name.mono { font-family: 'JetBrains Mono', monospace; font-weight: 700; font-size: 28px; }
+.type-sample {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.5;
+  padding-top: 12px;
+  border-top: 1px dashed var(--line);
+}
+.type-card.host .type-sample { font-family: 'Host Grotesk', sans-serif; }
+.type-card.prompt .type-sample { font-family: 'Prompt', sans-serif; }
+.type-card.mono .type-sample { font-family: 'JetBrains Mono', monospace; font-size: 12px; }
+.type-use {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 10px;
+  font-style: italic;
+}
+
+/* === APPLICATIONS === */
+.app-grid {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 14px;
+}
+.app-card {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  overflow: hidden;
+  text-align: center;
+}
+.app-stage {
+  padding: 36px 16px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  min-height: 130px;
+  background: var(--surface);
+  position: relative;
+}
+.app-info {
+  padding: 12px 16px 16px;
+  border-top: 1.5px solid var(--ink);
+}
+.app-name {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  margin-bottom: 2px;
+}
+.app-spec {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-soft);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+
+/* === ASSETS === */
+.assets-list {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 12px;
+}
+.asset-row {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 16px 20px;
+  display: grid;
+  grid-template-columns: auto 1fr auto;
+  gap: 14px;
+  align-items: center;
+}
+.asset-row .ico {
+  width: 36px; height: 36px;
+  background: var(--bg);
+  border-radius: 10px;
+  border: 1.5px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.asset-row .info { line-height: 1.3; }
+.asset-row .file {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  color: var(--ink);
+}
+.asset-row .desc {
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.asset-row .size {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+}
+
+/* === FOOTER === */
+.foot {
+  padding: 60px 0 40px;
+  background: var(--ink);
+  color: var(--bg);
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.15em;
+  text-transform: uppercase;
+}
+.foot .brand {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+  text-transform: none;
+  margin-bottom: 14px;
+  color: #fff;
+}
+.foot .brand .dot { color: var(--accent); }
+.foot .meta { color: rgba(255,255,255,0.5); }
+
+@media (max-width: 800px) {
+  .container { padding: 0 20px; }
+  .cover-stage { grid-template-columns: 1fr; gap: 40px; }
+  .cover-mark { width: 200px; height: 200px; }
+  .sec-head { grid-template-columns: 60px 1fr; }
+  .sec-num { font-size: 44px; }
+  .sec-head h2 { font-size: 30px; }
+  .variant-grid, .color-grid, .donts-grid, .type-grid, .app-grid { grid-template-columns: 1fr 1fr; }
+  .palette-grid { grid-template-columns: 1fr 1fr 1fr; }
+  .spacing-grid, .assets-list { grid-template-columns: 1fr; }
+}
+</style>
+</head>
+<body>
+
+<!-- ============== COVER ============== -->
+<div class="container">
+  <div class="cover">
+    <div class="cover-meta">
+      <span>Brand Sheet · v1.0</span>
+      <span>April 2026 · <span class="ver">Internal</span></span>
+    </div>
+    <div class="cover-stage">
+      <div class="cover-mark">
+        <svg viewBox="0 0 100 100">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+          <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+          <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="cover-text">
+        <h1>แต้มดี.<br><em>brand sheet.</em></h1>
+        <p class="lead">ระบบเครื่องหมาย โลโก้ สี และตัวอักษร ของแบรนด์แต้มดี — เอกสารสำหรับ designer และ developer ก่อนใช้งานในงานจริง</p>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ============== 01 — THE MARK ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">01</div>
+      <div>
+        <h2>The mark · <em>Smile Stamp.</em></h2>
+        <p class="sec-desc">รูปแสตมป์สี่เหลี่ยมโค้งมุม ภายในมีดวงตา 2 จุดสีส้ม + รอยยิ้มสีเหลือง — directly แสดงความเป็น "แสตมป์" + "ความอบอุ่น" สอง concept หลักของ product</p>
+      </div>
+    </div>
+    <div class="anatomy-stage">
+      <div class="anatomy-mark">
+        <svg viewBox="0 0 100 100">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+          <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+          <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="anatomy-callout callout-1">Stamp container · #111111</div>
+      <div class="anatomy-callout callout-2">Eyes · accent #FF5E3A</div>
+      <div class="anatomy-callout callout-3">Smile curve · butter #FFD952</div>
+      <div class="anatomy-callout callout-4 left">rx=22 · 1:1 ratio</div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 02 — VARIANTS ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">02</div>
+      <div>
+        <h2>Logo system · <em>3 forms.</em></h2>
+        <p class="sec-desc">3 รูปแบบของ logo ที่ใช้ตามขนาดและบริบท — Mark สำหรับ icon-only contexts, Wordmark สำหรับ type-only, Lockup สำหรับ primary brand placements</p>
+      </div>
+    </div>
+    <div class="variant-grid">
+      <div class="variant-card">
+        <div class="variant-stage">
+          <svg width="120" height="120" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="variant-info">
+          <span class="variant-tag">Form A</span>
+          <div class="variant-name">Smile Stamp (mark)</div>
+          <p class="variant-desc">App icon, favicon, social avatar, LINE OA profile picture — ใช้ตรงไหนก็ตามที่เป็น icon-only context</p>
+        </div>
+      </div>
+
+      <div class="variant-card">
+        <div class="variant-stage">
+          <span class="wordmark-display">แต้มดี<span class="dot">.</span></span>
+        </div>
+        <div class="variant-info">
+          <span class="variant-tag">Form B</span>
+          <div class="variant-name">Wordmark</div>
+          <p class="variant-desc">Type-only — ใช้เมื่อมี space แนวนอนเยอะแต่ไม่ต้องการ icon (เช่น header strip, footer mark, document header)</p>
+        </div>
+      </div>
+
+      <div class="variant-card">
+        <div class="variant-stage">
+          <div class="lockup-h">
+            <svg width="48" height="48" viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <span class="wordmark-display">แต้มดี<span class="dot">.</span></span>
+          </div>
+        </div>
+        <div class="variant-info">
+          <span class="variant-tag">Form C · Primary</span>
+          <div class="variant-name">Horizontal lockup</div>
+          <p class="variant-desc">Primary lockup สำหรับ nav, footer, business cards, ทุก marketing material — combine mark + wordmark</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 03 — COLOR VARIANTS ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">03</div>
+      <div>
+        <h2>Background · <em>variants.</em></h2>
+        <p class="sec-desc">Logo ปรับ contrast ตาม background — ใช้ inverted variant เมื่อ background เป็นสีเข้ม, ใช้ green-curve variant เมื่ออยู่บน LINE green button</p>
+      </div>
+    </div>
+    <div class="color-grid">
+      <div class="color-card">
+        <div class="color-stage bg-light">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="color-info">
+          <div class="label">Light cream — primary</div>
+          <div class="val">#F6F1E5 bg</div>
+        </div>
+      </div>
+
+      <div class="color-card">
+        <div class="color-stage bg-surface">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="color-info">
+          <div class="label">Surface — alternate light</div>
+          <div class="val">#FDFAF2 bg</div>
+        </div>
+      </div>
+
+      <div class="color-card">
+        <div class="color-stage bg-dark">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#FDFAF2"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#111" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="color-info">
+          <div class="label" style="color: #fff;">Dark — inverted</div>
+          <div class="val" style="color: rgba(255,255,255,0.5);">#111 bg · curve→ink</div>
+        </div>
+      </div>
+
+      <div class="color-card">
+        <div class="color-stage bg-accent">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FFD952"/>
+            <circle cx="64" cy="42" r="6" fill="#FFD952"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="color-info">
+          <div class="label" style="color: #fff;">Brand accent</div>
+          <div class="val" style="color: rgba(255,255,255,0.7);">#FF5E3A · eyes→butter</div>
+        </div>
+      </div>
+
+      <div class="color-card">
+        <div class="color-stage bg-butter">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FDFAF2" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="color-info">
+          <div class="label">Butter — celebration</div>
+          <div class="val">#FFD952 · curve→cream</div>
+        </div>
+      </div>
+
+      <div class="color-card">
+        <div class="color-stage bg-line-green">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#FDFAF2"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="color-info">
+          <div class="label" style="color: #fff;">LINE login</div>
+          <div class="val" style="color: rgba(255,255,255,0.7);">#06C755 bg · curve→green</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 04 — SPACING & SIZE ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">04</div>
+      <div>
+        <h2>Spacing &amp; <em>minimum size.</em></h2>
+        <p class="sec-desc">Clear space ป้องกันให้ logo อ่านง่าย ไม่ต้อง crowd กับ elements รอบข้าง — minimum size รับประกันว่า logo ยัง legible แม้ที่ขนาดเล็กสุด</p>
+      </div>
+    </div>
+    <div class="spacing-grid">
+      <div class="spacing-stage">
+        <h3>Clear space</h3>
+        <div class="clearspace-demo">
+          <span class="clearspace-x top">25% × X</span>
+          <span class="clearspace-x right">25% × X</span>
+          <div class="mark-wrap">
+            <svg viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="clearspace-rule">X = mark height</div>
+      </div>
+
+      <div class="spacing-stage">
+        <h3>Minimum size</h3>
+        <div class="minsize-row">
+          <div class="minsize-step min">
+            <svg width="16" height="16" viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <span class="minsize-label">16px (min)</span>
+          </div>
+          <div class="minsize-step">
+            <svg width="32" height="32" viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <span class="minsize-label">32px</span>
+          </div>
+          <div class="minsize-step">
+            <svg width="64" height="64" viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <span class="minsize-label">64px</span>
+          </div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 05 — DON'TS ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">05</div>
+      <div>
+        <h2>Don'ts · <em>avoid these.</em></h2>
+        <p class="sec-desc">6 อย่างที่ทำลาย logo — ห้ามเปลี่ยนสัดส่วน ห้ามเปลี่ยนสี outside ที่กำหนด ห้ามตกแต่งเพิ่ม ห้ามวางบน background ที่ contrast ต่ำ</p>
+      </div>
+    </div>
+    <div class="donts-grid">
+      <div class="dont-card">
+        <div class="dont-x">×</div>
+        <div class="dont-stage">
+          <svg width="120" height="80" viewBox="0 0 150 100" preserveAspectRatio="none">
+            <rect x="6" y="6" width="138" height="88" rx="22" fill="#111"/>
+            <circle cx="50" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="100" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M40 62 Q75 80 110 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="dont-info"><strong>Don't stretch</strong>เก็บ aspect ratio 1:1 เสมอ</div>
+      </div>
+
+      <div class="dont-card">
+        <div class="dont-x">×</div>
+        <div class="dont-stage">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#7A4A8A"/>
+            <circle cx="36" cy="42" r="6" fill="#06C755"/>
+            <circle cx="64" cy="42" r="6" fill="#06C755"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#E87A6A" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="dont-info"><strong>Don't recolor</strong>ใช้ color variants ที่กำหนดเท่านั้น</div>
+      </div>
+
+      <div class="dont-card">
+        <div class="dont-x">×</div>
+        <div class="dont-stage">
+          <svg width="100" height="100" viewBox="0 0 100 100" style="transform: rotate(25deg);">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="dont-info"><strong>Don't rotate excessively</strong>tilt -6° max ที่ใช้ใน TAEMDEE pill</div>
+      </div>
+
+      <div class="dont-card">
+        <div class="dont-x">×</div>
+        <div class="dont-stage" style="background: #FF5E3A;">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+            <circle cx="36" cy="42" r="6" fill="#FFD952"/>
+            <circle cx="64" cy="42" r="6" fill="#FFD952"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="dont-info"><strong>Don't kill contrast</strong>logo ต้อง stand out จาก bg เสมอ</div>
+      </div>
+
+      <div class="dont-card">
+        <div class="dont-x">×</div>
+        <div class="dont-stage">
+          <div style="position: relative;">
+            <svg width="100" height="100" viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <svg width="20" height="20" style="position: absolute; top: -8px; right: -8px;" viewBox="0 0 16 16" fill="#FFD952" stroke="#111" stroke-width="1.5">
+              <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+            </svg>
+          </div>
+        </div>
+        <div class="dont-info"><strong>Don't decorate</strong>ห้ามแปะ stars, sparkles, frames เพิ่ม</div>
+      </div>
+
+      <div class="dont-card">
+        <div class="dont-x">×</div>
+        <div class="dont-stage">
+          <svg width="100" height="100" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="50" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="dont-info"><strong>Don't change shape</strong>rx=22 cornerเสมอ ไม่ใช่ circle หรือ square คม</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 06 — PALETTE ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">06</div>
+      <div>
+        <h2>Color · <em>palette.</em></h2>
+        <p class="sec-desc">5 สีหลัก + 1 utility (LINE green) — ทุก color มีหน้าที่ชัดเจน ใช้ accent น้อย ๆ แต่เด่น ไม่เกิน 20% ของ canvas</p>
+      </div>
+    </div>
+    <div class="palette-grid">
+      <div class="swatch">
+        <div class="swatch-fill bg-light"><span class="swatch-name" style="color: var(--ink);">Cream</span></div>
+        <div class="swatch-info">
+          <div class="hex">#F6F1E5</div>
+          <div>RGB 246 241 229</div>
+          <div class="role">Page background</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill bg-surface"><span class="swatch-name" style="color: var(--ink);">Surface</span></div>
+        <div class="swatch-info">
+          <div class="hex">#FDFAF2</div>
+          <div>RGB 253 250 242</div>
+          <div class="role">Cards, surfaces</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill bg-dark"><span class="swatch-name" style="color: #fff;">Ink</span></div>
+        <div class="swatch-info">
+          <div class="hex">#111111</div>
+          <div>RGB 17 17 17</div>
+          <div class="role">Text, stamps, borders</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill bg-accent"><span class="swatch-name" style="color: #fff;">Accent</span></div>
+        <div class="swatch-info">
+          <div class="hex">#FF5E3A</div>
+          <div>RGB 255 94 58</div>
+          <div class="role">Brand orange · CTA</div>
+        </div>
+      </div>
+      <div class="swatch">
+        <div class="swatch-fill bg-butter"><span class="swatch-name" style="color: var(--ink);">Butter</span></div>
+        <div class="swatch-info">
+          <div class="hex">#FFD952</div>
+          <div>RGB 255 217 82</div>
+          <div class="role">Celebration · vouchers</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 07 — TYPOGRAPHY ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">07</div>
+      <div>
+        <h2>Typography · <em>3 fonts.</em></h2>
+        <p class="sec-desc">Host Grotesk สำหรับ Latin display + Prompt สำหรับ Thai body + JetBrains Mono สำหรับ data/metadata — โหลดจาก Google Fonts ฟรี</p>
+      </div>
+    </div>
+    <div class="type-grid">
+      <div class="type-card host">
+        <div class="type-spec">Display · Latin · <span class="num">Host Grotesk</span></div>
+        <div class="type-name host">Host Grotesk</div>
+        <div class="type-sample">Aa Bb Cc Dd Ee 0123<br>The quick brown fox</div>
+        <div class="type-use">ใช้กับ heading ภาษาอังกฤษ, brand wordmark, big numbers</div>
+      </div>
+      <div class="type-card prompt">
+        <div class="type-spec">Body · Thai · <span class="num">Prompt</span></div>
+        <div class="type-name prompt">แต้มดี Aa</div>
+        <div class="type-sample">บัตรสะสมแต้มดิจิทัล<br>สำหรับร้านค้า — ใช้ง่าย</div>
+        <div class="type-use">ใช้กับ Thai body, button labels, UI text ทั้งหมดที่เป็น Thai</div>
+      </div>
+      <div class="type-card mono">
+        <div class="type-spec">Data · Mono · <span class="num">JetBrains Mono</span></div>
+        <div class="type-name mono">10:42 AM</div>
+        <div class="type-sample">+1 STAMP · 7/10<br>ID: MHEE-A72B</div>
+        <div class="type-use">ใช้กับ timestamps, IDs, kicker labels, technical metadata</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 08 — SMILE FAMILY ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">08</div>
+      <div>
+        <h2>Smile · <em>family.</em></h2>
+        <p class="sec-desc">2 ระดับของ smile mark — ใช้ Smile Stamp ที่ primary placements (28px+) และ simplified smile ที่ inline decorative contexts (8-20px) ไม่ผสมข้ามขนาด</p>
+      </div>
+    </div>
+    <div class="variant-grid">
+      <div class="variant-card">
+        <div class="variant-stage" style="gap: 24px; flex-direction: column;">
+          <svg width="80" height="80" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--ink-soft); text-transform: uppercase;">≥ 28px · primary</span>
+        </div>
+        <div class="variant-info">
+          <div class="variant-name">Smile Stamp (full logo)</div>
+          <p class="variant-desc">Primary brand placements — nav, footer, app icon, LINE OA profile, login splash. ใช้สีจริง stamp + 2-tone smile</p>
+        </div>
+      </div>
+
+      <div class="variant-card">
+        <div class="variant-stage" style="gap: 24px; flex-direction: column;">
+          <svg width="32" height="20" viewBox="0 0 20 12" fill="none">
+            <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+            <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+            <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+          </svg>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: var(--ink-soft); text-transform: uppercase;">8–20px · inline</span>
+        </div>
+        <div class="variant-info">
+          <div class="variant-name">Smile mark (simplified)</div>
+          <p class="variant-desc">Inline decorative — section kickers, footer-marks ใน phone screens, TAEMDEE pill badges. Single color via currentColor</p>
+        </div>
+      </div>
+
+      <div class="variant-card">
+        <div class="variant-stage" style="background: #06C755; gap: 24px; flex-direction: column;">
+          <svg width="80" height="80" viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#FDFAF2"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span style="font-family: 'JetBrains Mono', monospace; font-size: 10px; letter-spacing: 0.12em; color: rgba(255,255,255,0.75); text-transform: uppercase;">LINE green bg</span>
+        </div>
+        <div class="variant-info">
+          <div class="variant-name">Smile Stamp (LINE variant)</div>
+          <p class="variant-desc">Inverted variant สำหรับ LINE login button — white bg + green curve harmonize กับ LINE green</p>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 09 — APPLICATIONS ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">09</div>
+      <div>
+        <h2>Applications · <em>where it lives.</em></h2>
+        <p class="sec-desc">Logo applied ในบริบทต่าง ๆ — favicon, app icon, social pill, LINE OA profile, login button, business card ตัวอย่างที่จะเจอจริง</p>
+      </div>
+    </div>
+    <div class="app-grid">
+      <div class="app-card">
+        <div class="app-stage">
+          <div style="background: #fff; border: 0.5px solid #ddd; border-radius: 8px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; box-shadow: 0 1px 3px rgba(0,0,0,0.05);">
+            <svg width="14" height="14" viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <span style="font-size: 11px; color: #444;">แต้มดี</span>
+          </div>
+        </div>
+        <div class="app-info">
+          <div class="app-name">Browser tab</div>
+          <div class="app-spec">16×16 svg favicon</div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-stage">
+          <div style="position: relative;">
+            <svg width="68" height="68" viewBox="0 0 100 100" style="border-radius: 16px; box-shadow: 0 4px 10px rgba(0,0,0,0.15);">
+              <rect x="0" y="0" width="100" height="100" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+          </div>
+        </div>
+        <div class="app-info">
+          <div class="app-name">App icon</div>
+          <div class="app-spec">512×512 ios/android</div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-stage">
+          <div style="background: #fff; border: 0.5px solid #ddd; border-radius: 8px; padding: 8px 10px; display: flex; align-items: center; gap: 8px; min-width: 120px;">
+            <svg width="36" height="36" viewBox="0 0 100 100" style="border-radius: 50%; flex-shrink: 0;">
+              <rect x="0" y="0" width="100" height="100" rx="50" fill="#111"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            <div style="line-height: 1.2;">
+              <div style="font-size: 11px; font-weight: 600; color: #111;">แต้มดี ✓</div>
+              <div style="font-size: 9px; color: #888;">verified</div>
+            </div>
+          </div>
+        </div>
+        <div class="app-info">
+          <div class="app-name">LINE OA profile</div>
+          <div class="app-spec">640×640 cropped circle</div>
+        </div>
+      </div>
+
+      <div class="app-card">
+        <div class="app-stage">
+          <button style="background: #06C755; color: #fff; border: none; border-radius: 10px; padding: 8px 14px; display: flex; align-items: center; gap: 8px; font-size: 12px; font-weight: 600; box-shadow: 2px 2px 0 #111;">
+            <svg width="16" height="16" viewBox="0 0 100 100">
+              <rect x="6" y="6" width="88" height="88" rx="22" fill="#fff"/>
+              <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+              <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/>
+            </svg>
+            เข้าด้วย LINE
+          </button>
+        </div>
+        <div class="app-info">
+          <div class="app-name">LINE login button</div>
+          <div class="app-spec">Green-curve variant</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 10 — ASSETS ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">10</div>
+      <div>
+        <h2>Asset · <em>downloads.</em></h2>
+        <p class="sec-desc">PNG files พร้อมใช้สำหรับการอัปโหลดที่ต้อง raster format (LINE OA, app stores, social) — SVG inline ใน HTML ใช้ได้เลยจาก code ด้านบน</p>
+      </div>
+    </div>
+    <div class="assets-list">
+      <div class="asset-row">
+        <div class="ico">SVG</div>
+        <div class="info">
+          <div class="file">favicon (inline)</div>
+          <div class="desc">Embedded ใน &lt;link rel="icon"&gt; ทั้ง 2 HTML</div>
+        </div>
+        <div class="size">— · in code</div>
+      </div>
+      <div class="asset-row">
+        <div class="ico">PNG</div>
+        <div class="info">
+          <div class="file">taemdee-icon-32.png</div>
+          <div class="desc">Favicon fallback (older browsers)</div>
+        </div>
+        <div class="size">32×32</div>
+      </div>
+      <div class="asset-row">
+        <div class="ico">PNG</div>
+        <div class="info">
+          <div class="file">taemdee-icon-192.png</div>
+          <div class="desc">Android home screen, PWA manifest</div>
+        </div>
+        <div class="size">192×192</div>
+      </div>
+      <div class="asset-row">
+        <div class="ico">PNG</div>
+        <div class="info">
+          <div class="file">taemdee-icon-512.png</div>
+          <div class="desc">iOS app icon, large display</div>
+        </div>
+        <div class="size">512×512</div>
+      </div>
+      <div class="asset-row">
+        <div class="ico">PNG</div>
+        <div class="info">
+          <div class="file">taemdee-icon-line-oa-640.png</div>
+          <div class="desc">LINE OA profile picture (solid bg)</div>
+        </div>
+        <div class="size">640×640</div>
+      </div>
+      <div class="asset-row">
+        <div class="ico">PNG</div>
+        <div class="info">
+          <div class="file">taemdee-icon-line-login-256.png</div>
+          <div class="desc">LINE green-curve variant</div>
+        </div>
+        <div class="size">256×256</div>
+      </div>
+      <div class="asset-row">
+        <div class="ico">PNG</div>
+        <div class="info">
+          <div class="file">taemdee-icon-transparent-512.png</div>
+          <div class="desc">Logo over arbitrary bg (decks, marketing)</div>
+        </div>
+        <div class="size">512×512</div>
+      </div>
+      <div class="asset-row">
+        <div class="ico">SVG</div>
+        <div class="info">
+          <div class="file">Master SVG (embedded)</div>
+          <div class="desc">Copy จาก section 01 anatomy ใช้ inline หรือ extract เป็น .svg file</div>
+        </div>
+        <div class="size">vector</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== FOOTER ============== -->
+<footer class="foot">
+  <div class="container">
+    <div class="brand">แต้มดี<span class="dot">.</span></div>
+    <div class="meta">brand sheet v1.0 · April 2026 · taemdee.co</div>
+  </div>
+</footer>
+
+</body>
+</html>

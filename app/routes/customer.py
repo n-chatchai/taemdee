@@ -26,12 +26,86 @@ from app.services.soft_wall import claim_by_phone
 router = APIRouter()
 
 
-# /card/save and /my-cards are literal — must be registered BEFORE /card/{shop_id}
-# so FastAPI doesn't try to parse "save" as a UUID and 422.
+# Literal /card/* paths — must be registered BEFORE /card/{shop_id} so FastAPI
+# doesn't try to parse "save", "account" etc. as a UUID and 422.
 @router.get("/card/save", response_class=HTMLResponse)
 async def soft_wall_page(request: Request):
     """C3 — Soft Wall standalone page: claim by phone OTP (or LINE — coming)."""
     return templates.TemplateResponse(request=request, name="card_save.html", context={})
+
+
+def _mask_phone(phone: Optional[str]) -> str:
+    """+66 89 ••• 4523 — show country prefix and last 4, mask the middle."""
+    if not phone:
+        return ""
+    digits = "".join(ch for ch in phone if ch.isdigit())
+    if digits.startswith("66") and len(digits) >= 11:
+        return f"+66 {digits[2:4]} ••• {digits[-4:]}"
+    if digits.startswith("0") and len(digits) >= 9:
+        return f"+66 {digits[1:3]} ••• {digits[-4:]}"
+    return phone
+
+
+@router.get("/card/account", response_class=HTMLResponse)
+async def account_menu(
+    request: Request,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """C6 — customer account menu (profile, my-stuff, settings, logout, delete)."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    if customer.is_anonymous:
+        return RedirectResponse(url="/card/save", status_code=status.HTTP_303_SEE_OTHER)
+
+    cards_count = (await db.exec(
+        select(func.count(func.distinct(Stamp.shop_id)))
+        .where(
+            Stamp.customer_id == customer.id,
+            Stamp.is_voided == False,  # noqa: E712
+            Stamp.redemption_id.is_(None),
+        )
+    )).one()
+
+    ready_count = 0
+    stamps_per_shop = (await db.exec(
+        select(Stamp.shop_id, func.count().label("active_count"))
+        .where(
+            Stamp.customer_id == customer.id,
+            Stamp.is_voided == False,  # noqa: E712
+            Stamp.redemption_id.is_(None),
+        )
+        .group_by(Stamp.shop_id)
+    )).all()
+    for shop_id, active_count in stamps_per_shop:
+        shop = await db.get(Shop, shop_id)
+        if shop and active_count >= shop.reward_threshold:
+            ready_count += 1
+
+    redemption_count = (await db.exec(
+        select(func.count())
+        .select_from(Redemption)
+        .where(Redemption.customer_id == customer.id)
+    )).one()
+
+    return templates.TemplateResponse(
+        request=request,
+        name="card_account.html",
+        context={
+            "customer": customer,
+            "masked_phone": _mask_phone(customer.phone),
+            "cards_count": cards_count,
+            "ready_count": ready_count,
+            "redemption_count": redemption_count,
+        },
+    )
+
+
+@router.post("/card/account/logout")
+async def customer_logout():
+    """Clear the customer cookie and bounce to home."""
+    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie(CUSTOMER_COOKIE_NAME, path="/")
+    return response
 
 
 @router.get("/card/{shop_id}", response_class=HTMLResponse)
@@ -243,3 +317,5 @@ async def my_cards(
             "closest": closest,
         },
     )
+
+

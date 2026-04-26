@@ -1,0 +1,5526 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แต้มดี · ร้านค้า · Shop App · Design v1</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='6' y='6' width='88' height='88' rx='22' fill='%23111'/><circle cx='36' cy='42' r='6' fill='%23FF5E3A'/><circle cx='64' cy='42' r='6' fill='%23FF5E3A'/><path d='M30 62 Q50 80 70 62' stroke='%23FFD952' stroke-width='6' fill='none' stroke-linecap='round'/></svg>">
+<!-- PWA: install on iOS / Android home screen -->
+<meta name="theme-color" content="#FF5E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="แต้มดี">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="taemdee-icons/taemdee-icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="taemdee-icons/taemdee-icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="taemdee-icons/taemdee-icon-512.png">
+<link rel="manifest" href="manifest.json">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Prompt:ital,wght@0,200;0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  /* ========================================================== */
+  /* GALLERY CHROME                                              */
+  /* ========================================================== */
+  :root {
+    --gallery-bg: #EFEBE1;
+    --gallery-ink: #141414;
+    --gallery-muted: #8A857C;
+  }
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--gallery-bg); color: var(--gallery-ink); }
+  body {
+    font-family: 'Prompt', system-ui, sans-serif;
+    padding: 0;
+    line-height: 1.5;
+  }
+
+  /* ===== Cover ===== */
+  .cover {
+    min-height: 100vh;
+    padding: clamp(40px, 6vw, 96px);
+    display: flex; flex-direction: column; justify-content: space-between;
+    border-bottom: 1.5px solid #14141422;
+    position: relative;
+    overflow: hidden;
+  }
+  .cover::before {
+    content: '';
+    position: absolute;
+    top: -100px; right: -100px;
+    width: 400px; height: 400px;
+    background: radial-gradient(circle, rgba(255,217,82,0.55) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .cover::after {
+    content: '';
+    position: absolute;
+    bottom: -100px; left: -100px;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(255,94,58,0.18) 0%, transparent 60%);
+    border-radius: 50%;
+    pointer-events: none;
+  }
+  .cover > * { position: relative; }
+
+  .cover-top { display: flex; justify-content: space-between; align-items: flex-start; }
+  .cover-mark {
+    display: inline-flex; align-items: center; gap: 12px;
+  }
+  .cover-mark .cover-logo-stamp {
+    flex-shrink: 0;
+  }
+  .cover-mark .cover-wordmark {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.035em;
+    color: var(--ink);
+  }
+  .cover-mark .cover-wordmark .td-dot { color: var(--accent); }
+
+  .cover-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--gallery-muted);
+    line-height: 1.6;
+  }
+
+  .cover-mid { padding: 80px 0 0; }
+  .cover h1 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(56px, 10vw, 144px);
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+    margin-bottom: 24px;
+  }
+  .cover h1 .accent { color: #FF5E3A; font-style: italic; font-weight: 600; }
+  .cover h1 .hl {
+    background: linear-gradient(transparent 60%, #FFD95280 60%);
+    padding: 0 6px;
+  }
+  .cover .lead {
+    max-width: 720px;
+    font-family: 'Prompt', sans-serif;
+    font-size: clamp(16px, 1.6vw, 20px);
+    color: #3a3a3a; line-height: 1.55; font-weight: 400;
+  }
+
+  .cover-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 18px;
+    margin-top: 56px;
+    max-width: 900px;
+  }
+  .cover-stat {
+    padding: 16px 18px;
+    background: #fff;
+    border: 1.5px solid var(--gallery-ink);
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--gallery-ink);
+  }
+  .cover-stat .n {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 36px;
+    letter-spacing: -0.035em; line-height: 1;
+    color: #FF5E3A;
+    margin-bottom: 4px;
+  }
+  .cover-stat .l {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--gallery-muted);
+  }
+
+  .cover-bottom {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    flex-wrap: wrap; gap: 20px;
+    margin-top: 80px;
+  }
+  .cover-toc {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    line-height: 1.8;
+  }
+  .cover-toc strong { font-weight: 700; display: block; margin-bottom: 8px; }
+  .cover-toc .toc-row {
+    display: flex; gap: 14px;
+    color: #3a3a3a;
+  }
+  .cover-toc .toc-row .num {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--gallery-muted);
+    font-size: 11px;
+    width: 28px; flex-shrink: 0;
+    text-align: right;
+    padding-top: 5px;
+  }
+  .cover-toc .toc-row .name { font-weight: 500; }
+
+  .cover-page-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.14em;
+    color: var(--gallery-muted);
+    text-transform: uppercase;
+  }
+
+  /* ===== Section header ===== */
+  .section {
+    padding: clamp(56px, 8vw, 96px) clamp(24px, 4vw, 64px) 24px;
+    position: relative;
+  }
+  .section-head {
+    max-width: 1600px; margin: 0 auto 48px;
+    display: flex; justify-content: space-between; align-items: flex-end;
+    border-bottom: 1.5px solid var(--gallery-ink);
+    padding-bottom: 20px;
+    flex-wrap: wrap; gap: 20px;
+  }
+  .section-head .left {
+    display: flex; align-items: center; gap: 16px;
+    flex-wrap: wrap;
+  }
+  .section-head .num {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 56px; height: 56px;
+    background: var(--gallery-ink); color: #fff;
+    border-radius: 50%;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: -0.02em;
+  }
+  .section-head h2 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: clamp(32px, 4vw, 48px);
+    letter-spacing: -0.03em; line-height: 1;
+  }
+  .section-head h2 em {
+    font-style: italic; font-weight: 600; color: #FF5E3A;
+  }
+  .section-head .desc {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--gallery-muted);
+    max-width: 320px;
+    text-align: right;
+    line-height: 1.5;
+  }
+
+  .grid {
+    max-width: 1600px; margin: 0 auto;
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+    gap: clamp(28px, 3vw, 48px);
+    padding-bottom: 32px;
+  }
+  .mockup { display: flex; flex-direction: column; align-items: center; }
+  .mockup-caption {
+    width: 100%; max-width: 320px;
+    margin-bottom: 16px; padding: 0 4px;
+  }
+  .mockup-caption .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.13em; text-transform: uppercase;
+    color: var(--gallery-muted); margin-bottom: 8px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .mockup-caption .kicker .n {
+    background: var(--gallery-ink); color: #fff;
+    padding: 2px 8px; border-radius: 999px;
+    font-size: 9px; letter-spacing: 0.1em;
+  }
+  .mockup-caption h3 {
+    font-family: 'Host Grotesk', sans-serif; font-weight: 700;
+    font-size: 22px; letter-spacing: -0.02em; margin-bottom: 6px;
+  }
+  .mockup-caption p {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px; color: #555; line-height: 1.55;
+  }
+
+  /* ===== Phone frame ===== */
+  .phone {
+    width: 100%; max-width: 320px;
+    aspect-ratio: 9 / 19; background: #0a0a0a;
+    border-radius: 40px; padding: 10px;
+    box-shadow:
+      0 30px 60px -20px rgba(0,0,0,0.35),
+      0 10px 20px -10px rgba(0,0,0,0.2),
+      inset 0 0 0 1px #222;
+    position: relative;
+  }
+  .phone::before {
+    content: ''; position: absolute; top: 16px; left: 50%;
+    transform: translateX(-50%);
+    width: 84px; height: 22px; background: #000;
+    border-radius: 11px; z-index: 10;
+  }
+  .phone-screen {
+    width: 100%; height: 100%;
+    border-radius: 30px; overflow: hidden;
+    position: relative; background: #fff;
+  }
+  .phone-screen * { font-family: inherit; }
+
+  /* ========================================================== */
+  /* SHARED — TaemDee TOKENS                                     */
+  /* ========================================================== */
+  .td {
+    --bg: #F6F1E5;
+    --surface: #FDFAF2;
+    --ink: #111111;
+    --ink-soft: #6B6660;
+    --ink-softer: #A39D92;
+    --accent: #FF5E3A;
+    --accent-soft: #FFE6DF;
+    --butter: #FFD952;
+    --butter-soft: #FFF1B8;
+    --mint: #C8E8D0;
+    --mint-ink: #1A6B3A;
+    --line-green: #06C755;
+    --line: rgba(17,17,17,0.08);
+    font-family: 'Prompt', sans-serif;
+    color: var(--ink);
+    background: var(--bg);
+    width: 100%; height: 100%;
+    overflow-y: auto;
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .td .topbar {
+    display: flex; justify-content: space-between; align-items: center;
+    padding: 40px 20px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--ink-softer);
+    letter-spacing: 0.04em;
+    position: relative; z-index: 2;
+  }
+  .td::before {
+    content: ''; position: absolute; inset: 0;
+    background-image:
+      radial-gradient(circle at 85% 12%, rgba(255,217,82,0.5) 0%, rgba(255,217,82,0) 35%),
+      radial-gradient(circle at 10% 85%, rgba(255,94,58,0.08) 0%, transparent 45%);
+    pointer-events: none; z-index: 0;
+  }
+  .td::after {
+    content: ''; position: absolute; inset: 0;
+    background-image: radial-gradient(circle, rgba(17,17,17,0.07) 1px, transparent 1.5px);
+    background-size: 18px 18px; opacity: 0.4;
+    pointer-events: none; z-index: 0;
+  }
+  .td > * { position: relative; z-index: 1; }
+
+  .td-badge {
+    position: absolute;
+    top: 42px; left: 16px;
+    transform: rotate(-6deg);
+    background: var(--ink); color: #FFF;
+    padding: 4px 10px 4px 8px;
+    border-radius: 999px;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 10px;
+    letter-spacing: -0.01em;
+    display: inline-flex; align-items: center; gap: 5px;
+    z-index: 3;
+    box-shadow: 0 4px 12px -4px rgba(17,17,17,0.25);
+  }
+  .td-badge .s { width: 11px; height: 6.5px; color: var(--accent); }
+
+  /* ========================================================== */
+  /* SHARED COMPONENTS                                           */
+  /* ========================================================== */
+  .app-bar {
+    padding: 48px 20px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .app-bar .x {
+    width: 34px; height: 34px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 2px 2px 0 var(--ink);
+    cursor: pointer; font-size: 16px;
+  }
+  .app-bar .title-mid {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 14px;
+  }
+  .app-bar .right-action {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px; font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .app-bar .placeholder { width: 34px; }
+
+  .page-title {
+    padding: 22px 20px 0;
+  }
+  .page-title .h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 26px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 4px;
+  }
+  .page-title .h em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .page-title .sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400; font-size: 13px;
+    color: var(--ink-soft);
+  }
+
+  /* Common shop head used in C1/C2/C4 */
+  .shop-head {
+    padding: 48px 20px 0;
+    text-align: center;
+    position: relative;
+  }
+
+  /* C1 avatar (top-right) — entry to C7 My Cards home for logged-in users */
+  .c1-avatar {
+    position: absolute;
+    top: 18px; right: 18px;
+    z-index: 5;
+    width: 36px; height: 36px;
+    background: var(--accent); color: #FFF;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
+    cursor: pointer;
+  }
+  .shop-head .side-spark {
+    position: absolute;
+    top: 56px;
+    color: var(--accent);
+    width: 12px; height: 12px;
+  }
+  .shop-head .side-spark.l { left: 30px; transform: rotate(-15deg); }
+  .shop-head .side-spark.r { right: 30px; transform: rotate(15deg); color: var(--butter); stroke: #141414; }
+  .shop-logo-mark {
+    display: inline-block;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 30px;
+    letter-spacing: -0.04em;
+    margin-bottom: 4px;
+  }
+  .shop-logo-mark .dot { color: var(--accent); }
+  .shop-sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400; font-size: 12px;
+    color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .shop-sub .dotsep {
+    width: 3px; height: 3px;
+    background: var(--accent); border-radius: 50%;
+  }
+
+  /* Hero number block */
+  .hero-num-wrap {
+    text-align: center;
+    padding: 26px 20px 12px;
+    position: relative;
+  }
+  .hero-num-wrap::before {
+    content: ''; position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -40%);
+    width: 170px; height: 170px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 65%);
+    opacity: 0.55; border-radius: 50%; z-index: 0;
+  }
+  .hero-num-wrap > * { position: relative; z-index: 1; }
+  .hero-label {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 13px; color: var(--ink-soft);
+    margin-bottom: 2px;
+  }
+  .hero-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 128px;
+    letter-spacing: -0.065em;
+    line-height: 0.85;
+    color: var(--accent);
+    margin-bottom: 4px;
+    position: relative; display: inline-block;
+  }
+  .hero-num .mini-star {
+    position: absolute;
+    top: 6px; right: -16px;
+    width: 16px; height: 16px;
+    color: var(--butter);
+    stroke: #141414; stroke-width: 2;
+    animation: gentle-spin 6s linear infinite;
+  }
+  @keyframes gentle-spin {
+    from { transform: rotate(0deg); } to { transform: rotate(360deg); }
+  }
+  .hero-num-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px; font-weight: 500;
+    color: var(--ink); letter-spacing: -0.005em;
+  }
+  .hero-num-sub em {
+    font-style: italic; font-weight: 600; color: var(--accent);
+  }
+  .hero-num-sub .of {
+    font-weight: 400; color: var(--ink-softer);
+    font-size: 11px; margin-left: 4px;
+  }
+
+  /* Stamp pills */
+  .stamps-wrap { padding: 12px 20px 10px; }
+  .stamps {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px;
+  }
+  .stamp {
+    height: 22px; border-radius: 7px;
+    background: var(--line);
+  }
+  .stamp.on {
+    background: var(--accent); position: relative; overflow: hidden;
+  }
+  .stamp.on::after {
+    content: ''; position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 5px; height: 5px;
+    background: rgba(255,255,255,0.6); border-radius: 50%;
+  }
+  .stamp.on.butter { background: var(--butter); }
+  .stamp.on.butter::after { background: rgba(17,17,17,0.5); }
+
+  .encourage {
+    text-align: center;
+    padding: 18px 20px 0;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500; font-size: 14px;
+    color: var(--ink); line-height: 1.4;
+    display: flex; justify-content: center; align-items: center; gap: 6px;
+    flex-wrap: wrap;
+  }
+  .encourage .spark-mini { width: 10px; height: 10px; color: var(--accent); }
+
+  /* Reward pill */
+  .reward-pill {
+    margin: 20px 20px 0;
+    background: var(--surface);
+    border-radius: 18px;
+    padding: 14px 16px;
+    display: flex; align-items: center; gap: 12px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative;
+  }
+  .reward-pill .badge-tilted {
+    position: absolute;
+    top: -10px; right: 12px;
+    transform: rotate(6deg);
+    background: var(--butter); color: var(--ink);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 9px;
+    letter-spacing: 0.04em;
+    border: 1.5px solid var(--ink);
+  }
+  .reward-pill .gift {
+    width: 34px; height: 34px;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .reward-pill .gift svg { width: 16px; height: 16px; }
+  .reward-pill .rtxt { flex: 1; line-height: 1.3; }
+  .reward-pill .rlabel {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--ink-softer);
+    margin-bottom: 2px;
+  }
+  .reward-pill .rname {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: -0.01em;
+  }
+
+  .footer-mark {
+    padding: 12px 16px 12px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    margin-top: auto;
+    position: sticky;
+    bottom: 0;
+    background: var(--bg);
+    border-top: 1px solid rgba(17,17,17,0.12);
+    z-index: 5;
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+  }
+  .footer-mark .fm-brand {
+    display: flex; align-items: center; gap: 8px;
+    flex-shrink: 0;
+  }
+  .footer-mark .smile-stamp {
+    flex-shrink: 0;
+  }
+  .footer-mark .brand {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .footer-mark .brand .dot { color: var(--accent); }
+
+  .footer-mark .fm-install {
+    display: flex; align-items: center; gap: 5px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 11.5px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: rgba(17,17,17,0.25);
+    text-underline-offset: 3px;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .footer-mark .fm-install svg {
+    width: 12px; height: 12px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+
+  /* Section heads inside phones */
+  .ph-section-h {
+    padding: 0 20px 8px;
+    display: flex; justify-content: space-between; align-items: baseline;
+  }
+  .ph-section-h .label {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 13px; color: var(--ink);
+  }
+  .ph-section-h .live {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.15em;
+    text-transform: uppercase; color: var(--accent); font-weight: 600;
+  }
+  .ph-section-h .live::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--accent); border-radius: 50%;
+    animation: dot-pulse 1.2s ease-in-out infinite;
+  }
+  @keyframes dot-pulse {
+    0%, 100% { opacity: 1; transform: scale(1); }
+    50% { opacity: 0.4; transform: scale(0.8); }
+  }
+
+  /* Feed row (used in S3 and similar) */
+  .feed-row {
+    margin: 0 20px 6px;
+    display: grid;
+    grid-template-columns: 48px 1fr auto;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .feed-row .t {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; color: var(--ink-softer);
+  }
+  .feed-row .w {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px; font-weight: 500;
+    letter-spacing: -0.005em;
+  }
+  .feed-row .w .id {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-softer);
+    font-size: 11px; font-weight: 400;
+  }
+  .feed-row .w .icon-mini {
+    color: var(--accent); margin-right: 4px;
+  }
+  .feed-row .void {
+    font-family: 'Prompt', sans-serif;
+    background: transparent;
+    color: var(--ink);
+    border: 1px solid var(--ink);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-size: 11px; font-weight: 600;
+    cursor: pointer;
+  }
+
+  /* ========================================================== */
+  /* C2 — First-stamp celebration banner                         */
+  /* ========================================================== */
+  .c2-celebration {
+    margin: 16px 20px 0;
+    padding: 12px 14px;
+    background: var(--accent);
+    color: #FFF;
+    border-radius: 16px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: center; gap: 10px;
+    position: relative;
+  }
+  .c2-celebration .plus {
+    width: 32px; height: 32px;
+    background: var(--butter); color: var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 800; font-size: 15px;
+    border: 1.5px solid var(--ink);
+    flex-shrink: 0;
+    transform: rotate(-8deg);
+    font-family: 'Host Grotesk', sans-serif;
+  }
+  .c2-celebration .ctxt { flex: 1; line-height: 1.25; }
+  .c2-celebration .ctxt strong {
+    display: block;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.01em;
+  }
+  .c2-celebration .ctxt span {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 11px; opacity: 0.9;
+  }
+  .c2-celebration .corner-spark {
+    position: absolute;
+    top: -6px; right: 12px;
+    width: 14px; height: 14px;
+    color: var(--butter);
+    stroke: var(--ink); stroke-width: 2;
+    animation: twinkle-c 2s ease-in-out infinite;
+  }
+  @keyframes twinkle-c {
+    0%, 100% { transform: scale(1) rotate(0); }
+    50% { transform: scale(1.2) rotate(20deg); }
+  }
+  .c2-welcome-text {
+    text-align: center;
+    padding: 22px 26px 0;
+  }
+  .c2-welcome-text .title {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 700;
+    font-size: 18px;
+    letter-spacing: -0.015em;
+    margin-bottom: 4px;
+  }
+  .c2-welcome-text .sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px; color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  /* C2 benefits + CTA — explain WHY before asking to save */
+  .c2-benefits {
+    margin: 18px 20px 0;
+    padding: 13px 14px 12px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+  }
+  .c2-benefits .bh {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 7px;
+  }
+  .c2-benefits .bh svg {
+    width: 14px; height: 14px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .c2-benefits .bl {
+    display: flex; flex-direction: column; gap: 4px;
+  }
+  .c2-benefits .bi {
+    display: flex; align-items: center; gap: 8px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink);
+    line-height: 1.35;
+  }
+  .c2-benefits .bi .ck {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 13px; height: 13px;
+    border-radius: 50%;
+    background: var(--butter);
+    border: 1px solid var(--ink);
+    color: var(--ink);
+    font-size: 7.5px; font-weight: 700;
+    flex-shrink: 0;
+  }
+
+  .c2-cta {
+    padding: 14px 20px 0;
+  }
+  .c2-cta .line-save-btn {
+    width: 100%;
+    background: var(--line-green); color: #fff;
+    border: 1.5px solid var(--ink);
+    padding: 12px 14px;
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .c2-cta .line-save-btn .arr { font-weight: 700; }
+  .c2-cta .phone-alt {
+    display: block; text-align: center;
+    margin-top: 11px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 12px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: var(--ink);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .c2-cta .skip-link {
+    display: block; text-align: center;
+    margin-top: 8px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-size: 11px;
+    color: var(--ink-softer);
+    cursor: pointer;
+  }
+
+  /* ========================================================== */
+  /* C3 — Soft Wall                                              */
+  /* ========================================================== */
+  .c3 { --bg: #E8E0CE; }
+  .c3 .close-x {
+    position: absolute; top: 48px; right: 20px;
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--ink); color: #FFF;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; font-weight: 700;
+    cursor: pointer; z-index: 3;
+  }
+  .c3 .sheet {
+    margin: 76px 14px 0;
+    background: var(--surface);
+    border-radius: 24px;
+    padding: 22px 20px 20px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    position: relative;
+  }
+  .c3 .illo {
+    display: flex; justify-content: center;
+    position: relative; height: 80px;
+    margin-bottom: 14px;
+  }
+  .c3 .illo-card {
+    position: absolute;
+    width: 54px; height: 66px;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 8px;
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 6px 5px;
+  }
+  .c3 .illo-card.a { transform: rotate(-12deg) translateX(-22px); }
+  .c3 .illo-card.b { background: var(--surface); z-index: 1; }
+  .c3 .illo-card.c { transform: rotate(12deg) translateX(22px); background: var(--butter-soft); }
+  .c3 .illo-card .dots {
+    display: grid;
+    grid-template-columns: repeat(2, 1fr);
+    gap: 3px;
+  }
+  .c3 .illo-card .d {
+    aspect-ratio: 1;
+    border-radius: 50%;
+    background: rgba(17,17,17,0.2);
+  }
+  .c3 .illo-card.a .d.on { background: var(--accent); }
+  .c3 .illo-card.b .d.on { background: var(--accent); }
+  .c3 .illo-card.c .d.on { background: var(--ink); }
+  .c3 .illo .sparkle-illo {
+    position: absolute;
+    color: var(--butter);
+    stroke: var(--ink); stroke-width: 1.5;
+    animation: twinkle-c 2s ease-in-out infinite;
+  }
+  .c3 .illo .s1 { top: -2px; left: 16%; width: 10px; height: 10px; }
+  .c3 .illo .s2 { top: 40%; left: 8%; width: 8px; height: 8px; color: var(--accent); stroke: none; animation-delay: 0.7s; }
+  .c3 .illo .s3 { top: -4px; right: 14%; width: 12px; height: 12px; animation-delay: 1.2s; }
+  .c3 .headline {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    letter-spacing: -0.025em;
+    text-align: center;
+    line-height: 1.15;
+    margin-bottom: 10px;
+  }
+  .c3 .headline em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .c3 .body-copy {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    text-align: center;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+  .c3 .btn {
+    width: 100%;
+    padding: 13px 14px;
+    border-radius: 14px;
+    border: 1.5px solid var(--ink);
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .c3 .btn-line { background: var(--line-green); color: #fff; }
+  .c3 .btn-line svg { width: 18px; height: 18px; }
+  .c3 .btn-phone { background: var(--ink); color: var(--bg); }
+  .c3 .btn-phone svg { width: 16px; height: 16px; }
+  .c3 .skip {
+    display: block; text-align: center;
+    margin-top: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-size: 12px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-decoration-color: rgba(17,17,17,0.3);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .c3 .trust {
+    text-align: center;
+    margin-top: 14px;
+    padding: 10px 12px;
+    background: var(--butter-soft);
+    border-radius: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .c3 .trust .lock {
+    display: inline-block; margin-right: 4px;
+    color: var(--accent); font-weight: 700;
+  }
+
+  /* C3 — Phone-OTP form (refactored from soft wall) */
+  .c3 .c3-bar {
+    display: flex; align-items: center; gap: 12px;
+    padding: 40px 20px 0;
+  }
+  .c3 .c3-bar .back {
+    width: 32px; height: 32px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+    flex-shrink: 0;
+    padding: 0;
+  }
+  .c3 .c3-bar .back svg { width: 14px; height: 14px; }
+  .c3 .c3-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: -0.015em;
+    color: var(--ink);
+  }
+  .c3 .phone-input {
+    display: flex; align-items: stretch;
+    margin-bottom: 14px;
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    background: var(--bg);
+    overflow: hidden;
+  }
+  .c3 .phone-input .prefix {
+    padding: 13px 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 13px;
+    background: var(--ink); color: #fff;
+    display: flex; align-items: center;
+    letter-spacing: 0.04em;
+  }
+  .c3 .phone-input input {
+    flex: 1; min-width: 0;
+    border: none; outline: none;
+    padding: 13px 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 15px; font-weight: 600;
+    background: transparent; color: var(--ink);
+    letter-spacing: 0.05em;
+  }
+  .c3 .btn-primary {
+    background: var(--accent); color: #fff;
+  }
+  .c3 .btn-primary .arr { font-weight: 700; }
+  .c3 .alt-line {
+    text-align: center;
+    margin-top: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .c3 .alt-line .alt-link {
+    color: var(--ink); font-weight: 700;
+    text-decoration: underline; text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  /* ========================================================== */
+  /* Install pill + sheet (persistent install affordance)        */
+  /* Used in: C1, C2, C5, C7 (customer) + S3 (shop)              */
+  /* ========================================================== */
+  .install-pill {
+    margin: 16px 16px 0;
+    background: var(--ink); color: #FFF;
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 10px 12px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 3px 3px 0 var(--accent);
+    cursor: pointer;
+    position: relative;
+  }
+  .install-pill .ip-stamp {
+    flex-shrink: 0;
+  }
+  .install-pill .ip-text {
+    flex: 1; min-width: 0;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: #FFF;
+    line-height: 1.25;
+  }
+  .install-pill .ip-sub {
+    display: block;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400; font-size: 10.5px;
+    color: rgba(255,255,255,0.6);
+    margin-top: 1px;
+  }
+  .install-pill .ip-arrow {
+    color: var(--butter);
+    font-weight: 700; font-size: 14px;
+    flex-shrink: 0;
+  }
+  .install-pill .ip-close {
+    position: absolute;
+    top: -6px; right: -6px;
+    width: 18px; height: 18px;
+    border-radius: 50%;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    color: var(--ink);
+    font-size: 11px;
+    font-weight: 700;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    line-height: 1;
+  }
+
+  /* Install bottom sheet — only visible in mockup with .show class */
+  .install-sheet-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(17,17,17,0.45);
+    z-index: 10;
+    display: flex; align-items: flex-end;
+    justify-content: center;
+  }
+  .install-sheet {
+    background: var(--bg);
+    border-top: 1.5px solid var(--ink);
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    padding: 18px 18px 16px;
+    width: 100%;
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .install-sheet .sheet-handle {
+    width: 36px; height: 4px;
+    border-radius: 999px;
+    background: var(--ink-softer);
+    margin: 0 auto 12px;
+    opacity: 0.4;
+  }
+  .install-sheet .sheet-pitch {
+    text-align: center;
+    margin-bottom: 14px;
+  }
+  .install-sheet .sheet-pitch .stamp-big {
+    display: inline-block;
+    margin-bottom: 8px;
+    filter: drop-shadow(2px 2px 0 var(--ink));
+  }
+  .install-sheet .sheet-pitch .pitch-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 17px;
+    letter-spacing: -0.02em;
+    line-height: 1.2;
+    margin-bottom: 4px;
+  }
+  .install-sheet .sheet-pitch .pitch-h em {
+    font-style: italic; color: var(--accent);
+  }
+  .install-sheet .sheet-pitch .pitch-s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px; color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .install-sheet .platforms {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 14px;
+  }
+  .install-sheet .plat-tile {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    padding: 10px 12px;
+  }
+  .install-sheet .plat-h {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 9.5px;
+    letter-spacing: 0.1em;
+    color: var(--ink);
+    text-transform: uppercase;
+    margin-bottom: 7px;
+    padding-bottom: 6px;
+    border-bottom: 1px dashed rgba(17,17,17,0.15);
+  }
+  .install-sheet .plat-step {
+    display: flex; align-items: center; gap: 8px;
+    margin-bottom: 5px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink);
+  }
+  .install-sheet .plat-step:last-child { margin-bottom: 0; }
+  .install-sheet .plat-step .step-ico {
+    width: 22px; height: 22px;
+    background: var(--bg);
+    border: 1px solid var(--ink);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    color: var(--ink);
+  }
+  .install-sheet .plat-step .step-ico svg {
+    width: 11px; height: 11px;
+  }
+  .install-sheet .sheet-close {
+    width: 100%;
+    background: transparent; color: var(--ink);
+    border: 1.5px solid var(--ink);
+    padding: 10px;
+    border-radius: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    cursor: pointer;
+  }
+
+  /* ========================================================== */
+  /* C4 — Ready to redeem                                        */
+  /* ========================================================== */
+  .c4 .ready-banner {
+    display: flex; justify-content: center;
+    padding: 16px 20px 0;
+    position: relative;
+  }
+  .c4 .ready-banner .pill {
+    display: inline-flex; align-items: center; gap: 8px;
+    background: var(--accent); color: #FFF;
+    padding: 7px 14px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-style: italic;
+    font-size: 12px; letter-spacing: -0.005em;
+    box-shadow: 0 8px 20px -6px rgba(255,94,58,0.5);
+    transform: rotate(-3deg);
+  }
+  .c4 .ready-banner .pill .sparkle-dot {
+    width: 6px; height: 6px;
+    background: #FFF; border-radius: 50%;
+    animation: pop 1.4s ease-in-out infinite;
+  }
+  @keyframes pop {
+    0%, 100% { transform: scale(1); opacity: 0.9; }
+    50% { transform: scale(1.5); opacity: 1; }
+  }
+  .c4 .sparks {
+    position: absolute;
+    top: 16px; left: 0; right: 0; height: 80px;
+    pointer-events: none;
+  }
+  .c4 .sparks .s {
+    position: absolute;
+    color: var(--butter);
+    stroke: #141414; stroke-width: 1.5;
+    animation: twinkle-c 2.2s ease-in-out infinite;
+  }
+  .c4 .sparks .s-1 { top: 8px; left: 22%; width: 12px; height: 12px; }
+  .c4 .sparks .s-2 { top: 40px; left: 14%; width: 9px; height: 9px; color: var(--accent); stroke: none; animation-delay: 0.6s; }
+  .c4 .sparks .s-3 { top: 8px; right: 20%; width: 10px; height: 10px; animation-delay: 1.1s; }
+  .c4 .sparks .s-4 { top: 46px; right: 12%; width: 9px; height: 9px; color: var(--accent); stroke: none; animation-delay: 1.6s; }
+  .c4 .redeem-num {
+    text-align: center;
+    padding: 12px 20px 8px;
+    position: relative;
+  }
+  .c4 .redeem-num::before {
+    content: ''; position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -40%);
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
+    opacity: 0.5; border-radius: 50%; z-index: 0;
+  }
+  .c4 .redeem-num > * { position: relative; z-index: 1; }
+  .c4 .redeem-num .big {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 138px;
+    letter-spacing: -0.075em;
+    line-height: 0.82; color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .c4 .redeem-num .done {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 700;
+    font-size: 16px; color: var(--ink);
+  }
+  .c4 .btn-redeem {
+    margin: 18px 20px 0;
+    background: var(--ink); color: var(--bg);
+    border: none; padding: 16px 18px;
+    border-radius: 18px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: -0.015em;
+    width: calc(100% - 40px);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 10px 28px -8px rgba(17,17,17,0.35);
+  }
+  .c4 .btn-redeem .arrow {
+    width: 30px; height: 30px;
+    background: var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF; font-size: 14px;
+  }
+  .c4 .counter-note {
+    text-align: center;
+    padding: 10px 20px 0;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px; color: var(--ink-softer);
+    font-style: italic;
+  }
+
+  /* ========================================================== */
+  /* C5 — Reward claimed                                         */
+  /* ========================================================== */
+  .c5 .claimed-hero {
+    padding: 24px 22px 16px;
+    text-align: center;
+    position: relative;
+  }
+  .c5 .claimed-hero::before {
+    content: '';
+    position: absolute;
+    top: 12px; left: 50%;
+    transform: translateX(-50%);
+    width: 200px; height: 200px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
+    opacity: 0.55; border-radius: 50%;
+    z-index: 0;
+  }
+  .c5 .claimed-hero > * { position: relative; z-index: 1; }
+  .c5 .claimed-mark {
+    width: 68px; height: 68px;
+    margin: 0 auto 14px;
+    border-radius: 50%;
+    background: var(--accent); color: #fff;
+    border: 1.5px solid var(--ink);
+    box-shadow: 0 8px 20px -6px rgba(255,94,58,0.5), 3px 3px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    position: relative;
+  }
+  .c5 .claimed-mark svg { width: 32px; height: 32px; }
+  .c5 .claimed-mark::before {
+    content: '';
+    position: absolute;
+    top: -6px; left: -6px; right: -6px; bottom: -6px;
+    border: 1.5px dashed var(--accent);
+    opacity: 0.4; border-radius: 50%;
+    animation: pulse-ring 2s ease-in-out infinite;
+  }
+  @keyframes pulse-ring {
+    0%, 100% { transform: scale(1); opacity: 0.4; }
+    50% { transform: scale(1.14); opacity: 0.1; }
+  }
+  .c5 .claimed-hero .confetti {
+    position: absolute;
+    color: var(--butter);
+    stroke: var(--ink); stroke-width: 1.5;
+    animation: twinkle-c 2s ease-in-out infinite;
+  }
+  .c5 .claimed-hero .confetti.c1 { top: 40px; left: 18%; width: 12px; height: 12px; }
+  .c5 .claimed-hero .confetti.c2 { top: 18px; right: 20%; width: 10px; height: 10px; animation-delay: 0.5s; color: var(--accent); stroke: none; }
+  .c5 .claimed-hero .confetti.c3 { top: 60px; right: 14%; width: 10px; height: 10px; animation-delay: 1.2s; }
+  .c5 .claimed-hero .confetti.c4 { top: 66px; left: 12%; width: 8px; height: 8px; animation-delay: 1.6s; color: var(--accent); stroke: none; }
+  .c5 .claimed-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 28px;
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .c5 .claimed-title em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .c5 .live-pulse {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    background: var(--ink);
+    color: var(--bg);
+    padding: 6px 12px 6px 10px;
+    border-radius: 999px;
+    margin-bottom: 4px;
+    font-weight: 600;
+  }
+  .c5 .live-pulse .pulse-dot {
+    width: 7px; height: 7px;
+    background: var(--accent);
+    border-radius: 50%;
+    animation: blink-dot 1.1s ease-in-out infinite;
+    box-shadow: 0 0 0 0 rgba(255,94,58,0.6);
+  }
+  @keyframes blink-dot {
+    0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,94,58,0.6); }
+    50% { transform: scale(1.3); box-shadow: 0 0 0 6px rgba(255,94,58,0); }
+  }
+  .c5 .voucher {
+    margin: 0 22px;
+    padding: 16px 18px;
+    background: var(--butter);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative;
+    transform: rotate(-1.5deg);
+  }
+  .c5 .voucher::before, .c5 .voucher::after {
+    content: ''; position: absolute;
+    width: 14px; height: 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+  }
+  .c5 .voucher::before { left: -8px; top: 50%; transform: translateY(-50%); }
+  .c5 .voucher::after { right: -8px; top: 50%; transform: translateY(-50%); }
+  .c5 .voucher .v-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.2em;
+    text-transform: uppercase; color: var(--ink);
+    margin-bottom: 4px; text-align: center;
+    font-weight: 600;
+  }
+  .c5 .voucher .v-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    letter-spacing: -0.015em;
+    text-align: center; margin-bottom: 6px;
+  }
+  .c5 .voucher .v-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; color: var(--ink);
+    opacity: 0.6;
+    text-align: center; letter-spacing: 0.08em;
+  }
+  .c5 .reset {
+    margin: 24px 20px 0;
+    padding-top: 18px;
+    border-top: 1.5px dashed rgba(17,17,17,0.2);
+    text-align: center;
+  }
+  .c5 .reset .kicker {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 11px; color: var(--ink-soft);
+    margin-bottom: 10px;
+    display: inline-flex; align-items: center; gap: 4px;
+  }
+  .c5 .reset .kicker .arrow-down {
+    display: inline-flex; width: 12px; height: 12px;
+  }
+  .c5 .reset .mini-card {
+    background: var(--surface);
+    border-radius: 12px;
+    padding: 12px 12px 14px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .c5 .reset .mini-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 24px;
+    color: var(--accent);
+    text-align: center;
+    letter-spacing: -0.03em;
+    margin-bottom: 6px; line-height: 1;
+  }
+  .c5 .reset .mini-num .of {
+    color: var(--ink-softer); font-weight: 400; font-size: 14px;
+  }
+  .c5 .reset .mini-stamps {
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px;
+  }
+  .c5 .reset .mini-stamps .mini-stamp {
+    height: 14px; border-radius: 4px;
+    background: var(--line);
+  }
+  .c5 .farewell {
+    text-align: center;
+    margin: 16px 20px 0;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 14px; color: var(--ink);
+  }
+
+  /* ========================================================== */
+  /* C6 — Account menu                                           */
+  /* ========================================================== */
+  .c6-profile-card {
+    margin: 22px 20px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+  .c6-profile-card::before {
+    content: '';
+    position: absolute;
+    top: -40px; right: -40px;
+    width: 130px; height: 130px;
+    background: radial-gradient(circle, rgba(255,217,82,0.45) 0%, transparent 65%);
+    border-radius: 50%;
+  }
+  .c6-profile-card .avatar {
+    width: 52px; height: 52px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: -0.02em;
+    flex-shrink: 0;
+    position: relative;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .c6-profile-card .info {
+    flex: 1; line-height: 1.2; position: relative;
+    min-width: 0;
+  }
+  .c6-profile-card .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 17px;
+    letter-spacing: -0.02em;
+    margin-bottom: 3px;
+  }
+  .c6-profile-card .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-soft);
+    letter-spacing: 0.02em;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .c6-profile-card .meta .dotsep {
+    width: 3px; height: 3px;
+    background: var(--accent); border-radius: 50%;
+    flex-shrink: 0;
+  }
+  .c6-profile-card .meta .verified {
+    color: var(--mint-ink); font-weight: 600;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+  }
+  .c6-profile-card .edit {
+    width: 32px; height: 32px;
+    background: var(--butter); color: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative;
+    flex-shrink: 0;
+  }
+  .c6-profile-card .edit svg { width: 14px; height: 14px; }
+
+  /* Toggle switch (used in c6) */
+  .c6-toggle {
+    width: 38px; height: 22px;
+    background: var(--line);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    position: relative;
+    transition: background 0.2s;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .c6-toggle .dot {
+    position: absolute;
+    top: 50%; transform: translateY(-50%);
+    left: 2px;
+    width: 14px; height: 14px;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    transition: left 0.2s;
+  }
+  .c6-toggle.on { background: var(--accent); }
+  .c6-toggle.on .dot { left: 19px; background: var(--butter); }
+
+  /* Pill variants used in c6 rows */
+  .s10-row .pill.butter {
+    background: var(--butter); color: var(--ink);
+    border: 1px solid var(--ink);
+  }
+
+  /* Version mark at bottom */
+  .c6-version {
+    text-align: center;
+    padding: 0 20px 18px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px;
+    color: var(--ink-softer);
+    letter-spacing: 0.1em;
+  }
+  .c6-version .brand {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .c6-version .brand .dot { color: var(--accent); }
+
+  /* ========================================================== */
+  /* C7 — My Cards                                               */
+  /* ========================================================== */
+  .c7-greet {
+    padding: 48px 20px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .c7-greet .hi {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: -0.025em;
+  }
+  .c7-greet .hi .smile-inline {
+    display: inline-block; width: 16px; height: 9px;
+    color: var(--accent); margin-left: 4px; vertical-align: 1px;
+  }
+  .c7-greet .hi .day {
+    display: block;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 12px; color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .c7-greet .avatar {
+    width: 38px; height: 38px;
+    background: var(--accent); color: #FFF;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
+    cursor: pointer;
+  }
+  .c7-stats {
+    margin: 22px 20px 0;
+    padding: 18px 18px;
+    background: var(--ink); color: var(--bg);
+    border-radius: 22px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative; overflow: hidden;
+  }
+  .c7-stats::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, rgba(255,217,82,0.55) 0%, transparent 65%);
+    border-radius: 50%;
+  }
+  .c7-stats .ss-row {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    position: relative;
+  }
+  .c7-stats .ss-big {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 64px;
+    letter-spacing: -0.05em;
+    line-height: 0.9; color: var(--butter);
+  }
+  .c7-stats .ss-meta {
+    text-align: right;
+    font-family: 'Prompt', sans-serif;
+    line-height: 1.3;
+  }
+  .c7-stats .ss-meta .label {
+    font-style: italic; font-size: 12px;
+    color: var(--ink-softer); margin-bottom: 2px;
+  }
+  .c7-stats .ss-meta .total {
+    font-size: 13px; font-weight: 600;
+    letter-spacing: -0.005em;
+  }
+  .c7-stats .ss-bottom {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed rgba(255,255,255,0.2);
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--bg);
+  }
+  .c7-stats .ss-bottom strong { color: var(--accent); font-weight: 700; }
+  .c7-list-head {
+    padding: 22px 20px 8px;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .c7-list-head .label {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 14px; color: var(--ink);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .c7-list-head .label .star {
+    width: 11px; height: 11px; color: var(--accent);
+  }
+  .c7-list-head .sort {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px; font-weight: 500;
+    color: var(--ink-soft);
+    background: var(--surface);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+  }
+  .c7-card {
+    margin: 0 20px 8px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 14px 14px;
+    display: grid;
+    grid-template-columns: 44px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    position: relative;
+    cursor: pointer;
+  }
+  .c7-card.featured { background: var(--butter); }
+  .c7-card .ready-tag {
+    position: absolute;
+    top: -10px; right: 12px;
+    transform: rotate(4deg);
+    background: var(--accent); color: #FFF;
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-style: italic;
+    font-size: 10px;
+    letter-spacing: -0.005em;
+    border: 1.5px solid var(--ink);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .c7-card .ready-tag .dot {
+    width: 5px; height: 5px;
+    background: #fff; border-radius: 50%;
+    animation: pop 1.4s ease-in-out infinite;
+  }
+  .c7-card .logo {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    background: var(--ink); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 16px;
+    letter-spacing: -0.03em;
+    flex-shrink: 0;
+    border: 1.5px solid var(--ink);
+  }
+  .c7-card.featured .logo { background: var(--accent); color: #fff; }
+  .c7-card .info { min-width: 0; }
+  .c7-card .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14.5px;
+    letter-spacing: -0.015em;
+    margin-bottom: 1px;
+    line-height: 1.15;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .c7-card .name .dot { color: var(--accent); }
+  .c7-card.featured .name .dot { color: var(--ink); }
+  .c7-card .reward {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.2;
+    white-space: nowrap; overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .c7-card.featured .reward { color: var(--ink); opacity: 0.75; }
+  .c7-card .progress {
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .c7-card .progress .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: -0.025em;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .c7-card .progress .num .of {
+    color: var(--ink-softer);
+    font-weight: 400; font-size: 13px;
+    margin-left: 2px;
+  }
+  .c7-card.featured .progress .num { color: var(--ink); }
+  .c7-card.featured .progress .num .of { color: var(--ink); opacity: 0.6; }
+  .c7-card .progress .bar {
+    height: 4px; width: 50px;
+    background: var(--line);
+    border-radius: 999px;
+    overflow: hidden;
+    margin-top: 5px;
+  }
+  .c7-card .progress .bar .fill {
+    height: 100%; background: var(--accent);
+    border-radius: 999px;
+  }
+  .c7-card.featured .progress .bar .fill { background: var(--ink); }
+  .c7-spacer { padding: 18px 20px 0; }
+  .c7-add {
+    border: 1.5px dashed var(--ink);
+    border-radius: 18px;
+    padding: 18px 16px;
+    text-align: center;
+  }
+  .c7-add .h {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 14px; margin-bottom: 2px;
+    letter-spacing: -0.01em;
+  }
+  .c7-add .s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px; color: var(--ink-soft);
+    line-height: 1.4;
+  }
+
+  /* ========================================================== */
+  /* S1 — Login                                                  */
+  /* ========================================================== */
+  .s1-hero {
+    text-align: center;
+    padding: 56px 30px 28px;
+    position: relative;
+  }
+  .s1-hero::before {
+    content: '';
+    position: absolute;
+    top: 60px; left: 50%;
+    transform: translateX(-50%);
+    width: 220px; height: 220px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
+    opacity: 0.55; border-radius: 50%; z-index: 0;
+  }
+  .s1-hero > * { position: relative; z-index: 1; }
+  .s1-logo-mark {
+    display: inline-flex; align-items: center; justify-content: center;
+    width: 70px; height: 70px;
+    background: var(--ink); color: var(--accent);
+    border-radius: 22px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 4px 4px 0 var(--ink);
+    margin-bottom: 22px;
+    transform: rotate(-4deg);
+    position: relative;
+  }
+  .s1-logo-mark .smile-big { width: 30px; height: 18px; }
+  .s1-logo-mark .star-corner {
+    position: absolute;
+    top: -10px; right: -10px;
+    width: 18px; height: 18px;
+    color: var(--butter); stroke: var(--ink); stroke-width: 2;
+    transform: rotate(15deg);
+  }
+  .s1-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800;
+    font-size: 40px;
+    letter-spacing: -0.035em;
+    line-height: 1;
+    margin-bottom: 10px;
+  }
+  .s1-name .dot { color: var(--accent); }
+  .s1-tag {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .s1-buttons {
+    padding: 28px 22px 0;
+    display: flex; flex-direction: column; gap: 10px;
+  }
+  .s1-btn {
+    width: 100%;
+    padding: 14px 16px;
+    border-radius: 16px;
+    border: 1.5px solid var(--ink);
+    font-family: 'Prompt', sans-serif;
+    font-size: 14.5px; font-weight: 700;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .s1-btn-line { background: var(--line-green); color: #fff; }
+  .s1-btn-line svg { width: 20px; height: 20px; }
+  .s1-btn-phone { background: var(--ink); color: var(--bg); }
+  .s1-btn-phone svg { width: 18px; height: 18px; }
+  .s1-no-pwd {
+    margin: 24px 22px 0;
+    padding: 10px 14px;
+    background: var(--butter-soft);
+    border: 1.5px dashed var(--butter);
+    border-radius: 12px;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .s1-no-pwd .icon {
+    color: var(--accent); font-weight: 700;
+    margin-right: 4px;
+  }
+  .s1-foot {
+    text-align: center;
+    padding: 20px 30px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--ink-softer);
+    line-height: 1.5;
+  }
+  .s1-foot a {
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(255,94,58,0.4);
+    text-underline-offset: 2px;
+  }
+
+  /* Role tabs */
+  .s1-tabs {
+    margin: 18px 22px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 4px;
+    box-shadow: 2px 2px 0 var(--ink);
+    position: relative;
+    z-index: 2;
+  }
+  .s1-tab {
+    padding: 10px 8px;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-soft);
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    line-height: 1.2;
+  }
+  .s1-tab.active {
+    background: var(--ink);
+    color: var(--bg);
+    font-weight: 700;
+    box-shadow: 0 2px 6px -2px rgba(17,17,17,0.4);
+  }
+  .s1-tab .tab-pill {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px;
+    letter-spacing: 0.1em;
+    padding: 2px 5px;
+    border-radius: 999px;
+    background: var(--accent);
+    color: #fff;
+    font-weight: 700;
+  }
+  .s1-tab.active .tab-pill {
+    background: var(--accent);
+  }
+  .s1-tab:not(.active) .tab-pill.optional {
+    background: transparent;
+    color: var(--ink-soft);
+    border: 1px solid var(--line);
+  }
+
+  /* "Required for shop" notice */
+  .s1-required-notice {
+    margin: 14px 22px 0;
+    padding: 10px 12px;
+    background: var(--accent-soft);
+    border: 1.5px solid var(--accent);
+    border-radius: 12px;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    color: var(--ink);
+    line-height: 1.4;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+  }
+  .s1-required-notice .dot-r {
+    width: 6px; height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+    flex-shrink: 0;
+  }
+
+  /* Customer view — guest button (primary) */
+  .s1-guest {
+    margin: 18px 22px 0;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 14px 16px;
+    cursor: pointer;
+    position: relative;
+  }
+  .s1-guest::before {
+    content: 'พร้อมใช้';
+    position: absolute;
+    top: -10px; right: 14px;
+    transform: rotate(5deg);
+    background: var(--butter);
+    color: var(--ink);
+    border: 1.5px solid var(--ink);
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+  .s1-guest .gh {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.015em;
+    margin-bottom: 2px;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .s1-guest .gh .arrow {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-size: 12px;
+  }
+  .s1-guest .gs {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 11px;
+    color: var(--ink-softer);
+    line-height: 1.4;
+  }
+
+  /* "Or" divider */
+  .s1-or {
+    margin: 18px 22px 0;
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 11px;
+    color: var(--ink-softer);
+  }
+  .s1-or::before, .s1-or::after {
+    content: '';
+    flex: 1;
+    height: 1px;
+    background: var(--line);
+  }
+
+  /* Customer benefits */
+  .s1-benefits-h {
+    margin: 12px 22px 0;
+    padding: 0 4px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    color: var(--ink);
+    display: flex; align-items: center; gap: 6px;
+  }
+  .s1-benefits-h .star-mini {
+    width: 11px; height: 11px;
+    color: var(--accent);
+  }
+  .s1-benefits {
+    margin: 8px 22px 0;
+    padding: 12px 14px;
+    background: var(--butter-soft);
+    border: 1.5px dashed var(--butter);
+    border-radius: 12px;
+  }
+  .s1-benefit-row {
+    display: flex; align-items: flex-start; gap: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.4;
+    padding: 4px 0;
+  }
+  .s1-benefit-row + .s1-benefit-row {
+    border-top: 1px dashed rgba(17,17,17,0.1);
+    padding-top: 7px;
+    margin-top: 3px;
+  }
+  .s1-benefit-row .check-mini {
+    flex-shrink: 0;
+    width: 16px; height: 16px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 9px;
+    font-weight: 800;
+    margin-top: 1px;
+  }
+  .s1-benefit-row strong {
+    font-weight: 700;
+    display: block;
+    margin-bottom: 1px;
+  }
+  .s1-benefit-row span {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-style: italic;
+  }
+
+  /* Smaller buttons for customer secondary path */
+  .s1-buttons.compact {
+    padding: 14px 22px 0;
+    flex-direction: row;
+    gap: 8px;
+  }
+  .s1-buttons.compact .s1-btn {
+    padding: 11px 10px;
+    font-size: 12.5px;
+    flex: 1;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s1-buttons.compact .s1-btn svg {
+    width: 16px; height: 16px;
+  }
+
+  /* ========================================================== */
+  /* S2 — Onboarding shared                                      */
+  /* ========================================================== */
+  .s2-steps {
+    padding: 14px 20px 0;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .s2-steps .step {
+    flex: 1; height: 4px;
+    background: var(--line);
+    border-radius: 999px;
+  }
+  .s2-steps .step.done { background: var(--ink); }
+  .s2-steps .step.active { background: var(--accent); }
+  .s2-counter {
+    padding: 14px 20px 0;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.16em;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .s2-counter .step-num strong { color: var(--accent); }
+  .s2-counter .skip {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500; font-size: 12px;
+    letter-spacing: 0; text-transform: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .s2-q {
+    padding: 24px 20px 4px;
+  }
+  .s2-q .ask {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 26px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 4px;
+  }
+  .s2-q .ask em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .s2-q .sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400; font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .s2-field {
+    margin: 22px 20px 0;
+  }
+  .s2-field .label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+    padding-left: 4px;
+  }
+  .s2-field .input {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 14px 16px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    letter-spacing: -0.01em;
+    display: flex; align-items: center;
+    cursor: text;
+  }
+  .s2-field .input.focused {
+    border-color: var(--accent);
+    box-shadow: 2px 2px 0 var(--accent);
+  }
+  .s2-field .input .placeholder {
+    color: var(--ink-softer); font-weight: 400;
+  }
+  .s2-field .input .cursor {
+    width: 2px; height: 22px;
+    background: var(--accent);
+    margin-left: 2px;
+    animation: blink-cursor 1s steps(2) infinite;
+  }
+  @keyframes blink-cursor {
+    0%, 50% { opacity: 1; } 50.01%, 100% { opacity: 0; }
+  }
+  .s2-hint {
+    margin-top: 8px;
+    padding-left: 4px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .s2-goal-pills {
+    margin: 14px 20px 0;
+    display: flex; gap: 6px;
+  }
+  .s2-goal-pill {
+    flex: 1;
+    padding: 10px 0;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    text-align: center;
+    cursor: pointer;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s2-goal-pill.selected { background: var(--butter); }
+  .s2-foot {
+    margin: auto 20px 20px;
+    padding-top: 26px;
+    display: flex; gap: 10px;
+  }
+  .s2-foot .back {
+    width: 50px;
+    background: transparent;
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    font-size: 16px; cursor: pointer;
+    color: var(--ink);
+  }
+  .s2-foot .next {
+    flex: 1;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 14px 16px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .s2-foot .next .arrow {
+    width: 26px; height: 26px;
+    background: var(--accent);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+
+  /* S2 step 2 — logo grid */
+  .s2-logos {
+    padding: 22px 20px 0;
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .s2-logo {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    border: 1.5px solid var(--ink);
+    background: var(--surface);
+    box-shadow: 2px 2px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    position: relative;
+    overflow: hidden;
+  }
+  .s2-logo.selected { background: var(--butter); transform: translateY(-2px); }
+  .s2-logo.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 20px; height: 20px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    border: 1.5px solid var(--ink);
+  }
+  .s2-logo .lt-1 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 28px;
+    letter-spacing: -0.04em;
+  }
+  .s2-logo .lt-1 .dot { color: var(--accent); }
+  .s2-logo .lt-2 {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 700;
+    font-size: 22px; letter-spacing: -0.02em;
+  }
+  .s2-logo .lt-3 {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 800; font-size: 26px;
+    letter-spacing: -0.03em;
+  }
+  .s2-helper {
+    padding: 14px 20px 0;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .s2-helper .reroll {
+    color: var(--accent); font-weight: 600;
+    text-decoration: underline;
+    text-decoration-color: rgba(255,94,58,0.4);
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .s2-upload {
+    margin: 18px 20px 0;
+    padding: 14px 16px;
+    background: transparent;
+    border: 1.5px dashed var(--ink);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center; gap: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px; font-weight: 500;
+    color: var(--ink); cursor: pointer;
+  }
+  .s2-upload svg { width: 14px; height: 14px; }
+
+  /* S2 step 3 — themes */
+  .s2-themes {
+    padding: 18px 20px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+  }
+  .s2-theme {
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 2px 2px 0 var(--ink);
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--surface);
+    position: relative;
+  }
+  .s2-theme.selected { transform: translateY(-2px); }
+  .s2-theme.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 6px; right: 6px;
+    width: 20px; height: 20px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 10px; font-weight: 700;
+    border: 1.5px solid var(--ink);
+    z-index: 2;
+  }
+  .s2-tprev {
+    aspect-ratio: 5 / 4;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    padding: 12px;
+    border-bottom: 1.5px solid var(--ink);
+  }
+  .s2-tprev.taemdee { background: #F6F1E5; }
+  .s2-tprev.mono { background: #fff; }
+  .s2-tprev.night { background: #141414; }
+  .s2-tprev.pastel { background: #FFEEE4; }
+  .s2-tprev .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 28px;
+    letter-spacing: -0.04em; line-height: 1;
+  }
+  .s2-tprev.taemdee .num { color: #FF5E3A; }
+  .s2-tprev.mono .num { color: #111; }
+  .s2-tprev.night .num { color: #FFD952; }
+  .s2-tprev.pastel .num { color: #E87A6A; }
+  .s2-tprev .stamps-mini {
+    margin-top: 5px; width: 65%;
+    display: grid; grid-template-columns: repeat(5, 1fr);
+    gap: 2px;
+  }
+  .s2-tprev .stamps-mini .s {
+    height: 5px; border-radius: 2px;
+    background: rgba(0,0,0,0.1);
+  }
+  .s2-tprev.night .stamps-mini .s { background: #333; }
+  .s2-tprev.taemdee .stamps-mini .s.on { background: #FF5E3A; }
+  .s2-tprev.taemdee .stamps-mini .s.b { background: #FFD952; }
+  .s2-tprev.mono .stamps-mini .s.on { background: #111; }
+  .s2-tprev.night .stamps-mini .s.on { background: #FFD952; }
+  .s2-tprev.pastel .stamps-mini .s.on { background: #E87A6A; }
+  .s2-tmeta { padding: 8px 10px; }
+  .s2-tmeta .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12px;
+    letter-spacing: -0.01em;
+  }
+  .s2-tmeta .meta {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400;
+    font-size: 10px; color: var(--ink-soft);
+  }
+  .s2-theme.selected .s2-tmeta { background: var(--butter); }
+
+  /* S2 step 4 — done */
+  .s2-done-hero {
+    padding: 44px 22px 0;
+    text-align: center;
+    position: relative;
+  }
+  .s2-done-hero::before {
+    content: '';
+    position: absolute;
+    top: 30px; left: 50%;
+    transform: translateX(-50%);
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
+    opacity: 0.6; border-radius: 50%; z-index: 0;
+  }
+  .s2-done-hero > * { position: relative; z-index: 1; }
+  .s2-done-hero .confetti {
+    position: absolute;
+    color: var(--butter); stroke: var(--ink); stroke-width: 1.5;
+    animation: twinkle-c 2s ease-in-out infinite;
+  }
+  .s2-done-hero .c1 { top: 50px; left: 18%; width: 14px; height: 14px; }
+  .s2-done-hero .c2 { top: 80px; right: 14%; width: 12px; height: 12px; color: var(--accent); stroke: none; animation-delay: 0.6s; }
+  .s2-done-hero .c3 { top: 130px; left: 12%; width: 10px; height: 10px; animation-delay: 1.1s; }
+  .s2-done-hero .c4 { top: 60px; right: 22%; width: 10px; height: 10px; color: var(--accent); stroke: none; animation-delay: 1.6s; }
+  .s2-done-mark {
+    width: 76px; height: 76px;
+    margin: 0 auto 20px;
+    border-radius: 50%;
+    background: var(--accent); color: #fff;
+    border: 1.5px solid var(--ink);
+    box-shadow: 0 8px 20px -6px rgba(255,94,58,0.5), 3px 3px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .s2-done-mark svg { width: 36px; height: 36px; }
+  .s2-done-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 26px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 6px;
+  }
+  .s2-done-title em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .s2-done-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+    margin-bottom: 24px;
+  }
+  .s2-qr-prev {
+    margin: 0 22px 22px;
+    padding: 14px 16px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 18px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: center; gap: 14px;
+    text-align: left;
+  }
+  .s2-qr-prev .mini-qr {
+    width: 56px; height: 56px;
+    background: #fff;
+    border-radius: 10px;
+    flex-shrink: 0;
+    padding: 6px;
+    border: 1.5px solid var(--bg);
+  }
+  .s2-qr-prev .mini-qr svg { width: 100%; height: 100%; }
+  .s2-qr-prev .meta { flex: 1; line-height: 1.3; }
+  .s2-qr-prev .meta .h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    margin-bottom: 1px;
+  }
+  .s2-qr-prev .meta .s {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400; font-size: 11px;
+    color: var(--ink-softer);
+  }
+  .s2-qr-prev .arrow {
+    width: 28px; height: 28px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px; flex-shrink: 0;
+  }
+  .s2-cta-final {
+    margin: 0 22px 12px;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 16px 18px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    width: calc(100% - 44px);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 10px 28px -8px rgba(17,17,17,0.35);
+  }
+  .s2-cta-final .arrow {
+    width: 28px; height: 28px;
+    background: var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+  }
+  .s2-cta-secondary {
+    margin: 0 22px 22px;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-decoration-color: rgba(17,17,17,0.3);
+    text-underline-offset: 3px;
+    cursor: pointer;
+    padding: 8px;
+  }
+
+  /* ========================================================== */
+  /* S3 — DeeBoard                                               */
+  /* ========================================================== */
+  .s3-top {
+    padding: 14px 20px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .s3-top .hi {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 19px;
+    letter-spacing: -0.02em;
+  }
+  .s3-top .hi .smile-inline {
+    display: inline-block; width: 16px; height: 9px;
+    color: var(--accent); margin-left: 4px; vertical-align: 1px;
+  }
+  .s3-top .hi .day {
+    display: block;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 11.5px; color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .s3-top .actions { display: flex; align-items: center; gap: 8px; }
+  .s3-top .branch-pill {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px 6px 8px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 11px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s3-top .branch-pill::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--accent); border-radius: 50%;
+  }
+  .s3-top .avatar {
+    width: 38px; height: 38px;
+    background: var(--accent); color: #FFF;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 700; font-size: 14px;
+    box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
+    border: 1.5px solid var(--ink);
+    font-family: 'Prompt', sans-serif;
+  }
+  .s3-hero {
+    padding: 26px 20px 14px;
+    position: relative;
+  }
+  .s3-hero::before {
+    content: '';
+    position: absolute;
+    top: 20px; right: 0;
+    width: 180px; height: 180px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
+    opacity: 0.6; border-radius: 50%; z-index: 0;
+  }
+  .s3-hero > * { position: relative; z-index: 1; }
+  .s3-hero .label {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500; font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    background: var(--butter-soft);
+    padding: 4px 10px;
+    border-radius: 999px;
+    border: 1px dashed var(--butter);
+  }
+  .s3-hero .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 124px;
+    letter-spacing: -0.065em;
+    line-height: 0.85;
+    color: var(--ink);
+    margin-bottom: 10px;
+    position: relative; display: inline-block;
+  }
+  .s3-hero .num .accent { color: var(--accent); }
+  .s3-hero .num .star {
+    position: absolute;
+    top: -4px; right: -22px;
+    width: 22px; height: 22px;
+    color: var(--butter);
+    stroke: var(--ink); stroke-width: 2;
+    animation: gentle-spin 6s linear infinite;
+  }
+  .s3-hero .caption {
+    font-family: 'Prompt', sans-serif;
+    font-size: 16px; font-weight: 700;
+    letter-spacing: -0.02em;
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+  .s3-hero .delta {
+    display: inline-flex; align-items: center; gap: 4px;
+    margin-top: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12px;
+    color: var(--mint-ink);
+    background: var(--mint);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
+  .s3-stats {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+    padding: 8px 20px 22px;
+  }
+  .s3-stat {
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s3-stat .n {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: -0.025em; line-height: 1;
+    margin-bottom: 3px;
+  }
+  .s3-stat .l {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px; font-weight: 500;
+    color: var(--ink-softer);
+  }
+  .s3-stat.balance .n { color: var(--accent); }
+  .s3-reach {
+    margin: 0 20px 18px;
+    padding: 18px 16px 14px;
+    background: var(--butter);
+    border: 1.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative;
+  }
+  .s3-reach::before {
+    content: '★';
+    position: absolute;
+    top: 10px; right: 16px;
+    color: var(--ink); font-size: 18px;
+    transform: rotate(12deg);
+  }
+  .s3-reach .reach-kicker {
+    display: inline-flex; align-items: center; gap: 5px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 700;
+    font-size: 11px; color: var(--ink);
+    background: rgba(17,17,17,0.08);
+    padding: 3px 10px;
+    border-radius: 999px;
+    margin-bottom: 10px;
+  }
+  .s3-reach .reach-head {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 16px;
+    letter-spacing: -0.015em;
+    margin-bottom: 4px; line-height: 1.25;
+  }
+  .s3-reach .reach-body {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px; color: var(--ink); opacity: 0.75;
+    line-height: 1.4; margin-bottom: 14px;
+  }
+  .s3-reach .reach-btn {
+    background: var(--ink); color: var(--bg);
+    border: none; padding: 12px 14px 12px 18px;
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    width: 100%;
+    display: flex; justify-content: space-between; align-items: center;
+    cursor: pointer;
+  }
+  .s3-reach .reach-btn .cost {
+    background: var(--accent); color: #FFF;
+    padding: 4px 10px; border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.04em;
+  }
+
+  /* ========================================================== */
+  /* S5 — Issuance                                               */
+  /* ========================================================== */
+  .s5-top {
+    padding: 14px 20px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .s5-top .x {
+    width: 34px; height: 34px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 2px 2px 0 var(--ink);
+    font-size: 16px;
+  }
+  .s5-top .branch {
+    display: flex; align-items: center; gap: 6px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    padding: 6px 12px 6px 8px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 11px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s5-top .branch::before {
+    content: ''; width: 6px; height: 6px;
+    background: var(--accent); border-radius: 50%;
+  }
+  .s5-q {
+    padding: 24px 20px 0;
+    text-align: center;
+  }
+  .s5-q .ask {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 26px;
+    letter-spacing: -0.02em;
+    line-height: 1.15;
+    margin-bottom: 4px;
+  }
+  .s5-q .ask em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .s5-q .ask-th {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500; font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .s5-options {
+    padding: 22px 20px 0;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+  }
+  .s5-option {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 16px 16px;
+    display: grid;
+    grid-template-columns: 48px 1fr 22px;
+    gap: 14px;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+  }
+  .s5-option.primary {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .s5-option.primary .ic-bg {
+    background: var(--butter); color: var(--ink);
+  }
+  .s5-option.primary .opt-arrow {
+    background: var(--accent); color: #fff; border-color: var(--accent);
+  }
+  .s5-option.primary .recommended-tag {
+    position: absolute;
+    top: -10px; right: 14px;
+    transform: rotate(5deg);
+    background: var(--butter); color: var(--ink);
+    border: 1.5px solid var(--ink);
+    padding: 3px 10px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 9px;
+    letter-spacing: 0.06em;
+  }
+  .s5-option .ic-bg {
+    width: 48px; height: 48px;
+    border-radius: 14px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    border: 1.5px solid var(--ink);
+  }
+  .s5-option .ic-bg svg { width: 22px; height: 22px; }
+  .s5-option .opt-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: -0.015em;
+    margin-bottom: 1px;
+  }
+  .s5-option.primary .opt-name { color: var(--bg); }
+  .s5-option .opt-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px; color: var(--ink-soft);
+    line-height: 1.3;
+  }
+  .s5-option.primary .opt-sub { color: var(--ink-softer); }
+  .s5-option .opt-arrow {
+    width: 22px; height: 22px;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px;
+  }
+  .s5-tip {
+    margin: 22px 20px 0;
+    padding: 12px 14px;
+    background: var(--butter-soft);
+    border: 1.5px dashed var(--butter);
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 11.5px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .s5-tip .tip-bulb {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    background: var(--butter);
+    color: var(--ink);
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-style: normal; font-weight: 700;
+  }
+
+  /* ========================================================== */
+  /* S6 — Stamp notification toast                               */
+  /* ========================================================== */
+  .s6-bg {
+    position: absolute; inset: 0;
+    z-index: 0;
+    filter: blur(0.5px); opacity: 0.4;
+    pointer-events: none;
+  }
+  .s6-bg .row {
+    height: 60px; margin: 8px 20px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+  }
+  .s6-bg .header {
+    height: 130px; margin: 60px 20px 16px;
+    background: linear-gradient(160deg, var(--butter-soft), transparent);
+    border-radius: 18px;
+  }
+  .s6-overlay {
+    position: absolute; inset: 0;
+    background: rgba(17,17,17,0.4);
+    backdrop-filter: blur(1px);
+    z-index: 1;
+  }
+  .s6-toast {
+    position: relative;
+    margin: 280px 18px 0;
+    padding: 16px 16px 14px;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 0 16px 40px -10px rgba(0,0,0,0.5), 4px 4px 0 var(--accent);
+    z-index: 2;
+  }
+  .s6-toast .top-row {
+    display: flex; align-items: center; gap: 12px;
+    margin-bottom: 12px;
+  }
+  .s6-toast .plus {
+    width: 44px; height: 44px;
+    background: var(--accent); color: #fff;
+    border-radius: 14px;
+    border: 1.5px solid var(--bg);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 22px;
+    transform: rotate(-6deg);
+    flex-shrink: 0;
+  }
+  .s6-toast .info { flex: 1; line-height: 1.25; }
+  .s6-toast .info .h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 16px;
+    letter-spacing: -0.015em;
+    margin-bottom: 2px;
+  }
+  .s6-toast .info .s {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; color: var(--ink-softer);
+    letter-spacing: 0.05em;
+  }
+  .s6-toast .progress-mini {
+    background: rgba(255,255,255,0.1);
+    border-radius: 12px;
+    padding: 12px 14px;
+    margin-bottom: 12px;
+  }
+  .s6-toast .progress-mini .row {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 6px;
+  }
+  .s6-toast .progress-mini .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 12px;
+  }
+  .s6-toast .progress-mini .count {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 18px;
+    letter-spacing: -0.02em;
+    color: var(--butter);
+  }
+  .s6-toast .progress-mini .count .of {
+    color: var(--ink-softer); font-weight: 400; font-size: 12px;
+  }
+  .s6-toast .progress-mini .stamps-mini {
+    display: grid;
+    grid-template-columns: repeat(10, 1fr);
+    gap: 3px;
+  }
+  .s6-toast .progress-mini .stamps-mini .ms {
+    height: 8px; border-radius: 3px;
+    background: rgba(255,255,255,0.15);
+  }
+  .s6-toast .progress-mini .stamps-mini .ms.on { background: var(--accent); }
+  .s6-toast .progress-mini .stamps-mini .ms.just-now {
+    background: var(--butter);
+    box-shadow: 0 0 0 2px var(--butter), 0 0 12px var(--butter);
+    animation: justnow-pulse 1.5s ease-in-out infinite;
+  }
+  @keyframes justnow-pulse {
+    0%, 100% { box-shadow: 0 0 0 2px var(--butter), 0 0 12px var(--butter); }
+    50% { box-shadow: 0 0 0 2px var(--butter), 0 0 4px var(--butter); }
+  }
+  .s6-toast .void-row {
+    display: flex; gap: 8px; align-items: center;
+  }
+  .s6-toast .void-btn {
+    flex: 1;
+    background: var(--bg); color: var(--ink);
+    border: 1.5px solid var(--bg);
+    padding: 12px 14px;
+    border-radius: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    cursor: pointer;
+  }
+  .s6-toast .countdown {
+    width: 56px;
+    background: rgba(255,94,58,0.15);
+    border: 1.5px dashed var(--accent);
+    color: var(--accent);
+    border-radius: 12px;
+    padding: 11px 0;
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 14px;
+  }
+
+  /* ========================================================== */
+  /* S7 — Top-up packages                                        */
+  /* ========================================================== */
+  .s7-top {
+    padding: 14px 20px 0;
+    display: flex; justify-content: space-between; align-items: center;
+  }
+  .s7-top .x {
+    width: 34px; height: 34px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 2px 2px 0 var(--ink);
+    cursor: pointer; font-size: 16px;
+  }
+  .s7-top .help {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-size: 12px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .s7-balance {
+    margin: 18px 20px 0;
+    padding: 18px 18px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 22px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    position: relative;
+    overflow: hidden;
+  }
+  .s7-balance::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 140px; height: 140px;
+    background: radial-gradient(circle, rgba(255,217,82,0.5) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+  .s7-balance .lbl {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 12px;
+    color: var(--ink-softer);
+    margin-bottom: 4px;
+    position: relative;
+  }
+  .s7-balance .num-row {
+    display: flex; align-items: baseline; gap: 8px;
+    position: relative;
+  }
+  .s7-balance .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 60px;
+    letter-spacing: -0.05em;
+    color: var(--butter);
+    line-height: 0.9;
+  }
+  .s7-balance .unit {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 14px;
+    color: var(--bg);
+  }
+  .s7-balance .est {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(255,255,255,0.2);
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-softer);
+    position: relative;
+  }
+  .s7-balance .est strong { color: var(--accent); font-weight: 700; }
+  .s7-q { padding: 22px 20px 0; }
+  .s7-q .ask {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: -0.025em;
+    margin-bottom: 2px;
+  }
+  .s7-q .ask em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .s7-q .sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500; font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .s7-packages {
+    padding: 14px 20px 0;
+    display: flex; flex-direction: column; gap: 8px;
+  }
+  .s7-pkg {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 12px 14px;
+    display: grid;
+    grid-template-columns: 1fr auto;
+    align-items: center;
+    cursor: pointer;
+    position: relative;
+  }
+  .s7-pkg.popular { background: var(--butter); }
+  .s7-pkg.popular::before {
+    content: 'แนะนำ';
+    position: absolute;
+    top: -10px; left: 14px;
+    transform: rotate(-4deg);
+    background: var(--accent); color: #fff;
+    padding: 3px 10px;
+    border-radius: 999px;
+    border: 1.5px solid var(--ink);
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+  .s7-pkg .left .credits {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 22px;
+    letter-spacing: -0.025em;
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .s7-pkg .left .credits .unit {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-left: 3px;
+  }
+  .s7-pkg.popular .left .credits .unit { color: var(--ink); opacity: 0.6; }
+  .s7-pkg .left .sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    color: var(--ink-soft);
+  }
+  .s7-pkg.popular .left .sub { color: var(--ink); opacity: 0.7; }
+  .s7-pkg .right { text-align: right; }
+  .s7-pkg .right .price {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 18px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .s7-pkg .right .price .currency {
+    font-style: italic; font-weight: 500;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-right: 2px;
+  }
+  .s7-pkg .right .bonus {
+    display: inline-block;
+    background: var(--accent); color: #fff;
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 9px; letter-spacing: 0.04em;
+    margin-top: 4px;
+  }
+  .s7-method {
+    margin: 20px 20px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .s7-method .ic {
+    width: 36px; height: 36px;
+    background: #1546B7; color: #fff;
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 9px;
+    text-align: center;
+  }
+  .s7-method .meta { flex: 1; line-height: 1.2; }
+  .s7-method .meta .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+  }
+  .s7-method .meta .sub {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .s7-method .check {
+    width: 22px; height: 22px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-weight: 700;
+    border: 1.5px solid var(--ink);
+  }
+  .s7-cta {
+    margin: 18px 20px 20px;
+    background: var(--ink);
+    color: var(--bg);
+    border: none; padding: 16px 18px;
+    border-radius: 18px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: -0.015em;
+    width: calc(100% - 40px);
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 10px 28px -8px rgba(17,17,17,0.35);
+  }
+  .s7-cta .arrow {
+    width: 30px; height: 30px;
+    background: var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF; font-size: 14px;
+  }
+
+  /* S7 confirm — PromptPay */
+  .s7c-meta {
+    padding: 22px 20px 0;
+    text-align: center;
+  }
+  .s7c-meta .label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500; font-style: italic;
+    font-size: 13px; color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .s7c-meta .pkg {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 26px;
+    letter-spacing: -0.025em;
+    margin-bottom: 2px;
+  }
+  .s7c-meta .pkg .accent { color: var(--accent); }
+  .s7c-meta .pkg .unit {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 18px;
+    margin-left: 4px;
+  }
+  .s7c-meta .price {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 14px;
+    color: var(--ink-soft);
+  }
+  .s7c-qr {
+    margin: 22px 22px 0;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 18px 16px 16px;
+    text-align: center;
+  }
+  .s7c-qr .promptpay-logo {
+    display: inline-flex; align-items: center; gap: 6px;
+    background: #1546B7; color: #fff;
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 10px;
+    letter-spacing: 0.02em;
+    margin-bottom: 14px;
+  }
+  .s7c-qr .qr-box {
+    width: 160px; height: 160px;
+    margin: 0 auto 14px;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    padding: 8px;
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+  .s7c-qr .qr-box svg { width: 100%; height: 100%; }
+  .s7c-qr .recipient {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 13px;
+    margin-bottom: 2px;
+  }
+  .s7c-qr .recipient-id {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .s7c-step {
+    margin: 18px 22px 0;
+    display: grid;
+    grid-template-columns: 26px 1fr;
+    gap: 10px;
+    align-items: center;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s7c-step .n {
+    width: 26px; height: 26px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 12px;
+  }
+  .s7c-step.active { background: var(--butter); }
+  .s7c-step .text {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 13px;
+    line-height: 1.3;
+  }
+  .s7c-step .text .sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 400; font-size: 11px;
+    color: var(--ink-soft);
+    display: block;
+    margin-top: 1px;
+  }
+  .s7c-upload-cta {
+    margin: 22px 22px 22px;
+    padding: 16px;
+    background: var(--ink);
+    color: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 0 10px 28px -8px rgba(17,17,17,0.35);
+  }
+  .s7c-upload-cta svg { width: 18px; height: 18px; }
+  .s7c-upload-cta .l {
+    display: flex; align-items: center; gap: 10px;
+  }
+  .s7c-upload-cta .arrow {
+    width: 28px; height: 28px;
+    background: var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff; font-size: 14px;
+  }
+
+  /* ========================================================== */
+  /* S8 — Shop QR print                                          */
+  /* ========================================================== */
+  .s8-actions {
+    display: flex; gap: 8px;
+    padding: 18px 20px 0;
+  }
+  .s8-actions .pill {
+    flex: 1;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 2px 2px 0 var(--ink);
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    display: flex; align-items: center; justify-content: center; gap: 6px;
+    cursor: pointer;
+  }
+  .s8-actions .pill svg { width: 13px; height: 13px; }
+  .s8-actions .pill.primary { background: var(--ink); color: var(--bg); }
+  .s8-print {
+    margin: 22px 20px 0;
+    background: #FFF;
+    border: 1.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 22px 20px;
+    position: relative;
+    overflow: hidden;
+  }
+  .s8-print::before, .s8-print::after {
+    content: '';
+    position: absolute;
+    width: 14px; height: 14px;
+    border: 1.5px dashed var(--ink-softer);
+  }
+  .s8-print::before {
+    top: 8px; left: 8px;
+    border-right: none; border-bottom: none;
+  }
+  .s8-print::after {
+    bottom: 8px; right: 8px;
+    border-left: none; border-top: none;
+  }
+  .s8-print .stamp-here {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .s8-print .stamp-headline {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 24px;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-bottom: 18px;
+  }
+  .s8-print .stamp-headline em {
+    font-style: italic; font-weight: 700; color: var(--accent);
+  }
+  .s8-qr-wrap {
+    display: flex; justify-content: center;
+    margin-bottom: 16px;
+    position: relative;
+  }
+  .s8-qr {
+    width: 170px; height: 170px;
+    background: #fff;
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 10px;
+    position: relative;
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+  .s8-qr svg { width: 100%; height: 100%; }
+  .s8-qr .center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 38px; height: 38px;
+    background: var(--accent);
+    border-radius: 10px;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.02em;
+  }
+  .s8-qr .center .dot { color: var(--butter); }
+  .s8-print .url-strip {
+    text-align: center;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.08em;
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    padding: 6px 10px;
+    background: var(--bg);
+    border-radius: 8px;
+    display: inline-block;
+    width: 100%;
+  }
+  .s8-print .reward-strip {
+    background: var(--butter);
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    padding: 10px 12px;
+    text-align: center;
+    margin-bottom: 12px;
+    transform: rotate(-1deg);
+  }
+  .s8-print .reward-strip .ll {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 10px; letter-spacing: 0.04em;
+    margin-bottom: 2px;
+  }
+  .s8-print .reward-strip .vv {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.015em;
+  }
+  .s8-print .reward-strip .vv .stars {
+    color: var(--accent);
+    margin: 0 4px;
+  }
+  .s8-print .brand-foot {
+    text-align: center;
+    border-top: 1px dashed var(--line);
+    padding-top: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 11px;
+    color: var(--ink);
+  }
+  .s8-print .brand-foot .dot { color: var(--accent); }
+  .s8-print .brand-foot .smile {
+    width: 13px; height: 7.5px;
+    color: var(--accent);
+    margin-left: 3px; vertical-align: -1px;
+  }
+  .s8-print .brand-foot .url {
+    display: block;
+    font-style: italic;
+    font-weight: 400;
+    font-size: 10px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .s8-tip {
+    margin: 18px 20px 20px;
+    padding: 12px 14px;
+    background: var(--butter-soft);
+    border: 1.5px dashed var(--butter);
+    border-radius: 12px;
+    display: flex; align-items: center; gap: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 11.5px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .s8-tip .b {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    background: var(--butter);
+    color: var(--ink);
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-size: 12px; font-style: normal; font-weight: 700;
+  }
+
+  /* ========================================================== */
+  /* S9 — Theme picker                                           */
+  /* ========================================================== */
+  .s9-grid {
+    padding: 22px 20px 0;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 12px;
+  }
+  .theme-card {
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 3px 3px 0 var(--ink);
+    overflow: hidden;
+    cursor: pointer;
+    background: var(--surface);
+    position: relative;
+  }
+  .theme-card.selected { transform: translateY(-2px); }
+  .theme-card.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 8px; right: 8px;
+    width: 22px; height: 22px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    border: 1.5px solid var(--ink); z-index: 2;
+  }
+  .theme-preview {
+    aspect-ratio: 1;
+    display: flex; align-items: center; justify-content: center;
+    flex-direction: column;
+    padding: 16px 10px;
+    border-bottom: 1.5px solid var(--ink);
+    position: relative;
+  }
+  .theme-preview.taemdee { background: #F6F1E5; }
+  .theme-preview.taemdee .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 36px;
+    letter-spacing: -0.04em;
+    color: #FF5E3A; line-height: 1;
+  }
+  .theme-preview.taemdee .stamps {
+    display: grid; grid-template-columns: repeat(5,1fr);
+    gap: 2px; margin-top: 6px; width: 60%;
+  }
+  .theme-preview.taemdee .stamps .s {
+    height: 6px; border-radius: 2px;
+    background: rgba(0,0,0,0.1);
+  }
+  .theme-preview.taemdee .stamps .s.on { background: #FF5E3A; }
+  .theme-preview.taemdee .stamps .s.b { background: #FFD952; }
+  .theme-preview.mono { background: #fff; }
+  .theme-preview.mono .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 36px;
+    color: #111; letter-spacing: -0.04em; line-height: 1;
+  }
+  .theme-preview.mono .stamps {
+    display: grid; grid-template-columns: repeat(5,1fr);
+    gap: 2px; margin-top: 6px; width: 60%;
+  }
+  .theme-preview.mono .stamps .s {
+    height: 6px; border-radius: 2px;
+    background: #ddd;
+  }
+  .theme-preview.mono .stamps .s.on { background: #111; }
+  .theme-preview.night { background: #141414; }
+  .theme-preview.night .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 36px;
+    color: #FFD952; letter-spacing: -0.04em; line-height: 1;
+  }
+  .theme-preview.night .stamps {
+    display: grid; grid-template-columns: repeat(5,1fr);
+    gap: 2px; margin-top: 6px; width: 60%;
+  }
+  .theme-preview.night .stamps .s {
+    height: 6px; border-radius: 2px;
+    background: #333;
+  }
+  .theme-preview.night .stamps .s.on { background: #FFD952; }
+  .theme-preview.pastel { background: #FFEEE4; }
+  .theme-preview.pastel .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 36px;
+    color: #E87A6A; letter-spacing: -0.04em; line-height: 1;
+  }
+  .theme-preview.pastel .stamps {
+    display: grid; grid-template-columns: repeat(5,1fr);
+    gap: 2px; margin-top: 6px; width: 60%;
+  }
+  .theme-preview.pastel .stamps .s {
+    height: 6px; border-radius: 2px;
+    background: #f3d5cc;
+  }
+  .theme-preview.pastel .stamps .s.on { background: #E87A6A; }
+  .theme-meta { padding: 10px 12px; }
+  .theme-meta .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    letter-spacing: -0.015em;
+    margin-bottom: 1px;
+  }
+  .theme-meta .meta {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .theme-card.selected .theme-meta { background: var(--butter); }
+
+  /* ========================================================== */
+  /* S10 — Settings                                              */
+  /* ========================================================== */
+  .s10-shop-card {
+    margin: 22px 20px 0;
+    padding: 16px 16px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 22px;
+    border: 1.5px solid var(--ink);
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: center; gap: 14px;
+    position: relative; overflow: hidden;
+  }
+  .s10-shop-card::before {
+    content: '';
+    position: absolute;
+    top: -30px; right: -30px;
+    width: 120px; height: 120px;
+    background: radial-gradient(circle, rgba(255,217,82,0.5) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+  .s10-shop-card .logo {
+    width: 52px; height: 52px;
+    background: var(--accent); color: #fff;
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 22px;
+    letter-spacing: -0.03em;
+    flex-shrink: 0;
+    border: 1.5px solid var(--bg);
+    position: relative;
+  }
+  .s10-shop-card .info {
+    flex: 1; line-height: 1.2; position: relative;
+  }
+  .s10-shop-card .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 17px;
+    letter-spacing: -0.02em;
+    margin-bottom: 2px;
+  }
+  .s10-shop-card .name .dot { color: var(--butter); }
+  .s10-shop-card .meta {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 11px; color: var(--ink-softer);
+  }
+  .s10-shop-card .edit {
+    width: 32px; height: 32px;
+    background: var(--butter); color: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer; position: relative;
+  }
+  .s10-shop-card .edit svg { width: 14px; height: 14px; }
+  .s10-section { padding: 22px 20px 0; }
+  .s10-section .label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    padding-left: 4px;
+  }
+  .s10-row {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 12px;
+    align-items: center;
+    cursor: pointer;
+  }
+  .s10-row .row-icon {
+    width: 36px; height: 36px;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 10px;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .s10-row .row-icon svg { width: 16px; height: 16px; }
+  .s10-row .row-icon.butter { background: var(--butter); color: var(--ink); }
+  .s10-row .row-icon.mint { background: var(--mint); color: var(--mint-ink); }
+  .s10-row .row-info { line-height: 1.2; }
+  .s10-row .row-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.01em;
+    margin-bottom: 1px;
+  }
+  .s10-row .row-meta {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 11px; color: var(--ink-soft);
+  }
+  .s10-row .arrow-r {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--ink-soft); font-size: 14px;
+  }
+  .s10-row .pill {
+    background: var(--mint); color: var(--mint-ink);
+    border: 1px solid var(--mint-ink);
+    padding: 3px 8px; border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 10px;
+  }
+  .s10-logout {
+    margin: 24px 20px 20px;
+    padding: 12px 14px;
+    background: transparent;
+    border: 1.5px dashed var(--ink);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    width: calc(100% - 40px);
+    cursor: pointer;
+    text-align: center;
+  }
+
+  /* ========================================================== */
+  /* S11 — Team                                                  */
+  /* ========================================================== */
+  .s11-invite {
+    margin: 22px 20px 0;
+    padding: 18px 16px;
+    background: var(--butter);
+    border: 1.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: center; gap: 12px;
+    position: relative;
+  }
+  .s11-invite::before {
+    content: '+';
+    position: absolute;
+    top: -10px; right: 14px;
+    width: 26px; height: 26px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 16px;
+    transform: rotate(8deg);
+  }
+  .s11-invite .ic {
+    width: 44px; height: 44px;
+    background: var(--ink); color: var(--butter);
+    border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .s11-invite .ic svg { width: 20px; height: 20px; }
+  .s11-invite .meta { flex: 1; line-height: 1.25; }
+  .s11-invite .meta .h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: -0.015em;
+  }
+  .s11-invite .meta .s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px; color: var(--ink); opacity: 0.75;
+    margin-top: 1px;
+  }
+  .s11-list { padding: 22px 20px 0; }
+  .s11-member {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 12px 14px;
+    margin-bottom: 8px;
+    display: grid;
+    grid-template-columns: 40px 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .s11-member .av {
+    width: 40px; height: 40px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+  }
+  .s11-member .av.b { background: var(--butter); color: var(--ink); }
+  .s11-member .av.m { background: var(--mint); color: var(--mint-ink); }
+  .s11-member .info { line-height: 1.2; }
+  .s11-member .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.015em; margin-bottom: 2px;
+  }
+  .s11-member .role {
+    display: inline-flex; align-items: center; gap: 4px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .s11-member .role .dot {
+    width: 4px; height: 4px;
+    background: var(--accent); border-radius: 50%;
+  }
+  .s11-member.owner .role .dot { background: var(--mint-ink); }
+  .s11-member .more {
+    width: 28px; height: 28px;
+    background: transparent;
+    border: 1px solid var(--line);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 14px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .s11-member.owner-row { background: var(--mint); }
+
+  /* ========================================================== */
+  /* S12 — Branches                                              */
+  /* ========================================================== */
+  .s12-mode {
+    margin: 22px 20px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s12-mode .top {
+    display: flex; justify-content: space-between; align-items: center;
+    margin-bottom: 4px;
+  }
+  .s12-mode .top .l {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .s12-mode .top .pill {
+    background: var(--accent); color: #fff;
+    padding: 3px 9px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 10px;
+  }
+  .s12-mode .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: -0.015em;
+    margin-bottom: 1px;
+  }
+  .s12-mode .desc {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px; color: var(--ink-soft);
+    line-height: 1.4;
+  }
+  .s12-add {
+    margin: 14px 20px 0;
+    padding: 14px 16px;
+    background: var(--butter);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+    display: flex; align-items: center; gap: 12px;
+    cursor: pointer;
+  }
+  .s12-add .ic {
+    width: 36px; height: 36px;
+    background: var(--ink); color: var(--butter);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 18px;
+  }
+  .s12-add .meta { flex: 1; line-height: 1.25; }
+  .s12-add .meta .h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.015em;
+  }
+  .s12-add .meta .s {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 11px; color: var(--ink); opacity: 0.7;
+    margin-top: 1px;
+  }
+  .s12-add .arrow {
+    font-size: 14px; color: var(--ink);
+  }
+  .s12-list-h {
+    padding: 22px 20px 8px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .s12-branch {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 2px 2px 0 var(--ink);
+    padding: 12px 14px;
+    margin: 0 20px 8px;
+    display: grid;
+    grid-template-columns: 36px 1fr auto;
+    gap: 12px;
+    align-items: center;
+  }
+  .s12-branch .num {
+    width: 36px; height: 36px;
+    background: var(--accent); color: #fff;
+    border-radius: 10px;
+    border: 1.5px solid var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 13px;
+  }
+  .s12-branch.b2 .num { background: var(--butter); color: var(--ink); }
+  .s12-branch.b3 .num { background: var(--mint); color: var(--mint-ink); }
+  .s12-branch .info { line-height: 1.2; }
+  .s12-branch .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.015em; margin-bottom: 2px;
+  }
+  .s12-branch .addr {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px; color: var(--ink-soft);
+  }
+  .s12-branch .qr-link {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 500;
+    font-size: 11px;
+    color: var(--accent);
+    text-decoration: underline;
+    text-decoration-color: rgba(255,94,58,0.4);
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+
+  /* End footer */
+  .end {
+    max-width: 1600px; margin: 96px auto 60px;
+    padding: 0 clamp(24px, 4vw, 64px);
+    text-align: center;
+    border-top: 1.5px solid #14141422;
+    padding-top: 60px;
+  }
+  .end .smile-end {
+    width: 32px; height: 18px;
+    color: #FF5E3A;
+    margin-bottom: 18px;
+  }
+  .end h3 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 3vw, 40px);
+    letter-spacing: -0.025em;
+    line-height: 1.1;
+    margin-bottom: 12px;
+  }
+  .end h3 .accent { color: #FF5E3A; font-style: italic; font-weight: 600; }
+  .end p {
+    max-width: 540px; margin: 0 auto;
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px; color: #555;
+    line-height: 1.55;
+  }
+
+  /* ===== Print styles ===== */
+  @media print {
+    body { padding: 0; background: #fff; }
+    .cover { min-height: auto; padding: 30px 24px; page-break-after: always; }
+    .section { page-break-before: auto; padding: 24px; }
+    .grid { grid-template-columns: repeat(2, 1fr); gap: 24px; }
+    .phone { box-shadow: none; }
+    .end { page-break-before: always; padding-top: 40px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ========================================================= -->
+<!-- COVER                                                      -->
+<!-- ========================================================= -->
+<div class="cover">
+  <div class="cover-top">
+    <div class="cover-mark">
+      <svg class="cover-logo-stamp" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true">
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </svg>
+      <span class="cover-wordmark">แต้มดี<span class="td-dot">.</span></span>
+    </div>
+    <div class="cover-meta">
+      Design v1<br>
+      ร้าน · 14 หน้า<br>
+      มือถือ · ภาษาไทย
+    </div>
+  </div>
+
+  <div class="cover-mid">
+    <h1>
+      ร้านค้า<br>
+      <span class="hl">ฝั่งเจ้าของ</span> <span class="accent">·</span>
+    </h1>
+    <p class="lead">
+      หน้าจอที่เจ้าของร้านใช้ — สมัครและตั้งค่าใน 60 วินาที แดชบอร์ดประจำวัน ออกแต้ม จัดการทีมและสาขา รวมไปถึงการเติมเครดิตเพื่อชวนลูกค้า — ทำหลังจากฝั่งลูกค้าเสร็จ
+    </p>
+
+    <div class="cover-stats">
+      <div class="cover-stat">
+        <div class="n">14</div>
+        <div class="l">หน้าจอร้าน</div>
+      </div>
+      <div class="cover-stat">
+        <div class="n">60s</div>
+        <div class="l">ตั้งค่าร้าน</div>
+      </div>
+      <div class="cover-stat">
+        <div class="n">฿0</div>
+        <div class="l">ค่ารายเดือน</div>
+      </div>
+      <div class="cover-stat">
+        <div class="n">DeeBoard</div>
+        <div class="l">แดชบอร์ดเปิดเร็ว</div>
+      </div>
+    </div>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="cover-toc">
+      <strong>สารบัญ · ร้าน</strong>
+      <div class="toc-row"><div class="num">05</div><div class="name">ร้าน · สมัคร & ตั้งค่า</div></div>
+      <div class="toc-row"><div class="num">06</div><div class="name">ร้าน · ใช้งานประจำวัน</div></div>
+      <div class="toc-row"><div class="num">07</div><div class="name">ร้าน · ตั้งค่า</div></div>
+    </div>
+    <div class="cover-page-num">หน้าปก · ร้าน</div>
+  </div>
+</div>
+
+<!-- ========================================================= -->
+<!-- SECTION 05 — ร้าน · สมัคร & ตั้งค่า                  -->
+<!-- ========================================================= -->
+<section class="section">
+  <div class="section-head">
+    <div class="left">
+      <div class="num">05</div>
+      <h2>ร้าน · <em>สมัคร & ตั้งค่า</em></h2>
+    </div>
+    <div class="desc">หน้าเข้าสู่ระบบมี 2 มุมมอง — ร้านค้า (จำเป็น) และลูกค้า (ไม่บังคับ) ตามด้วย 4 ขั้นตอนตั้งค่าร้าน รวม 60 วินาที</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- S1 Login — Shop view -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S1</span>เข้าสู่ระบบ · มุมมองร้านค้า</div>
+        <h3>ร้านค้า · ต้องเข้าสู่ระบบ</h3>
+        <p>มีแท็บสลับ "ร้านค้า / ลูกค้า" ที่ด้านบน — ร้านค้าต้องเข้าสู่ระบบเพื่อใช้แดชบอร์ด ป้ายสีส้มย้ำว่า "จำเป็น"</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td" style="display:flex; flex-direction:column;">
+
+            <div class="s1-tabs">
+              <div class="s1-tab active">
+                ร้านค้า
+                <span class="tab-pill">จำเป็น</span>
+              </div>
+              <div class="s1-tab">
+                ลูกค้า
+                <span class="tab-pill optional">ไม่บังคับ</span>
+              </div>
+            </div>
+
+            <div class="s1-hero" style="padding: 28px 30px 16px;">
+              <div class="s1-logo-mark" style="margin-bottom:14px;">
+                <svg class="smile-big" viewBox="0 0 20 12" fill="none">
+                  <circle cx="5" cy="3" r="1.7" fill="#FF5E3A"/>
+                  <circle cx="15" cy="3" r="1.7" fill="#FF5E3A"/>
+                  <path d="M4 7 Q10 11 16 7" stroke="#FFD952" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                </svg>
+              </div>
+              <div class="s1-name" style="font-size:32px;">แต้มดี<span class="dot">.</span></div>
+              <div class="s1-tag" style="font-size:12px;">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรีไม่มีค่ารายเดือน</div>
+            </div>
+
+            <div class="s1-required-notice">
+              <span class="dot-r"></span>
+              ร้านค้าต้องเข้าสู่ระบบเพื่อใช้แดชบอร์ด
+            </div>
+
+            <div class="s1-buttons">
+              <button class="s1-btn s1-btn-line">
+                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#fff"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                เข้าสู่ระบบด้วย LINE
+              </button>
+              <button class="s1-btn s1-btn-phone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                ใช้เบอร์โทร · รับ OTP
+              </button>
+            </div>
+
+            <div class="s1-no-pwd">
+              <span class="icon">●</span> ไม่ต้องจำรหัสผ่าน — ใช้ OTP หรือ LINE เท่านั้น
+            </div>
+
+            <div class="s1-foot">
+              ถือว่ายอมรับ <a>ข้อตกลง</a> และ <a>นโยบายความเป็นส่วนตัว</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S1 Login — Customer view -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S1</span>เข้าสู่ระบบ · มุมมองลูกค้า</div>
+        <h3>ลูกค้า · ใช้แบบไม่ต้องล็อกอิน</h3>
+        <p>ลูกค้าใช้งานได้เลยโดยไม่ต้องสมัคร แต่ถ้าเข้าสู่ระบบจะได้ประโยชน์เพิ่ม — แต้มไม่หาย ดูบัตรทุกร้านที่เดียว แจ้งเตือนเมื่อใกล้รับรางวัล</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td" style="display:flex; flex-direction:column;">
+
+            <div class="s1-tabs">
+              <div class="s1-tab">
+                ร้านค้า
+                <span class="tab-pill optional" style="background:var(--accent);color:#fff;border:none;">จำเป็น</span>
+              </div>
+              <div class="s1-tab active">
+                ลูกค้า
+                <span class="tab-pill" style="background:var(--butter);color:var(--ink);">ไม่บังคับ</span>
+              </div>
+            </div>
+
+            <div class="s1-hero" style="padding: 22px 30px 8px;">
+              <div class="s1-logo-mark" style="margin-bottom:10px; width:56px; height:56px;">
+                <svg class="smile-big" viewBox="0 0 20 12" fill="none" style="width:24px; height:14px;">
+                  <circle cx="5" cy="3" r="1.7" fill="#FF5E3A"/>
+                  <circle cx="15" cy="3" r="1.7" fill="#FF5E3A"/>
+                  <path d="M4 7 Q10 11 16 7" stroke="#FFD952" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                </svg>
+              </div>
+              <div class="s1-name" style="font-size:24px;">แต้มดี<span class="dot">.</span></div>
+              <div class="s1-tag" style="font-size:12px;">เก็บแต้มได้ทุกร้าน · ไม่ต้องสมัครก็ใช้ได้</div>
+            </div>
+
+            <div class="s1-guest">
+              <div class="gh">
+                <span>เริ่มเก็บแต้มเลย</span>
+                <span class="arrow">→</span>
+              </div>
+              <div class="gs">ไม่ต้องสมัครสมาชิก · สแกน QR ที่ร้านได้เลย</div>
+            </div>
+
+            <div class="s1-or">หรือเข้าสู่ระบบเพื่อ...</div>
+
+            <div class="s1-benefits">
+              <div class="s1-benefit-row">
+                <div class="check-mini">✓</div>
+                <div>
+                  <strong>เก็บแต้มไม่ให้หาย</strong>
+                  <span>เปลี่ยนเครื่องก็ยังมีแต้มอยู่</span>
+                </div>
+              </div>
+              <div class="s1-benefit-row">
+                <div class="check-mini">✓</div>
+                <div>
+                  <strong>ดูบัตรทุกร้านที่เดียว</strong>
+                  <span>รวบบัตรสะสมแต้มในกระเป๋าใบเดียว</span>
+                </div>
+              </div>
+              <div class="s1-benefit-row">
+                <div class="check-mini">✓</div>
+                <div>
+                  <strong>รับแจ้งเตือนเมื่อใกล้รางวัล</strong>
+                  <span>ไม่พลาดตอนเก็บครบแต้ม</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="s1-buttons compact">
+              <button class="s1-btn s1-btn-line">
+                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#fff"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                LINE
+              </button>
+              <button class="s1-btn s1-btn-phone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                เบอร์โทร
+              </button>
+            </div>
+
+            <div class="s1-foot" style="padding-top:14px;">
+              ถือว่ายอมรับ <a>ข้อตกลง</a> และ <a>นโยบายความเป็นส่วนตัว</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S2.1 — Shop name + reward -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S2.1</span>ตั้งค่าร้าน · 1/4</div>
+        <h3>ชื่อร้าน + รางวัล</h3>
+        <p>ขั้นแรก ใส่ชื่อร้าน รางวัลที่ลูกค้าจะได้ และเลือกจำนวนแต้มที่ต้องสะสม (8/10/15)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td" style="display:flex; flex-direction:column;">
+
+            <div class="s2-steps" style="margin-top:18px;">
+              <div class="step active"></div>
+              <div class="step"></div>
+              <div class="step"></div>
+              <div class="step"></div>
+            </div>
+
+            <div class="s2-counter">
+              <span class="step-num"><strong>01</strong> / 04 · ร้าน</span>
+              <span class="skip">ข้าม</span>
+            </div>
+
+            <div class="s2-q">
+              <div class="ask">ตั้งค่า<em>ร้านของคุณ.</em></div>
+              <div class="sub">ใช้เวลาประมาณ 1 นาที</div>
+            </div>
+
+            <div class="s2-field">
+              <div class="label">ชื่อร้าน</div>
+              <div class="input focused">
+                <span>ร้านกาแฟลุงหมี</span>
+                <span class="cursor"></span>
+              </div>
+              <div class="s2-hint">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
+            </div>
+
+            <div class="s2-field">
+              <div class="label">รางวัลที่ลูกค้าจะได้รับ</div>
+              <div class="input">
+                <span>กาแฟ Signature ฟรี 1 แก้ว</span>
+              </div>
+            </div>
+
+            <div class="s2-field" style="margin-top:18px;">
+              <div class="label">เก็บกี่แต้มถึงได้รางวัล</div>
+            </div>
+            <div class="s2-goal-pills">
+              <div class="s2-goal-pill">8</div>
+              <div class="s2-goal-pill selected">10</div>
+              <div class="s2-goal-pill">15</div>
+            </div>
+            <div class="s2-hint" style="margin: 8px 24px 0;">ส่วนใหญ่ใช้ 10 แต้ม กำลังพอดี</div>
+
+            <div class="s2-foot">
+              <button class="next" style="flex:1;">
+                <span>ถัดไป · เลือกโลโก้</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S2.2 — Logo -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S2.2</span>ตั้งค่าร้าน · 2/4</div>
+        <h3>เลือกโลโก้</h3>
+        <p>AI สร้างโลโก้ให้ 3 แบบจากชื่อร้าน — แบบสไตล์ตัวพิมพ์ต่างกัน เลือกอันที่ใช่ หรืออัปโหลดของตัวเอง</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td" style="display:flex; flex-direction:column;">
+
+            <div class="s2-steps" style="margin-top:18px;">
+              <div class="step done"></div>
+              <div class="step active"></div>
+              <div class="step"></div>
+              <div class="step"></div>
+            </div>
+
+            <div class="s2-counter">
+              <span class="step-num"><strong>02</strong> / 04 · โลโก้</span>
+              <span class="skip">ข้าม</span>
+            </div>
+
+            <div class="s2-q">
+              <div class="ask">เลือก<em>โลโก้.</em></div>
+              <div class="sub">เลือกแบบที่ใช่ที่สุดสำหรับร้านของคุณ</div>
+            </div>
+
+            <div class="s2-logos">
+              <div class="s2-logo">
+                <span class="lt-1">m<span class="dot">.</span></span>
+              </div>
+              <div class="s2-logo selected">
+                <span class="lt-2">Mhee</span>
+              </div>
+              <div class="s2-logo">
+                <span class="lt-3">หมี</span>
+              </div>
+            </div>
+
+            <div class="s2-helper">
+              สร้างจากชื่อ <em>"ร้านกาแฟลุงหมี"</em><br>
+              <span class="reroll">↻ สร้างใหม่อีก 3 แบบ</span>
+            </div>
+
+            <div class="s2-upload">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+              ใช้โลโก้ของฉันเอง
+            </div>
+
+            <div class="s2-foot">
+              <button class="back">←</button>
+              <button class="next">
+                <span>ถัดไป · เลือกธีม</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S2.3 — Theme -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S2.3</span>ตั้งค่าร้าน · 3/4</div>
+        <h3>เลือกธีม</h3>
+        <p>4 ธีมให้เลือก ทั้งหมดฟรี เปลี่ยนได้ภายหลัง พรีวิวคือบัตรของลูกค้าจริง ๆ</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td" style="display:flex; flex-direction:column;">
+
+            <div class="s2-steps" style="margin-top:18px;">
+              <div class="step done"></div>
+              <div class="step done"></div>
+              <div class="step active"></div>
+              <div class="step"></div>
+            </div>
+
+            <div class="s2-counter">
+              <span class="step-num"><strong>03</strong> / 04 · ธีม</span>
+              <span class="skip">ข้าม</span>
+            </div>
+
+            <div class="s2-q">
+              <div class="ask">เลือก<em>ธีม.</em></div>
+              <div class="sub">หน้าตาบัตรสะสมแต้มของลูกค้า</div>
+            </div>
+
+            <div class="s2-themes">
+              <div class="s2-theme selected">
+                <div class="s2-tprev taemdee">
+                  <div class="num">7</div>
+                  <div class="stamps-mini">
+                    <div class="s on"></div><div class="s on"></div><div class="s b"></div><div class="s on"></div><div class="s on"></div>
+                  </div>
+                </div>
+                <div class="s2-tmeta">
+                  <div class="name">แต้มดี</div>
+                  <div class="meta">ครีม + ส้ม</div>
+                </div>
+              </div>
+              <div class="s2-theme">
+                <div class="s2-tprev mono">
+                  <div class="num">7</div>
+                  <div class="stamps-mini">
+                    <div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div>
+                  </div>
+                </div>
+                <div class="s2-tmeta">
+                  <div class="name">โมโน</div>
+                  <div class="meta">ขาว + ดำ</div>
+                </div>
+              </div>
+              <div class="s2-theme">
+                <div class="s2-tprev night">
+                  <div class="num">7</div>
+                  <div class="stamps-mini">
+                    <div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div>
+                  </div>
+                </div>
+                <div class="s2-tmeta">
+                  <div class="name">กลางคืน</div>
+                  <div class="meta">ดำ + เหลือง</div>
+                </div>
+              </div>
+              <div class="s2-theme">
+                <div class="s2-tprev pastel">
+                  <div class="num">7</div>
+                  <div class="stamps-mini">
+                    <div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div>
+                  </div>
+                </div>
+                <div class="s2-tmeta">
+                  <div class="name">พาสเทล</div>
+                  <div class="meta">พีช + ส้ม</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="s2-foot">
+              <button class="back">←</button>
+              <button class="next">
+                <span>ถัดไป · พิมพ์ QR</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S2.4 — Done -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S2.4</span>ตั้งค่าร้าน · 4/4</div>
+        <h3>เสร็จเรียบร้อย!</h3>
+        <p>ขั้นสุดท้าย ตั้งร้านสำเร็จ มีคำชมและพรีวิว QR ของร้าน พร้อมปุ่มไปดูแดชบอร์ด</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td" style="display:flex; flex-direction:column;">
+
+            <div class="s2-steps" style="margin-top:18px;">
+              <div class="step done"></div>
+              <div class="step done"></div>
+              <div class="step done"></div>
+              <div class="step active"></div>
+            </div>
+
+            <div class="s2-counter">
+              <span class="step-num"><strong>04</strong> / 04 · เสร็จ</span>
+            </div>
+
+            <div class="s2-done-hero">
+              <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+
+              <div class="s2-done-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+              <div class="s2-done-title"><em>พร้อมใช้งาน</em><br>แล้วครับ!</div>
+              <div class="s2-done-sub">QR ของร้านคุณพร้อมแล้ว เริ่มออกแต้มได้เลย</div>
+            </div>
+
+            <div class="s2-qr-prev">
+              <div class="mini-qr">
+                <svg viewBox="0 0 60 60" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="0" width="60" height="60" fill="#fff"/>
+                  <g fill="#111">
+                    <rect x="4" y="4" width="14" height="14" rx="1.5"/>
+                    <rect x="42" y="4" width="14" height="14" rx="1.5"/>
+                    <rect x="4" y="42" width="14" height="14" rx="1.5"/>
+                  </g>
+                  <g fill="#fff">
+                    <rect x="7" y="7" width="8" height="8"/>
+                    <rect x="45" y="7" width="8" height="8"/>
+                    <rect x="7" y="45" width="8" height="8"/>
+                  </g>
+                  <g fill="#111">
+                    <rect x="9" y="9" width="4" height="4"/>
+                    <rect x="47" y="9" width="4" height="4"/>
+                    <rect x="9" y="47" width="4" height="4"/>
+                    <rect x="22" y="6" width="3" height="3"/>
+                    <rect x="28" y="6" width="3" height="3"/>
+                    <rect x="34" y="6" width="3" height="3"/>
+                    <rect x="22" y="22" width="3" height="3"/>
+                    <rect x="28" y="22" width="3" height="3"/>
+                    <rect x="40" y="22" width="3" height="3"/>
+                    <rect x="22" y="34" width="3" height="3"/>
+                    <rect x="34" y="34" width="3" height="3"/>
+                    <rect x="46" y="34" width="3" height="3"/>
+                    <rect x="22" y="46" width="3" height="3"/>
+                    <rect x="28" y="46" width="3" height="3"/>
+                    <rect x="40" y="46" width="3" height="3"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="meta">
+                <div class="h">QR ของร้านพร้อมแล้ว</div>
+                <div class="s">พิมพ์ติดที่เคาน์เตอร์</div>
+              </div>
+              <div class="arrow">↗</div>
+            </div>
+
+            <button class="s2-cta-final">
+              <span>ไปที่แดชบอร์ด</span>
+              <span class="arrow">→</span>
+            </button>
+            <div class="s2-cta-secondary">พิมพ์ QR ก่อน</div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SECTION 06 — ร้าน · ใช้งานประจำวัน                  -->
+<!-- ========================================================= -->
+<section class="section">
+  <div class="section-head">
+    <div class="left">
+      <div class="num">06</div>
+      <h2>ร้าน · <em>ใช้งานประจำวัน</em></h2>
+    </div>
+    <div class="desc">5 หน้าจอ ตั้งแต่แดชบอร์ดประจำวัน ออกแต้ม แจ้งเตือน ไปจนถึงเติมเครดิต</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- S3 DeeBoard -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S3</span>แดชบอร์ดร้าน</div>
+        <h3>หน้าหลักของร้าน</h3>
+        <p>ตัวเลขใหญ่บอกลูกค้าที่กลับมาสัปดาห์นี้ การ์ดเหลือง DeeReach ชวนลูกค้าเก่ากลับมา ฟีดสดด้านล่าง</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s3-top">
+              <div class="hi">
+                สวัสดีพี่หมี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="day">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              </div>
+              <div class="actions">
+                <div class="branch-pill">นิมมาน</div>
+                <div class="avatar">ม</div>
+              </div>
+            </div>
+
+            <div class="s3-hero">
+              <div class="label">✦ สัปดาห์นี้</div>
+              <div class="num">
+                <span class="accent">23</span>
+                <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              </div>
+              <div class="caption">ลูกค้ากลับมา</div>
+              <div class="delta">↑ +8 จากสัปดาห์ที่แล้ว</div>
+            </div>
+
+            <div class="s3-stats">
+              <div class="s3-stat"><div class="n">147</div><div class="l">แต้ม</div></div>
+              <div class="s3-stat"><div class="n">6</div><div class="l">รับรางวัล</div></div>
+              <div class="s3-stat balance"><div class="n">412</div><div class="l">เครดิต</div></div>
+            </div>
+
+            <div class="ph-section-h">
+              <div class="label">ดีรีช ✦</div>
+            </div>
+            <div class="s3-reach">
+              <div class="reach-kicker">ชวนกลับ</div>
+              <div class="reach-head">ชวนลูกค้า 23 คนที่หายไปกลับมา?</div>
+              <div class="reach-body">23 คนหายไป 60 วัน ส่งส่วนลดผ่าน LINE ได้เลย</div>
+              <button class="reach-btn">
+                <span>ส่งเลย</span>
+                <span class="cost">50 เครดิต</span>
+              </button>
+            </div>
+
+            <div class="ph-section-h">
+              <div class="label">ฟีดสด</div>
+              <div class="live">สด</div>
+            </div>
+            <div class="feed-row">
+              <div class="t">09:38</div>
+              <div class="w"><span class="icon-mini">+</span><strong>1 แต้ม</strong> <span class="id">#A72B</span></div>
+              <button class="void">ยกเลิก</button>
+            </div>
+            <div class="feed-row">
+              <div class="t">09:31</div>
+              <div class="w"><strong>รับรางวัล</strong> <span class="id">#F04C</span></div>
+              <button class="void">ยกเลิก</button>
+            </div>
+            <div class="feed-row">
+              <div class="t">09:22</div>
+              <div class="w"><span class="icon-mini">+</span><strong>1 แต้ม</strong> <span class="id">#B19D</span></div>
+              <button class="void">ยกเลิก</button>
+            </div>                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S5 Issuance -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S5</span>ออกแต้ม</div>
+        <h3>ลูกค้ามาด้วยวิธีไหน?</h3>
+        <p>3 ทางเลือก แบบแรก "ลูกค้าสแกน" เป็นค่ามาตรฐาน ป้ายเหลือง "เร็วสุด" ติดอยู่</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s5-top">
+              <div class="x">×</div>
+              <div class="branch">สาขานิมมาน</div>
+            </div>
+
+            <div class="s5-q">
+              <div class="ask">ออกแต้มให้<em>ลูกค้า.</em></div>
+              <div class="ask-th">เลือกวิธีที่ลูกค้ามาวันนี้</div>
+            </div>
+
+            <div class="s5-options">
+              <div class="s5-option primary">
+                <div class="recommended-tag">เร็วสุด</div>
+                <div class="ic-bg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </div>
+                <div class="info">
+                  <div class="opt-name">ลูกค้าสแกน</div>
+                  <div class="opt-sub">โชว์ QR ของร้าน ให้ลูกค้าสแกน</div>
+                </div>
+                <div class="opt-arrow">→</div>
+              </div>
+
+              <div class="s5-option">
+                <div class="ic-bg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="18" height="18" rx="2"/>
+                    <line x1="3" y1="9" x2="21" y2="9"/>
+                    <circle cx="12" cy="15" r="2"/>
+                  </svg>
+                </div>
+                <div class="info">
+                  <div class="opt-name">ร้านสแกน</div>
+                  <div class="opt-sub">สแกนบัตรของลูกค้า</div>
+                </div>
+                <div class="opt-arrow">→</div>
+              </div>
+
+              <div class="s5-option">
+                <div class="ic-bg">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                  </svg>
+                </div>
+                <div class="info">
+                  <div class="opt-name">กรอกเบอร์</div>
+                  <div class="opt-sub">พิมพ์เบอร์โทรลูกค้า</div>
+                </div>
+                <div class="opt-arrow">→</div>
+              </div>
+            </div>
+
+            <div class="s5-tip">
+              <div class="tip-bulb">!</div>
+              <div>วิธีแรกเร็วสุด ส่วนใหญ่ใช้แบบนี้แบบเดียวก็พอ</div>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S6 Stamp notification -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S6</span>แจ้งเตือนแต้ม</div>
+        <h3>เด้งบนแดชบอร์ด</h3>
+        <p>โผล่ขึ้นเมื่อมีลูกค้าได้แต้ม โชว์ความคืบหน้า ปุ่มยกเลิก และนับถอยหลัง 60 วินาที</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s6-bg">
+              <div class="header"></div>
+              <div class="row"></div>
+              <div class="row"></div>
+              <div class="row"></div>
+            </div>
+            <div class="s6-overlay"></div>
+
+            <div class="s6-toast">
+              <div class="top-row">
+                <div class="plus">+1</div>
+                <div class="info">
+                  <div class="h">ออกแต้มสำเร็จ</div>
+                  <div class="s">ลูกค้า · #A72B</div>
+                </div>
+              </div>
+
+              <div class="progress-mini">
+                <div class="row">
+                  <div class="name">ลูกค้าคนนี้สะสมไว้</div>
+                  <div class="count">8<span class="of">/10</span></div>
+                </div>
+                <div class="stamps-mini">
+                  <div class="ms on"></div>
+                  <div class="ms on"></div>
+                  <div class="ms on"></div>
+                  <div class="ms on"></div>
+                  <div class="ms on"></div>
+                  <div class="ms on"></div>
+                  <div class="ms on"></div>
+                  <div class="ms just-now"></div>
+                  <div class="ms"></div>
+                  <div class="ms"></div>
+                </div>
+              </div>
+
+              <div class="void-row">
+                <button class="void-btn">ยกเลิกแต้มนี้</button>
+                <div class="countdown">58 วิ</div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S7 Top-up -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S7</span>เติมเครดิต · เลือกแพ็คเกจ</div>
+        <h3>เติมเครดิต</h3>
+        <p>ตอนนี้มี 412 เครดิต ส่งดีรีชได้ 8 ครั้ง 3 แพ็คเกจให้เลือก ตรงกลาง "แนะนำ"</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="s7-top">
+              <div class="x">←</div>
+              <div class="help">ช่วยเหลือ?</div>
+            </div>
+
+            <div class="s7-balance">
+              <div class="lbl">ยอดของคุณ</div>
+              <div class="num-row">
+                <span class="num">412</span>
+                <span class="unit">เครดิต</span>
+              </div>
+              <div class="est">
+                ≈ <strong>ส่งดีรีชได้ 8 ครั้ง</strong> ครั้งละ 50 เครดิต
+              </div>
+            </div>
+
+            <div class="s7-q">
+              <div class="ask">เลือก<em>แพ็คเกจ.</em></div>
+              <div class="sub">เลือกจำนวนเครดิตที่ต้องการ</div>
+            </div>
+
+            <div class="s7-packages">
+              <div class="s7-pkg">
+                <div class="left">
+                  <div class="credits">100<span class="unit">เครดิต</span></div>
+                  <div class="sub">≈ ส่งดีรีชได้ 2 ครั้ง</div>
+                </div>
+                <div class="right">
+                  <div class="price"><span class="currency">฿</span>100</div>
+                </div>
+              </div>
+
+              <div class="s7-pkg popular">
+                <div class="left">
+                  <div class="credits">220<span class="unit">เครดิต</span></div>
+                  <div class="sub">≈ ส่งดีรีชได้ 4 ครั้ง · เหมาะกับร้านใหม่</div>
+                </div>
+                <div class="right">
+                  <div class="price"><span class="currency">฿</span>200</div>
+                  <div class="bonus">+20 โบนัส</div>
+                </div>
+              </div>
+
+              <div class="s7-pkg">
+                <div class="left">
+                  <div class="credits">1,200<span class="unit">เครดิต</span></div>
+                  <div class="sub">≈ ส่งดีรีชได้ 24 ครั้ง</div>
+                </div>
+                <div class="right">
+                  <div class="price"><span class="currency">฿</span>1,000</div>
+                  <div class="bonus">+200 โบนัส</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="s7-method">
+              <div class="ic">PP</div>
+              <div class="meta">
+                <div class="name">PromptPay</div>
+                <div class="sub">สแกน จ่าย อัปโหลดสลิป</div>
+              </div>
+              <div class="check">✓</div>
+            </div>
+
+            <button class="s7-cta">
+              <span>ดำเนินการต่อ</span>
+              <span class="arrow">→</span>
+            </button>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S7 confirm -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S7.2</span>เติมเครดิต · จ่าย</div>
+        <h3>สแกน PromptPay</h3>
+        <p>เลือกแพ็คเกจแล้ว โชว์ QR PromptPay สำหรับสแกนจ่าย ขั้นต่อไปคืออัปโหลดสลิป</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">เติมเครดิต</div>
+              <div class="right-action">ช่วยเหลือ</div>
+            </div>
+
+            <div class="s7c-meta">
+              <div class="label">คุณกำลังเติม</div>
+              <div class="pkg"><span class="accent">220</span><span class="unit">เครดิต</span></div>
+              <div class="price">฿200 · บวกโบนัส 20 เครดิต</div>
+            </div>
+
+            <div class="s7c-qr">
+              <div class="promptpay-logo">PromptPay</div>
+              <div class="qr-box">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="0" width="100" height="100" fill="#fff"/>
+                  <g fill="#111">
+                    <rect x="6" y="6" width="22" height="22" rx="2"/>
+                    <rect x="72" y="6" width="22" height="22" rx="2"/>
+                    <rect x="6" y="72" width="22" height="22" rx="2"/>
+                  </g>
+                  <g fill="#fff">
+                    <rect x="11" y="11" width="12" height="12" rx="1"/>
+                    <rect x="77" y="11" width="12" height="12" rx="1"/>
+                    <rect x="11" y="77" width="12" height="12" rx="1"/>
+                  </g>
+                  <g fill="#111">
+                    <rect x="14" y="14" width="6" height="6" rx="1"/>
+                    <rect x="80" y="14" width="6" height="6" rx="1"/>
+                    <rect x="14" y="80" width="6" height="6" rx="1"/>
+                    <rect x="34" y="6" width="4" height="4"/>
+                    <rect x="46" y="6" width="4" height="4"/>
+                    <rect x="58" y="6" width="4" height="4"/>
+                    <rect x="34" y="14" width="4" height="4"/>
+                    <rect x="50" y="14" width="4" height="4"/>
+                    <rect x="62" y="14" width="4" height="4"/>
+                    <rect x="38" y="22" width="4" height="4"/>
+                    <rect x="50" y="22" width="4" height="4"/>
+                    <rect x="6" y="34" width="4" height="4"/>
+                    <rect x="22" y="34" width="4" height="4"/>
+                    <rect x="34" y="34" width="4" height="4"/>
+                    <rect x="50" y="34" width="4" height="4"/>
+                    <rect x="62" y="34" width="4" height="4"/>
+                    <rect x="78" y="34" width="4" height="4"/>
+                    <rect x="14" y="42" width="4" height="4"/>
+                    <rect x="34" y="42" width="4" height="4"/>
+                    <rect x="50" y="42" width="4" height="4"/>
+                    <rect x="70" y="42" width="4" height="4"/>
+                    <rect x="6" y="50" width="4" height="4"/>
+                    <rect x="22" y="50" width="4" height="4"/>
+                    <rect x="42" y="50" width="4" height="4"/>
+                    <rect x="58" y="50" width="4" height="4"/>
+                    <rect x="74" y="50" width="4" height="4"/>
+                    <rect x="14" y="58" width="4" height="4"/>
+                    <rect x="38" y="58" width="4" height="4"/>
+                    <rect x="50" y="58" width="4" height="4"/>
+                    <rect x="66" y="58" width="4" height="4"/>
+                    <rect x="34" y="66" width="4" height="4"/>
+                    <rect x="50" y="66" width="4" height="4"/>
+                    <rect x="62" y="66" width="4" height="4"/>
+                    <rect x="34" y="74" width="4" height="4"/>
+                    <rect x="46" y="74" width="4" height="4"/>
+                    <rect x="58" y="74" width="4" height="4"/>
+                    <rect x="34" y="82" width="4" height="4"/>
+                    <rect x="50" y="82" width="4" height="4"/>
+                    <rect x="74" y="82" width="4" height="4"/>
+                  </g>
+                </svg>
+              </div>
+              <div class="recipient">บริษัท แต้มดี จำกัด</div>
+              <div class="recipient-id">PP · 0-1234-5678-9</div>
+            </div>
+
+            <div class="s7c-step active">
+              <div class="n">1</div>
+              <div class="text">เปิดแอปธนาคาร แล้วสแกน QR
+                <span class="sub">ใช้ได้ทุกธนาคารในไทย</span>
+              </div>
+            </div>
+            <div class="s7c-step">
+              <div class="n">2</div>
+              <div class="text">อัปโหลดสลิปการโอน
+                <span class="sub">ระบบตรวจสอบอัตโนมัติใน ~5 วินาที</span>
+              </div>
+            </div>
+
+            <button class="s7c-upload-cta">
+              <div class="l">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                จ่ายแล้ว · อัปโหลดสลิป
+              </div>
+              <span class="arrow">→</span>
+            </button>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+<!-- ========================================================= -->
+<!-- SECTION 07 — ร้าน · ตั้งค่า                  -->
+<!-- ========================================================= -->
+<section class="section">
+  <div class="section-head">
+    <div class="left">
+      <div class="num">07</div>
+      <h2>ร้าน · <em>ตั้งค่า</em></h2>
+    </div>
+    <div class="desc">5 หน้าจอ ตั้งแต่หน้า Settings เข้าสู่ทีมงาน สาขา ธีม และ QR สำหรับร้าน</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- S10 Settings home -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S10</span>ตั้งค่าหลัก</div>
+        <h3>หน้าตั้งค่า</h3>
+        <p>การ์ดดำด้านบนเป็นข้อมูลร้าน หมวดหมู่ตั้งค่า — ร้าน · ทีมงาน · บิล &amp; เครดิต ปุ่มออกจากระบบเป็นเส้นประ</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">ตั้งค่า</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s10-shop-card">
+              <div class="logo">m<span style="color:var(--butter);">.</span></div>
+              <div class="info">
+                <div class="name">mhee<span class="dot">.</span></div>
+                <div class="meta">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+              </div>
+              <div class="edit">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+              </div>
+            </div>
+
+            <div class="s10-section">
+              <div class="label">ร้าน</div>
+              <div class="s10-row">
+                <div class="row-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/></svg>
+                </div>
+                <div class="row-info">
+                  <div class="row-name">รางวัล</div>
+                  <div class="row-meta">10 แต้ม · กาแฟ Signature ฟรี</div>
+                </div>
+                <div class="arrow-r">›</div>
+              </div>
+
+              <div class="s10-row">
+                <div class="row-icon butter">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polygon points="12 6 14 10 18 11 15 14 16 18 12 16 8 18 9 14 6 11 10 10"/></svg>
+                </div>
+                <div class="row-info">
+                  <div class="row-name">ธีม</div>
+                  <div class="row-meta">แต้มดี (ค่ามาตรฐาน)</div>
+                </div>
+                <div class="arrow-r">›</div>
+              </div>
+
+              <div class="s10-row">
+                <div class="row-icon mint">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7"/><rect x="14" y="3" width="7" height="7"/><rect x="3" y="14" width="7" height="7"/><rect x="14" y="14" width="7" height="7"/></svg>
+                </div>
+                <div class="row-info">
+                  <div class="row-name">สาขา</div>
+                  <div class="row-meta">3 สาขา · รวมรางวัล</div>
+                </div>
+                <div class="arrow-r">›</div>
+              </div>
+            </div>
+
+            <div class="s10-section">
+              <div class="label">ทีม &amp; บิล</div>
+              <div class="s10-row">
+                <div class="row-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="9" cy="7" r="4"/><path d="M23 21v-2a4 4 0 00-3-3.87"/><path d="M16 3.13a4 4 0 010 7.75"/></svg>
+                </div>
+                <div class="row-info">
+                  <div class="row-name">ทีม</div>
+                  <div class="row-meta">3 คน · 1 เจ้าของร้าน</div>
+                </div>
+                <div class="arrow-r">›</div>
+              </div>
+
+              <div class="s10-row">
+                <div class="row-icon butter">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <div class="row-info">
+                  <div class="row-name">บิล &amp; เครดิต</div>
+                  <div class="row-meta">412 เครดิต · เติมอัตโนมัติปิด</div>
+                </div>
+                <span class="pill">ออนไลน์</span>
+              </div>
+            </div>
+
+            <button class="s10-logout">ออกจากระบบ</button>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S8 Shop QR print -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S8</span>QR ของร้าน · สำหรับพิมพ์</div>
+        <h3>พิมพ์ QR</h3>
+        <p>ปุ่มพิมพ์/บันทึก/แชร์ ด้านบน การ์ดด้านล่างมีเครื่องหมายตัด QR เงาส้ม โลโก้ตรงกลาง ป้ายเหลืองรางวัล</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">QR ของร้าน</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s8-actions">
+              <div class="pill primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
+                พิมพ์
+              </div>
+              <div class="pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
+                บันทึก
+              </div>
+              <div class="pill">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                แชร์
+              </div>
+            </div>
+
+            <div class="s8-print">
+              <div class="stamp-here">— สแกนตรงนี้ —</div>
+              <div class="stamp-headline"><em>สแกนเลย</em><br>เก็บแต้มกับเรา</div>
+
+              <div class="s8-qr-wrap">
+                <div class="s8-qr">
+                  <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="0" width="100" height="100" fill="#fff"/>
+                    <g fill="#111">
+                      <rect x="6" y="6" width="22" height="22" rx="2"/>
+                      <rect x="72" y="6" width="22" height="22" rx="2"/>
+                      <rect x="6" y="72" width="22" height="22" rx="2"/>
+                    </g>
+                    <g fill="#fff">
+                      <rect x="11" y="11" width="12" height="12" rx="1"/>
+                      <rect x="77" y="11" width="12" height="12" rx="1"/>
+                      <rect x="11" y="77" width="12" height="12" rx="1"/>
+                    </g>
+                    <g fill="#111">
+                      <rect x="14" y="14" width="6" height="6" rx="1"/>
+                      <rect x="80" y="14" width="6" height="6" rx="1"/>
+                      <rect x="14" y="80" width="6" height="6" rx="1"/>
+                      <rect x="34" y="6" width="4" height="4"/>
+                      <rect x="42" y="6" width="4" height="4"/>
+                      <rect x="50" y="6" width="4" height="4"/>
+                      <rect x="62" y="6" width="4" height="4"/>
+                      <rect x="34" y="14" width="4" height="4"/>
+                      <rect x="46" y="14" width="4" height="4"/>
+                      <rect x="58" y="14" width="4" height="4"/>
+                      <rect x="38" y="22" width="4" height="4"/>
+                      <rect x="46" y="22" width="4" height="4"/>
+                      <rect x="62" y="22" width="4" height="4"/>
+                      <rect x="6" y="34" width="4" height="4"/>
+                      <rect x="14" y="34" width="4" height="4"/>
+                      <rect x="22" y="34" width="4" height="4"/>
+                      <rect x="34" y="34" width="4" height="4"/>
+                      <rect x="50" y="34" width="4" height="4"/>
+                      <rect x="62" y="34" width="4" height="4"/>
+                      <rect x="78" y="34" width="4" height="4"/>
+                      <rect x="86" y="34" width="4" height="4"/>
+                      <rect x="14" y="42" width="4" height="4"/>
+                      <rect x="26" y="42" width="4" height="4"/>
+                      <rect x="34" y="42" width="4" height="4"/>
+                      <rect x="46" y="42" width="4" height="4"/>
+                      <rect x="58" y="42" width="4" height="4"/>
+                      <rect x="70" y="42" width="4" height="4"/>
+                      <rect x="82" y="42" width="4" height="4"/>
+                      <rect x="6" y="50" width="4" height="4"/>
+                      <rect x="22" y="50" width="4" height="4"/>
+                      <rect x="38" y="50" width="4" height="4"/>
+                      <rect x="58" y="50" width="4" height="4"/>
+                      <rect x="74" y="50" width="4" height="4"/>
+                      <rect x="86" y="50" width="4" height="4"/>
+                      <rect x="14" y="58" width="4" height="4"/>
+                      <rect x="22" y="58" width="4" height="4"/>
+                      <rect x="34" y="58" width="4" height="4"/>
+                      <rect x="50" y="58" width="4" height="4"/>
+                      <rect x="66" y="58" width="4" height="4"/>
+                      <rect x="78" y="58" width="4" height="4"/>
+                      <rect x="34" y="66" width="4" height="4"/>
+                      <rect x="46" y="66" width="4" height="4"/>
+                      <rect x="62" y="66" width="4" height="4"/>
+                      <rect x="34" y="74" width="4" height="4"/>
+                      <rect x="42" y="74" width="4" height="4"/>
+                      <rect x="58" y="74" width="4" height="4"/>
+                      <rect x="74" y="74" width="4" height="4"/>
+                      <rect x="34" y="82" width="4" height="4"/>
+                      <rect x="50" y="82" width="4" height="4"/>
+                      <rect x="62" y="82" width="4" height="4"/>
+                      <rect x="74" y="82" width="4" height="4"/>
+                      <rect x="86" y="82" width="4" height="4"/>
+                    </g>
+                  </svg>
+                  <div class="center">m<span class="dot">.</span></div>
+                </div>
+              </div>
+
+              <div class="reward-strip">
+                <div class="ll">★ รางวัล ★</div>
+                <div class="vv">10 แต้ม <span class="stars">·</span> กาแฟ Signature ฟรี</div>
+              </div>
+
+              <div class="brand-foot">
+                <span>powered by taemdee<span class="dot">.</span></span>
+                <svg class="smile" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="url">taemdee.app/mhee</span>
+              </div>
+            </div>
+
+            <div class="s8-tip">
+              <div class="b">i</div>
+              <div>พิมพ์ขนาด A6 ติดที่เคาน์เตอร์ ใกล้จุดรับเงิน</div>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S9 Theme picker -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S9</span>เปลี่ยนธีม</div>
+        <h3>เลือกธีม</h3>
+        <p>4 ธีมให้เลือก ฟรีทั้งหมด พรีวิวคือบัตรลูกค้าจริง ๆ ในแต่ละธีม</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">ธีม</div>
+              <div class="right-action">บันทึก</div>
+            </div>
+
+            <div class="page-title">
+              <div class="h">เลือก<em>ธีม.</em></div>
+              <div class="sub">หน้าตาบัตรของลูกค้า</div>
+            </div>
+
+            <div class="s9-grid">
+              <div class="theme-card selected">
+                <div class="theme-preview taemdee">
+                  <div class="num">7</div>
+                  <div class="stamps">
+                    <div class="s on"></div><div class="s on"></div><div class="s b"></div><div class="s on"></div><div class="s on"></div>
+                    <div class="s b"></div><div class="s on"></div><div class="s"></div><div class="s"></div><div class="s"></div>
+                  </div>
+                </div>
+                <div class="theme-meta">
+                  <div class="name">แต้มดี</div>
+                  <div class="meta">ค่ามาตรฐาน · ครีม + ส้ม</div>
+                </div>
+              </div>
+
+              <div class="theme-card">
+                <div class="theme-preview mono">
+                  <div class="num">7</div>
+                  <div class="stamps">
+                    <div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div>
+                    <div class="s on"></div><div class="s on"></div><div class="s"></div><div class="s"></div><div class="s"></div>
+                  </div>
+                </div>
+                <div class="theme-meta">
+                  <div class="name">โมโน</div>
+                  <div class="meta">ขาว + ดำ</div>
+                </div>
+              </div>
+
+              <div class="theme-card">
+                <div class="theme-preview night">
+                  <div class="num">7</div>
+                  <div class="stamps">
+                    <div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div>
+                    <div class="s on"></div><div class="s on"></div><div class="s"></div><div class="s"></div><div class="s"></div>
+                  </div>
+                </div>
+                <div class="theme-meta">
+                  <div class="name">กลางคืน</div>
+                  <div class="meta">ดำ + เหลือง</div>
+                </div>
+              </div>
+
+              <div class="theme-card">
+                <div class="theme-preview pastel">
+                  <div class="num">7</div>
+                  <div class="stamps">
+                    <div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div><div class="s on"></div>
+                    <div class="s on"></div><div class="s on"></div><div class="s"></div><div class="s"></div><div class="s"></div>
+                  </div>
+                </div>
+                <div class="theme-meta">
+                  <div class="name">พาสเทล</div>
+                  <div class="meta">พีช + ส้ม</div>
+                </div>
+              </div>
+            </div>
+
+            <div style="padding: 22px 20px 20px;">
+              <div style="font-family:'Prompt',sans-serif;font-style:italic;font-size:12px;color:var(--ink-soft);text-align:center;">
+                ธีมจะใช้กับบัตรของลูกค้าทุกคนทันที
+              </div>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S11 Team -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S11</span>ทีมงาน</div>
+        <h3>จัดการทีม</h3>
+        <p>การ์ดเหลือง "เชิญทีม" มีป้าย + เอียง ๆ เจ้าของร้านอยู่แถวมิ้นต์ พนักงานคนอื่น ๆ มีสิทธิ์ต่างกัน</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">ทีม</div>
+              <div class="right-action">3 คน</div>
+            </div>
+
+            <div class="page-title">
+              <div class="h">ทีม<em>ของคุณ.</em></div>
+              <div class="sub">คนที่ออกแต้มได้</div>
+            </div>
+
+            <div class="s11-invite">
+              <div class="ic">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
+              </div>
+              <div class="meta">
+                <div class="h">เชิญทีม</div>
+                <div class="s">ส่งลิงก์ทาง LINE หรือ SMS</div>
+              </div>
+            </div>
+
+            <div class="s11-list">
+              <div class="s11-member owner-row owner">
+                <div class="av m">ม</div>
+                <div class="info">
+                  <div class="name">หมี (คุณ)</div>
+                  <div class="role"><span class="dot"></span><span>เจ้าของร้าน</span></div>
+                </div>
+                <div class="more">⋯</div>
+              </div>
+              <div class="s11-member">
+                <div class="av">น</div>
+                <div class="info">
+                  <div class="name">น้อย</div>
+                  <div class="role"><span class="dot"></span><span>พนักงาน · ยกเลิก · ดีรีช</span></div>
+                </div>
+                <div class="more">⋯</div>
+              </div>
+              <div class="s11-member">
+                <div class="av b">พ</div>
+                <div class="info">
+                  <div class="name">พิม</div>
+                  <div class="role"><span class="dot"></span><span>พนักงาน · ออกแต้มเท่านั้น</span></div>
+                </div>
+                <div class="more">⋯</div>
+              </div>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- S12 Branches -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S12</span>สาขา</div>
+        <h3>จัดการสาขา</h3>
+        <p>โหมดรางวัลล็อก "รวม" — บัตรเดียวเก็บแต้มได้ทุกสาขา การ์ดเหลืองเพิ่มสาขาใหม่ ปัจจุบันมี 3 สาขา</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">สาขา</div>
+              <div class="right-action">3 สาขา</div>
+            </div>
+
+            <div class="page-title">
+              <div class="h">สาขา<em>ทั้งหมด.</em></div>
+              <div class="sub">สาขาทุกสาขาของร้าน</div>
+            </div>
+
+            <div class="s12-mode">
+              <div class="top">
+                <div class="l">โหมดรางวัล · ล็อก</div>
+                <div class="pill">รวม</div>
+              </div>
+              <div class="name">รางวัลเดียวกันทุกสาขา</div>
+              <div class="desc">ลูกค้ามีบัตรเดียว เก็บแต้มได้ทุกสาขา รับรางวัลได้ทุกสาขา</div>
+            </div>
+
+            <div class="s12-add">
+              <div class="ic">+</div>
+              <div class="meta">
+                <div class="h">เพิ่มสาขาใหม่</div>
+                <div class="s">เปิดสาขาที่สอง สาม...</div>
+              </div>
+              <div class="arrow">›</div>
+            </div>
+
+            <div class="s12-list-h">3 สาขา</div>
+
+            <div class="s12-branch">
+              <div class="num">01</div>
+              <div class="info">
+                <div class="name">นิมมาน</div>
+                <div class="addr">123 ถ.นิมมานเหมินท์ · เชียงใหม่</div>
+              </div>
+              <div class="qr-link">ดู QR ↗</div>
+            </div>
+
+            <div class="s12-branch b2">
+              <div class="num">02</div>
+              <div class="info">
+                <div class="name">เมืองเก่า</div>
+                <div class="addr">45 ถ.ราชดำเนิน · เชียงใหม่</div>
+              </div>
+              <div class="qr-link">ดู QR ↗</div>
+            </div>
+
+            <div class="s12-branch b3">
+              <div class="num">03</div>
+              <div class="info">
+                <div class="name">สันทราย</div>
+                <div class="addr">88 ถ.แม่โจ้ · สันทราย</div>
+              </div>
+              <div class="qr-link">ดู QR ↗</div>
+            </div>
+                      <div class="footer-mark">
+                        <span class="fm-brand">
+                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                          <span class="brand">taemdee<span class="dot">.</span></span>
+                        </span>
+                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                      </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ========================================================= -->
+<!-- END                                                        -->
+<!-- ========================================================= -->
+<div class="end">
+  <svg class="smile-end" viewBox="0 0 20 12" fill="none">
+    <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+    <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+    <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  </svg>
+  <h3>ครบ 14 หน้าจอร้าน <span class="accent">·</span> Design v1</h3>
+  <p>
+    เริ่มจาก S1 (เข้าสู่ระบบ) ผ่าน S2.1-S2.4 (ตั้งค่าร้าน 60 วินาที) ใช้งานประจำวันที่ S3/S5/S6/S7 และจัดการตั้งค่าที่ S10/S8/S9/S11/S12 — ทำหลังจากฝั่งลูกค้าเสร็จ
+  </p>
+</div>
+
+</body>
+</html>

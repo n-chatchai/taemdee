@@ -57,7 +57,7 @@ Last updated: 2026-04-25 · Spec: [PRODUCT.md](PRODUCT.md) · Deploy runbook: [R
 **Demo:** anonymous customer claims account via OTP/LINE → sees all their cards across shops at `/my-cards`.
 
 - [ ] Port C3 Soft Wall (replaces inline button)
-- [ ] **Request from designer:** C6 Account menu (logout, delete account, language)
+- [x] C6 Account menu — `/card/account` page + customer-side logout. Privacy / help / notifications-toggle wired but their target pages are deferred.
 - [ ] Port C7 My Cards + new `GET /my-cards` route
 - [ ] Customer-side LINE Login claim — currently OTP-only (`POST /card/claim/line`)
 

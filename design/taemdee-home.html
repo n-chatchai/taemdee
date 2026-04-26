@@ -4,6 +4,17 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>แต้มดี — บัตรสะสมแต้มที่ลูกค้ารัก</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='6' y='6' width='88' height='88' rx='22' fill='%23111'/><circle cx='36' cy='42' r='6' fill='%23FF5E3A'/><circle cx='64' cy='42' r='6' fill='%23FF5E3A'/><path d='M30 62 Q50 80 70 62' stroke='%23FFD952' stroke-width='6' fill='none' stroke-linecap='round'/></svg>">
+<!-- PWA: install on iOS / Android home screen -->
+<meta name="theme-color" content="#FF5E3A">
+<meta name="apple-mobile-web-app-capable" content="yes">
+<meta name="apple-mobile-web-app-status-bar-style" content="default">
+<meta name="apple-mobile-web-app-title" content="แต้มดี">
+<meta name="mobile-web-app-capable" content="yes">
+<link rel="apple-touch-icon" href="taemdee-icons/taemdee-icon-192.png">
+<link rel="apple-touch-icon" sizes="192x192" href="taemdee-icons/taemdee-icon-192.png">
+<link rel="apple-touch-icon" sizes="512x512" href="taemdee-icons/taemdee-icon-512.png">
+<link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
 <link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700;1,800&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
@@ -2914,7 +2925,9 @@ img { max-width: 100%; }
   background: var(--bg);
   width: 100%; height: 100%;
   position: relative;
-  overflow: hidden;
+  overflow-y: auto;
+  display: flex;
+  flex-direction: column;
 }
 .section-phone .td .topbar {
   display: flex; justify-content: space-between; align-items: center;
@@ -3122,19 +3135,51 @@ img { max-width: 100%; }
 }
 
 .section-phone .td .footer-mark {
-  text-align: center;
-  padding: 22px 20px 20px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 500; font-size: 11px;
-  color: var(--ink-softer);
+  padding: 12px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid rgba(17,17,17,0.12);
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.section-phone .td .footer-mark .brand { font-weight: 700; }
+.section-phone .td .footer-mark .fm-brand {
+  display: flex; align-items: center; gap: 8px;
+  flex-shrink: 0;
+}
+.section-phone .td .footer-mark .smile-stamp {
+  flex-shrink: 0;
+}
+.section-phone .td .footer-mark .brand {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1;
+}
 .section-phone .td .footer-mark .brand .dot { color: var(--accent); }
-.section-phone .td .footer-mark .smile-foot {
-  width: 13px; height: 7.5px;
+.section-phone .td .footer-mark .fm-install {
+  display: flex; align-items: center; gap: 5px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600; font-size: 11.5px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(17,17,17,0.25);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.section-phone .td .footer-mark .fm-install svg {
+  width: 12px; height: 12px;
   color: var(--accent);
-  margin-left: 3px; vertical-align: -1px;
-  display: inline-block;
+  flex-shrink: 0;
 }
 
 /* ============== C2 — First-stamp celebration ============== */
@@ -4090,6 +4135,8 @@ img { max-width: 100%; }
 }
 .foot-bottom .social-pill:hover { transform: translateY(-2px); }
 .foot-bottom .social-pill svg { width: 14px; height: 14px; color: var(--ink); }
+.foot-bottom .social-pill-line { background: #06C755; border-color: #06C755; }
+.foot-bottom .social-pill-line svg { width: 18px; height: 18px; }
 
 </style>
 </head>
@@ -4099,12 +4146,13 @@ img { max-width: 100%; }
 <nav class="nav">
   <div class="container">
     <a href="#" class="nav-logo">
-      แต้มดี<span class="dot">.</span>
-      <svg class="smile" viewBox="0 0 20 12" fill="none">
-        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <svg class="logo-stamp" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true">
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
       </svg>
+      แต้มดี<span class="dot">.</span>
     </a>
     <div class="nav-links">
       <a href="#shops">สำหรับร้าน</a>
@@ -4225,11 +4273,6 @@ img { max-width: 100%; }
       <div class="section-phone-wrap">
         <div class="section-phone">
           <div class="screen screen-shop">
-            <div class="screen-tilted-badge">
-              <svg viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-              TAEMDEE
-            </div>
-            <div class="screen-status"><span>9:41</span><span class="dots">●●●</span></div>
             <div class="dash-content">
               <div class="dash-greet">
                 <div class="dg-h">สวัสดีพี่หมี
@@ -4375,11 +4418,6 @@ img { max-width: 100%; }
           <div class="section-phone">
             <div class="screen">
               <div class="td">
-                <div class="td-badge">
-                  <svg class="s" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                  TAEMDEE
-                </div>
-                <div class="topbar"><span>9:41</span><span>● ● ●</span></div>
 
                 <div class="c2-celebration">
                   <svg class="corner-spark" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
@@ -4430,8 +4468,11 @@ img { max-width: 100%; }
                 </div>
 
                 <div class="footer-mark">
-                  <span class="brand">taemdee<span class="dot">.</span></span>
-                  <svg class="smile-foot" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                  <span class="fm-brand">
+                    <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                    <span class="brand">taemdee<span class="dot">.</span></span>
+                  </span>
+                  <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
                 </div>
               </div>
             </div>
@@ -4447,11 +4488,6 @@ img { max-width: 100%; }
           <div class="section-phone">
             <div class="screen">
               <div class="td">
-                <div class="td-badge">
-                  <svg class="s" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                  TAEMDEE
-                </div>
-                <div class="topbar"><span>9:41</span><span>● ● ●</span></div>
 
                 <div class="shop-head">
                   <svg class="side-spark l" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
@@ -4504,8 +4540,11 @@ img { max-width: 100%; }
                 </div>
 
                 <div class="footer-mark">
-                  <span class="brand">taemdee<span class="dot">.</span></span>
-                  <svg class="smile-foot" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                  <span class="fm-brand">
+                    <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                    <span class="brand">taemdee<span class="dot">.</span></span>
+                  </span>
+                  <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
                 </div>
               </div>
             </div>
@@ -4521,11 +4560,6 @@ img { max-width: 100%; }
           <div class="section-phone">
             <div class="screen">
               <div class="td c5">
-                <div class="td-badge">
-                  <svg class="s" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                  TAEMDEE
-                </div>
-                <div class="topbar"><span>9:41</span><span>● ● ●</span></div>
 
                 <div class="claimed-hero">
                   <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
@@ -4554,9 +4588,12 @@ img { max-width: 100%; }
 
                 <div class="farewell">เจอกันครั้งหน้านะ</div>
 
-                <div class="footer-mark" style="margin-top:10px;">
-                  <span class="brand">taemdee<span class="dot">.</span></span>
-                  <svg class="smile-foot" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <div class="footer-mark">
+                  <span class="fm-brand">
+                    <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                    <span class="brand">taemdee<span class="dot">.</span></span>
+                  </span>
+                  <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
                 </div>
               </div>
             </div>
@@ -4620,11 +4657,6 @@ img { max-width: 100%; }
         <div class="section-phone">
           <div class="screen">
             <div class="td">
-              <div class="td-badge">
-                <svg class="s" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                TAEMDEE
-              </div>
-              <div class="topbar"><span>9:41</span><span>● ● ●</span></div>
 
               <div class="shop-head">
                 <svg class="side-spark l" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
@@ -4681,8 +4713,11 @@ img { max-width: 100%; }
               </div>
 
               <div class="footer-mark">
-                <span class="brand">taemdee<span class="dot">.</span></span>
-                <svg class="smile-foot" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="fm-brand">
+                  <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                  <span class="brand">taemdee<span class="dot">.</span></span>
+                </span>
+                <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
               </div>
             </div>
           </div>
@@ -4706,40 +4741,6 @@ img { max-width: 100%; }
       </div>
       <h2>ใช้งาน <em>ฟรี</em><br>จ่ายเฉพาะ <span class="hl">ตอนทักชวนลูกค้า.</span></h2>
       <p>การออกแต้ม รับรางวัล แดชบอร์ด ทั้งหมดฟรีตลอดไป จ่ายเฉพาะตอนส่งโปรชวนลูกค้าเก่ากลับ ครั้งละ 50 เครดิต</p>
-    </div>
-
-    <div class="pricing-grid">
-      <div class="price-card">
-        <div class="pkg-name">เริ่มต้น</div>
-        <div class="pkg-price"><span class="currency">฿</span>100</div>
-        <div class="pkg-credits">100 เครดิต · ส่งโปรชวนกลับได้ 2 ครั้ง</div>
-        <button class="pkg-cta">
-          เริ่มเลย
-          <span class="arrow-pill">→</span>
-        </button>
-      </div>
-
-      <div class="price-card popular">
-        <div class="pkg-name">ยอดนิยม</div>
-        <div class="pkg-price"><span class="currency">฿</span>200</div>
-        <div class="pkg-credits">220 เครดิต · ส่งโปรชวนกลับได้ 4 ครั้ง</div>
-        <div class="pkg-bonus">+20 เครดิตโบนัส</div>
-        <button class="pkg-cta">
-          เริ่มเลย
-          <span class="arrow-pill">→</span>
-        </button>
-      </div>
-
-      <div class="price-card">
-        <div class="pkg-name">ร้านที่โต</div>
-        <div class="pkg-price"><span class="currency">฿</span>1,000</div>
-        <div class="pkg-credits">1,200 เครดิต · ส่งโปรชวนกลับได้ 24 ครั้ง</div>
-        <div class="pkg-bonus" style="background:var(--ink);">+200 เครดิตโบนัส</div>
-        <button class="pkg-cta">
-          เริ่มเลย
-          <span class="arrow-pill">→</span>
-        </button>
-      </div>
     </div>
   </div>
 </section>
@@ -4948,13 +4949,14 @@ img { max-width: 100%; }
 <footer class="foot">
   <div class="container">
     <div class="foot-brand">
-      <a href="#" class="nav-logo">
-        แต้มดี<span class="dot">.</span>
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      <a href="#" class="nav-logo" style="font-size: 26px;">
+        <svg class="logo-stamp" viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+          <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+          <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
         </svg>
+        แต้มดี<span class="dot">.</span>
       </a>
       <p>บัตรสะสมแต้มดิจิทัลสำหรับร้านค้า — ใช้ง่าย ลูกค้าไม่ต้องโหลดแอป</p>
     </div>
@@ -4994,8 +4996,11 @@ img { max-width: 100%; }
         <a class="social-pill" aria-label="Instagram">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
         </a>
-        <a class="social-pill" aria-label="LINE">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+        <a class="social-pill social-pill-line" aria-label="LINE">
+          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
+            <path fill="#fff" d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
+            <text x="12" y="13.2" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="5.6" font-weight="900" fill="#06C755" letter-spacing="-0.3">LINE</text>
+          </svg>
         </a>
       </div>
     </div>

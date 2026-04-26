@@ -981,13 +981,46 @@ body {
 
 /* ==========================================================
    C1 — DeeCard (the customer's stamp card)
+   Includes shared customer chrome: shop-head, hero-num,
+   stamps, reward-pill, footer-mark, install-pill
    ========================================================== */
 
+/* Common shop head used in C1/C2/C4 */
 .shop-head {
   padding: 48px 20px 0;
   text-align: center;
   position: relative;
 }
+
+/* C1 avatar (top-right) — entry to C7 My Cards home for logged-in users */
+.c1-avatar {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  background: var(--accent);
+  color: #FFF;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 13px;
+  box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.4);
+  cursor: pointer;
+  text-decoration: none;
+}
+.shop-head .side-spark {
+  position: absolute;
+  top: 56px;
+  color: var(--accent);
+  width: 12px;
+  height: 12px;
+}
+.shop-head .side-spark.l { left: 30px; transform: rotate(-15deg); }
+.shop-head .side-spark.r { right: 30px; transform: rotate(15deg); color: var(--butter); stroke: #141414; }
 .shop-logo-mark {
   display: inline-block;
   font-family: 'Host Grotesk', sans-serif;
@@ -1102,6 +1135,8 @@ body {
   background: rgba(255, 255, 255, 0.6);
   border-radius: 50%;
 }
+.stamp.on.butter { background: var(--butter); }
+.stamp.on.butter::after { background: rgba(17, 17, 17, 0.5); }
 
 /* If the reward goal isn't 10, switch to a flexible wrap so the grid still looks balanced. */
 .stamps[data-goal="8"]  { grid-template-columns: repeat(8, 1fr); }
@@ -1180,15 +1215,57 @@ body {
 }
 
 .footer-mark {
-  text-align: center;
-  padding: 22px 20px 20px;
-  font-weight: 500;
-  font-size: 11px;
-  color: var(--ink-softer);
+  padding: 12px 16px 12px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
   margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1px solid rgba(17, 17, 17, 0.12);
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
-.footer-mark .brand { font-weight: 700; }
+.footer-mark .fm-brand {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.footer-mark .smile-stamp {
+  flex-shrink: 0;
+}
+.footer-mark .brand {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1;
+}
 .footer-mark .brand .dot { color: var(--accent); }
+.footer-mark .fm-install {
+  display: flex;
+  align-items: center;
+  gap: 5px;
+  font-weight: 600;
+  font-size: 11.5px;
+  color: var(--ink);
+  text-decoration: underline;
+  text-decoration-color: rgba(17, 17, 17, 0.25);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.footer-mark .fm-install svg {
+  width: 12px;
+  height: 12px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
 .footer-mark .smile-foot {
   width: 13px;
   height: 7.5px;
@@ -1206,7 +1283,7 @@ body {
   margin: 16px 20px 0;
   padding: 12px 14px;
   background: var(--accent);
-  color: #fff;
+  color: #FFF;
   border-radius: 16px;
   border: 1.5px solid var(--ink);
   box-shadow: 3px 3px 0 var(--ink);
@@ -1277,19 +1354,70 @@ body {
   line-height: 1.5;
 }
 
-.c2-cta {
-  padding: 20px 20px 0;
-}
-.c2-cta .save-btn {
-  width: 100%;
-  background: transparent;
+/* C2 benefits + CTA — explain WHY before asking to save */
+.c2-benefits {
+  margin: 18px 20px 0;
+  padding: 13px 14px 12px;
+  background: var(--surface);
   border: 1.5px solid var(--ink);
+  border-radius: 14px;
+}
+.c2-benefits .bh {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-weight: 700;
+  font-size: 13px;
   color: var(--ink);
+  margin-bottom: 7px;
+}
+.c2-benefits .bh svg {
+  width: 14px;
+  height: 14px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.c2-benefits .bl {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.c2-benefits .bi {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-size: 11.5px;
+  color: var(--ink);
+  line-height: 1.35;
+}
+.c2-benefits .bi .ck {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 13px;
+  height: 13px;
+  border-radius: 50%;
+  background: var(--butter);
+  border: 1px solid var(--ink);
+  color: var(--ink);
+  font-size: 7.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+
+.c2-cta {
+  padding: 14px 20px 0;
+}
+.c2-cta .line-save-btn {
+  width: 100%;
+  background: var(--line-green);
+  color: #fff;
+  border: 1.5px solid var(--ink);
   padding: 12px 14px;
   border-radius: 14px;
   font-family: inherit;
-  font-weight: 600;
-  font-size: 13px;
+  font-weight: 700;
+  font-size: 14px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1298,32 +1426,28 @@ body {
   box-shadow: 3px 3px 0 var(--ink);
   text-decoration: none;
 }
-.c2-cta .save-btn svg { width: 15px; height: 15px; }
-.c2-cta .reassure {
+.c2-cta .line-save-btn .arr { font-weight: 700; }
+.c2-cta .phone-alt {
+  display: block;
   text-align: center;
-  margin-top: 12px;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 11px;
-  color: var(--ink-soft);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 5px;
-}
-.c2-cta .reassure .check {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  width: 14px;
-  height: 14px;
-  background: var(--butter);
+  margin-top: 11px;
+  font-weight: 600;
+  font-size: 12px;
   color: var(--ink);
-  border-radius: 50%;
-  font-size: 8px;
-  font-weight: 700;
-  font-style: normal;
-  border: 1px solid var(--ink);
+  text-decoration: underline;
+  text-decoration-color: var(--ink);
+  text-underline-offset: 3px;
+  cursor: pointer;
+}
+.c2-cta .skip-link {
+  display: block;
+  text-align: center;
+  margin-top: 8px;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-softer);
+  cursor: pointer;
+  text-decoration: none;
 }
 
 /* ==========================================================
@@ -1341,7 +1465,7 @@ body {
   align-items: center;
   gap: 8px;
   background: var(--accent);
-  color: #fff;
+  color: #FFF;
   padding: 7px 14px;
   border-radius: 999px;
   font-weight: 700;
@@ -1354,7 +1478,7 @@ body {
 .c4 .ready-banner .pill .sparkle-dot {
   width: 6px;
   height: 6px;
-  background: #fff;
+  background: #FFF;
   border-radius: 50%;
   animation: pop 1.4s ease-in-out infinite;
 }
@@ -1362,6 +1486,22 @@ body {
   0%, 100% { transform: scale(1); opacity: 0.9; }
   50% { transform: scale(1.5); opacity: 1; }
 }
+.c4 .sparks {
+  position: absolute;
+  top: 16px; left: 0; right: 0; height: 80px;
+  pointer-events: none;
+}
+.c4 .sparks .s {
+  position: absolute;
+  color: var(--butter);
+  stroke: #141414;
+  stroke-width: 1.5;
+  animation: twinkle-c 2.2s ease-in-out infinite;
+}
+.c4 .sparks .s-1 { top: 8px; left: 22%; width: 12px; height: 12px; }
+.c4 .sparks .s-2 { top: 40px; left: 14%; width: 9px; height: 9px; color: var(--accent); stroke: none; animation-delay: 0.6s; }
+.c4 .sparks .s-3 { top: 8px; right: 20%; width: 10px; height: 10px; animation-delay: 1.1s; }
+.c4 .sparks .s-4 { top: 46px; right: 12%; width: 9px; height: 9px; color: var(--accent); stroke: none; animation-delay: 1.6s; }
 
 .c4 .redeem-num {
   text-align: center;
@@ -1422,7 +1562,7 @@ body {
   display: flex;
   align-items: center;
   justify-content: center;
-  color: #fff;
+  color: #FFF;
   font-size: 14px;
 }
 .c4 .counter-note {
@@ -1482,6 +1622,17 @@ body {
   0%, 100% { transform: scale(1); opacity: 0.4; }
   50% { transform: scale(1.14); opacity: 0.1; }
 }
+.c5 .claimed-hero .confetti {
+  position: absolute;
+  color: var(--butter);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  animation: twinkle-c 2s ease-in-out infinite;
+}
+.c5 .claimed-hero .confetti.c1 { top: 40px; left: 18%; width: 12px; height: 12px; }
+.c5 .claimed-hero .confetti.c2 { top: 18px; right: 20%; width: 10px; height: 10px; animation-delay: 0.5s; color: var(--accent); stroke: none; }
+.c5 .claimed-hero .confetti.c3 { top: 60px; right: 14%; width: 10px; height: 10px; animation-delay: 1.2s; }
+.c5 .claimed-hero .confetti.c4 { top: 66px; left: 12%; width: 8px; height: 8px; animation-delay: 1.6s; color: var(--accent); stroke: none; }
 
 .c5 .claimed-title {
   font-weight: 700;
@@ -1587,6 +1738,11 @@ body {
   align-items: center;
   gap: 4px;
 }
+.c5 .reset .kicker .arrow-down {
+  display: inline-flex;
+  width: 12px;
+  height: 12px;
+}
 .c5 .reset .mini-card {
   background: var(--surface);
   border-radius: 12px;
@@ -1642,16 +1798,16 @@ body {
    C3 — Soft Wall (claim account: LINE or phone)
    ========================================================== */
 
-.c3 { background: #E8E0CE !important; }
+.c3 { --bg: #E8E0CE; background: #E8E0CE !important; }
 .c3 .close-x {
   position: absolute;
-  top: 16px;
+  top: 48px;
   right: 20px;
   width: 28px;
   height: 28px;
   border-radius: 50%;
   background: var(--ink);
-  color: #fff;
+  color: #FFF;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -1662,7 +1818,7 @@ body {
   text-decoration: none;
 }
 .c3 .sheet {
-  margin: 60px 14px 0;
+  margin: 76px 14px 0;
   background: var(--surface);
   border-radius: 24px;
   padding: 22px 20px 20px;
@@ -1681,7 +1837,7 @@ body {
   position: absolute;
   width: 54px;
   height: 66px;
-  background: #E8E0CE;
+  background: var(--bg);
   border: 1.5px solid var(--ink);
   border-radius: 8px;
   box-shadow: 2px 2px 0 var(--ink);
@@ -1700,9 +1856,19 @@ body {
   border-radius: 50%;
   background: rgba(17, 17, 17, 0.2);
 }
-.c3 .illo-card.a .d.on,
+.c3 .illo-card.a .d.on { background: var(--accent); }
 .c3 .illo-card.b .d.on { background: var(--accent); }
 .c3 .illo-card.c .d.on { background: var(--ink); }
+.c3 .illo .sparkle-illo {
+  position: absolute;
+  color: var(--butter);
+  stroke: var(--ink);
+  stroke-width: 1.5;
+  animation: twinkle-c 2s ease-in-out infinite;
+}
+.c3 .illo .s1 { top: -2px; left: 16%; width: 10px; height: 10px; }
+.c3 .illo .s2 { top: 40%; left: 8%; width: 8px; height: 8px; color: var(--accent); stroke: none; animation-delay: 0.7s; }
+.c3 .illo .s3 { top: -4px; right: 14%; width: 12px; height: 12px; animation-delay: 1.2s; }
 
 .c3 .headline {
   font-weight: 700;
@@ -1746,6 +1912,8 @@ body {
 .c3 .btn-phone { background: var(--ink); color: var(--bg); }
 .c3 .btn-phone svg { width: 16px; height: 16px; }
 .c3 .btn:disabled { opacity: 0.5; cursor: not-allowed; }
+.c3 .btn-primary { background: var(--accent); color: #fff; }
+.c3 .btn-primary .arr { font-weight: 700; }
 
 .c3 .skip {
   display: block;
@@ -1770,9 +1938,87 @@ body {
   line-height: 1.5;
 }
 .c3 .trust .lock {
+  display: inline-block;
   color: var(--accent);
   font-weight: 700;
   margin-right: 4px;
+}
+
+/* C3 — Phone-OTP form (refactored from soft wall) */
+.c3 .c3-bar {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 40px 20px 0;
+}
+.c3 .c3-bar .back {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  flex-shrink: 0;
+  padding: 0;
+}
+.c3 .c3-bar .back svg { width: 14px; height: 14px; }
+.c3 .c3-title {
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  color: var(--ink);
+}
+.c3 .phone-input {
+  display: flex;
+  align-items: stretch;
+  margin-bottom: 14px;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 3px 3px 0 var(--ink);
+  background: var(--bg);
+  overflow: hidden;
+}
+.c3 .phone-input .prefix {
+  padding: 13px 14px;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  letter-spacing: 0.04em;
+}
+.c3 .phone-input input {
+  flex: 1;
+  min-width: 0;
+  border: none;
+  outline: none;
+  padding: 13px 12px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 15px;
+  font-weight: 600;
+  background: transparent;
+  color: var(--ink);
+  letter-spacing: 0.05em;
+}
+.c3 .alt-line {
+  text-align: center;
+  margin-top: 14px;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.c3 .alt-line .alt-link {
+  color: var(--ink);
+  font-weight: 700;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  cursor: pointer;
 }
 
 .c3 .otp-input {
@@ -1795,10 +2041,16 @@ body {
    ========================================================== */
 
 .c7-greet {
-  padding: 14px 20px 0;
+  padding: 48px 20px 12px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
 }
 .c7-greet .hi {
   font-weight: 700;
@@ -1821,17 +2073,18 @@ body {
   color: var(--ink-soft);
   margin-top: 1px;
 }
-.c7-greet .menu {
+.c7-greet .avatar {
   width: 38px;
   height: 38px;
-  background: var(--ink);
-  color: var(--bg);
+  background: var(--accent);
+  color: #FFF;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
+  font-weight: 700;
   font-size: 14px;
-  box-shadow: 0 4px 12px -4px rgba(17, 17, 17, 0.3);
+  box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.4);
   cursor: pointer;
   text-decoration: none;
 }
@@ -1839,6 +2092,7 @@ body {
 .c7-stats {
   margin: 22px 20px 0;
   padding: 18px 18px;
+  min-height: 140px;
   background: var(--ink);
   color: var(--bg);
   border-radius: 22px;
@@ -1915,6 +2169,15 @@ body {
   height: 11px;
   color: var(--accent);
 }
+.c7-list-head .sort {
+  font-size: 10px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  background: var(--surface);
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1px solid var(--line);
+}
 
 .c7-card {
   margin: 0 20px 8px;
@@ -1928,6 +2191,7 @@ body {
   gap: 12px;
   align-items: center;
   position: relative;
+  cursor: pointer;
   text-decoration: none;
   color: inherit;
 }
@@ -1938,7 +2202,7 @@ body {
   right: 12px;
   transform: rotate(4deg);
   background: var(--accent);
-  color: #fff;
+  color: #FFF;
   padding: 3px 10px;
   border-radius: 999px;
   font-weight: 700;
@@ -2050,6 +2314,329 @@ body {
   font-size: 11px;
   color: var(--ink-soft);
   line-height: 1.4;
+}
+
+/* ==========================================================
+   C6 — Account menu
+   ========================================================== */
+
+.c6-profile-card {
+  margin: 22px 20px 0;
+  padding: 14px 16px;
+  min-height: 100px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  box-shadow: 3px 3px 0 var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.c6-profile-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 130px;
+  height: 130px;
+  background: radial-gradient(circle, rgba(255, 217, 82, 0.45) 0%, transparent 65%);
+  border-radius: 50%;
+}
+.c6-profile-card .avatar {
+  width: 52px;
+  height: 52px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  flex-shrink: 0;
+  position: relative;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.c6-profile-card .info {
+  flex: 1;
+  line-height: 1.2;
+  position: relative;
+  min-width: 0;
+}
+.c6-profile-card .name {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  margin-bottom: 3px;
+}
+.c6-profile-card .meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.c6-profile-card .meta .dotsep {
+  width: 3px;
+  height: 3px;
+  background: var(--accent);
+  border-radius: 50%;
+  flex-shrink: 0;
+}
+.c6-profile-card .meta .verified {
+  color: var(--mint-ink);
+  font-weight: 600;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+}
+.c6-profile-card .edit {
+  width: 32px;
+  height: 32px;
+  background: var(--butter);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  position: relative;
+  flex-shrink: 0;
+}
+.c6-profile-card .edit svg { width: 14px; height: 14px; }
+
+/* Toggle switch (used in c6) */
+.c6-toggle {
+  width: 38px;
+  height: 22px;
+  background: var(--line);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  position: relative;
+  transition: background 0.2s;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.c6-toggle .dot {
+  position: absolute;
+  top: 50%;
+  transform: translateY(-50%);
+  left: 2px;
+  width: 14px;
+  height: 14px;
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  transition: left 0.2s;
+}
+.c6-toggle.on { background: var(--accent); }
+.c6-toggle.on .dot { left: 19px; background: var(--butter); }
+
+/* Pill variants used in c6 rows */
+.s10-row .pill.butter {
+  background: var(--butter);
+  color: var(--ink);
+  border: 1px solid var(--ink);
+}
+
+/* Version mark at bottom */
+.c6-version {
+  text-align: center;
+  padding: 0 20px 18px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 9px;
+  color: var(--ink-softer);
+  letter-spacing: 0.1em;
+}
+.c6-version .brand {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.c6-version .brand .dot { color: var(--accent); }
+
+/* ==========================================================
+   Install pill + bottom sheet (persistent install affordance)
+   Used in: C1, C2, C5, C7 (customer) + S3 (shop)
+   ========================================================== */
+
+.install-pill {
+  margin: 16px 16px 0;
+  background: var(--ink);
+  color: #FFF;
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 10px 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 3px 3px 0 var(--accent);
+  cursor: pointer;
+  position: relative;
+}
+.install-pill .ip-stamp {
+  flex-shrink: 0;
+}
+.install-pill .ip-text {
+  flex: 1;
+  min-width: 0;
+  font-weight: 700;
+  font-size: 13px;
+  color: #FFF;
+  line-height: 1.25;
+}
+.install-pill .ip-sub {
+  display: block;
+  font-weight: 400;
+  font-size: 10.5px;
+  color: rgba(255, 255, 255, 0.6);
+  margin-top: 1px;
+}
+.install-pill .ip-arrow {
+  color: var(--butter);
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.install-pill .ip-close {
+  position: absolute;
+  top: -6px;
+  right: -6px;
+  width: 18px;
+  height: 18px;
+  border-radius: 50%;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  color: var(--ink);
+  font-size: 11px;
+  font-weight: 700;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  line-height: 1;
+}
+
+/* Install bottom sheet — hidden by default; .open shows it */
+.install-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.45);
+  z-index: 100;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+}
+.install-sheet-overlay.open { display: flex; }
+.install-sheet {
+  background: var(--bg);
+  border-top: 1.5px solid var(--ink);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 18px 18px 16px;
+  width: 100%;
+  box-shadow: 0 -8px 24px -8px rgba(0, 0, 0, 0.25);
+  position: relative;
+}
+.install-sheet .sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ink-softer);
+  margin: 0 auto 12px;
+  opacity: 0.4;
+}
+.install-sheet .sheet-pitch {
+  text-align: center;
+  margin-bottom: 14px;
+}
+.install-sheet .sheet-pitch .stamp-big {
+  display: inline-block;
+  margin-bottom: 8px;
+  filter: drop-shadow(2px 2px 0 var(--ink));
+}
+.install-sheet .sheet-pitch .pitch-h {
+  font-weight: 700;
+  font-size: 17px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  margin-bottom: 4px;
+}
+.install-sheet .sheet-pitch .pitch-h em {
+  font-style: italic;
+  color: var(--accent);
+}
+.install-sheet .sheet-pitch .pitch-s {
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  line-height: 1.4;
+}
+.install-sheet .platforms {
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  margin-bottom: 14px;
+}
+.install-sheet .plat-tile {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  padding: 10px 12px;
+}
+.install-sheet .plat-h {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: 0.1em;
+  color: var(--ink);
+  text-transform: uppercase;
+  margin-bottom: 7px;
+  padding-bottom: 6px;
+  border-bottom: 1px dashed rgba(17, 17, 17, 0.15);
+}
+.install-sheet .plat-step {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 5px;
+  font-size: 11.5px;
+  color: var(--ink);
+}
+.install-sheet .plat-step:last-child { margin-bottom: 0; }
+.install-sheet .plat-step .step-ico {
+  width: 22px;
+  height: 22px;
+  background: var(--bg);
+  border: 1px solid var(--ink);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: var(--ink);
+}
+.install-sheet .plat-step .step-ico svg {
+  width: 11px;
+  height: 11px;
+}
+.install-sheet .sheet-close {
+  width: 100%;
+  background: transparent;
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  padding: 10px;
+  border-radius: 12px;
+  font-family: inherit;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
 }
 
 /* ==========================================================
