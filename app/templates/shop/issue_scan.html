@@ -1,0 +1,102 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สแกนบัตรลูกค้า · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">สแกนบัตรลูกค้า</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="scan-page">
+      <div class="scan-viewfinder" id="scan-viewfinder">
+        <video id="scan-video" playsinline muted autoplay></video>
+        <div class="scan-corners">
+          <span class="tl"></span><span class="tr"></span>
+          <span class="bl"></span><span class="br"></span>
+        </div>
+        <div class="scan-line"></div>
+      </div>
+
+      <div class="scan-hint" id="scan-hint">
+        วาง QR ของลูกค้าให้อยู่ในกรอบ<br>
+        กล้องจะอ่านอัตโนมัติ
+      </div>
+
+      <div class="scan-status" id="scan-status" hidden></div>
+
+      <div class="scan-fallback">
+        <a href="/shop/issue/phone">ลูกค้าไม่มี QR · กรอกเบอร์แทน</a>
+      </div>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+
+  {# qr-scanner library — small (~60kB), uses BarcodeDetector when available
+     and falls back to a worker-based decoder otherwise. #}
+  <script type="module">
+    import QrScanner from 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js';
+
+    const video = document.getElementById('scan-video');
+    const hint = document.getElementById('scan-hint');
+    const statusBox = document.getElementById('scan-status');
+    let busy = false;
+
+    function setStatus(msg, kind) {
+      statusBox.textContent = msg;
+      statusBox.className = 'scan-status ' + (kind || '');
+      statusBox.hidden = false;
+    }
+
+    async function submitScan(scannedValue) {
+      if (busy) return;
+      busy = true;
+      const fd = new FormData();
+      fd.append('scanned_value', scannedValue);
+      try {
+        const r = await fetch('/shop/issue/scan', { method: 'POST', body: fd });
+        const j = await r.json().catch(() => ({}));
+        if (r.ok) {
+          setStatus(`✓ ออกแต้มสำเร็จ — ${j.customer_name} (${j.current_count}/${{ shop.reward_threshold }})`, 'ok');
+          // Brief pause so the staff sees the confirmation before going back.
+          setTimeout(() => { window.location.href = '/shop/dashboard'; }, 1200);
+        } else {
+          setStatus(j.detail || (r.status + ' — ออกแต้มไม่สำเร็จ'), 'err');
+          // Allow another scan attempt after the staff acknowledges.
+          setTimeout(() => { busy = false; statusBox.hidden = true; }, 2400);
+        }
+      } catch (e) {
+        setStatus('สแกนสำเร็จแต่ส่งข้อมูลไม่ได้ — ตรวจสอบเน็ต', 'err');
+        setTimeout(() => { busy = false; statusBox.hidden = true; }, 2400);
+      }
+    }
+
+    const scanner = new QrScanner(
+      video,
+      (result) => submitScan(result.data),
+      { highlightScanRegion: false, highlightCodeOutline: false, preferredCamera: 'environment' }
+    );
+
+    scanner.start().catch((err) => {
+      hint.hidden = true;
+      setStatus('เปิดกล้องไม่ได้ — กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์', 'err');
+      console.warn('QrScanner.start failed:', err);
+    });
+
+    // Stop the camera when leaving the page so the LED turns off.
+    window.addEventListener('pagehide', () => scanner.stop(), { once: true });
+  </script>
+</body>
+</html>

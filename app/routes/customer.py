@@ -108,6 +108,51 @@ async def customer_logout():
     return response
 
 
+@router.get("/my-id", response_class=HTMLResponse)
+async def my_id(
+    request: Request,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Customer's identity QR — shop scans this to issue a stamp at the counter
+    when the customer doesn't want to scan the printed shop QR themselves
+    (forgot which shop they're at, easier to hand the phone over, etc.).
+
+    Renders a fullscreen page with a QR encoding the customer's short URL
+    `https://<host>/c/{customer_id}` — the shop's S3.scan modal decodes that
+    to extract the customer id and post a stamp.
+    """
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    base_url = str(request.base_url).rstrip("/")
+    identity_url = f"{base_url}/c/{customer.id}"
+    import segno
+    qr_svg = segno.make(identity_url, error="m").svg_inline(
+        scale=10, dark="#111111", light="#ffffff", border=1, omitsize=True
+    )
+    response = templates.TemplateResponse(
+        request=request,
+        name="my_id.html",
+        context={
+            "customer": customer,
+            "qr_svg": qr_svg,
+            "identity_url": identity_url,
+        },
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
+@router.get("/c/{customer_id}", response_class=HTMLResponse)
+async def customer_identity_redirect(customer_id: uuid.UUID):  # noqa: ARG001
+    """Bare customer-identity URL. The path param is validated as a UUID by
+    FastAPI (rejects garbage with 422) but we don't use it directly — the
+    URL is a target for the shop's S3.scan QR decoder. When a human follows
+    the link, redirect them to /my-cards (or login if not claimed yet).
+    """
+    return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+
 async def _resolve_branch(
     db: AsyncSession, shop_id: uuid.UUID, branch_param: Optional[uuid.UUID], customer_id: uuid.UUID
 ) -> Optional[Branch]:

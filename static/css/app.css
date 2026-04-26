@@ -2247,6 +2247,25 @@ body {
   color: var(--ink-soft);
   margin-top: 1px;
 }
+.c7-greet .c7-actions {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.c7-greet .show-qr {
+  width: 38px;
+  height: 38px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.c7-greet .show-qr svg { width: 18px; height: 18px; }
 .c7-greet .avatar {
   width: 38px;
   height: 38px;
@@ -2261,6 +2280,186 @@ body {
   box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.4);
   cursor: pointer;
   text-decoration: none;
+}
+
+/* /shop/issue/scan — S3.scan camera viewfinder for the shop to scan
+   the customer's identity QR (from /my-id) and issue a stamp. */
+.scan-page {
+  padding: 16px 18px 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.scan-viewfinder {
+  width: 100%;
+  max-width: 320px;
+  aspect-ratio: 1;
+  background: #1a1a1a;
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  position: relative;
+  overflow: hidden;
+}
+.scan-viewfinder video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+}
+.scan-viewfinder::before {
+  content: '';
+  position: absolute;
+  top: 12%; left: 12%; right: 12%; bottom: 12%;
+  border: 2px solid var(--butter);
+  border-radius: 14px;
+  pointer-events: none;
+}
+.scan-corners {
+  position: absolute;
+  top: 12%; left: 12%; right: 12%; bottom: 12%;
+  pointer-events: none;
+}
+.scan-corners > span {
+  position: absolute;
+  width: 22px;
+  height: 22px;
+  border-color: var(--butter);
+  border-style: solid;
+  border-width: 0;
+}
+.scan-corners .tl { top: -2px; left: -2px; border-top-width: 4px; border-left-width: 4px; border-top-left-radius: 8px; }
+.scan-corners .tr { top: -2px; right: -2px; border-top-width: 4px; border-right-width: 4px; border-top-right-radius: 8px; }
+.scan-corners .bl { bottom: -2px; left: -2px; border-bottom-width: 4px; border-left-width: 4px; border-bottom-left-radius: 8px; }
+.scan-corners .br { bottom: -2px; right: -2px; border-bottom-width: 4px; border-right-width: 4px; border-bottom-right-radius: 8px; }
+.scan-line {
+  position: absolute;
+  top: 12%; left: 12%; right: 12%;
+  height: 2px;
+  background: var(--accent);
+  box-shadow: 0 0 8px var(--accent);
+  animation: scan-line-sweep 2s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes scan-line-sweep {
+  0%, 100% { top: 12%; }
+  50% { top: calc(88% - 2px); }
+}
+.scan-hint {
+  margin: 16px 0 6px;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+.scan-status {
+  margin: 10px 18px;
+  padding: 12px 16px;
+  border-radius: 14px;
+  border: 1.5px solid var(--ink);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  text-align: center;
+  max-width: 320px;
+}
+.scan-status.ok { background: var(--mint); color: var(--mint-ink); }
+.scan-status.err { background: var(--accent); color: #fff; }
+.scan-fallback {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px dashed var(--line);
+  width: 100%;
+  max-width: 320px;
+  text-align: center;
+}
+.scan-fallback a {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: underline;
+  text-underline-offset: 3px;
+}
+
+/* /my-id — fullscreen QR for the customer to show at the counter */
+.my-id {
+  padding: 24px 22px 28px;
+  text-align: center;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.my-id .mi-headline {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  margin-bottom: 6px;
+}
+.my-id .mi-headline em {
+  color: var(--accent);
+  font-style: normal;
+}
+.my-id .mi-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  max-width: 320px;
+  margin-bottom: 22px;
+}
+.my-id .mi-qr-card {
+  background: #fff;
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  padding: 22px;
+  box-shadow: 4px 4px 0 var(--accent);
+  max-width: 320px;
+  width: 100%;
+  margin-bottom: 18px;
+}
+.my-id .mi-qr {
+  width: 100%;
+  aspect-ratio: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.my-id .mi-qr svg {
+  width: 100%;
+  height: 100%;
+}
+.my-id .mi-id-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-softer);
+  margin-top: 14px;
+  margin-bottom: 2px;
+}
+.my-id .mi-id-code {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: 0.06em;
+  color: var(--ink);
+}
+.my-id .mi-tip {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.my-id .mi-tip .dot {
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+  flex-shrink: 0;
 }
 
 .c7-stats {

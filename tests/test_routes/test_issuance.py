@@ -156,6 +156,71 @@ async def test_search_grant_issues_n_stamps_and_publishes_toast(auth_client, db,
     assert sum(1 for n, _ in received if n == "point-toast") == 1
 
 
+async def test_issue_scan_grant_decodes_customer_url_and_issues(auth_client, db, shop):
+    """S3.scan camera POST accepts the customer's `/c/<uuid>` URL, extracts
+    the id, and issues a stamp via shop_scan."""
+    from app.models import Customer
+    c = Customer(is_anonymous=False, display_name="ส้มศรี", phone="0812345678")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+
+    response = await auth_client.post(
+        "/shop/issue/scan",
+        data={"scanned_value": f"https://taemdee.com/c/{c.id}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert body["customer_id"] == str(c.id)
+    assert body["customer_name"] == "ส้มศรี"
+
+    points = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
+    assert len(list(points)) == 1
+    assert list(points)[0].issuance_method == "shop_scan"
+
+
+async def test_issue_scan_rejects_qr_without_customer_path(auth_client):
+    response = await auth_client.post(
+        "/shop/issue/scan",
+        data={"scanned_value": "https://example.com/random-qr-not-ours"},
+    )
+    assert response.status_code == 400
+    assert "ไม่ใช่บัตรลูกค้าแต้มดี" in response.json()["detail"]
+
+
+async def test_issue_scan_rejects_garbage_uuid(auth_client):
+    response = await auth_client.post(
+        "/shop/issue/scan",
+        data={"scanned_value": "https://taemdee.com/c/not-a-uuid"},
+    )
+    assert response.status_code == 400
+    assert "ไม่ถูกต้อง" in response.json()["detail"]
+
+
+async def test_issue_scan_404_for_deleted_customer(auth_client):
+    from uuid import uuid4
+    response = await auth_client.post(
+        "/shop/issue/scan",
+        data={"scanned_value": f"https://taemdee.com/c/{uuid4()}"},
+    )
+    assert response.status_code == 404
+    assert "ไม่พบลูกค้า" in response.json()["detail"]
+
+
+async def test_my_id_renders_identity_qr(client):
+    """An anonymous visitor still gets an identity QR — we create the
+    customer on the fly so the QR can encode a real /c/<uuid> target."""
+    response = await client.get("/my-id")
+    assert response.status_code == 200
+    body = response.text
+    assert "QR ของฉัน" in body
+    # Inline SVG QR was rendered (segno output)
+    assert "<svg" in body
+    # Short id chip (`#XXXXXXXX`) is visible to the human alongside the QR
+    import re
+    assert re.search(r"#[0-9A-F]{8}", body), "Short customer id chip not rendered"
+
+
 async def test_search_grant_caps_points_at_10(auth_client, db, shop):
     from app.models import Customer
     c = Customer(is_anonymous=False, display_name="X", phone="0812345678")

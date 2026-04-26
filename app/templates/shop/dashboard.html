@@ -115,22 +115,23 @@
     {# Inline error banner — replaces alert(); auto-dismisses #}
     <div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
 
+    {# S3 manual-issue FAB — must live INSIDE .td so position:sticky's scroll
+       anchor is the dashboard's flex column (matches the design). Outside,
+       sticky falls back to body and the pill loses its bottom-aligned dock. #}
+    <a href="#" class="s3-issue-fab" id="s3-issue-fab"
+       onclick="document.getElementById('issue-choose').classList.add('open'); return false;">
+      <div class="fab-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+      </div>
+      <div class="fab-text">
+        <div class="fab-name">ออกแต้มลูกค้า</div>
+        <div class="fab-meta">เลือกวิธีออกแต้ม</div>
+      </div>
+      <span class="fab-arrow">→</span>
+    </a>
+
     {% include "_partials/footer_mark.html" %}
   </div>
-
-  {# S3 manual-issue FAB — opens the S3.choose sheet which lists the methods
-     enabled in S5. The customer-scan method is the printed QR (not on the sheet). #}
-  <a href="#" class="s3-issue-fab" id="s3-issue-fab"
-     onclick="document.getElementById('issue-choose').classList.add('open'); return false;">
-    <div class="fab-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-    </div>
-    <div class="fab-text">
-      <div class="fab-name">ออกแต้มลูกค้า</div>
-      <div class="fab-meta">เลือกวิธีออกแต้ม</div>
-    </div>
-    <span class="fab-arrow">→</span>
-  </a>
 
   {% include "_partials/issue_choose.html" %}
 

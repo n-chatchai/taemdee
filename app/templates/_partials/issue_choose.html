@@ -13,8 +13,7 @@
       {% set any_enabled = shop.issue_method_shop_scan or shop.issue_method_phone_entry or shop.issue_method_search %}
 
       {% if shop.issue_method_shop_scan %}
-        {# TODO: open camera scan modal — for now, leave as a placeholder anchor #}
-        <a href="#" class="method-row" onclick="document.getElementById('dash-flash').textContent = 'สแกนกล้อง — เร็วๆ นี้'; document.getElementById('dash-flash').className = 'dash-flash is-ok'; document.getElementById('dash-flash').hidden = false; setTimeout(() => document.getElementById('dash-flash').hidden = true, 2200); return false;">
+        <a href="/shop/issue/scan" class="method-row">
           <div class="method-icon primary">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><circle cx="12" cy="15" r="2"/></svg>
           </div>

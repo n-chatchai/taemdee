@@ -46,6 +46,93 @@ async def issue_phone_page(request: Request, shop: Shop = Depends(get_current_sh
     )
 
 
+@router.get("/issue/scan", response_class=HTMLResponse)
+async def issue_scan_page(request: Request, shop: Shop = Depends(get_current_shop)):
+    """S3.scan — camera viewfinder page. Decodes the customer's identity QR
+    (from /my-id) and POSTs to /shop/issue/scan to issue a stamp.
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/issue_scan.html",
+        context={"shop": shop},
+    )
+
+
+_CUSTOMER_ID_PATH_PREFIX = "/c/"
+
+
+@router.post("/issue/scan")
+async def issue_scan_grant(
+    scanned_value: str = Form(...),
+    shop: Shop = Depends(get_current_shop),
+    staff: Optional[StaffMember] = Depends(get_current_staff),
+    db: AsyncSession = Depends(get_session),
+):
+    """Convert a scanned QR string into a stamp via the shop_scan method.
+
+    Accepts the URL the customer's /my-id page encodes — `https://<host>/c/<uuid>`.
+    Anything else is rejected with a clear error so the staff knows the QR
+    wasn't a TaemDee customer card.
+    """
+    raw = (scanned_value or "").strip()
+    if not raw:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "ไม่พบข้อมูลใน QR ที่สแกน — ลองใหม่อีกครั้ง",
+        )
+
+    # Pull /c/<uuid> out of whatever URL the QR contained.
+    idx = raw.find(_CUSTOMER_ID_PATH_PREFIX)
+    if idx < 0:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "QR นี้ไม่ใช่บัตรลูกค้าแต้มดี — ลองใช้วิธี 'กรอกเบอร์' แทน",
+        )
+    suffix = raw[idx + len(_CUSTOMER_ID_PATH_PREFIX):]
+    customer_id_str = suffix.split("/")[0].split("?")[0].strip()
+    try:
+        customer_uuid = UUID(customer_id_str)
+    except ValueError:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            f"รหัสในบัตร QR ไม่ถูกต้อง ({customer_id_str[:24]}…) — กรุณาให้ลูกค้ารีเฟรชหน้า QR ของตัวเองก่อน",
+        )
+
+    customer = await db.get(Customer, customer_uuid)
+    if not customer:
+        raise HTTPException(
+            status.HTTP_404_NOT_FOUND,
+            "ไม่พบลูกค้าตามบัตรนี้ — บัญชีอาจถูกลบไปแล้ว",
+        )
+
+    try:
+        stamp = await issue_point(
+            db, shop, customer,
+            method="shop_scan",
+            staff_id=staff.id if staff else None,
+        )
+    except IssuanceError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
+
+    publish(
+        shop.id,
+        "feed-row",
+        feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
+    )
+    new_count = await active_point_count(db, shop.id, customer.id)
+    publish(
+        shop.id,
+        "point-toast",
+        point_toast_html(stamp.id, new_count, shop.reward_threshold),
+    )
+    return {
+        "stamp_id": str(stamp.id),
+        "customer_id": str(customer.id),
+        "customer_name": customer.display_name or "ลูกค้า",
+        "current_count": new_count,
+    }
+
+
 @router.get("/issue/search", response_class=HTMLResponse)
 async def issue_search_page(request: Request, shop: Shop = Depends(get_current_shop)):
     """S3.search — search a known customer by name/phone and grant N stamps."""

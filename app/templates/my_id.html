@@ -1,0 +1,41 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR ของฉัน · TaemDee แต้มดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/my-cards" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">QR ของฉัน</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="my-id">
+      <div class="mi-headline">โชว์ QR นี้<em>ที่ร้าน</em></div>
+      <div class="mi-sub">ร้านสแกนแล้วได้แต้มทันที — ไม่ต้องบอกเบอร์</div>
+
+      <div class="mi-qr-card">
+        <div class="mi-qr">{{ qr_svg|safe }}</div>
+        <div class="mi-id-label">รหัสของคุณ</div>
+        <div class="mi-id-code">#{{ customer.id.hex[:8]|upper }}</div>
+      </div>
+
+      <div class="mi-tip">
+        <span class="dot"></span>
+        เก็บโทรศัพท์ตั้งให้สว่างที่สุด · ค้างไว้ที่กล้องร้าน
+      </div>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

@@ -28,11 +28,12 @@ class Shop(SQLModel, table=True):
 
     # S5 issuance method toggles (multi-select per design 2026-04-26):
     # `customer_scan` is implicit — every shop has a printable QR; not stored.
-    # The other three are opt-in and surface on the S3.choose bottom sheet
-    # when the dashboard FAB is tapped.
-    issue_method_shop_scan: bool = Field(default=False)
-    issue_method_phone_entry: bool = Field(default=False)
-    issue_method_search: bool = Field(default=False)
+    # The other three default ON so the FAB sheet is useful from day one
+    # (matches the S3.choose mockup with all 3 methods listed). Owner can
+    # disable individual methods at /shop/issue.
+    issue_method_shop_scan: bool = Field(default=True)
+    issue_method_phone_entry: bool = Field(default=True)
+    issue_method_search: bool = Field(default=True)
 
     # Anti-rescan: minimum minutes between stamps from the same customer at this shop.
     # 0 = no cooldown (every scan succeeds). No UI yet — set via SQL/admin until S10
