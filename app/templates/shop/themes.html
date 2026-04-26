@@ -27,31 +27,39 @@
       <div class="sub">หน้าตาบัตรของลูกค้า</div>
     </div>
 
-    {% set theme_meta = {
-      'taemdee': ('แต้มดี', 'ค่ามาตรฐาน · ครีม + ส้ม'),
-      'mono':    ('โมโน',  'ขาว + ดำ'),
-      'night':   ('กลางคืน', 'ดำ + เหลือง'),
-      'pastel':  ('พาสเทล', 'พีช + ส้ม'),
-    } %}
-    <div class="s9-grid">
-      {% for t in themes %}
-        <button type="button" class="theme-card"
-                :class="{ selected: theme === '{{ t }}' }" @click="theme = '{{ t }}'">
-          <div class="theme-preview {{ t }}">
-            <div class="num">7</div>
-            <div class="stamps">
-              <div class="s on"></div><div class="s on"></div>
-              {% if t == 'taemdee' %}<div class="s b"></div>{% else %}<div class="s on"></div>{% endif %}
-              <div class="s on"></div><div class="s on"></div>
-              {% if t == 'taemdee' %}<div class="s b"></div>{% else %}<div class="s on"></div>{% endif %}
-              <div class="s on"></div><div class="s"></div><div class="s"></div><div class="s"></div>
-            </div>
+    {% set theme_meta = [
+      ('taemdee', 'แต้มดี',  ['#F6F1E5', '#FF5E3A', '#FFD952']),
+      ('mono',    'โมโน',   ['#FFFFFF', '#111', '#666']),
+      ('night',   'กลางคืน', ['#141414', '#FFD952', '#FF5E3A']),
+      ('pastel',  'พาสเทล',  ['#FFEEE4', '#E87A6A', '#F4B583'])
+    ] %}
+
+    <div class="s2-theme-preview" :class="'t-' + theme">
+      <div class="preview-shop">
+        <div class="preview-shop-name">{{ shop.name }}</div>
+        <div class="preview-shop-sub">{{ branch_label or 'สาขาหลัก' }}</div>
+      </div>
+      <div class="preview-num">7</div>
+      <div class="preview-meta">อีก {{ shop.reward_threshold - 7 }} แต้มรับรางวัล</div>
+      <div class="preview-stamps">
+        {% for i in range(10) %}
+          <div class="ps" :class="{
+            on: {{ i }} < 7,
+            butter: {{ i }} == 2 || {{ i }} == 5
+          }"></div>
+        {% endfor %}
+      </div>
+      <div class="preview-reward">✦ {{ shop.reward_description }} ✦</div>
+    </div>
+
+    <div class="s2-theme-swatches">
+      {% for t_id, t_name, colors in theme_meta %}
+        <div class="s2-theme-swatch" :class="{ selected: theme === '{{ t_id }}' }" @click="theme = '{{ t_id }}'">
+          <div class="swatch-colors">
+            {% for c in colors %}<div style="background:{{ c }};"></div>{% endfor %}
           </div>
-          <div class="theme-meta">
-            <div class="name">{{ theme_meta[t][0] }}</div>
-            <div class="meta">{{ theme_meta[t][1] }}</div>
-          </div>
-        </button>
+          <div class="swatch-name">{{ t_name }}</div>
+        </div>
       {% endfor %}
     </div>
 

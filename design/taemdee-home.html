@@ -124,7 +124,7 @@ img { max-width: 100%; }
   font-weight: 500;
   color: var(--ink-soft);
   padding: 8px 12px;
-  display: none;
+  display: inline-flex;
 }
 .nav-cta .primary {
   font-family: 'Prompt', sans-serif;
@@ -163,8 +163,166 @@ img { max-width: 100%; }
 
 @media (min-width: 768px) {
   .nav-links { display: flex; }
-  .nav-cta .secondary { display: inline-flex; }
   .menu-toggle { display: none; }
+}
+
+/* ==================== LOGIN MODAL ==================== */
+.login-modal {
+  position: fixed;
+  inset: 0;
+  background: rgba(17,17,17,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1000;
+  display: none;
+  align-items: flex-end;
+  justify-content: center;
+  padding: 16px;
+  opacity: 0;
+  transition: opacity 0.2s;
+}
+.login-modal:target {
+  display: flex;
+  opacity: 1;
+}
+.login-modal-overlay {
+  position: absolute;
+  inset: 0;
+  display: block;
+  cursor: default;
+}
+@media (min-width: 720px) {
+  .login-modal { align-items: center; }
+}
+.login-modal-card {
+  background: var(--bg);
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 6px 6px 0 var(--ink);
+  width: 100%;
+  max-width: 420px;
+  padding: 26px 22px 22px;
+  position: relative;
+  transform: translateY(20px);
+  transition: transform 0.25s cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+.login-modal:target .login-modal-card { transform: translateY(0); }
+.login-modal-close {
+  position: absolute;
+  top: 14px; right: 14px;
+  width: 32px; height: 32px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600; font-size: 16px;
+  color: var(--ink);
+  line-height: 1;
+}
+.login-modal-head {
+  text-align: center;
+  margin-bottom: 18px;
+  padding: 0 8px;
+}
+.login-modal-head .logo-stamp {
+  margin-bottom: 14px;
+  filter: drop-shadow(2px 2px 0 var(--ink));
+}
+.login-modal-head h3 {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 22px;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin-bottom: 6px;
+}
+.login-modal-head h3 em {
+  font-style: italic; color: var(--accent);
+}
+.login-modal-head p {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+}
+.login-modal-roles {
+  display: flex; flex-direction: column;
+  gap: 10px;
+  margin-bottom: 16px;
+}
+.login-modal-role {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 14px 14px;
+  display: flex; align-items: center; gap: 12px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink);
+  transition: transform 0.15s, box-shadow 0.15s;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.login-modal-role:hover {
+  transform: translate(-2px, -2px);
+  box-shadow: 4px 4px 0 var(--ink);
+}
+.login-modal-role.primary {
+  background: var(--ink); color: #FFF;
+  box-shadow: 3px 3px 0 var(--accent);
+}
+.login-modal-role.primary .role-icon {
+  background: var(--accent); color: #FFF;
+  border-color: var(--accent);
+}
+.login-modal-role.primary .role-meta { color: var(--butter); opacity: 1; }
+.login-modal-role.primary .role-arrow { color: var(--butter); }
+.login-modal-role.primary:hover {
+  box-shadow: 5px 5px 0 var(--accent);
+}
+.login-modal-role .role-icon {
+  width: 40px; height: 40px;
+  background: var(--bg);
+  border: 1.5px solid var(--ink);
+  border-radius: 11px;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+  color: var(--accent);
+}
+.login-modal-role .role-icon svg { width: 18px; height: 18px; }
+.login-modal-role .role-info {
+  flex: 1; line-height: 1.25;
+}
+.login-modal-role .role-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+  letter-spacing: -0.015em;
+}
+.login-modal-role .role-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.login-modal-role .role-arrow {
+  font-size: 18px;
+  color: var(--ink-softer);
+  flex-shrink: 0;
+  font-weight: 700;
+}
+.login-modal-role:hover .role-arrow { color: var(--accent); }
+.login-modal-foot {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-softer);
+  padding-top: 12px;
+  border-top: 1px dashed rgba(17,17,17,0.12);
+}
+.login-modal-foot a {
+  color: var(--ink); font-weight: 600;
+  text-decoration: underline;
+  text-underline-offset: 2px;
 }
 
 /* ==================== HERO ==================== */
@@ -304,6 +462,22 @@ img { max-width: 100%; }
   align-items: center;
   justify-content: center;
   font-size: 12px;
+}
+
+/* btn-hero — larger, prominent variant */
+.btn-hero {
+  font-size: 16px;
+  padding: 18px 22px 18px 28px;
+  border-radius: 999px;
+  box-shadow: 5px 5px 0 var(--accent);
+  letter-spacing: -0.01em;
+}
+.btn-hero:hover { box-shadow: 7px 7px 0 var(--accent); }
+.btn-hero .arrow-pill {
+  width: 32px; height: 32px;
+  font-size: 14px;
+  background: var(--butter);
+  color: var(--ink);
 }
 .role-chooser-label {
   display: inline-flex;
@@ -1439,102 +1613,94 @@ img { max-width: 100%; }
 }
 .shops-grid {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 18px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 0;
   margin-top: 48px;
   margin-bottom: 32px;
+  border-top: 1px solid rgba(17,17,17,0.08);
 }
-@media (min-width: 600px) {
-  .shops-grid { grid-template-columns: repeat(2, 1fr); }
+.shops-grid > .feature-card {
+  border-right: 1px solid rgba(17,17,17,0.08);
 }
+.shops-grid > .feature-card:nth-child(2n) { border-right: none; }
 @media (min-width: 960px) {
   .shops-grid { grid-template-columns: repeat(4, 1fr); }
+  .shops-grid > .feature-card { border-right: 1px solid rgba(17,17,17,0.08); }
+  .shops-grid > .feature-card:nth-child(2n) { border-right: 1px solid rgba(17,17,17,0.08); }
+  .shops-grid > .feature-card:last-child { border-right: none; }
 }
 .feature-card {
-  background: var(--surface);
-  border: 1.5px solid var(--ink);
-  border-radius: 22px;
-  padding: 22px 20px;
-  box-shadow: 4px 4px 0 var(--ink);
+  background: transparent;
+  border: none;
+  border-bottom: 1px solid rgba(17,17,17,0.08);
+  border-radius: 0;
+  padding: 28px 22px;
   position: relative;
-  transition: transform 0.2s;
+  transition: none;
 }
-.feature-card:hover { transform: translate(-2px, -2px); box-shadow: 6px 6px 0 var(--ink); }
-.feature-card.butter { background: var(--butter); }
-.feature-card.dark { background: var(--ink); color: var(--bg); }
-.feature-card.dark .icon-tile { background: var(--accent); border-color: var(--bg); color: #fff; }
-.feature-card.dark .feature-meta { color: var(--ink-softer); }
+.feature-card:hover { transform: none; box-shadow: none; }
+.feature-card.butter, .feature-card.dark {
+  background: transparent;
+  color: var(--ink);
+}
+.feature-card.dark .feature-meta { color: var(--ink-soft); }
 
 .feature-card .icon-tile {
-  width: 48px; height: 48px;
-  background: var(--accent-soft);
+  width: 32px; height: 32px;
+  background: transparent;
   color: var(--accent);
-  border: 1.5px solid var(--ink);
-  border-radius: 14px;
+  border: none;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
   margin-bottom: 16px;
+  margin-left: -4px;
 }
-.feature-card.butter .icon-tile { background: var(--ink); color: var(--butter); }
-.feature-card .icon-tile svg { width: 22px; height: 22px; }
+.feature-card.butter .icon-tile,
+.feature-card.dark .icon-tile {
+  background: transparent;
+  color: var(--accent);
+  border: none;
+}
+.feature-card .icon-tile svg { width: 24px; height: 24px; }
 
 .feature-card h3 {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 17px;
+  font-size: 16px;
   letter-spacing: -0.015em;
-  line-height: 1.25;
-  margin-bottom: 6px;
+  line-height: 1.3;
+  margin-bottom: 8px;
 }
 .feature-card .feature-meta {
   font-family: 'Prompt', sans-serif;
   font-size: 12.5px;
   color: var(--ink-soft);
-  line-height: 1.5;
+  line-height: 1.55;
 }
 .feature-card .stat-mini {
   margin-top: 14px;
-  padding-top: 12px;
-  border-top: 1.5px dashed rgba(17,17,17,0.15);
+  padding-top: 0;
+  border-top: none;
   font-family: 'JetBrains Mono', monospace;
   font-size: 10px;
   letter-spacing: 0.08em;
-  color: var(--ink-soft);
+  color: var(--ink-softer);
+  text-transform: uppercase;
 }
-.feature-card.dark .stat-mini { color: var(--ink-softer); border-top-color: rgba(255,255,255,0.15); }
+.feature-card.dark .stat-mini { color: var(--ink-softer); border-top: none; }
 .feature-card .stat-mini strong {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  letter-spacing: -0.01em;
-  color: var(--accent);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0;
+  color: var(--ink);
+  text-transform: none;
 }
 .feature-card.butter .stat-mini strong { color: var(--ink); }
-.feature-card .dr-tag {
-  position: absolute;
-  top: -10px;
-  right: 14px;
-  transform: rotate(4deg);
-  background: var(--accent);
-  color: #fff;
-  padding: 4px 10px 4px 12px;
-  border-radius: 999px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 10px;
-  letter-spacing: 0.02em;
-  border: 1.5px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  z-index: 2;
-}
-.feature-card .dr-tag .dr-mark {
-  color: var(--butter);
-  font-size: 10px;
-}
+.feature-card .dr-tag,
+.feature-card .dr-tag .dr-mark { display: none !important; }
 .feature-card .feature-meta strong { font-weight: 700; color: var(--ink); }
 
 /* Dashboard preview block */
@@ -1629,6 +1795,20 @@ img { max-width: 100%; }
   font-size: 11px;
   font-weight: 800;
   margin-top: 2px;
+}
+.dash-text {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.dash-text > h3,
+.dash-text > p,
+.dash-text > ul,
+.dash-text > .kicker-mini {
+  align-self: stretch;
+}
+.dash-text .btn-hero {
+  margin-top: 22px;
 }
 
 /* Mock dashboard tile */
@@ -2560,6 +2740,254 @@ img { max-width: 100%; }
 }
 @media (min-width: 880px) {
   .how-steps { grid-template-columns: repeat(3, 1fr); gap: 28px; }
+}
+
+/* Compact horizontal layout: 3 cards + arrows between */
+.how-compact {
+  display: grid;
+  grid-template-columns: 1fr auto 1fr auto 1fr;
+  gap: 0;
+  align-items: stretch;
+  border-top: none;
+  position: relative;
+}
+.how-compact > * {
+  border-bottom: none;
+}
+.how-compact > .how-c-step:nth-child(odd) {
+  border-right: none;
+}
+.how-c-step {
+  background: transparent;
+  color: var(--ink);
+  border: none;
+  border-radius: 0;
+  padding: 16px 6px;
+  position: relative;
+  box-shadow: none;
+}
+.how-c-step .step-num {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 24px; height: 24px;
+  background: transparent;
+  color: var(--accent);
+  border: 1.5px solid var(--accent);
+  border-radius: 50%;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 11px;
+  letter-spacing: -0.01em;
+  margin-bottom: 10px;
+  box-shadow: none;
+}
+.how-c-step h3 {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  letter-spacing: -0.015em;
+  margin-bottom: 6px;
+  line-height: 1.25;
+}
+.how-c-step p {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  line-height: 1.45;
+}
+@media (min-width: 768px) {
+  .how-c-step {
+    padding: 24px 18px;
+  }
+  .how-c-step .step-num {
+    width: 28px; height: 28px;
+    font-size: 13px;
+    margin-bottom: 12px;
+  }
+  .how-c-step h3 {
+    font-size: 15px;
+  }
+  .how-c-step p {
+    font-size: 12.5px;
+    line-height: 1.5;
+  }
+}
+
+/* Mini phone visuals inside each how step */
+.how-mini {
+  margin-top: 14px;
+  display: flex;
+  justify-content: center;
+}
+.how-mini-phone {
+  width: 84px;
+  aspect-ratio: 9 / 17;
+  background: #111;
+  border: 1.5px solid #111;
+  border-radius: 14px;
+  padding: 5px;
+  position: relative;
+  box-shadow: 2px 2px 0 var(--accent);
+}
+@media (min-width: 768px) {
+  .how-mini { margin-top: 18px; }
+  .how-mini-phone {
+    width: 130px;
+    border-radius: 20px;
+    padding: 8px;
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+}
+.how-mini-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 13px;
+  padding: 14px 10px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  position: relative;
+  overflow: hidden;
+}
+
+/* Step 1 — QR */
+.how-mini-qr .qr-frame {
+  width: 78px;
+  height: 78px;
+  background: #FDFAF2;
+  border: 1.5px solid #111;
+  border-radius: 6px;
+  padding: 4px;
+  margin-bottom: 8px;
+}
+.how-mini-qr .qr-frame svg { display: block; width: 100%; height: 100%; }
+.how-mini-qr .how-mini-cap {
+  font-family: 'Prompt', sans-serif;
+  font-size: 9px;
+  color: var(--ink-soft);
+}
+
+/* Step 2 — stamp card */
+.how-mini-stamp {
+  background: var(--bg);
+}
+.how-mini-stamp .hms-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.how-mini-stamp .hms-sub {
+  font-size: 14px;
+  color: var(--ink-softer);
+  margin-left: 1px;
+}
+.hms-stamps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 3px;
+  width: 100%;
+}
+.hms-s {
+  aspect-ratio: 1;
+  background: transparent;
+  border: 1px dashed var(--ink-softer);
+  border-radius: 50%;
+}
+.hms-s.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  border-style: solid;
+}
+.hms-s.on.new {
+  background: var(--accent);
+  border-color: var(--accent);
+  animation: pop 1.5s ease-in-out infinite;
+}
+@keyframes pop {
+  0%, 100% { transform: scale(1); }
+  50% { transform: scale(1.15); }
+}
+.hms-toast {
+  position: absolute;
+  bottom: 10px;
+  background: var(--accent);
+  color: #FFF;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 4px 10px;
+  border-radius: 999px;
+  border: 1.5px solid #111;
+  box-shadow: 1px 1px 0 #111;
+}
+
+/* Step 3 — reward */
+.how-mini-reward {
+  background: var(--butter);
+}
+.how-mini-reward .hmr-badge {
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  margin-bottom: 4px;
+}
+.how-mini-reward .hmr-badge svg { width: 100%; height: 100%; }
+.how-mini-reward .hmr-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 30px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+}
+.how-mini-reward .hms-sub {
+  font-size: 13px;
+  color: var(--ink);
+  opacity: 0.55;
+}
+.how-mini-reward .hmr-msg {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 10.5px;
+  margin-top: 6px;
+  margin-bottom: 8px;
+  color: var(--ink);
+}
+.how-mini-reward .hmr-btn {
+  background: var(--ink);
+  color: var(--butter);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 10px;
+  padding: 7px 14px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+}
+
+.how-c-arrow {
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-softer);
+  flex-shrink: 0;
+  padding: 0 4px;
+}
+.how-c-arrow svg {
+  width: 14px; height: 14px;
+}
+@media (min-width: 768px) {
+  .how-c-arrow svg {
+    width: 18px; height: 18px;
+  }
 }
 .how-step {
   background: var(--bg);
@@ -4073,12 +4501,19 @@ img { max-width: 100%; }
 }
 .foot .container {
   display: grid;
-  grid-template-columns: 1fr;
-  gap: 36px;
+  grid-template-columns: 1fr 1fr;
+  gap: 28px 24px;
+}
+.foot .container > .foot-brand {
+  grid-column: 1 / -1;
 }
 @media (min-width: 720px) {
   .foot .container {
     grid-template-columns: 1.5fr repeat(3, 1fr);
+    gap: 36px;
+  }
+  .foot .container > .foot-brand {
+    grid-column: auto;
   }
 }
 .foot-brand .nav-logo { font-size: 26px; margin-bottom: 12px; }
@@ -4158,22 +4593,10 @@ img { max-width: 100%; }
       <a href="#shops">สำหรับร้าน</a>
       <a href="#customers">สำหรับลูกค้า</a>
       <a href="#how">วิธีใช้</a>
-      <a href="#pricing">ราคา</a>
       <a href="#faq">คำถามบ่อย</a>
     </div>
     <div class="nav-cta">
-      <a href="#" class="secondary">เข้าสู่ระบบ</a>
-      <a href="#cta" class="primary">
-        เปิดร้านฟรี
-        <span class="arrow-circle">→</span>
-      </a>
-      <button class="menu-toggle" aria-label="เมนู">
-        <svg width="16" height="12" viewBox="0 0 16 12" fill="none">
-          <line x1="0" y1="2" x2="16" y2="2" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="0" y1="6" x2="16" y2="6" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-          <line x1="0" y1="10" x2="16" y2="10" stroke="currentColor" stroke-width="2" stroke-linecap="round"/>
-        </svg>
-      </button>
+      <a href="#login-modal" class="secondary">เข้าสู่ระบบ</a>
     </div>
   </div>
 </nav>
@@ -4265,7 +4688,7 @@ img { max-width: 100%; }
           <li><span class="check-tile">✓</span><span>แจ้งเตือนเมื่อมีแต้มออก พร้อมปุ่มยกเลิกได้ทันที</span></li>
           <li><span class="check-tile">✓</span><span>ส่งโปรชวนลูกค้าที่หายไปกลับ ในคลิกเดียว</span></li>
         </ul>
-        <a href="#cta" class="btn-primary">
+        <a href="#cta" class="btn-primary btn-hero">
           ลองใช้ฟรี
           <span class="arrow-pill">→</span>
         </a>
@@ -4406,196 +4829,109 @@ img { max-width: 100%; }
         วิธีใช้งาน
       </div>
       <h2>ลูกค้าของคุณ <em>ใช้งานยังไง.</em></h2>
-      <p>3 ขั้นตอนที่ลูกค้าทำที่ร้าน — ไม่ต้องอบรมพนักงาน ไม่ต้องโหลดแอป</p>
+      <p>3 ขั้นตอน — ไม่ต้องอบรมพนักงาน ไม่ต้องโหลดแอป</p>
     </div>
 
-    <div class="how-steps">
-      <div class="how-step">
+    <div class="how-compact">
+      <div class="how-c-step">
         <div class="step-num">1</div>
         <h3>ลูกค้าสแกน QR</h3>
-        <p>ลูกค้าใช้กล้องในเครื่องสแกน QR ที่เคาน์เตอร์ เปิดบัตรสะสมแต้มขึ้นมาในเบราว์เซอร์</p>
-        <div class="step-phone-wrap">
-          <div class="section-phone">
-            <div class="screen">
-              <div class="td">
-
-                <div class="c2-celebration">
-                  <svg class="corner-spark" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  <div class="plus">+1</div>
-                  <div class="ctxt">
-                    <strong>ได้แต้มแล้ว</strong>
-                    <span>แต้มแรกของคุณที่นี่</span>
-                  </div>
-                </div>
-
-                <div class="shop-head" style="padding-top:18px;">
-                  <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-                  <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
-                </div>
-
-                <div class="hero-num-wrap" style="padding-top:16px;">
-                  <div class="hero-label">แต้มของคุณ</div>
-                  <div class="hero-num" style="font-size:100px;">
-                    1
-                    <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  </div>
-                  <div class="hero-num-sub">
-                    <em>อีก 9 แต้ม</em> <span class="of">/ จาก 10</span>
-                  </div>
-                </div>
-
-                <div class="stamps-wrap">
-                  <div class="stamps">
-                    <div class="stamp on"></div>
-                    <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
-                    <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
-                  </div>
-                </div>
-
-                <div class="c2-welcome-text">
-                  <div class="title">ยินดีที่ได้รู้จัก!</div>
-                  <div class="sub">สแกน QR ทุกครั้งที่กลับมา เก็บ 10 แต้มรับกาแฟฟรี 1 แก้ว</div>
-                </div>
-
-                <div class="c2-cta">
-                  <button class="save-btn">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/></svg>
-                    บันทึกแต้มไว้
-                  </button>
-                  <div class="reassure">
-                    <span class="check">✓</span> ไม่ต้องสมัครสมาชิก
-                  </div>
-                </div>
-
-                <div class="footer-mark">
-                  <span class="fm-brand">
-                    <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                    <span class="brand">taemdee<span class="dot">.</span></span>
-                  </span>
-                  <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-                </div>
+        <p>ใช้กล้องในเครื่องสแกน QR ที่เคาน์เตอร์ เปิดบัตรสะสมแต้มในเบราว์เซอร์</p>
+        <div class="how-mini">
+          <div class="how-mini-phone">
+            <div class="how-mini-screen how-mini-qr">
+              <div class="qr-frame">
+                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                  <rect x="0" y="0" width="36" height="36" fill="#FDFAF2"/>
+                  <rect x="3" y="3" width="9" height="9" fill="#111"/>
+                  <rect x="6" y="6" width="3" height="3" fill="#FDFAF2"/>
+                  <rect x="24" y="3" width="9" height="9" fill="#111"/>
+                  <rect x="27" y="6" width="3" height="3" fill="#FDFAF2"/>
+                  <rect x="3" y="24" width="9" height="9" fill="#111"/>
+                  <rect x="6" y="27" width="3" height="3" fill="#FDFAF2"/>
+                  <rect x="15" y="3" width="3" height="3" fill="#111"/>
+                  <rect x="21" y="3" width="3" height="3" fill="#111"/>
+                  <rect x="15" y="9" width="3" height="3" fill="#111"/>
+                  <rect x="18" y="6" width="3" height="3" fill="#111"/>
+                  <rect x="21" y="12" width="3" height="3" fill="#111"/>
+                  <rect x="3" y="15" width="3" height="3" fill="#111"/>
+                  <rect x="9" y="15" width="3" height="3" fill="#111"/>
+                  <rect x="15" y="15" width="6" height="3" fill="#111"/>
+                  <rect x="24" y="15" width="3" height="3" fill="#111"/>
+                  <rect x="30" y="15" width="3" height="3" fill="#111"/>
+                  <rect x="6" y="18" width="3" height="3" fill="#111"/>
+                  <rect x="12" y="18" width="6" height="3" fill="#111"/>
+                  <rect x="21" y="18" width="3" height="3" fill="#111"/>
+                  <rect x="27" y="18" width="3" height="3" fill="#111"/>
+                  <rect x="3" y="21" width="3" height="3" fill="#111"/>
+                  <rect x="9" y="21" width="6" height="3" fill="#111"/>
+                  <rect x="18" y="21" width="3" height="3" fill="#111"/>
+                  <rect x="24" y="21" width="9" height="3" fill="#111"/>
+                  <rect x="15" y="24" width="3" height="3" fill="#111"/>
+                  <rect x="21" y="24" width="3" height="3" fill="#111"/>
+                  <rect x="27" y="24" width="3" height="3" fill="#111"/>
+                  <rect x="15" y="27" width="6" height="3" fill="#111"/>
+                  <rect x="24" y="27" width="3" height="3" fill="#111"/>
+                  <rect x="30" y="27" width="3" height="3" fill="#111"/>
+                  <rect x="18" y="30" width="3" height="3" fill="#111"/>
+                  <rect x="24" y="30" width="6" height="3" fill="#111"/>
+                </svg>
               </div>
+              <div class="how-mini-cap">สแกนเพื่อสะสมแต้ม</div>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="how-step">
+      <div class="how-c-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </div>
+      <div class="how-c-step">
         <div class="step-num">2</div>
         <h3>ได้แต้มทันที</h3>
-        <p>ระบบเพิ่มแต้มอัตโนมัติ ลูกค้าเห็นเลขใหม่บนบัตรเลย ร้านเห็นการแจ้งเตือนบนแดชบอร์ด</p>
-        <div class="step-phone-wrap">
-          <div class="section-phone">
-            <div class="screen">
-              <div class="td">
-
-                <div class="shop-head">
-                  <svg class="side-spark l" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  <svg class="side-spark r" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-                  <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
-                </div>
-
-                <div class="hero-num-wrap">
-                  <div class="hero-label">แต้มของคุณ</div>
-                  <div class="hero-num">
-                    3
-                    <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  </div>
-                  <div class="hero-num-sub">
-                    <em>+1 แต้ม!</em> <span class="of">/ จาก 10</span>
-                  </div>
-                </div>
-
-                <div class="stamps-wrap">
-                  <div class="stamps">
-                    <div class="stamp on"></div>
-                    <div class="stamp on"></div>
-                    <div class="stamp on butter"></div>
-                    <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
-                    <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
-                  </div>
-                </div>
-
-                <div class="encourage">
-                  <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  อีก 7 แต้ม รับกาแฟฟรี
-                  <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                </div>
-
-                <div class="reward-pill">
-                  <div class="gift">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 12 20 22 4 22 4 12"/>
-                      <rect x="2" y="7" width="20" height="5"/>
-                      <line x1="12" y1="22" x2="12" y2="7"/>
-                      <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-                      <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
-                    </svg>
-                  </div>
-                  <div class="rtxt">
-                    <div class="rlabel">รางวัล</div>
-                    <div class="rname">กาแฟ Signature ฟรี 1 แก้ว</div>
-                  </div>
-                </div>
-
-                <div class="footer-mark">
-                  <span class="fm-brand">
-                    <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                    <span class="brand">taemdee<span class="dot">.</span></span>
-                  </span>
-                  <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-                </div>
+        <p>แต้มขึ้นบนบัตรของลูกค้า เห็นเลยว่าใกล้รับรางวัลแค่ไหน</p>
+        <div class="how-mini">
+          <div class="how-mini-phone">
+            <div class="how-mini-screen how-mini-stamp">
+              <div class="hms-num">7<span class="hms-sub">/10</span></div>
+              <div class="hms-stamps">
+                <div class="hms-s on"></div>
+                <div class="hms-s on"></div>
+                <div class="hms-s on"></div>
+                <div class="hms-s on"></div>
+                <div class="hms-s on"></div>
+                <div class="hms-s on"></div>
+                <div class="hms-s on new"></div>
+                <div class="hms-s"></div>
+                <div class="hms-s"></div>
+                <div class="hms-s"></div>
               </div>
+              <div class="hms-toast">+1 แต้ม</div>
             </div>
           </div>
         </div>
       </div>
-
-      <div class="how-step">
+      <div class="how-c-arrow">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="5" y1="12" x2="19" y2="12"/>
+          <polyline points="12 5 19 12 12 19"/>
+        </svg>
+      </div>
+      <div class="how-c-step">
         <div class="step-num">3</div>
         <h3>รับรางวัลที่ร้าน</h3>
-        <p>เก็บครบจำนวน ลูกค้าโชว์หน้าจอที่เคาน์เตอร์ มีตัวนับวินาทีกันสกรีนช็อตปลอม</p>
-        <div class="step-phone-wrap">
-          <div class="section-phone">
-            <div class="screen">
-              <div class="td c5">
-
-                <div class="claimed-hero">
-                  <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                  <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-
-                  <div class="claimed-mark">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 6 9 17 4 12"/>
-                    </svg>
-                  </div>
-                  <div class="claimed-title"><em>รับรางวัล</em><br>เรียบร้อย!</div>
-
-                  <div class="live-pulse">
-                    <span class="pulse-dot"></span>
-                    <span>สด · 3 วิที่แล้ว</span>
-                  </div>
-                </div>
-
-                <div class="voucher">
-                  <div class="v-label">✦ คูปอง ✦</div>
-                  <div class="v-title">กาแฟ Signature ฟรี 1 แก้ว</div>
-                  <div class="v-id">#MHEE-A72B · 24.04.26</div>
-                </div>
-
-                <div class="farewell">เจอกันครั้งหน้านะ</div>
-
-                <div class="footer-mark">
-                  <span class="fm-brand">
-                    <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                    <span class="brand">taemdee<span class="dot">.</span></span>
-                  </span>
-                  <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-                </div>
+        <p>เก็บครบ — ลูกค้ากดที่หน้าเคาน์เตอร์เพื่อรับรางวัล ไม่มีคูปองให้ปริ้น</p>
+        <div class="how-mini">
+          <div class="how-mini-phone">
+            <div class="how-mini-screen how-mini-reward">
+              <div class="hmr-badge">
+                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               </div>
+              <div class="hmr-num">10<span class="hms-sub">/10</span></div>
+              <div class="hmr-msg">พร้อมรับรางวัล</div>
+              <div class="hmr-btn">รับเลย</div>
             </div>
           </div>
         </div>
@@ -4727,91 +5063,6 @@ img { max-width: 100%; }
   </div>
 </section>
 
-<!-- ==================== PRICING ==================== -->
-<section class="pricing" id="pricing">
-  <div class="container">
-    <div class="section-head-block">
-      <div class="kicker">
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        ราคา
-      </div>
-      <h2>ใช้งาน <em>ฟรี</em><br>จ่ายเฉพาะ <span class="hl">ตอนทักชวนลูกค้า.</span></h2>
-      <p>การออกแต้ม รับรางวัล แดชบอร์ด ทั้งหมดฟรีตลอดไป จ่ายเฉพาะตอนส่งโปรชวนลูกค้าเก่ากลับ ครั้งละ 50 เครดิต</p>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== TESTIMONIALS ==================== -->
-<section class="testimonials">
-  <div class="container">
-    <div class="section-head-block">
-      <div class="kicker">
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        ร้านที่ใช้แต้มดี
-      </div>
-      <h2>เจ้าของร้าน <em>พูดถึง</em><br>แต้มดีว่าอย่างไร</h2>
-    </div>
-
-    <div class="testi-grid">
-      <div class="testi-card tilt-l">
-        <div class="quote-mark">"</div>
-        <div class="quote">
-          ลูกค้าประจำ<em>เพิ่มขึ้น 30%</em> ในเดือนแรก
-          เพราะสะสมแต้มง่าย ไม่ต้องพกบัตรกระดาษให้หาย
-        </div>
-        <div class="author">
-          <div class="avatar">ห</div>
-          <div class="author-text">
-            <div class="name">หมี · ร้านกาแฟลุงหมี</div>
-            <div class="role">เชียงใหม่ · ใช้มา 8 เดือน</div>
-          </div>
-          <div class="stars">★★★★★</div>
-        </div>
-      </div>
-
-      <div class="testi-card">
-        <div class="quote-mark">"</div>
-        <div class="quote">
-          ส่งโปรชวนกลับ 1 ครั้ง <em>ลูกค้าเก่ากลับมา 12 คน</em>
-          ใช้เงิน 50 บาท ได้ออเดอร์กลับเป็นพันบาท
-        </div>
-        <div class="author">
-          <div class="avatar b">ต</div>
-          <div class="author-text">
-            <div class="name">ตี๋ · ก๋วยเตี๋ยวลุงตี๋</div>
-            <div class="role">บางรัก · ใช้มา 4 เดือน</div>
-          </div>
-          <div class="stars">★★★★★</div>
-        </div>
-      </div>
-
-      <div class="testi-card tilt-r">
-        <div class="quote-mark">"</div>
-        <div class="quote">
-          ตั้งร้านเสร็จใน <em>ไม่ถึง 1 นาที</em>
-          พนักงานทุกคนใช้เป็นใน 5 นาที ไม่ต้องอบรม
-        </div>
-        <div class="author">
-          <div class="avatar m">ป</div>
-          <div class="author-text">
-            <div class="name">ปุ้ย · Salon Petite</div>
-            <div class="role">เอกมัย · ใช้มา 6 เดือน</div>
-          </div>
-          <div class="stars">★★★★★</div>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
 <!-- ==================== FAQ ==================== -->
 <section class="faq-section" id="faq">
   <div class="container">
@@ -4828,7 +5079,7 @@ img { max-width: 100%; }
     </div>
 
     <div class="faq-list">
-      <details class="faq-item" open>
+      <details class="faq-item">
         <summary>
           <span>ใช้งานฟรีจริง ๆ เหรอ?</span>
           <span class="toggle-icon">+</span>
@@ -4966,7 +5217,6 @@ img { max-width: 100%; }
         <li><a href="#shops">สำหรับร้าน</a></li>
         <li><a href="#customers">สำหรับลูกค้า</a></li>
         <li><a href="#how">วิธีใช้</a></li>
-        <li><a href="#pricing">ราคา</a></li>
       </ul>
     </div>
     <div class="foot-col">
@@ -5006,6 +5256,57 @@ img { max-width: 100%; }
     </div>
   </div>
 </footer>
+
+<!-- ==================== LOGIN MODAL ==================== -->
+<div class="login-modal" id="login-modal">
+  <a class="login-modal-overlay" href="#" aria-label="ปิด"></a>
+  <div class="login-modal-card">
+    <a class="login-modal-close" href="#" aria-label="ปิด">×</a>
+    <div class="login-modal-head">
+      <svg class="logo-stamp" viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </svg>
+      <h3>เข้าสู่<em>ระบบ.</em></h3>
+      <p>คุณคือ?</p>
+    </div>
+
+    <div class="login-modal-roles">
+      <a href="/shop/login" class="login-modal-role primary">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 9l1-5h16l1 5"/>
+            <path d="M5 9v11a1 1 0 001 1h12a1 1 0 001-1V9"/>
+            <line x1="9" y1="13" x2="15" y2="13"/>
+          </svg>
+        </div>
+        <div class="role-info">
+          <div class="role-name">ฉันเป็นเจ้าของร้าน</div>
+          <div class="role-meta">เข้าแดชบอร์ด · ออกแต้มและจัดการลูกค้า</div>
+        </div>
+        <span class="role-arrow">→</span>
+      </a>
+      <a href="/me" class="login-modal-role">
+        <div class="role-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
+          </svg>
+        </div>
+        <div class="role-info">
+          <div class="role-name">ฉันเป็นลูกค้า</div>
+          <div class="role-meta">เข้าดูบัตรสะสมแต้มทุกร้าน</div>
+        </div>
+        <span class="role-arrow">→</span>
+      </a>
+    </div>
+
+    <div class="login-modal-foot">
+      ยังไม่มีบัญชี? <a href="#cta">เปิดร้านฟรี ใน 60 วินาที</a>
+    </div>
+  </div>
+</div>
 
 </body>
 </html>
