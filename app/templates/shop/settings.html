@@ -26,14 +26,28 @@
           {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
           {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
         </div>
-        <div class="meta">{{ shop.reward_threshold }} แต้ม · {{ shop.reward_description }}</div>
+        <div class="meta">{{ shop.name }} · {{ shop.location or 'ร้านค้า' }}</div>
+      </div>
+      <div class="edit">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
       </div>
     </div>
 
     <div class="s10-section">
       <div class="label">ร้าน</div>
 
-      <a href="/shop/onboard" class="s10-row">
+      <a href="/shop/issue" class="s10-row">
+        <div class="row-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+        </div>
+        <div class="row-info">
+          <div class="row-name">วิธีออกแต้ม</div>
+          <div class="row-meta">{% if shop.issuance_method == 'customer_scan' %}ลูกค้าสแกน · ค่ามาตรฐาน{% elif shop.issuance_method == 'shop_scan' %}ร้านสแกน{% elif shop.issuance_method == 'phone_entry' %}กรอกเบอร์{% else %}ลูกค้าสแกน · ค่ามาตรฐาน{% endif %}</div>
+        </div>
+        <div class="arrow-r">›</div>
+      </a>
+
+      <a href="/shop/onboard/reward" class="s10-row">
         <div class="row-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
@@ -56,22 +70,6 @@
         <div class="row-info">
           <div class="row-name">ธีม</div>
           <div class="row-meta">{{ shop.theme_name }} — เปลี่ยนหน้าตาบัตร</div>
-        </div>
-        <div class="arrow-r">›</div>
-      </a>
-
-      <a href="/shop/qr" class="s10-row">
-        <div class="row-icon butter">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7"/>
-            <rect x="14" y="3" width="7" height="7"/>
-            <rect x="3" y="14" width="7" height="7"/>
-            <rect x="14" y="14" width="7" height="7"/>
-          </svg>
-        </div>
-        <div class="row-info">
-          <div class="row-name">QR ของร้าน</div>
-          <div class="row-meta">พิมพ์หรือบันทึก</div>
         </div>
         <div class="arrow-r">›</div>
       </a>
@@ -146,6 +144,8 @@
           onsubmit="event.preventDefault(); fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/shop/register');">
       <button type="submit" class="s10-logout">ออกจากระบบ</button>
     </form>
+
+    {% include "_partials/footer_mark.html" %}
   </div>
 </body>
 </html>
