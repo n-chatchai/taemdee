@@ -1,13 +1,15 @@
 """Stamp issuance — the core act across all 3 methods, plus void.
 
-Anti-fraud in v1 is the daily cap (1 stamp per customer per shop per day by default).
-Per-device cooldown + geofence + pattern alerts are deferred to v1.5 / v2.
+Anti-rescan policy is per-shop: `Shop.scan_cooldown_minutes` (default 0 = no
+cooldown). When > 0, a customer must wait that many minutes between stamps at
+the same shop. Geofence + pattern alerts are deferred.
 """
 
+from datetime import timedelta
 from typing import Optional
 from uuid import UUID
 
-from sqlmodel import func, select
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import Customer, Shop, Stamp
@@ -15,28 +17,26 @@ from app.models.util import utcnow
 
 VALID_METHODS = {"customer_scan", "shop_scan", "phone_entry", "system"}
 
-DEFAULT_DAILY_CAP = 1  # Max stamps per customer per shop per day (per PRD §5.C)
-
 
 class IssuanceError(Exception):
     pass
 
 
-async def _stamps_today_count(
-    db: AsyncSession, shop_id: UUID, customer_id: UUID
-) -> int:
-    today_start = utcnow().replace(hour=0, minute=0, second=0, microsecond=0)
+async def _has_recent_stamp(
+    db: AsyncSession, shop_id: UUID, customer_id: UUID, since,
+) -> bool:
+    """True if a non-voided stamp exists for (shop, customer) at or after `since`."""
     result = await db.exec(
-        select(func.count())
-        .select_from(Stamp)
+        select(Stamp.id)
         .where(
             Stamp.shop_id == shop_id,
             Stamp.customer_id == customer_id,
-            Stamp.created_at >= today_start,
+            Stamp.created_at >= since,
             Stamp.is_voided == False,  # noqa: E712
         )
+        .limit(1)
     )
-    return result.one()
+    return result.first() is not None
 
 
 async def issue_stamp(
@@ -48,12 +48,12 @@ async def issue_stamp(
     branch_id: Optional[UUID] = None,
     staff_id: Optional[UUID] = None,
 ) -> Stamp:
-    """Issue a stamp. Enforces the daily cap (per-customer per-shop).
+    """Issue a stamp. Enforces the per-shop scan cooldown.
 
     `method`: customer_scan | shop_scan | phone_entry | system.
-    `system` bypasses the daily cap (bonus/birthday/admin stamps).
+    `system` bypasses the cooldown (bonus/birthday/admin stamps).
 
-    Raises IssuanceError on cap violation or invalid branch context.
+    Raises IssuanceError on cooldown violation or invalid branch context.
     """
     if method not in VALID_METHODS:
         raise ValueError(f"Invalid issuance method: {method}")
@@ -62,12 +62,12 @@ async def issue_stamp(
     if shop.reward_mode == "separate" and branch_id is None:
         raise IssuanceError("branch_id is required when shop is in 'separate' reward mode")
 
-    if method != "system":
-        count_today = await _stamps_today_count(db, shop.id, customer.id)
-        if count_today >= DEFAULT_DAILY_CAP:
+    cooldown = shop.scan_cooldown_minutes or 0
+    if method != "system" and cooldown > 0:
+        threshold = utcnow() - timedelta(minutes=cooldown)
+        if await _has_recent_stamp(db, shop.id, customer.id, threshold):
             raise IssuanceError(
-                f"Daily cap reached for this customer at this shop "
-                f"({DEFAULT_DAILY_CAP}/day)"
+                f"Scan cooldown not yet elapsed ({cooldown} min)"
             )
 
     stamp = Stamp(

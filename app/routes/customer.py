@@ -215,7 +215,7 @@ async def scan(
             feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
         )
     except IssuanceError:
-        # Daily cap or other constraint — silently swallow; redirect lands on card.
+        # Cooldown or other constraint — silently swallow; redirect lands on card.
         pass
 
     redirect_url = f"/card/{shop_id}"

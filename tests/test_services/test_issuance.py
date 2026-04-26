@@ -12,15 +12,33 @@ async def test_issue_creates_stamp(db, shop, customer):
     assert stamp.is_voided is False
 
 
-async def test_daily_cap_enforced(db, shop, customer):
+async def test_zero_cooldown_allows_consecutive_scans(db, shop, customer):
+    """Default config (scan_cooldown_minutes=0) should let the same customer
+    re-scan as many times as they want — no anti-rescan protection."""
+    s1 = await issue_stamp(db, shop, customer, method="customer_scan")
+    s2 = await issue_stamp(db, shop, customer, method="customer_scan")
+    assert s1.id != s2.id
+
+
+async def test_cooldown_blocks_within_window(db, shop, customer):
+    shop.scan_cooldown_minutes = 60
+    db.add(shop)
+    await db.commit()
+    await db.refresh(shop)
+
     await issue_stamp(db, shop, customer, method="customer_scan")
-    with pytest.raises(IssuanceError, match="Daily cap"):
+    with pytest.raises(IssuanceError, match="cooldown"):
         await issue_stamp(db, shop, customer, method="customer_scan")
 
 
-async def test_system_method_bypasses_cap(db, shop, customer):
+async def test_system_method_bypasses_cooldown(db, shop, customer):
+    shop.scan_cooldown_minutes = 60
+    db.add(shop)
+    await db.commit()
+    await db.refresh(shop)
+
     await issue_stamp(db, shop, customer, method="customer_scan")
-    # System method is for bonus/birthday stamps — bypasses the cap
+    # `system` (bonus/birthday/admin) ignores the cooldown.
     bonus = await issue_stamp(db, shop, customer, method="system")
     assert bonus.issuance_method == "system"
 

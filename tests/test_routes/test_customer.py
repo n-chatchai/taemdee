@@ -19,10 +19,26 @@ async def test_scan_persists_stamp(client, db, shop):
     assert stamps[0].issuance_method == "customer_scan"
 
 
-async def test_scan_twice_silently_blocks_second(client, db, shop):
+async def test_scan_twice_with_default_cooldown_creates_two_stamps(client, db, shop):
+    """Default config (scan_cooldown_minutes=0) means every scan succeeds.
+    Cooldown protection is opt-in per shop."""
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
     response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    # Daily cap is silent — still returns redirect (lands on card showing current state)
+    assert response.status_code == 303
+    result = await db.exec(select(Stamp).where(Stamp.shop_id == shop.id))
+    assert len(list(result.all())) == 2
+
+
+async def test_scan_blocked_silently_when_cooldown_set(client, db, shop):
+    """When the shop sets scan_cooldown_minutes>0, a re-scan within that window
+    is silently swallowed — the route still 303s back to the card so the customer
+    sees their existing count, no error message surfaces."""
+    shop.scan_cooldown_minutes = 60
+    db.add(shop)
+    await db.commit()
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
     assert response.status_code == 303
     result = await db.exec(select(Stamp).where(Stamp.shop_id == shop.id))
     assert len(list(result.all())) == 1

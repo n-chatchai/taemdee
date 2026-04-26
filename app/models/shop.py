@@ -24,6 +24,11 @@ class Shop(SQLModel, table=True):
     reward_image: Optional[str] = Field(default="coffee_cup")
     issuance_method: str = Field(default="all")  # customer_scan, shop_scan, phone_entry, or "all"
 
+    # Anti-rescan: minimum minutes between stamps from the same customer at this shop.
+    # 0 = no cooldown (every scan succeeds). No UI yet — set via SQL/admin until S10
+    # gains a control. Replaces the v1 hardcoded "1 stamp / customer / day" rule.
+    scan_cooldown_minutes: int = Field(default=0)
+
     # Multi-branch: "shared" = one reward across all branches; "separate" = one reward per branch.
     # Locked after the 2nd branch is added (per PRD §6.I).
     reward_mode: str = Field(default="shared")
