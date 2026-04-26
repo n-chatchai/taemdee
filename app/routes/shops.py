@@ -11,7 +11,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import get_current_shop
 from app.core.database import get_session
-from app.models import Redemption, Shop, Stamp
+from app.models import Branch, Redemption, Shop, Stamp
 from app.models.util import utcnow
 from app.routes.auth import _set_session_cookie
 from app.services.auth import issue_session_token
@@ -82,13 +82,25 @@ async def dashboard(
     if not shop.is_onboarded:
         return RedirectResponse(url="/shop/onboard", status_code=status.HTTP_303_SEE_OTHER)
 
-    week_ago = utcnow() - timedelta(days=7)
+    now = utcnow()
+    week_ago = now - timedelta(days=7)
+    two_weeks_ago = now - timedelta(days=14)
 
     # Headline: distinct customers stamped this week (proxy for "came back")
     customers_this_week = (await db.exec(
         select(func.count(func.distinct(Stamp.customer_id)))
         .where(Stamp.shop_id == shop.id, Stamp.created_at >= week_ago, Stamp.is_voided == False)  # noqa: E712
     )).one()
+    customers_last_week = (await db.exec(
+        select(func.count(func.distinct(Stamp.customer_id)))
+        .where(
+            Stamp.shop_id == shop.id,
+            Stamp.created_at >= two_weeks_ago,
+            Stamp.created_at < week_ago,
+            Stamp.is_voided == False,  # noqa: E712
+        )
+    )).one()
+    wow_delta = customers_this_week - customers_last_week
     stamps_total = (await db.exec(
         select(func.count()).select_from(Stamp)
         .where(Stamp.shop_id == shop.id, Stamp.is_voided == False)  # noqa: E712
@@ -97,6 +109,17 @@ async def dashboard(
         select(func.count()).select_from(Redemption)
         .where(Redemption.shop_id == shop.id, Redemption.is_voided == False)  # noqa: E712
     )).one()
+    branches_count = (await db.exec(
+        select(func.count()).select_from(Branch).where(Branch.shop_id == shop.id)
+    )).one()
+    primary_branch_name = None
+    if branches_count >= 2:
+        first_branch = (await db.exec(
+            select(Branch).where(Branch.shop_id == shop.id).order_by(Branch.created_at)
+        )).first()
+        primary_branch_name = first_branch.name if first_branch else None
+
+    weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
 
     # Live feed: most recent 8 stamps + redemptions, merged
     recent_stamps = (await db.exec(
@@ -121,10 +144,14 @@ async def dashboard(
         context={
             "shop": shop,
             "customers_this_week": customers_this_week,
+            "wow_delta": wow_delta,
             "stamps_total": stamps_total,
             "redemptions_total": redemptions_total,
             "feed": feed,
             "suggestions": suggestions,
+            "weekday_th": weekday_th,
+            "branches_count": branches_count,
+            "primary_branch_name": primary_branch_name,
         },
     )
 

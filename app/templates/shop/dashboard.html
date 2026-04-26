@@ -20,10 +20,14 @@
           <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
           <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
         </svg>
-        <span class="day">วันนี้เริ่มต้นได้ดี</span>
+        <span class="day">{{ weekday_th }} · เริ่มต้นวันได้ดี</span>
       </div>
       <div class="actions">
-        <a href="/shop/issue" class="branch-pill" title="ออกแต้ม">+ แต้ม</a>
+        {% if primary_branch_name %}
+          <a href="/shop/branches" class="branch-pill" title="เปลี่ยนสาขา">{{ primary_branch_name }}</a>
+        {% else %}
+          <a href="/shop/issue" class="branch-pill" title="ออกแต้ม">+ แต้ม</a>
+        {% endif %}
         <a href="/shop/settings" class="avatar" title="ตั้งค่า" style="text-decoration:none;">{{ shop.name[0]|upper }}</a>
       </div>
     </div>
@@ -36,7 +40,12 @@
           <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
         </svg>
       </div>
-      <div class="caption">ลูกค้ามาที่ร้าน</div>
+      <div class="caption">ลูกค้ากลับมา</div>
+      {% if wow_delta > 0 %}
+        <div class="delta">↑ +{{ wow_delta }} จากสัปดาห์ที่แล้ว</div>
+      {% elif wow_delta < 0 %}
+        <div class="delta" style="background:var(--accent-soft); color:var(--accent);">↓ {{ wow_delta }} จากสัปดาห์ที่แล้ว</div>
+      {% endif %}
     </div>
 
     <div class="s3-stats">
@@ -93,7 +102,7 @@
     </div>
     <div id="feed-empty" class="feed-empty" {% if feed %}style="display:none"{% endif %}>ยังไม่มีกิจกรรมวันนี้</div>
 
-    <div style="height: 24px;"></div>
+    {% include "_partials/footer_mark.html" %}
   </div>
 
   <script>
