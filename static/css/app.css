@@ -2832,24 +2832,25 @@ body {
   font-weight: 700;
   border: 1.5px solid var(--ink);
 }
-.s2-logo .lt-1 {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 28px;
-  letter-spacing: -0.04em;
-}
-.s2-logo .lt-1 .dot { color: var(--accent); }
-.s2-logo .lt-2 {
-  font-style: italic;
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.02em;
-}
-.s2-logo .lt-3 {
-  font-weight: 800;
-  font-size: 26px;
-  letter-spacing: -0.03em;
-}
+/* Typography variants for the AI logo generator (PRD §6.E).
+   Size-agnostic: container sets font-size, .lt-N controls family/weight/casing/colour
+   so the same picked style renders consistently in the picker, on the customer
+   DeeCard wordmark, and on dashboard/settings cards. */
+.lt-1 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.04em; }
+.lt-1 .dot { color: var(--accent); }
+.lt-2 { font-style: italic; font-weight: 700; letter-spacing: -0.02em; }
+.lt-3 { font-weight: 800; letter-spacing: -0.03em; }
+.lt-4 { font-family: 'Host Grotesk', sans-serif; font-weight: 700; letter-spacing: 0.18em; text-transform: uppercase; font-size: 0.7em; }
+.lt-5 { font-family: 'JetBrains Mono', monospace; font-weight: 600; letter-spacing: -0.04em; color: var(--accent); }
+.lt-6 { font-family: 'Host Grotesk', sans-serif; font-weight: 600; letter-spacing: -0.02em; font-size: 0.85em; }
+.lt-7 { font-family: 'JetBrains Mono', monospace; font-weight: 500; letter-spacing: -0.02em; color: var(--ink-soft); font-size: 0.8em; }
+.lt-8 { font-family: 'Host Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.02em; color: var(--accent); }
+.lt-9 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.06em; text-transform: uppercase; }
+.lt-9 .dot { color: var(--butter); }
+.lt-10 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.08em; font-style: italic; }
+
+/* Picker tile sets the base font-size; the .lt-N classes inherit it. */
+.s2-logo { font-size: 28px; }
 .s2-helper {
   padding: 14px 20px 0;
   font-style: italic;

@@ -6,8 +6,11 @@ cache-busted on each deploy.
 
 import subprocess
 from pathlib import Path
+from typing import Optional
 
 from fastapi.templating import Jinja2Templates
+
+from app.services.logo_gen import VALID_STYLE_IDS, render_style
 
 
 def _compute_asset_version() -> str:
@@ -33,5 +36,22 @@ def _compute_asset_version() -> str:
 
 ASSET_VERSION = _compute_asset_version()
 
+
+def shop_logo(shop) -> Optional[dict]:
+    """Render the typography style the shop owner picked in S2.2.
+
+    Returns a dict {css_class, text, show_dot} ready for templates, or None
+    if the shop hasn't picked one — callers should fall back to a plain
+    name + dot rendering in that case.
+    """
+    if not shop or not shop.logo_url or not shop.logo_url.startswith("text:"):
+        return None
+    style_id = shop.logo_url[5:]
+    if style_id not in VALID_STYLE_IDS:
+        return None
+    return render_style(shop.name, style_id)
+
+
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["asset_version"] = ASSET_VERSION
+templates.env.globals["shop_logo"] = shop_logo

@@ -59,7 +59,11 @@
           {% endif %}
           <div class="logo">{{ c.shop.name[0]|upper }}</div>
           <div class="info">
-            <div class="name">{{ c.shop.name }}<span class="dot">.</span></div>
+            {% set logo = shop_logo(c.shop) %}
+            <div class="name">
+              {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+              {% else %}{{ c.shop.name }}<span class="dot">.</span>{% endif %}
+            </div>
             <div class="reward">{{ c.shop.reward_description }}</div>
           </div>
           <div class="progress">

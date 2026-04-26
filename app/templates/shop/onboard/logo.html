@@ -10,7 +10,7 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  {% set picked = shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith('text:') else 'lt-2' %}
+  {% set picked = shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith('text:') else options[0].id %}
   <form method="POST" action="/shop/onboard/logo" class="td"
         x-data="{ choice: '{{ picked }}' }">
     <div class="td-badge">
@@ -40,31 +40,25 @@
       <div class="sub">เลือกแบบที่ใช่ที่สุดสำหรับร้านของคุณ</div>
     </div>
 
-    {% set initial = shop.name[0]|lower if shop.name else 'm' %}
     <div class="s2-logos">
-      <button type="button" class="s2-logo" :class="{ selected: choice === 'lt-1' }" @click="choice = 'lt-1'">
-        <span class="lt-1">{{ initial }}<span class="dot">.</span></span>
+      {% for opt in options %}
+      <button type="button" class="s2-logo" :class="{ selected: choice === '{{ opt.id }}' }" @click="choice = '{{ opt.id }}'">
+        <span class="{{ opt.css_class }}">{{ opt.text }}{% if opt.show_dot %}<span class="dot">.</span>{% endif %}</span>
       </button>
-      <button type="button" class="s2-logo" :class="{ selected: choice === 'lt-2' }" @click="choice = 'lt-2'">
-        <span class="lt-2">{{ shop.name[:5] if shop.name else 'Shop' }}</span>
-      </button>
-      <button type="button" class="s2-logo" :class="{ selected: choice === 'lt-3' }" @click="choice = 'lt-3'">
-        <span class="lt-3">{{ shop.name[:3] if shop.name else 'หมี' }}</span>
+      {% endfor %}
+    </div>
+
+    {% if saved_pick %}
+    <div class="s2-logos" style="margin-top:8px;">
+      <button type="button" class="s2-logo" :class="{ selected: choice === '{{ saved_pick.id }}' }" @click="choice = '{{ saved_pick.id }}'" title="ที่คุณเลือกไว้">
+        <span class="{{ saved_pick.css_class }}">{{ saved_pick.text }}{% if saved_pick.show_dot %}<span class="dot">.</span>{% endif %}</span>
       </button>
     </div>
+    {% endif %}
 
     <div class="s2-helper">
       สร้างจากชื่อ <em>"{{ shop.name }}"</em><br>
-      <span class="reroll" title="AI logo gen — Phase 3">↻ สร้างใหม่อีก 3 แบบ (เร็วๆ นี้)</span>
-    </div>
-
-    <div class="s2-upload" title="Upload — Phase 3">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      ใช้โลโก้ของฉันเอง (เร็วๆ นี้)
+      <a href="/shop/onboard/logo?gen={{ next_gen }}" class="reroll">↻ สร้างใหม่อีก 3 แบบ</a>
     </div>
 
     <input type="hidden" name="logo_choice" :value="choice">

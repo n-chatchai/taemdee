@@ -17,6 +17,7 @@ from app.routes.auth import _set_session_cookie
 from app.services.auth import issue_session_token
 from app.services.deereach import compute_suggestions
 from app.services.events import stream as event_stream
+from app.services.logo_gen import VALID_STYLE_IDS, generate_logos, render_style
 from app.services.referrals import (
     complete_referral_for,
     create_referral_code,
@@ -172,11 +173,30 @@ async def onboard_name_post(
 
 
 @router.get("/onboard/logo", response_class=HTMLResponse)
-async def onboard_logo_get(request: Request, shop: Shop = Depends(get_current_shop)):
+async def onboard_logo_get(
+    request: Request,
+    gen: int = 0,
+    shop: Shop = Depends(get_current_shop),
+):
+    options = generate_logos(shop.name, seed=gen)
+    picked_id = (
+        shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith("text:") else None
+    )
+    # If the saved pick isn't in the current trio, render it as a 4th "your pick" so
+    # the owner doesn't lose their previous choice when they hit regenerate.
+    saved_pick = None
+    if picked_id and picked_id not in {o["id"] for o in options} and picked_id in VALID_STYLE_IDS:
+        saved_pick = render_style(shop.name, picked_id)
     return templates.TemplateResponse(
         request=request,
         name="shop/onboard/logo.html",
-        context={"shop": shop},
+        context={
+            "shop": shop,
+            "options": options,
+            "saved_pick": saved_pick,
+            "gen": gen,
+            "next_gen": gen + 1,
+        },
     )
 
 
@@ -186,9 +206,7 @@ async def onboard_logo_post(
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    # v1: store the picked typography style as a sentinel string in `logo_url`
-    # (real upload + AI-gen come in Phase 3 — see TODO.md).
-    if logo_choice in ("lt-1", "lt-2", "lt-3"):
+    if logo_choice in VALID_STYLE_IDS:
         shop.logo_url = f"text:{logo_choice}"
         db.add(shop)
         await db.commit()

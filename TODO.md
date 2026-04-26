@@ -30,7 +30,7 @@ Last updated: 2026-04-25 · Spec: [PRODUCT.md](PRODUCT.md) · Deploy runbook: [R
 
 - [ ] Port S1 Login from `taemdee-final-thai.html` (replaces current register.html)
 - [ ] New `/shop/onboard` route + S2.1 template (shop name + reward)
-- [ ] Skip S2.2 logo for R1 — punt to Phase 3 (AI / upload both deferred)
+- [x] S2.2 logo — typography-based AI gen with regenerate (per PRD §6.E). Upload escape hatch still deferred.
 - [ ] Skip S2.3 theme picker for R1 — default theme used
 - [ ] Port S3 DeeBoard *minimal* — headline number, static feed from DB, DeeReach card as placeholder (no live updates yet)
 - [ ] Port S8 Shop QR print page — add `segno` dep, render QR for `/scan/<shop_id>`

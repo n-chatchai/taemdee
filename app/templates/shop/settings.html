@@ -18,10 +18,14 @@
       <div class="placeholder"></div>
     </div>
 
+    {% set logo = shop_logo(shop) %}
     <div class="s10-shop-card">
       <div class="logo">{{ shop.name[0]|upper }}<span style="color:var(--butter);">.</span></div>
       <div class="info">
-        <div class="name">{{ shop.name }}<span class="dot">.</span></div>
+        <div class="name">
+          {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+          {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
+        </div>
         <div class="meta">{{ shop.reward_threshold }} แต้ม · {{ shop.reward_description }}</div>
       </div>
     </div>
