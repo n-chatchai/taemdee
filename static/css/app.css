@@ -968,24 +968,49 @@ body {
 }
 .s8-print .reward-strip {
   background: var(--butter);
-  border: 1.5px solid var(--ink);
-  border-radius: 12px;
-  padding: 10px 12px;
+  border: 2.5px solid var(--ink);
+  border-radius: 14px;
+  padding: 14px 16px;
   text-align: center;
-  margin: 14px 0;
+  margin: 16px 0;
   transform: rotate(-1deg);
+  box-shadow: 3px 3px 0 var(--ink);
 }
 .s8-print .reward-strip .ll {
-  font-weight: 700;
+  font-weight: 800;
   font-size: 10px;
-  letter-spacing: 0.06em;
+  letter-spacing: 0.12em;
   text-transform: uppercase;
-  color: var(--ink-soft);
-  margin-bottom: 2px;
+  color: var(--ink);
+  opacity: 0.55;
+  margin-bottom: 4px;
 }
 .s8-print .reward-strip .vv {
   font-weight: 700;
-  font-size: 14px;
+  font-size: 17px;
+  line-height: 1.2;
+}
+.s8-print .reward-strip .vv strong {
+  font-size: 20px;
+  font-weight: 900;
+}
+.s8-print .reward-strip .stars {
+  opacity: 0.4;
+  margin: 0 4px;
+}
+.s8-print .brand-foot {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin-top: 6px;
+  font-size: 11px;
+  font-weight: 600;
+  opacity: 0.55;
+  letter-spacing: 0.02em;
+}
+.s8-print .brand-foot .smile-stamp {
+  flex-shrink: 0;
 }
 
 /* Print stylesheet — what actually goes on the wall. */
