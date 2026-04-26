@@ -72,7 +72,9 @@ async def test_scan_with_branch_tags_stamp_and_redirects(client, db, shop):
         f"/scan/{shop.id}?branch={branch.id}", follow_redirects=False
     )
     assert response.status_code == 303
-    assert response.headers["location"] == f"/card/{shop.id}?branch={branch.id}"
+    assert response.headers["location"] == (
+        f"/card/{shop.id}?branch={branch.id}&stamped=1"
+    )
 
     from app.models import Stamp
     stamps = (await db.exec(select(Stamp).where(Stamp.shop_id == shop.id))).all()

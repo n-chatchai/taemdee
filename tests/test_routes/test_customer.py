@@ -8,7 +8,8 @@ from app.models import Stamp
 async def test_scan_creates_stamp_and_redirects(client, shop):
     response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
     assert response.status_code == 303
-    assert response.headers["location"] == f"/card/{shop.id}"
+    # ?stamped=1 triggers the celebration overlay on the card view
+    assert response.headers["location"] == f"/card/{shop.id}?stamped=1"
 
 
 async def test_scan_persists_stamp(client, db, shop):
@@ -49,6 +50,34 @@ async def test_card_renders(client, shop):
     response = await client.get(f"/card/{shop.id}")
     assert response.status_code == 200
     assert shop.name in response.text
+
+
+async def test_card_renders_celebration_with_stamped_flag(client, shop):
+    """?stamped=1 triggers the one-shot scan celebration overlay."""
+    response = await client.get(f"/card/{shop.id}?stamped=1")
+    assert response.status_code == 200
+    body = response.text
+    assert 'class="scan-cel"' in body
+    assert "scan-cel-badge" in body
+
+
+async def test_card_no_celebration_without_stamped_flag(client, shop):
+    """Plain card view (no ?stamped=1) does NOT include the overlay."""
+    response = await client.get(f"/card/{shop.id}")
+    assert response.status_code == 200
+    assert 'class="scan-cel"' not in response.text
+
+
+async def test_card_no_celebration_on_first_visit(client, shop):
+    """First visit shows the C2 banner instead — celebration overlay is suppressed
+    so the two effects don't stack on each other."""
+    # Single scan ⇒ stamp_count==1 ⇒ is_first_visit==True
+    response = await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    assert response.status_code == 200
+    body = response.text
+    # C2 banner is present, but the standalone scan-cel overlay is not
+    assert "c2-celebration" in body
+    assert 'class="scan-cel"' not in body
 
 
 async def test_scan_unknown_shop_404(client):

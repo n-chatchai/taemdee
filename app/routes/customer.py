@@ -141,6 +141,7 @@ async def view_card(
     request: Request,
     shop_id: uuid.UUID,
     branch: Optional[uuid.UUID] = None,
+    stamped: int = 0,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
@@ -172,6 +173,10 @@ async def view_card(
             "customer": customer,
             "is_first_visit": is_first_visit,
             "branch": branch_obj,
+            # `?stamped=1` from the scan redirect — triggers the celebration
+            # overlay once. Suppressed when is_first_visit (C2 banner already
+            # carries the celebration energy for that case).
+            "just_stamped": bool(stamped) and not is_first_visit,
         },
     )
     if was_created:
@@ -203,6 +208,7 @@ async def scan(
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
 
+    just_stamped = False
     try:
         stamp = await issue_stamp(
             db, shop, customer,
@@ -214,13 +220,18 @@ async def scan(
             "feed-row",
             feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
         )
+        just_stamped = True
     except IssuanceError:
         # Cooldown or other constraint — silently swallow; redirect lands on card.
         pass
 
-    redirect_url = f"/card/{shop_id}"
+    params = []
     if branch_obj:
-        redirect_url += f"?branch={branch_obj.id}"
+        params.append(f"branch={branch_obj.id}")
+    if just_stamped:
+        # Triggers the celebration overlay on the card view (one-shot, fades out).
+        params.append("stamped=1")
+    redirect_url = f"/card/{shop_id}" + ("?" + "&".join(params) if params else "")
     response = RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
     if was_created:
         set_customer_cookie(response, customer.id)

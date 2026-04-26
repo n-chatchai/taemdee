@@ -1,0 +1,26 @@
+{# One-shot celebration overlay shown after a successful scan.
+   Pure-CSS animation: confetti pieces fan out + stars burst around a "+1 แต้ม"
+   badge, then the whole overlay fades out. JS removes the node after 2.6s so
+   it doesn't intercept taps. #}
+<div class="scan-cel" id="scan-cel" aria-hidden="true">
+  <div class="scan-cel-burst">
+    {% for i in range(14) %}
+      <span class="cel-piece p{{ i }}"></span>
+    {% endfor %}
+    <svg class="cel-star s1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="cel-star s2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="cel-star s3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="cel-star s4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+  </div>
+  <div class="scan-cel-badge">
+    <div class="cel-plus">+1</div>
+    <div class="cel-label">แต้ม!</div>
+  </div>
+</div>
+<script>
+  (function () {
+    var el = document.getElementById('scan-cel');
+    if (!el) return;
+    setTimeout(function () { el.parentNode && el.parentNode.removeChild(el); }, 2600);
+  })();
+</script>

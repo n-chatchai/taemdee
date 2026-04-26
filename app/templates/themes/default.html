@@ -11,7 +11,8 @@
 <body>
   {% set is_full = stamp_count >= shop.reward_threshold %}
   {% set logo = shop_logo(shop) %}
-  <div class="td theme-{{ shop.theme_name|default('taemdee') }} {% if is_full %}c4{% endif %}">
+  <div class="td theme-{{ shop.theme_name|default('taemdee') }} {% if is_full %}c4{% endif %} {% if just_stamped %}cel-shake{% endif %}">
+    {% if just_stamped %}{% include "_partials/scan_celebration.html" %}{% endif %}
     <div class="topbar"><span></span><span></span></div>
 
     {# Avatar shortcut → /card/account for claimed, /card/save for anonymous. #}
