@@ -18,9 +18,9 @@ from app.core.auth import (
 from app.core.database import get_session
 from app.models import Customer, Redemption, Shop, Stamp, StaffMember
 from app.models.util import utcnow
-from app.services.events import feed_row_html, publish
+from app.services.events import feed_row_html, publish, stamp_toast_html
 from app.services.issuance import IssuanceError, issue_stamp, void_stamp
-from app.services.redemption import void_redemption
+from app.services.redemption import active_stamp_count, void_redemption
 
 router = APIRouter()
 
@@ -85,6 +85,55 @@ async def staff_issue_stamp(
         shop.id,
         "feed-row",
         feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+    )
+    new_count = await active_stamp_count(db, shop.id, customer.id)
+    publish(
+        shop.id,
+        "stamp-toast",
+        stamp_toast_html(stamp.id, new_count, shop.reward_threshold),
+    )
+    return {"stamp_id": str(stamp.id), "customer_id": str(customer.id)}
+
+
+@router.post("/issue/manual")
+async def staff_issue_manual_stamp(
+    branch_id: Optional[UUID] = Form(None),
+    shop: Shop = Depends(get_current_shop),
+    staff: Optional[StaffMember] = Depends(get_current_staff),
+    db: AsyncSession = Depends(get_session),
+):
+    """One-tap stamp for walk-in customers (no phone, no QR, no card).
+
+    Creates a fresh anonymous Customer per call so each manual stamp counts as
+    a distinct walk-in in the dashboard's "ลูกค้ากลับมา" headline. The customer
+    is throwaway — no contact path back — so this is best-effort attribution.
+    Same SSE pipe as the other issuance methods, so the live toast still fires.
+    """
+    customer = Customer(is_anonymous=True)
+    db.add(customer)
+    await db.commit()
+    await db.refresh(customer)
+
+    try:
+        stamp = await issue_stamp(
+            db, shop, customer,
+            method="shop_scan",
+            branch_id=branch_id,
+            staff_id=staff.id if staff else None,
+        )
+    except IssuanceError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
+
+    publish(
+        shop.id,
+        "feed-row",
+        feed_row_html("stamp", stamp.id, stamp.created_at.strftime("%H:%M")),
+    )
+    new_count = await active_stamp_count(db, shop.id, customer.id)
+    publish(
+        shop.id,
+        "stamp-toast",
+        stamp_toast_html(stamp.id, new_count, shop.reward_threshold),
     )
     return {"stamp_id": str(stamp.id), "customer_id": str(customer.id)}
 

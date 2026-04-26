@@ -82,6 +82,28 @@
         </div>
         <div class="opt-arrow">→</div>
       </button>
+
+      {# Manual / walk-in: no customer info needed — one tap creates a fresh anonymous stamp. #}
+      <button type="button" class="s5-option"
+              @click="
+                $event.target.disabled = true;
+                const r = await fetch('/shop/issue/manual', { method: 'POST' });
+                if (r.ok) { message = '✓ ออกแต้มเรียบร้อย — กลับไปดูที่แดชบอร์ด'; error = ''; }
+                else { const j = await r.json().catch(() => ({})); error = j.detail || 'ออกแต้มไม่สำเร็จ'; message = ''; }
+                setTimeout(() => { $event.target.disabled = false; }, 600);
+              ">
+        <div class="ic-bg">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+        <div class="info">
+          <div class="opt-name">ออกเอง</div>
+          <div class="opt-sub">ลูกค้าไม่มีเบอร์/บัตร — แท็ปเดียว</div>
+        </div>
+        <div class="opt-arrow">→</div>
+      </button>
     </div>
 
     <form x-show="method === 'phone'" x-cloak class="s5-phone-form"

@@ -53,7 +53,7 @@
     </div>
 
     <button class="s7c-upload-cta" type="button"
-            onclick="alert('Slip2Go integration: Phase 3 (R7). UI ready, backend wires up next.');">
+            onclick="document.getElementById('topup-soon-note').hidden = false;">
       <div class="l">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -64,6 +64,11 @@
       </div>
       <span class="arrow">→</span>
     </button>
+
+    <div id="topup-soon-note" class="topup-soon-note" hidden>
+      <strong>เร็วๆ นี้</strong> — ขณะนี้ระบบตรวจสลิปอัตโนมัติ (Slip2Go)
+      ยังอยู่ในระหว่างติดตั้ง · ติดต่อทีมงานเพื่อช่วยเติมเครดิตให้ก่อนได้
+    </div>
   </div>
 </body>
 </html>

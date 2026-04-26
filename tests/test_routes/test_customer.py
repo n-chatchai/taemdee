@@ -68,6 +68,30 @@ async def test_card_no_celebration_without_stamped_flag(client, shop):
     assert 'class="scan-cel"' not in response.text
 
 
+async def test_scan_publishes_stamp_toast_event(client, db, shop, monkeypatch):
+    """Scan should fire BOTH the feed-row event (existing) and a stamp-toast
+    event (new S6) so the DeeBoard can pop the live toast."""
+    from app.routes import customer as customer_routes
+
+    received = []
+
+    def fake_publish(shop_id, event_name, html):
+        received.append((event_name, html))
+
+    monkeypatch.setattr(customer_routes, "publish", fake_publish)
+
+    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    assert response.status_code == 303
+
+    event_names = [name for name, _ in received]
+    assert "feed-row" in event_names
+    assert "stamp-toast" in event_names
+    toast_html = next(html for name, html in received if name == "stamp-toast")
+    assert "s6-toast" in toast_html
+    assert "ออกแต้มสำเร็จ" in toast_html
+    assert "ms just-now" in toast_html
+
+
 async def test_card_no_celebration_on_first_visit(client, shop):
     """First visit shows the C2 banner instead — celebration overlay is suppressed
     so the two effects don't stack on each other."""

@@ -3035,6 +3035,25 @@ body {
 }
 
 .s11-list { padding: 22px 20px 0; }
+.s11-member .more {
+  width: 32px;
+  height: 32px;
+  border-radius: 50%;
+  border: 1.5px solid var(--ink);
+  background: var(--surface);
+  color: var(--ink);
+  font-weight: 700;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+}
+.s11-member .more.confirm-remove {
+  width: auto;
+  padding: 0 12px;
+  background: var(--accent);
+  color: #fff;
+  font-size: 12px;
+  letter-spacing: -0.01em;
+}
 .s11-member {
   background: var(--surface);
   border: 1.5px solid var(--ink);
@@ -4138,6 +4157,241 @@ body {
   cursor: pointer;
   padding: 8px;
   display: block;
+}
+
+/* ==========================================================
+   Inline flash — replaces alert(); auto-dismisses on dashboard
+   ========================================================== */
+
+.dash-flash {
+  position: fixed;
+  left: 50%;
+  bottom: max(140px, calc(env(safe-area-inset-bottom) + 130px));
+  transform: translateX(-50%);
+  z-index: 95;
+  padding: 10px 16px;
+  border-radius: 999px;
+  border: 1.5px solid var(--ink);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  letter-spacing: -0.01em;
+  box-shadow: 0 8px 24px -6px rgba(17, 17, 17, 0.4), 2px 2px 0 var(--ink);
+  max-width: calc(100vw - 36px);
+  text-align: center;
+}
+.dash-flash[hidden] { display: none; }
+.dash-flash.is-ok { background: var(--mint); color: var(--mint-ink); }
+.dash-flash.is-error { background: var(--accent); color: #fff; }
+
+/* S7c — "Slip upload coming soon" inline note (replaces alert) */
+.topup-soon-note {
+  margin: 12px 20px 0;
+  padding: 12px 14px;
+  background: var(--butter-soft);
+  border: 1.5px dashed var(--ink);
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+}
+.topup-soon-note[hidden] { display: none; }
+
+/* ==========================================================
+   Manual-issue FAB — one-tap walk-in stamp on the DeeBoard
+   ========================================================== */
+
+.manual-fab {
+  position: fixed;
+  right: 18px;
+  bottom: max(74px, calc(env(safe-area-inset-bottom) + 60px));
+  z-index: 80;
+  background: var(--accent);
+  color: #fff;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+  padding: 14px 22px 14px 18px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  box-shadow: 0 10px 24px -8px rgba(255, 94, 58, 0.55), 3px 3px 0 var(--ink);
+  cursor: pointer;
+  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
+}
+.manual-fab:hover { transform: translateY(-2px); }
+.manual-fab:active { transform: translateY(1px); box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.55), 1px 1px 0 var(--ink); }
+.manual-fab:disabled { opacity: 0.6; cursor: wait; transform: none; }
+.manual-fab .plus {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+}
+.manual-fab .lbl {
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px;
+}
+
+/* ==========================================================
+   S6 — Stamp notification toast (live on DeeBoard via SSE)
+   ========================================================== */
+
+.s6-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 90;
+  display: flex;
+  align-items: flex-start;
+  justify-content: center;
+  padding-top: 18vh;
+  animation: s6-overlay-in 220ms ease-out;
+}
+@keyframes s6-overlay-in {
+  from { opacity: 0; }
+  to   { opacity: 1; }
+}
+.s6-overlay.dismissing {
+  animation: s6-overlay-out 200ms ease-out forwards;
+}
+@keyframes s6-overlay-out {
+  to { opacity: 0; }
+}
+.s6-toast {
+  width: min(380px, calc(100vw - 36px));
+  padding: 16px 16px 14px;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 0 16px 40px -10px rgba(0, 0, 0, 0.5), 4px 4px 0 var(--accent);
+  animation: s6-toast-in 380ms cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes s6-toast-in {
+  from { transform: translateY(-24px) scale(0.95); opacity: 0; }
+  to   { transform: translateY(0) scale(1); opacity: 1; }
+}
+.s6-toast .top-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 12px;
+}
+.s6-toast .plus {
+  width: 44px; height: 44px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 14px;
+  border: 1.5px solid var(--bg);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  transform: rotate(-6deg);
+  flex-shrink: 0;
+}
+.s6-toast .info { flex: 1; line-height: 1.25; }
+.s6-toast .info .h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.015em;
+  margin-bottom: 2px;
+}
+.s6-toast .info .s {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  color: var(--ink-softer);
+  letter-spacing: 0.05em;
+}
+.s6-toast .progress-mini {
+  background: rgba(255, 255, 255, 0.1);
+  border-radius: 12px;
+  padding: 12px 14px;
+  margin-bottom: 12px;
+}
+.s6-toast .progress-mini .row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 6px;
+}
+.s6-toast .progress-mini .name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+}
+.s6-toast .progress-mini .count {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  letter-spacing: -0.02em;
+  color: var(--butter);
+}
+.s6-toast .progress-mini .count .of {
+  color: var(--ink-softer);
+  font-weight: 400;
+  font-size: 12px;
+}
+.s6-toast .progress-mini .stamps-mini {
+  display: grid;
+  gap: 3px;
+  /* auto-flow keeps the grid one row regardless of threshold (5/10/20/custom) */
+  grid-auto-flow: column;
+  grid-auto-columns: minmax(0, 1fr);
+}
+.s6-toast .progress-mini .stamps-mini .ms {
+  height: 8px;
+  border-radius: 3px;
+  background: rgba(255, 255, 255, 0.15);
+}
+.s6-toast .progress-mini .stamps-mini .ms.on { background: var(--accent); }
+.s6-toast .progress-mini .stamps-mini .ms.just-now {
+  background: var(--butter);
+  box-shadow: 0 0 0 2px var(--butter), 0 0 12px var(--butter);
+  animation: justnow-pulse 1.5s ease-in-out infinite;
+}
+@keyframes justnow-pulse {
+  0%, 100% { box-shadow: 0 0 0 2px var(--butter), 0 0 12px var(--butter); }
+  50%      { box-shadow: 0 0 0 2px var(--butter), 0 0 4px var(--butter); }
+}
+.s6-toast .void-row {
+  display: flex;
+  gap: 8px;
+  align-items: center;
+}
+.s6-toast .void-btn {
+  flex: 1;
+  background: var(--bg);
+  color: var(--ink);
+  border: 1.5px solid var(--bg);
+  padding: 12px 14px;
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.s6-toast .countdown {
+  width: 56px;
+  background: rgba(255, 94, 58, 0.15);
+  border: 1.5px dashed var(--accent);
+  color: var(--accent);
+  border-radius: 12px;
+  padding: 11px 0;
+  text-align: center;
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 14px;
 }
 
 /* ==========================================================

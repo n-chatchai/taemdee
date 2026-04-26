@@ -108,14 +108,38 @@
     </div>
     <div id="feed-empty" class="feed-empty" {% if feed %}style="display:none"{% endif %}>ยังไม่มีกิจกรรมวันนี้</div>
 
+    {# S6 stamp-notification toast mounts here; populated via SSE #}
+    <div id="stamp-toast-mount"></div>
+
+    {# Inline error banner — replaces alert(); auto-dismisses #}
+    <div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
+
     {% include "_partials/footer_mark.html" %}
   </div>
+
+  {# Floating manual-issue button — one tap, walk-in stamp #}
+  <button id="manual-issue-fab" class="manual-fab" type="button" title="ออกแต้มเอง (ไม่ต้องใช้เบอร์)">
+    <span class="plus">+</span>
+    <span class="lbl">แต้ม</span>
+  </button>
 
   <script>
     // Live feed via SSE — new stamps/redemptions stream in from /shop/events.
     const feedRows = document.getElementById('feed-rows');
     const feedEmpty = document.getElementById('feed-empty');
+    const toastMount = document.getElementById('stamp-toast-mount');
+    const flash = document.getElementById('dash-flash');
     const evt = new EventSource('/shop/events');
+
+    // Replace browser alert() — inline banner that auto-dismisses.
+    let flashTimer = null;
+    function showFlash(msg, kind) {
+      flash.textContent = msg;
+      flash.className = 'dash-flash ' + (kind === 'error' ? 'is-error' : 'is-ok');
+      flash.hidden = false;
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => { flash.hidden = true; }, 3000);
+    }
 
     evt.addEventListener('feed-row', (e) => {
       feedEmpty.style.display = 'none';
@@ -129,18 +153,86 @@
       const rowId = tmp.firstElementChild?.dataset.row;
       if (rowId) {
         document.getElementById(rowId)?.classList.add('voided');
+        // If a matching toast is open, dismiss it too.
+        const stampId = rowId.replace(/^row-/, '');
+        document.getElementById('toast-' + stampId)?.classList.add('dismissing');
       }
     });
 
-    // Void button click — fetch the void endpoint, mark row on success.
-    feedRows.addEventListener('click', async (e) => {
-      const btn = e.target.closest('.void');
-      if (!btn) return;
-      const r = await fetch(btn.dataset.voidUrl, { method: 'POST' });
-      if (r.ok) {
-        document.getElementById(btn.dataset.row)?.classList.add('voided');
-      } else {
-        alert('ยกเลิกไม่สำเร็จ — อาจหมดเวลา 60 วินาทีแล้ว');
+    // S6: stamp-notification toast — overlay with 60s countdown + void button.
+    function dismissToast(el) {
+      if (!el) return;
+      el.classList.add('dismissing');
+      setTimeout(() => el.parentNode && el.parentNode.removeChild(el), 220);
+    }
+
+    evt.addEventListener('stamp-toast', (e) => {
+      // Replace any open toast with the newest scan.
+      toastMount.innerHTML = e.data;
+      const overlay = toastMount.firstElementChild;
+      if (!overlay) return;
+
+      // Tap outside the toast card → dismiss
+      overlay.addEventListener('click', (ev) => {
+        if (ev.target === overlay) dismissToast(overlay);
+      });
+
+      // 60-second countdown that ticks the .countdown chip
+      const cd = overlay.querySelector('.countdown');
+      let secsLeft = parseInt(cd?.dataset.deadline || '60', 10);
+      cd && (cd.textContent = secsLeft + ' วิ');
+      const timerId = setInterval(() => {
+        secsLeft -= 1;
+        if (secsLeft <= 0) {
+          clearInterval(timerId);
+          dismissToast(overlay);
+          return;
+        }
+        cd && (cd.textContent = secsLeft + ' วิ');
+      }, 1000);
+      overlay.dataset.timerId = timerId;
+    });
+
+    // Manual-issue FAB — POST to /shop/issue/manual; SSE delivers the toast.
+    const fab = document.getElementById('manual-issue-fab');
+    fab && fab.addEventListener('click', async () => {
+      fab.disabled = true;
+      try {
+        const r = await fetch('/shop/issue/manual', { method: 'POST' });
+        if (!r.ok) {
+          const j = await r.json().catch(() => ({}));
+          showFlash(j.detail || 'ออกแต้มไม่สำเร็จ', 'error');
+        }
+      } finally {
+        // Brief debounce so a double-tap doesn't issue 2 stamps.
+        setTimeout(() => { fab.disabled = false; }, 600);
+      }
+    });
+
+    // Single delegated click handler covers feed-row void buttons AND the toast's void button.
+    document.addEventListener('click', async (e) => {
+      const toastBtn = e.target.closest('.s6-toast .void-btn');
+      if (toastBtn) {
+        const r = await fetch(toastBtn.dataset.voidUrl, { method: 'POST' });
+        const overlay = document.getElementById(toastBtn.dataset.toast);
+        if (r.ok) {
+          // Mark the matching feed row as voided too
+          const stampId = toastBtn.dataset.voidUrl.split('/').slice(-2, -1)[0];
+          document.getElementById('row-' + stampId)?.classList.add('voided');
+          dismissToast(overlay);
+        } else {
+          showFlash('ยกเลิกไม่สำเร็จ — อาจหมดเวลา 60 วินาทีแล้ว', 'error');
+        }
+        return;
+      }
+      const rowBtn = e.target.closest('#feed-rows .void');
+      if (rowBtn) {
+        const r = await fetch(rowBtn.dataset.voidUrl, { method: 'POST' });
+        if (r.ok) {
+          document.getElementById(rowBtn.dataset.row)?.classList.add('voided');
+        } else {
+          showFlash('ยกเลิกไม่สำเร็จ — อาจหมดเวลา 60 วินาทีแล้ว', 'error');
+        }
       }
     });
   </script>

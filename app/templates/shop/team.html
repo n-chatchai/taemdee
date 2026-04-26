@@ -86,9 +86,12 @@
               </span>
             </div>
           </div>
-          <form method="POST" action="/shop/team/{{ m.id }}/revoke" style="margin:0;">
-            <button type="submit" class="more"
-                    onclick="return confirm('ลบ {{ m.display_name or m.phone }} ออกจากทีม?')">⋯</button>
+          {# Two-tap remove: ⋯ reveals "ลบ?" in red; tap again to actually submit. #}
+          <form method="POST" action="/shop/team/{{ m.id }}/revoke" style="margin:0;"
+                x-data="{ armed: false }">
+            <button type="button" class="more" x-show="!armed" @click="armed = true">⋯</button>
+            <button type="submit" class="more confirm-remove" x-show="armed" x-cloak
+                    @click.stop>ลบ?</button>
           </form>
         </div>
       {% endfor %}
