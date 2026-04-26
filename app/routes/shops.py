@@ -265,7 +265,13 @@ async def onboard_reward_post(
 
 
 @router.get("/onboard/theme", response_class=HTMLResponse)
-async def onboard_theme_get(request: Request, shop: Shop = Depends(get_current_shop)):
+async def onboard_theme_get(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    # Eagerly load branches for the live preview in the template
+    await db.refresh(shop, ["branches"])
     return templates.TemplateResponse(
         request=request,
         name="shop/onboard/theme.html",
