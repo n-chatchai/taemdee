@@ -47,14 +47,7 @@
         </a>
       {% else %}
         <a href="#login-modal" class="secondary">เข้าสู่ระบบ</a>
-        <a href="#cta" class="primary">
-          เปิดร้านฟรี
-          <span class="arrow-circle">→</span>
-        </a>
       {% endif %}
-      <button class="menu-toggle" aria-label="เมนู">
-        <svg viewBox="0 0 24 24" width="24" height="24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><line x1="3" y1="12" x2="21" y2="12"/><line x1="3" y1="6" x2="21" y2="6"/><line x1="3" y1="18" x2="21" y2="18"/></svg>
-      </button>
     </div>
   </div>
 </nav>
@@ -65,17 +58,20 @@
     <div class="hero-centered">
       <div class="hero-tag">
         <span class="pulse-dot"></span>
-        เปิดร้านค้าใหม่ใน 60 วินาที
+        ใหม่ · ใช้ได้ทั่วไทย ไม่จำกัดพื้นที่
       </div>
-      <h1>บัตรสะสมแต้ม<br><span class="accent">ที่ลูกค้ารัก.</span><br><span class="hl">ใช้ง่ายที่สุด.</span></h1>
+      <h1>
+        บัตรสะสมแต้ม<br>
+        ที่ลูกค้า<span class="hl">รัก<span class="accent">.</span></span>
+      </h1>
       <p class="lead">
-        ลูกค้าสแกน QR ได้แต้มทันที ไม่ต้องโหลดแอป<br>
-        ร้านเปิดใช้งานฟรีในไม่กี่นาที ไม่มีค่ารายเดือน
+        แต้มดีคือบัตรสะสมแต้มดิจิทัลสำหรับร้านค้า
+        ลูกค้าสแกน QR ได้แต้มทันที ไม่ต้องโหลดแอป
+        ร้านเปิดใช้งานฟรีในไม่กี่นาที
       </p>
 
-      <div class="role-chooser-label">เลือกใช้งานตามบทบาท ของคุณ ↴</div>
       <div class="role-chooser">
-        <a href="/shop/register" class="role-card role-shop">
+        <a href="#shops" class="role-card role-shop">
           <div class="role-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M3 9l1-5h16l1 5"/>
@@ -84,22 +80,20 @@
             </svg>
           </div>
           <div class="role-text">
-            <div class="role-label">SHOP OWNER</div>
             <div class="role-name">สำหรับร้าน</div>
-            <div class="role-meta">เปิดร้านฟรี ใน 60 วินาที</div>
+            <div class="role-meta">เปิดร้านฟรี ในไม่กี่นาที</div>
           </div>
           <div class="role-arrow">→</div>
         </a>
-        <a href="/card/account" class="role-card role-cust">
+        <a href="#customers" class="role-card role-cust">
           <div class="role-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
             </svg>
           </div>
           <div class="role-text">
-            <div class="role-label">CUSTOMER</div>
             <div class="role-name">สำหรับลูกค้า</div>
-            <div class="role-meta">สแกน QR เก็บแต้มได้ทุกร้าน</div>
+            <div class="role-meta">สแกน QR เก็บแต้ม</div>
           </div>
           <div class="role-arrow">→</div>
         </a>
@@ -113,8 +107,7 @@
   </div>
 </section>
 
-<!-- ==================== CONTENT SECTIONS ==================== -->
-<!-- (Content sections follow here - I'll include them from design_body.html) -->
+<!-- ==================== FOR SHOPS ==================== -->
           <li><span class="check-tile">✓</span><span>แจ้งเตือนเมื่อมีแต้มออก พร้อมปุ่มยกเลิกได้ทันที</span></li>
           <li><span class="check-tile">✓</span><span>ส่งโปรชวนลูกค้าที่หายไปกลับ ในคลิกเดียว</span></li>
         </ul>
