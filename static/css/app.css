@@ -4598,7 +4598,11 @@ body {
 
 .s3-issue-fab {
   position: sticky;
-  bottom: 12px;
+  /* Floats above the .footer-mark (which is sticky bottom: 0, ~46-58px tall
+     incl. safe-area). Without this offset the FAB would land directly on top
+     of the footer; the user wants the brand + "เพิ่มลงหน้าจอ" link visible
+     below the FAB. */
+  bottom: calc(56px + env(safe-area-inset-bottom));
   /* margin-top: auto pushes the FAB to the bottom of .td (flex column) when
      content is short — without it, sticky has nothing to anchor against on
      a freshly-onboarded dashboard with no feed yet, so the FAB floats mid-
