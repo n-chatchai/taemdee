@@ -361,11 +361,17 @@ async def topup_confirm_page(
 # --------- Theme picker (S9) ---------
 
 @router.get("/themes", response_class=HTMLResponse)
-async def themes_page(request: Request, shop: Shop = Depends(get_current_shop)):
+async def themes_page(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    await db.refresh(shop, ["branches"])
+    branch_label = shop.branches[0].name if shop.branches else (shop.location or "ทุกสาขา")
     return templates.TemplateResponse(
         request=request,
         name="shop/themes.html",
-        context={"shop": shop, "themes": VALID_THEMES},
+        context={"shop": shop, "themes": VALID_THEMES, "branch_label": branch_label},
     )
 
 
@@ -399,7 +405,9 @@ async def shop_events(
 async def settings_page(
     request: Request,
     shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
 ):
+    await db.refresh(shop, ["branches"])
     return templates.TemplateResponse(
         request=request,
         name="shop/settings.html",

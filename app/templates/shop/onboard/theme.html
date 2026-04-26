@@ -12,14 +12,6 @@
 <body>
   <form method="POST" action="/shop/onboard/theme" class="td"
         x-data="{ theme: '{{ shop.theme_name }}' }">
-    <div class="td-badge">
-      <svg class="s" viewBox="0 0 20 12" fill="none">
-        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-      </svg>
-      TAEMDEE
-    </div>
     <div class="topbar"><span></span><span></span></div>
 
     <div class="s2-steps" style="margin-top:18px;">
@@ -78,7 +70,7 @@
     <input type="hidden" name="theme" :value="theme">
 
     <div class="s2-foot">
-      <a href="/shop/onboard/logo" class="back">←</a>
+      <a href="/shop/onboard/reward" class="back">←</a>
       <button type="submit" class="next">
         <span>ถัดไป · พิมพ์ QR</span>
         <span class="arrow">→</span>

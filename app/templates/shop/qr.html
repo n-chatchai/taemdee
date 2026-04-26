@@ -27,6 +27,22 @@
         </svg>
         พิมพ์
       </button>
+      <button class="pill" onclick="(async()=>{try{await navigator.share({title:'QR ร้าน',url:window.location.href});}catch(e){}})()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        บันทึก
+      </button>
+      <button class="pill" onclick="(async()=>{try{await navigator.share({title:'{{ shop.name }}',url:'{{ scan_url }}'});}catch(e){navigator.clipboard&&navigator.clipboard.writeText('{{ scan_url }}');}})()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
+          <line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/>
+          <line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/>
+        </svg>
+        แชร์
+      </button>
     </div>
 
     <div class="s8-print">
@@ -40,17 +56,23 @@
       </div>
 
       <div class="reward-strip">
-        <div class="ll">{{ shop.reward_threshold }} แต้ม รับ</div>
-        <div class="vv">{{ shop.reward_description }}</div>
+        <div class="ll">★ รางวัล ★</div>
+        <div class="vv">{{ shop.reward_threshold }} แต้ม <span class="stars">·</span> {{ shop.reward_description }}</div>
       </div>
 
-      <div class="url-strip">{{ scan_url }}</div>
+      <div class="brand-foot">
+        <span>powered by taemdee<span class="dot">.</span></span>
+        <svg class="smile" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+        <span class="url">{{ scan_url }}</span>
+      </div>
     </div>
 
     <div class="s8-tip">
-      <div class="tip-bulb">!</div>
-      <div>พิมพ์ใส่กระดาษเอ4 หรือสติ๊กเกอร์ก็ได้ ติดที่จุดที่ลูกค้าเห็นชัดที่สุด — เคาน์เตอร์, ประตู, หรือเมนู</div>
+      <div class="b">i</div>
+      <div>พิมพ์ขนาด A6 ติดที่เคาน์เตอร์ ใกล้จุดรับเงิน</div>
     </div>
+
+    {% include "_partials/footer_mark.html" %}
   </div>
 </body>
 </html>
