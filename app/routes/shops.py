@@ -343,14 +343,12 @@ async def onboard_done_get(
     request: Request,
     shop: Shop = Depends(get_current_shop),
 ):
-    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
-    qr_svg = segno.make(scan_url, error="m").svg_inline(
-        scale=4, dark="#111111", light="#ffffff", border=0, omitsize=True
-    )
+    """S2.4 — celebration + customer-view preview. The QR itself lives at
+    /shop/qr; the secondary CTA links there for owners who want to print first."""
     return templates.TemplateResponse(
         request=request,
         name="shop/onboard/done.html",
-        context={"shop": shop, "qr_svg": qr_svg},
+        context={"shop": shop},
     )
 
 

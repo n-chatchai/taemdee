@@ -10,6 +10,7 @@ from app.models.util import utcnow
 class StaffMember(SQLModel, table=True):
     """A staff member at a shop. Permissions are set by the owner at invite time."""
 
+    __tablename__ = "staff_members"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shop.id", index=True)
 

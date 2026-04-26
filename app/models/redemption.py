@@ -20,7 +20,7 @@ class Redemption(SQLModel, table=True):
 
     is_voided: bool = Field(default=False)
     voided_at: Optional[datetime] = Field(default=None)
-    voided_by_staff_id: Optional[UUID] = Field(default=None, foreign_key="staffmember.id")
+    voided_by_staff_id: Optional[UUID] = Field(default=None, foreign_key="staff_members.id")
 
     created_at: datetime = Field(default_factory=utcnow)
 

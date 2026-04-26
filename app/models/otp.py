@@ -13,6 +13,7 @@ class OtpCode(SQLModel, table=True):
     In development the code is printed to stdout. In production a real SMS provider sends it.
     """
 
+    __tablename__ = "otp_codes"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     phone: str = Field(index=True)
     code: str

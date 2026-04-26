@@ -8,6 +8,7 @@ from app.models.util import utcnow
 
 
 class TopupSlip(SQLModel, table=True):
+    __tablename__ = "topup_slips"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shop.id")
     amount: int
@@ -21,6 +22,7 @@ class TopupSlip(SQLModel, table=True):
 
 
 class CreditLog(SQLModel, table=True):
+    __tablename__ = "credit_logs"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shop.id")
     amount: int  # Positive for topup, negative for deduction

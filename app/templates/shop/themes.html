@@ -22,9 +22,9 @@
       </button>
     </div>
 
-    <div class="s2-q">
-      <div class="ask">เลือก<em>ธีม.</em></div>
-      <div class="sub">หน้าตาบัตรสะสมแต้มของลูกค้า</div>
+    <div class="page-title">
+      <div class="h">เลือก<em>ธีม.</em></div>
+      <div class="sub">มุมมองลูกค้า — เปลี่ยนสีทันที</div>
     </div>
 
     {% set theme_meta = [
@@ -34,22 +34,25 @@
       ('pastel',  'พาสเทล',  ['#FFEEE4', '#E87A6A', '#F4B583'])
     ] %}
 
-    <div class="s2-theme-preview" :class="'t-' + theme">
-      <div class="preview-shop">
-        <div class="preview-shop-name">{{ shop.name }}</div>
-        <div class="preview-shop-sub">{{ branch_label or 'สาขาหลัก' }}</div>
+    <div class="s9-preview-frame">
+      <div class="s9-pf-label">มุมมองลูกค้า · บนมือถือ</div>
+      <div class="s2-theme-preview" :class="'t-' + theme">
+        <div class="preview-shop">
+          <div class="preview-shop-name">{{ shop.name }}</div>
+          <div class="preview-shop-sub">{{ branch_label or 'สาขาหลัก' }}</div>
+        </div>
+        <div class="preview-num">7</div>
+        <div class="preview-meta">อีก {{ shop.reward_threshold - 7 }} แต้มรับรางวัล</div>
+        <div class="preview-stamps">
+          {% for i in range(10) %}
+            <div class="ps" :class="{
+              on: {{ i }} < 7,
+              butter: {{ i }} == 2 || {{ i }} == 5
+            }"></div>
+          {% endfor %}
+        </div>
+        <div class="preview-reward">✦ {{ shop.reward_description }} ✦</div>
       </div>
-      <div class="preview-num">7</div>
-      <div class="preview-meta">อีก {{ shop.reward_threshold - 7 }} แต้มรับรางวัล</div>
-      <div class="preview-stamps">
-        {% for i in range(10) %}
-          <div class="ps" :class="{
-            on: {{ i }} < 7,
-            butter: {{ i }} == 2 || {{ i }} == 5
-          }"></div>
-        {% endfor %}
-      </div>
-      <div class="preview-reward">✦ {{ shop.reward_description }} ✦</div>
     </div>
 
     <div class="s2-theme-swatches">

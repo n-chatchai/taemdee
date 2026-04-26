@@ -15,6 +15,7 @@ class DeeReachCampaign(SQLModel, table=True):
     stored in v1 (added later if attribution data is needed).
     """
 
+    __tablename__ = "deereach_campaigns"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shop.id", index=True)
 

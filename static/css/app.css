@@ -4181,6 +4181,128 @@ body {
   line-height: 1.5;
   margin-bottom: 24px;
 }
+/* S2.4 — Customer view preview (mini phone showing what the buyer sees) */
+.s2-customer-preview {
+  margin: 0 22px 18px;
+  text-align: center;
+}
+.s2-customer-preview .cp-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-softer);
+  margin-bottom: 10px;
+}
+.s2-customer-preview .cp-phone-wrap {
+  display: flex;
+  justify-content: center;
+}
+.s2-customer-preview .cp-phone {
+  width: 130px;
+  aspect-ratio: 9 / 17;
+  background: #111;
+  border: 1.5px solid #111;
+  border-radius: 18px;
+  padding: 6px;
+  box-shadow: 4px 4px 0 var(--accent);
+}
+.s2-customer-preview .cp-screen {
+  width: 100%;
+  height: 100%;
+  background: var(--bg);
+  border-radius: 12px;
+  padding: 10px 8px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  text-align: center;
+}
+.cp-shop {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  margin-bottom: 4px;
+}
+.cp-shop .cp-logo { width: 16px; height: 16px; }
+.cp-shop .cp-shop-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 8px;
+  color: var(--ink);
+  line-height: 1;
+}
+.cp-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  line-height: 1;
+  letter-spacing: -0.04em;
+  color: var(--accent);
+  margin: 2px 0;
+}
+.cp-num .cp-sub {
+  font-size: 12px;
+  color: var(--ink-softer);
+  margin-left: 1px;
+}
+.cp-msg {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 7px;
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 6px;
+}
+.cp-stamps {
+  display: grid;
+  grid-template-columns: repeat(5, 1fr);
+  gap: 2px;
+  width: 100%;
+  margin-bottom: 4px;
+}
+.cp-s {
+  aspect-ratio: 1;
+  border: 1px dashed var(--ink-softer);
+  border-radius: 50%;
+  background: transparent;
+}
+.cp-s.on {
+  background: var(--ink);
+  border-color: var(--ink);
+  border-style: solid;
+}
+.cp-reward {
+  margin-top: auto;
+  padding: 3px 6px;
+  background: var(--butter);
+  border: 1px solid var(--ink);
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 6.5px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.s2-customer-preview .cp-hint {
+  margin-top: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
+/* S9 — customer-view label above the live theme preview */
+.s9-preview-frame .s9-pf-label {
+  margin: 0 18px 6px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-softer);
+}
+
 .s2-qr-prev {
   margin: 0 22px 22px;
   padding: 14px 16px;
