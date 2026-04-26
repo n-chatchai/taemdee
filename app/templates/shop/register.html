@@ -76,7 +76,10 @@
             if (ref) { fd.append('ref', ref); }
             const r = await fetch('/auth/otp/verify', { method: 'POST', body: fd });
             if (r.ok) { window.location.href = '/shop/dashboard'; }
-            else { error = 'OTP ไม่ถูกต้องหรือหมดอายุ'; }
+            else {
+              const j = await r.json().catch(() => ({}));
+              error = j.detail || (r.status + ' — ' + (r.statusText || 'ยืนยันไม่สำเร็จ'));
+            }
           ">
       <label>กรอก OTP ที่ส่งไปยัง <strong x-text="phone"></strong></label>
       <div x-show="simulatedCode" class="err" style="background:#F6F1E5; color:#111; margin-bottom:12px; border:1px dashed var(--ink);">

@@ -215,7 +215,8 @@
           document.getElementById('row-' + stampId)?.classList.add('voided');
           dismissToast(overlay);
         } else {
-          showFlash('ยกเลิกไม่สำเร็จ — อาจหมดเวลา 60 วินาทีแล้ว', 'error');
+          const j = await r.json().catch(() => ({}));
+          showFlash(j.detail || (r.status + ' — ' + (r.statusText || 'ยกเลิกไม่สำเร็จ')), 'error');
         }
         return;
       }
@@ -225,7 +226,8 @@
         if (r.ok) {
           document.getElementById(rowBtn.dataset.row)?.classList.add('voided');
         } else {
-          showFlash('ยกเลิกไม่สำเร็จ — อาจหมดเวลา 60 วินาทีแล้ว', 'error');
+          const j = await r.json().catch(() => ({}));
+          showFlash(j.detail || (r.status + ' — ' + (r.statusText || 'ยกเลิกไม่สำเร็จ')), 'error');
         }
       }
     });

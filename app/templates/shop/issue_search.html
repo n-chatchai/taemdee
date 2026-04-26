@@ -39,7 +39,7 @@
              window.location.href = '/shop/dashboard';
            } else {
              const j = await r.json().catch(() => ({}));
-             this.flash = j.detail || 'ออกแต้มไม่สำเร็จ';
+             this.flash = j.detail || (r.status + ' — ' + (r.statusText || 'ออกแต้มไม่สำเร็จ'));
              this.flashKind = 'is-error';
            }
          }

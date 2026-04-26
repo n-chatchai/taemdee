@@ -29,12 +29,13 @@
         <form @submit.prevent="
                 const fd = new FormData(); fd.append('phone', phone);
                 const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
-                const data = await r.json();
-                if (r.ok) { 
-                  step = 'otp'; error = ''; 
+                const data = await r.json().catch(() => ({}));
+                if (r.ok) {
+                  step = 'otp'; error = '';
                   if (data.code) { simulatedCode = data.code; }
+                } else {
+                  error = data.detail || (r.status + ' — ' + (r.statusText || 'ส่งรหัสไม่สำเร็จ'));
                 }
-                else { error = 'ส่งรหัสไม่สำเร็จ'; }
               ">
           <div class="phone-input">
             <span class="prefix">+66</span>
@@ -66,7 +67,10 @@
               fd.append('phone', phone); fd.append('code', code);
               const r = await fetch('/card/claim/phone', { method: 'POST', body: fd });
               if (r.ok) { window.location.href = '/my-cards'; }
-              else { error = 'OTP ไม่ถูกต้องหรือหมดอายุ'; }
+              else {
+                const j = await r.json().catch(() => ({}));
+                error = j.detail || (r.status + ' — ' + (r.statusText || 'ยืนยันไม่สำเร็จ'));
+              }
             ">
         <div class="headline">ใส่<em>รหัสจาก SMS</em></div>
         <div class="body-copy">รหัสส่งไปที่ <strong x-text="phone"></strong></div>

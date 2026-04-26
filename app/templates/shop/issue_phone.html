@@ -52,7 +52,8 @@
                 window.location.href = '/shop/dashboard';
               } else {
                 const j = await r.json().catch(() => ({}));
-                flash = j.detail || 'ออกแต้มไม่สำเร็จ'; flashKind = 'is-error';
+                flash = j.detail || (r.status + ' — ' + (r.statusText || 'ออกแต้มไม่สำเร็จ'));
+                flashKind = 'is-error';
               }
             ">
       <span x-show="phone.length === 10" x-cloak x-text="'ออกแต้ม · ' + phone"></span>
