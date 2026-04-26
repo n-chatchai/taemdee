@@ -3690,7 +3690,9 @@ body {
   right: 6px;
   width: 20px;
   height: 20px;
-   S2.3 — Theme picker (big live preview + swatch row)
+}
+
+/* S2.3 — Theme picker (big live preview + swatch row)
    ========================================================== */
   .s2-theme-preview {
     margin: 14px 18px 0;
