@@ -4297,37 +4297,50 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s2-upload svg { width: 14px; height: 14px; }
 
 /* ==========================================================
-   S2.3 — Theme picker grid (with mini previews)
+   S2.3 — Theme picker swatch row (lifted from the design's
+   .s2-theme-swatches; the older .s2-themes / .s2-theme grid is
+   gone, the new .s2-c1-preview owns the live preview)
    ========================================================== */
 
-.s2-themes {
-  padding: 18px 20px 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 10px;
+.s2-theme-swatches {
+  margin: 16px 18px 0;
+  display: flex;
+  gap: 8px;
 }
-.s2-theme {
-  border: 1.5px solid var(--ink);
-  border-radius: 14px;
-  box-shadow: 2px 2px 0 var(--ink);
-  overflow: hidden;
+.s2-theme-swatch {
+  flex: 1;
   cursor: pointer;
+  border-radius: 12px;
+  border: 1.5px solid var(--ink);
+  overflow: hidden;
   background: var(--surface);
-  position: relative;
+  transition: transform 0.15s;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 0;
   font-family: inherit;
-  display: block;
-  text-decoration: none;
   color: inherit;
 }
-.s2-theme.selected { transform: translateY(-2px); }
-.s2-theme.selected::after {
-  content: '✓';
-  position: absolute;
-  top: 6px;
-  right: 6px;
-  width: 20px;
-  height: 20px;
+.s2-theme-swatch.selected {
+  transform: translateY(-3px);
+  box-shadow: 2px 4px 0 var(--accent);
 }
+.s2-theme-swatch .swatch-colors {
+  height: 32px;
+  display: flex;
+}
+.s2-theme-swatch .swatch-colors > div { flex: 1; }
+.s2-theme-swatch .swatch-name {
+  padding: 5px 4px 6px;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--ink);
+  border-top: 1px solid var(--ink);
+  background: var(--bg);
+}
+.s2-theme-swatch.selected .swatch-name { background: var(--butter); }
 
 
 /* S2 — shared real-input styling (looks like the design's faux .input.focused). */
