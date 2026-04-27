@@ -1040,9 +1040,30 @@ body {
   position: relative;
 }
 
-/* C1 top-right control. Two variants:
-   - .c1-avatar  — claimed customer's initial (→ C7 My Cards)
-   - .c1-myqr    — guest's QR icon (→ /my-id, the C8 page) */
+/* C1 top-left back arrow → /my-cards. Always visible — PWA in standalone
+   mode has no browser back, so an explicit affordance is required. */
+.c1-back {
+  position: absolute;
+  top: 18px;
+  left: 18px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  background: var(--surface);
+  color: var(--ink);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.c1-back svg { width: 18px; height: 18px; }
+
+/* C1 top-right QR icon (→ /my-id, the C8 page) — always visible so claimed
+   customers can also reach their identity QR from a shop card. */
 .c1-myqr {
   position: absolute;
   top: 18px;
