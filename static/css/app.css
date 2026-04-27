@@ -5331,19 +5331,28 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 /* Sticky dock — rounded card hugging the bottom of the viewport, sits 44px
    above the .s3-footer-brand bar. Per design verbatim (taemdee-shop.html).
    Content scrolls beneath as user moves through the dashboard. */
+/* Dock — design wants `position: sticky bottom: 60px` but `.td` has
+   `overflow-x: hidden` which makes the browser treat it as a scroll
+   container and pin the sticky element to .td's scroll instead of the
+   viewport. The dashboard scrolls at the document level, so sticky-bottom
+   then disappears as the page scrolls down. Use `position: fixed` — same
+   visual outcome (rounded card pinned to viewport bottom) without the
+   scroll-container quirk. .td-dashboard reserves space below so content
+   doesn't end up hidden under the dock+brand stack. */
 .s3-dock {
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 60px;
+  margin: 0 auto;
+  max-width: calc(100% - 40px);
   background: var(--bg);
   border-radius: 18px;
-  margin: 0 20px;
   padding: 6px 14px 14px;
   z-index: 4;
 }
-/* Spacer expands to fill remaining vertical space when content is short, so
-   the dock+brand pair always end up at the bottom of the viewport even on
-   a near-empty dashboard. */
-.td.td-dashboard .s3-spacer { flex: 1; }
+.td.td-dashboard { padding-bottom: 420px; }
+.td.td-dashboard .s3-spacer { display: none; }
 .s3-dock .dock-handle {
   width: 36px;
   height: 4px;
@@ -5352,13 +5361,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin: 0 auto 8px;
   opacity: 0.5;
 }
-/* Footer brand bar — sticky to the very bottom, full-width, soft top border.
-   Renders below .s3-dock as a sibling. */
+/* Footer brand bar — fixed full-width strip at the very bottom of the
+   viewport. Sits below .s3-dock (which is fixed at bottom: 60px). */
 .s3-footer-brand {
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
   z-index: 5;
-  margin: 0;
   padding: 16px 18px max(16px, env(safe-area-inset-bottom));
   background: var(--bg);
   border-top: 1px solid rgba(17, 17, 17, 0.12);
