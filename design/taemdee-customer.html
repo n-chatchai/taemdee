@@ -406,14 +406,198 @@
     box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
     cursor: pointer;
   }
-  .shop-head .side-spark {
+  .c1-myqr {
     position: absolute;
-    top: 56px;
-    color: var(--accent);
-    width: 12px; height: 12px;
+    top: 18px; right: 18px;
+    z-index: 5;
+    width: 36px; height: 36px;
+    background: var(--ink); color: var(--butter);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 2px 2px 0 var(--accent);
   }
-  .shop-head .side-spark.l { left: 30px; transform: rotate(-15deg); }
-  .shop-head .side-spark.r { right: 30px; transform: rotate(15deg); color: var(--butter); stroke: #141414; }
+  .c1-myqr svg { width: 18px; height: 18px; }
+
+  /* C1.guest — bottom upgrade banner */
+  /* C2.welcome — Nickname input inside sheet */
+  .nickname-input-wrap {
+    margin-bottom: 12px;
+  }
+  .nickname-input {
+    padding: 14px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 15px;
+    color: var(--ink);
+    display: flex; align-items: center; gap: 4px;
+    min-height: 24px;
+  }
+  .nickname-input .placeholder {
+    color: var(--ink-softer);
+  }
+  .nickname-input .cursor {
+    display: inline-block;
+    width: 2px; height: 18px;
+    background: var(--accent);
+    animation: blink 1.1s infinite;
+  }
+  .signup-btn.nickname-save {
+    justify-content: center;
+    background: var(--accent);
+    color: #FFF;
+    box-shadow: 3px 3px 0 var(--ink);
+    font-weight: 700; font-size: 14px;
+  }
+
+  .guest-banner-bottom {
+    margin: 14px 18px 0;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 2px 2px 0 var(--ink);
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .guest-banner-bottom .gb-icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .guest-banner-bottom .gb-icon svg { width: 22px; height: 22px; display: block; }
+  .guest-banner-bottom .gb-text {
+    flex: 1; line-height: 1.25;
+  }
+  .guest-banner-bottom .gb-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12.5px;
+    color: var(--ink);
+  }
+  .guest-banner-bottom .gb-s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .guest-banner-bottom .gb-arrow {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+
+  /* C2.signup — Bottom sheet using install-sheet pattern */
+  .signup-sheet-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(17,17,17,0.55);
+    z-index: 10;
+    display: flex; align-items: flex-end;
+    justify-content: center;
+  }
+  .signup-sheet-overlay .signup-sheet {
+    background: var(--bg);
+    border-top: 1.5px solid var(--ink);
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    padding: 14px 18px 16px;
+    width: 100%;
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .signup-sheet .sheet-handle {
+    width: 36px; height: 4px;
+    border-radius: 999px;
+    background: var(--ink-softer);
+    margin: 0 auto 14px;
+    opacity: 0.4;
+  }
+  .signup-head {
+    text-align: center;
+    margin-bottom: 14px;
+    padding-bottom: 12px;
+    border-bottom: 1px solid var(--line);
+  }
+  .signup-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 17px;
+    line-height: 1.25;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    margin-bottom: 3px;
+  }
+  .signup-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .signup-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    line-height: 1.4;
+    color: var(--ink-soft);
+  }
+  .signup-btn {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 100%;
+    display: flex; align-items: center; gap: 12px;
+    padding: 11px 14px;
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    cursor: pointer;
+    margin: 0 0 8px;
+    text-align: left;
+    border: 1.5px solid var(--ink);
+    line-height: 1.2;
+  }
+  .signup-btn.line {
+    background: #06C755;
+    color: #FFF;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .signup-btn.phone-btn {
+    background: var(--surface);
+    color: var(--ink);
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .signup-btn svg {
+    width: 22px; height: 22px;
+    flex-shrink: 0;
+  }
+  .signup-btn .bn-text {
+    flex: 1;
+    display: flex; flex-direction: column;
+    line-height: 1.2;
+  }
+  .signup-btn .bn-name {
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.015em;
+  }
+  .signup-btn .bn-meta {
+    font-weight: 500; font-size: 10.5px;
+    opacity: 0.85;
+    margin-top: 1px;
+  }
+  .signup-btn.phone-btn .bn-meta { color: var(--ink-soft); opacity: 1; }
+  .signup-skip {
+    display: block;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-softer);
+    padding: 8px 0 2px;
+    cursor: pointer;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    text-decoration-style: dashed;
+  }
+
   .shop-logo-mark {
     display: inline-block;
     font-family: 'Host Grotesk', sans-serif;
@@ -749,42 +933,42 @@
   }
   /* C2 benefits + CTA — explain WHY before asking to save */
   .c2-benefits {
-    margin: 18px 20px 0;
-    padding: 13px 14px 12px;
-    background: var(--surface);
-    border: 1.5px solid var(--ink);
-    border-radius: 14px;
+    margin: 22px 20px 0;
+    padding: 14px 4px 4px;
+    border-top: 1px solid rgba(17,17,17,0.1);
   }
   .c2-benefits .bh {
-    display: flex; align-items: center; gap: 8px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
-    color: var(--ink);
-    margin-bottom: 7px;
+    font-weight: 600; font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-softer);
+    margin-bottom: 12px;
   }
   .c2-benefits .bh svg {
-    width: 14px; height: 14px;
-    color: var(--accent);
-    flex-shrink: 0;
+    display: none;
   }
   .c2-benefits .bl {
-    display: flex; flex-direction: column; gap: 4px;
+    display: flex; flex-direction: column;
+    gap: 8px;
   }
   .c2-benefits .bi {
-    display: flex; align-items: center; gap: 8px;
+    display: flex; align-items: center; gap: 10px;
     font-family: 'Prompt', sans-serif;
-    font-size: 11.5px;
+    font-weight: 500; font-size: 13px;
     color: var(--ink);
-    line-height: 1.35;
+    line-height: 1.4;
+    letter-spacing: -0.005em;
   }
   .c2-benefits .bi .ck {
     display: inline-flex; align-items: center; justify-content: center;
-    width: 13px; height: 13px;
-    border-radius: 50%;
-    background: var(--butter);
-    border: 1px solid var(--ink);
-    color: var(--ink);
-    font-size: 7.5px; font-weight: 700;
+    width: 16px; height: 16px;
+    border-radius: 0;
+    background: transparent;
+    border: none;
+    color: var(--accent);
+    font-size: 13px;
+    font-weight: 800;
     flex-shrink: 0;
   }
 
@@ -1264,6 +1448,50 @@
     font-style: italic;
   }
 
+  /* C4 — Redeem gate (guest must signup before redeem) */
+  .c4 .redeem-gate {
+    margin: 18px 20px 0;
+    padding: 14px;
+    background: var(--surface);
+    border: 1.5px dashed var(--ink);
+    border-radius: 18px;
+  }
+  .c4 .redeem-gate .gate-msg {
+    display: flex; align-items: center; gap: 8px;
+    justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12px;
+    color: var(--ink);
+    margin-bottom: 12px;
+  }
+  .c4 .redeem-gate .btn-redeem {
+    margin: 0;
+    width: 100%;
+    background: var(--ink); color: var(--bg);
+    border: none; padding: 14px 18px;
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.015em;
+    display: flex; align-items: center; justify-content: space-between;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+  .c4 .redeem-gate .btn-redeem .arrow {
+    width: 26px; height: 26px;
+    background: var(--accent); border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    color: #FFF; font-size: 13px;
+    flex-shrink: 0;
+  }
+  .c4 .redeem-gate .counter-note {
+    padding: 0;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px; color: var(--ink-softer);
+    font-style: italic;
+  }
+
   /* ========================================================== */
   /* C5 — Reward claimed                                         */
   /* ========================================================== */
@@ -1360,22 +1588,84 @@
     box-shadow: 3px 3px 0 var(--ink);
     position: relative;
     transform: rotate(-1.5deg);
+    overflow: hidden;
+    isolation: isolate;
   }
-  .c5 .voucher::before, .c5 .voucher::after {
-    content: ''; position: absolute;
-    width: 14px; height: 14px;
-    background: var(--bg);
-    border: 1.5px solid var(--ink);
-    border-radius: 50%;
+  /* Conic gradient sweep border — paints behind everything */
+  .c5 .voucher::before {
+    content: '';
+    position: absolute;
+    inset: -50%;
+    background: conic-gradient(
+      from 0deg,
+      transparent 0deg,
+      transparent 270deg,
+      rgba(255, 94, 58, 0.5) 310deg,
+      rgba(255, 217, 82, 0.9) 340deg,
+      rgba(255, 94, 58, 0.5) 360deg
+    );
+    animation: conic-spin 4s linear infinite;
+    z-index: -1;
+    border-radius: 0;
+    background-color: transparent;
+    border: none;
+    width: auto; height: auto;
+    transform: none;
+    top: -50%; left: -50%;
   }
-  .c5 .voucher::before { left: -8px; top: 50%; transform: translateY(-50%); }
-  .c5 .voucher::after { right: -8px; top: 50%; transform: translateY(-50%); }
+  .c5 .voucher::after {
+    content: '';
+    position: absolute;
+    inset: 2px;
+    background: var(--butter);
+    border-radius: 12px;
+    z-index: -1;
+    width: auto; height: auto;
+    transform: none;
+    top: 2px; left: 2px; right: 2px; bottom: 2px;
+    border: none;
+  }
+  @keyframes conic-spin {
+    to { transform: rotate(360deg); }
+  }
+  /* Particles floating up */
+  .c5 .voucher .v-particles {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    overflow: hidden;
+    border-radius: 12px;
+  }
+  .c5 .voucher .v-particles .p {
+    position: absolute;
+    bottom: -8px;
+    width: 10px; height: 10px;
+    color: var(--ink);
+    opacity: 0;
+    animation: particle-rise 3.4s ease-in infinite;
+  }
+  .c5 .voucher .v-particles .p1 { left: 8%;  animation-delay: 0.0s; width: 11px; height: 11px; }
+  .c5 .voucher .v-particles .p2 { left: 22%; animation-delay: 0.6s; width: 7px; height: 7px; }
+  .c5 .voucher .v-particles .p3 { left: 36%; animation-delay: 1.2s; width: 9px; height: 9px; }
+  .c5 .voucher .v-particles .p4 { left: 50%; animation-delay: 0.3s; width: 8px; height: 8px; }
+  .c5 .voucher .v-particles .p5 { left: 64%; animation-delay: 1.8s; width: 10px; height: 10px; }
+  .c5 .voucher .v-particles .p6 { left: 78%; animation-delay: 0.9s; width: 7px; height: 7px; }
+  .c5 .voucher .v-particles .p7 { left: 88%; animation-delay: 2.4s; width: 9px; height: 9px; }
+  .c5 .voucher .v-particles .p8 { left: 14%; animation-delay: 1.5s; width: 8px; height: 8px; color: var(--accent); }
+  @keyframes particle-rise {
+    0%   { transform: translateY(0) translateX(0) rotate(0deg); opacity: 0; }
+    10%  { opacity: 1; }
+    50%  { opacity: 0.85; transform: translateY(-50px) translateX(6px) rotate(180deg); }
+    90%  { opacity: 0.4; }
+    100% { transform: translateY(-110px) translateX(-4px) rotate(360deg); opacity: 0; }
+  }
   .c5 .voucher .v-label {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px; letter-spacing: 0.2em;
     text-transform: uppercase; color: var(--ink);
     margin-bottom: 4px; text-align: center;
     font-weight: 600;
+    position: relative;
   }
   .c5 .voucher .v-title {
     font-family: 'Prompt', sans-serif;
@@ -1383,12 +1673,14 @@
     font-size: 17px;
     letter-spacing: -0.015em;
     text-align: center; margin-bottom: 6px;
+    position: relative;
   }
   .c5 .voucher .v-id {
     font-family: 'JetBrains Mono', monospace;
     font-size: 9px; color: var(--ink);
     opacity: 0.6;
     text-align: center; letter-spacing: 0.08em;
+    position: relative;
   }
   .c5 .reset {
     margin: 24px 20px 0;
@@ -1437,6 +1729,124 @@
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
     font-size: 14px; color: var(--ink);
+  }
+
+  /* ========================================================== */
+  /* C8 — Guest QR display                                       */
+  /* ========================================================== */
+  .c8-stage {
+    padding: 32px 24px 0;
+    text-align: center;
+    flex: 1;
+  }
+  .c8-instruction {
+    margin-bottom: 22px;
+    display: flex; flex-direction: column;
+    align-items: center; gap: 10px;
+  }
+  .c8-icon {
+    width: 44px; height: 28px;
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+  }
+  .c8-icon svg { width: 100%; height: 100%; }
+  .c8-msg {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 18px;
+    line-height: 1.3;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .c8-qr-card {
+    background: #FDFAF2;
+    border: 2px solid var(--ink);
+    border-radius: 22px;
+    padding: 18px;
+    box-shadow: 4px 4px 0 var(--accent);
+    display: flex; flex-direction: column;
+    align-items: center; gap: 12px;
+  }
+  .c8-qr {
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 220px;
+    background: #FDFAF2;
+    border-radius: 8px;
+    padding: 6px;
+  }
+  .c8-qr svg { display: block; width: 100%; height: 100%; }
+  .c8-id {
+    display: flex; align-items: baseline; gap: 8px;
+    padding-top: 6px;
+    border-top: 1px dashed var(--ink-softer);
+    width: 100%;
+    justify-content: center;
+  }
+  .c8-id-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 9px;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    color: var(--ink-softer);
+  }
+  .c8-id-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 15px;
+    letter-spacing: 0.05em;
+    color: var(--ink);
+  }
+  .c8-refresh {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 5px;
+  }
+  .c8-refresh svg {
+    width: 11px; height: 11px;
+    animation: spin 4s linear infinite;
+  }
+  @keyframes spin {
+    from { transform: rotate(0deg); }
+    to { transform: rotate(360deg); }
+  }
+  .c8-foot {
+    padding: 20px 20px 0;
+    margin-top: auto;
+  }
+  .c8-tip {
+    display: flex; align-items: center; gap: 8px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px dashed var(--ink-softer);
+    border-radius: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    line-height: 1.35;
+    margin-bottom: 10px;
+  }
+  .c8-tip .bulb {
+    width: 18px; height: 18px;
+    background: var(--butter); color: var(--ink);
+    border: 1px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 11px;
+  }
+  .c8-upgrade {
+    display: flex; align-items: center; justify-content: center;
+    gap: 8px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: var(--ink);
+    text-decoration: none;
+    box-shadow: 2px 2px 0 var(--ink);
   }
 
   /* ========================================================== */
@@ -1597,6 +2007,55 @@
     box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
     cursor: pointer;
   }
+  .c7-myqr {
+    width: 38px; height: 38px;
+    background: var(--ink); color: var(--butter);
+    border-radius: 12px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    cursor: pointer;
+    text-decoration: none;
+    box-shadow: 2px 2px 0 var(--accent);
+  }
+  .c7-myqr svg { width: 18px; height: 18px; }
+
+  /* Guest banner — shown to non-registered users */
+  .guest-banner {
+    margin: 14px 20px 0;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    display: flex; align-items: center; gap: 10px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .guest-banner .gb-icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .guest-banner .gb-icon svg { width: 22px; height: 22px; display: block; }
+  .guest-banner .gb-text {
+    flex: 1; line-height: 1.25; min-width: 0;
+  }
+  .guest-banner .gb-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12.5px;
+    color: var(--ink);
+  }
+  .guest-banner .gb-s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .guest-banner .gb-arrow {
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+
   .c7-stats {
     margin: 22px 20px 0;
     padding: 18px 18px;
@@ -4039,7 +4498,7 @@
     </div>
     <div class="cover-meta">
       Design v1<br>
-      ลูกค้า · 8 หน้า<br>
+      ลูกค้า · 12 หน้า<br>
       มือถือ · ภาษาไทย
     </div>
   </div>
@@ -4055,7 +4514,7 @@
 
     <div class="cover-stats">
       <div class="cover-stat">
-        <div class="n">8</div>
+        <div class="n">12</div>
         <div class="l">หน้าจอลูกค้า</div>
       </div>
       <div class="cover-stat">
@@ -4094,7 +4553,7 @@
       <div class="num">01</div>
       <h2>ลูกค้า · <em>สแกนครั้งแรก</em></h2>
     </div>
-    <div class="desc">2 หน้าจอ — สแกน QR ครั้งแรกแล้วชวนสมัคร พร้อมเหตุผลที่ควรเก็บแต้ม</div>
+    <div class="desc">4 หน้าจอ — สแกน QR ครั้งแรก, modal ถามชื่อเล่น, sheet ชวนเป็นสมาชิก (LINE/เบอร์), หน้า OTP กรอกเบอร์</div>
   </div>
 
   <div class="grid">
@@ -4104,68 +4563,78 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">C2</span>สแกนครั้งแรก · 1/10</div>
         <h3>แต้มแรก</h3>
-        <p>ป้ายส้มเด้งทันทีที่สแกน บอกเหตุผล 3 ข้อที่ควรเก็บแต้มก่อนเลือกวิธี (LINE หรือเบอร์โทร)</p>
+        <p>หน้าตาเหมือน C1.guest แต่เป็น state แรก (1/10) — ใช้ DeeCard layout เดียวกัน, banner "มาเป็นสมาชิกแต้มดี" ด้านล่าง · ลูกค้าเริ่มที่ค่ามาตรฐาน guest mode</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
+            <a class="c1-myqr" title="โชว์ QR ให้ร้านสแกน">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </a>
 
-            <div class="c2-celebration">
-              <svg class="corner-spark" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-              <div class="plus">+1</div>
-              <div class="ctxt">
-                <strong>ได้แต้มแล้ว</strong>
-                <span>แต้มแรกของคุณที่นี่</span>
-              </div>
-            </div>
-
-            <div class="shop-head" style="padding-top:18px;">
+            <div class="shop-head">
               <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
               <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
             </div>
 
-            <div class="hero-num-wrap" style="padding-top:16px;">
-              <div class="hero-label">แต้มของคุณ</div>
-              <div class="hero-num" style="font-size:100px;">
+            <div class="hero-num-wrap">
+              <div class="hero-label">แต้มแรกของคุณ ✦</div>
+              <div class="hero-num">
                 1
                 <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               </div>
               <div class="hero-num-sub">
-                <em>อีก 9 แต้ม</em> <span class="of">/ จาก 10</span>
+                <em>อีก 9 แต้ม!</em> <span class="of">/ จาก 10</span>
               </div>
             </div>
 
             <div class="stamps-wrap">
               <div class="stamps">
                 <div class="stamp on"></div>
-                <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
-                <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
               </div>
             </div>
 
-            <div class="c2-benefits">
-              <div class="bh">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+            <div class="reward-pill">
+              <div class="gift">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12"/>
+                  <rect x="2" y="7" width="20" height="5"/>
+                  <line x1="12" y1="22" x2="12" y2="7"/>
+                  <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+                  <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
                 </svg>
-                เก็บแต้มไว้ ไม่ให้หาย
               </div>
-              <div class="bl">
-                <div class="bi"><span class="ck">✓</span> เปลี่ยนมือถือก็ใช้ต่อได้</div>
-                <div class="bi"><span class="ck">✓</span> ใช้กับร้านอื่นที่มีแต้มดี</div>
-                <div class="bi"><span class="ck">✓</span> รับโปรโมชั่นและข่าวสารจากร้านโปรด</div>
+              <div class="rtxt">
+                <div class="rlabel">รางวัล</div>
+                <div class="rname">กาแฟ Signature ฟรี 1 แก้ว</div>
               </div>
             </div>
 
-            <div class="c2-cta">
-              <button class="line-save-btn">
-                <svg viewBox="0 0 100 100" width="20" height="20"><rect x="6" y="6" width="88" height="88" rx="22" fill="#fff"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                เก็บแต้มกับ LINE
-                <span class="arr">→</span>
-              </button>
-              <a class="phone-alt">ใช้เบอร์โทรแทน</a>
-              <a class="skip-link">ใช้แบบไม่บันทึก</a>
-            </div>            <div class="footer-mark">
+            <div class="guest-banner-bottom">
+              <div class="gb-icon">
+                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#06C755"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              </div>
+              <div class="gb-text">
+                <div class="gb-h">มาเป็นสมาชิกแต้มดี</div>
+                <div class="gb-s">แต้มไม่หาย · เปลี่ยนมือถือก็ใช้ต่อได้ · ติดตามร้านโปรด</div>
+              </div>
+              <span class="gb-arrow">→</span>
+            </div>
+            <div class="footer-mark">
               <span class="fm-brand">
                 <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
                 <span class="brand">taemdee<span class="dot">.</span></span>
@@ -4176,6 +4645,97 @@
         </div>
       </div>
     </div>
+    <!-- C2.welcome — Nickname ask modal (auto-opens on first scan) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C2.welcome</span>ทักทายลูกค้าใหม่</div>
+        <h3>เรียกคุณว่าอะไรดี?</h3>
+        <p>เปิดอัตโนมัติเมื่อสแกนครั้งแรก ก่อนเห็น C2 — bottom sheet ถามชื่อเล่นเพื่อทักทายในแอป · กดข้ามได้ ลูกค้าไม่ต้องกรอก</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="shop-head">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+            </div>
+
+            <div class="signup-sheet-overlay">
+              <div class="signup-sheet">
+                <div class="sheet-handle"></div>
+
+                <div class="signup-head">
+                  <div class="signup-title">เรียกคุณว่า<em>อะไรดี?</em></div>
+                  <div class="signup-sub">ใช้ทักทายในแอป · เปลี่ยนได้ตลอด</div>
+                </div>
+
+                <div class="nickname-input-wrap">
+                  <div class="nickname-input">
+                    <span class="placeholder">ชื่อเล่น</span>
+                    <span class="cursor"></span>
+                  </div>
+                </div>
+
+                <button class="signup-btn nickname-save">
+                  บันทึก
+                </button>
+
+                <a class="signup-skip">ข้ามไปก่อน</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C2.signup — Member sign-up sheet -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C2.signup</span>มาเป็นสมาชิก · เลือกวิธี</div>
+        <h3>กดปุ่ม banner แล้วเปิด sheet</h3>
+        <p>เปิดเมื่อกด banner "มาเป็นสมาชิกแต้มดี" จาก C2 หรือ C1.guest หรือ C7 — bottom sheet โผล่บนบัตร, ลูกค้าเลือก LINE หรือเบอร์โทร</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="shop-head">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+            </div>
+
+            <div class="signup-sheet-overlay">
+              <div class="signup-sheet">
+                <div class="sheet-handle"></div>
+
+                <div class="signup-head">
+                  <div class="signup-title">มาเป็นสมาชิก<em>แต้มดี.</em></div>
+                  <div class="signup-sub">แต้มไม่หาย · เปลี่ยนมือถือก็ใช้ต่อได้ · ติดตามร้านโปรด</div>
+                </div>
+
+                <button class="signup-btn line">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+                  <div class="bn-text">
+                    <div class="bn-name">เข้าด้วย LINE</div>
+                    <div class="bn-meta">เร็วสุด · กดเดียว</div>
+                  </div>
+                </button>
+
+                <button class="signup-btn phone-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
+                  <div class="bn-text">
+                    <div class="bn-name">ใช้เบอร์โทร</div>
+                    <div class="bn-meta">รับ OTP ทาง SMS</div>
+                  </div>
+                </button>
+
+                <a class="signup-skip">ขอบคุณแต่ยังก่อน</a>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- C3 — Soft Wall -->
     <div class="mockup">
       <div class="mockup-caption">
@@ -4208,11 +4768,7 @@
               </button>
 
               <div class="alt-line">
-                หรือ <a class="alt-link">เก็บกับ LINE แทน</a> (เร็วกว่า)
-              </div>
-
-              <div class="trust">
-                <span class="lock">◉</span> ใช้เพื่อยืนยันตัวตนเท่านั้น · ไม่ส่งโฆษณา · ลบบัญชีได้ตลอด
+                หรือ <a class="alt-link">มาเป็นสมาชิกแต้มดี</a> (LINE · เร็วกว่า)
               </div>
             </div>
           </div>
@@ -4232,7 +4788,7 @@
       <div class="num">02</div>
       <h2>ลูกค้า · <em>ใช้งานประจำ</em></h2>
     </div>
-    <div class="desc">3 หน้าจอ — บัตรประจำวัน ใกล้รับรางวัล รับรางวัลที่หน้าเคาน์เตอร์</div>
+    <div class="desc">4 หน้าจอ — บัตรประจำวัน, บัตรของลูกค้า guest (ไม่สมัครสมาชิก), ใกล้รับรางวัล, รับรางวัลที่หน้าเคาน์เตอร์</div>
   </div>
 
   <div class="grid">
@@ -4250,8 +4806,6 @@
             <div class="c1-avatar" title="ดูบัตรทั้งหมด">ต</div>
 
             <div class="shop-head">
-              <svg class="side-spark l" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-              <svg class="side-spark r" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
               <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
             </div>
@@ -4312,12 +4866,100 @@
         </div>
       </div>
     </div>
-    <!-- C4 — Ready to redeem -->
+    <!-- C1.guest — Daily card · guest mode (single shop) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C4</span>เต็มบัตร · 10/10</div>
-        <h3>พร้อมรับรางวัล</h3>
-        <p>ครบ 10 แต้มแล้ว ป้าย "พร้อมรับรางวัล!" สีส้มเอียง ๆ พร้อมดาวระยิบระยับรอบ ๆ</p>
+        <div class="kicker"><span class="n">C1.guest</span>บัตรประจำวัน · guest</div>
+        <h3>Guest ใช้แบบไม่สมัคร</h3>
+        <p>หลัง guest scan QR ร้านครั้งแรก (ผ่าน C2 → กด "ใช้แบบ guest") — เห็นบัตรของร้านนั้น เก็บแต้มได้ทันที · banner เชิญชวน "มาเป็นสมาชิกแต้มดี" + ปุ่ม QR ของฉันที่มุมขวาบน (สำหรับให้ร้านสแกนแต้มถัดไป)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <a class="c1-myqr" title="โชว์ QR ให้ร้านสแกน">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <rect x="3" y="3" width="7" height="7" rx="1"/>
+                <rect x="14" y="3" width="7" height="7" rx="1"/>
+                <rect x="3" y="14" width="7" height="7" rx="1"/>
+                <rect x="14" y="14" width="7" height="7" rx="1"/>
+              </svg>
+            </a>
+
+            <div class="shop-head">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+            </div>
+
+            <div class="hero-num-wrap">
+              <div class="hero-label">แต้มของคุณ</div>
+              <div class="hero-num">
+                3
+                <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              </div>
+              <div class="hero-num-sub">
+                <em>อีก 7 แต้ม!</em> <span class="of">/ จาก 10</span>
+              </div>
+            </div>
+
+            <div class="stamps-wrap">
+              <div class="stamps">
+                <div class="stamp on"></div>
+                <div class="stamp on"></div>
+                <div class="stamp on butter"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+                <div class="stamp"></div>
+              </div>
+            </div>
+
+            <div class="reward-pill">
+              <div class="gift">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12"/>
+                  <rect x="2" y="7" width="20" height="5"/>
+                  <line x1="12" y1="22" x2="12" y2="7"/>
+                  <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+                  <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+                </svg>
+              </div>
+              <div class="rtxt">
+                <div class="rlabel">รางวัล</div>
+                <div class="rname">กาแฟ Signature ฟรี 1 แก้ว</div>
+              </div>
+            </div>
+
+            <div class="guest-banner-bottom">
+              <div class="gb-icon">
+                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#06C755"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              </div>
+              <div class="gb-text">
+                <div class="gb-h">มาเป็นสมาชิกแต้มดี</div>
+                <div class="gb-s">แต้มไม่หาย · เปลี่ยนมือถือก็ใช้ต่อได้ · ติดตามร้านโปรด</div>
+              </div>
+              <span class="gb-arrow">→</span>
+            </div>
+            <div class="footer-mark">
+              <span class="fm-brand">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span class="brand">taemdee<span class="dot">.</span></span>
+              </span>
+              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C4 — Ready to redeem (signup required) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C4</span>เต็มบัตร · 10/10 · guest</div>
+        <h3>ครบแล้ว — สมัครก่อนรับรางวัล</h3>
+        <p>guest เก็บแต้มครบ 10 — ก่อนกดรับรางวัลต้องเป็นสมาชิกก่อน (กันโกง + ร้านได้ติดต่อกลับลูกค้าได้) · ปุ่มรับรางวัลเปลี่ยนเป็น "มาเป็นสมาชิกแต้มดี → รับรางวัล"</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -4343,7 +4985,7 @@
 
             <div class="redeem-num">
               <div class="big">10</div>
-              <div class="done">บัตรเต็มแล้ว</div>
+              <div class="done">แต้มครบแล้ว</div>
             </div>
 
             <div class="stamps-wrap">
@@ -4361,12 +5003,16 @@
               </div>
             </div>
 
-            <button class="btn-redeem">
-              <span>รับรางวัล</span>
-              <span class="arrow">→</span>
-            </button>
-
-            <div class="counter-note">กดเมื่ออยู่ที่เคาน์เตอร์เท่านั้น</div>
+            <div class="redeem-gate">
+              <div class="gate-msg">
+                <svg viewBox="0 0 100 100" width="20" height="20"><rect x="6" y="6" width="88" height="88" rx="22" fill="#06C755"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span>เป็นสมาชิกก่อนรับรางวัล</span>
+              </div>
+              <button class="btn-redeem">
+                <span>มาเป็นสมาชิกแต้มดี · รับรางวัล</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
 
             <div class="footer-mark">
               <span class="fm-brand">
@@ -4402,14 +5048,19 @@
                 </svg>
               </div>
               <div class="claimed-title"><em>รับรางวัล</em><br>เรียบร้อย!</div>
-
-              <div class="live-pulse">
-                <span class="pulse-dot"></span>
-                <span>สด · <span id="claim-counter">3</span> วิที่แล้ว</span>
-              </div>
             </div>
 
             <div class="voucher">
+              <div class="v-particles">
+                <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              </div>
               <div class="v-label">✦ คูปอง ✦</div>
               <div class="v-title">กาแฟ Signature ฟรี 1 แก้ว</div>
               <div class="v-id">#MHEE-A72B · 24.04.26</div>
@@ -4454,17 +5105,17 @@
       <div class="num">03</div>
       <h2>ลูกค้า · <em>จัดการบัตร</em></h2>
     </div>
-    <div class="desc">2 หน้าจอ — บัตรทุกร้านในที่เดียว และตั้งค่าบัญชี</div>
+    <div class="desc">3 หน้าจอ — บัตรทุกร้านในที่เดียว, QR ของฉันสำหรับให้ร้านสแกน และตั้งค่าบัญชี</div>
   </div>
 
   <div class="grid">
 
-    <!-- C7 — My Cards -->
+    <!-- C7 — My Cards (guest mode) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C7</span>บัตรของฉัน</div>
-        <h3>บัตรทุกร้าน</h3>
-        <p>การ์ดดำเล็ก ๆ บอกยอดรวม การ์ดสีเหลืองคือบัตรที่พร้อมรับรางวัลเด่นที่สุด</p>
+        <div class="kicker"><span class="n">C7</span>บัตรของฉัน · guest</div>
+        <h3>บัตรทุกร้าน — ไม่ต้องสมัคร</h3>
+        <p>ลูกค้า guest scan ร้านเก็บแต้มได้ทันที — บัตรเก็บไว้ใน device · banner เชิญชวน "มาเป็นสมาชิกแต้มดี" (เก็บบัตรไม่หาย) · ปุ่ม QR ของฉันที่มุมขวา (กดเพื่อให้ร้าน scan ออกแต้ม)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -4472,11 +5123,18 @@
 
             <div class="c7-greet">
               <div class="hi">
-                สวัสดีคุณแต้ม
+                สวัสดี
                 <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์ · มี 6 บัตรในกระเป๋า</span>
+                <span class="day">วันศุกร์ · มี 3 บัตรในกระเป๋า</span>
               </div>
-              <div class="avatar">ต</div>
+              <a class="c7-myqr">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="3" y="3" width="7" height="7" rx="1"/>
+                  <rect x="14" y="3" width="7" height="7" rx="1"/>
+                  <rect x="3" y="14" width="7" height="7" rx="1"/>
+                  <rect x="14" y="14" width="7" height="7" rx="1"/>
+                </svg>
+              </a>
             </div>
 
             <div class="c7-stats">
@@ -4581,7 +5239,19 @@
                 <div class="h">อยากได้บัตรเพิ่ม?</div>
                 <div class="s">สแกน QR แต้มดี ที่ร้านไหนก็ได้</div>
               </div>
-            </div>            <div class="footer-mark">
+            </div>
+
+            <div class="guest-banner-bottom">
+              <div class="gb-icon">
+                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#06C755"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              </div>
+              <div class="gb-text">
+                <div class="gb-h">มาเป็นสมาชิกแต้มดี</div>
+                <div class="gb-s">แต้มไม่หาย · เปลี่ยนมือถือก็ใช้ต่อได้ · ติดตามร้านโปรด</div>
+              </div>
+              <span class="gb-arrow">→</span>
+            </div>
+            <div class="footer-mark">
               <span class="fm-brand">
                 <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
                 <span class="brand">taemdee<span class="dot">.</span></span>
@@ -4592,6 +5262,113 @@
         </div>
       </div>
     </div>
+    <!-- C8 — Guest QR display (show to shop for scanning) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C8</span>QR ของฉัน · guest</div>
+        <h3>โชว์ QR ให้ร้านสแกน</h3>
+        <p>เปิดเมื่อกดปุ่ม QR มุมขวาบนของ C7 — ใช้กรณีร้านเปิด method "สแกนบัตรลูกค้า" · QR ใหญ่อ่านง่าย พร้อม ID guest อ่านได้ด้วยตา (สำรอง) + auto-refresh ทุก 60 วินาที (กันคนเก็บภาพไปใช้)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">QR ของฉัน</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="c8-stage">
+              <div class="c8-instruction">
+                <div class="c8-icon">
+                  <svg viewBox="0 0 20 12" fill="none">
+                    <circle cx="5" cy="3" r="1.7" fill="currentColor"/>
+                    <circle cx="15" cy="3" r="1.7" fill="currentColor"/>
+                    <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+                  </svg>
+                </div>
+                <div class="c8-msg">โชว์ QR นี้<br>ให้พนักงานสแกน</div>
+              </div>
+
+              <div class="c8-qr-card">
+                <div class="c8-qr">
+                  <svg viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+                    <rect x="0" y="0" width="80" height="80" fill="#FDFAF2"/>
+                    <rect x="6" y="6" width="20" height="20" rx="2" fill="#111"/>
+                    <rect x="11" y="11" width="10" height="10" rx="1" fill="#FDFAF2"/>
+                    <rect x="13" y="13" width="6" height="6" fill="#111"/>
+                    <rect x="54" y="6" width="20" height="20" rx="2" fill="#111"/>
+                    <rect x="59" y="11" width="10" height="10" rx="1" fill="#FDFAF2"/>
+                    <rect x="61" y="13" width="6" height="6" fill="#111"/>
+                    <rect x="6" y="54" width="20" height="20" rx="2" fill="#111"/>
+                    <rect x="11" y="59" width="10" height="10" rx="1" fill="#FDFAF2"/>
+                    <rect x="13" y="61" width="6" height="6" fill="#111"/>
+                    <g fill="#111">
+                      <rect x="32" y="6" width="4" height="4"/>
+                      <rect x="40" y="6" width="4" height="4"/>
+                      <rect x="32" y="14" width="4" height="4"/>
+                      <rect x="44" y="14" width="4" height="4"/>
+                      <rect x="36" y="22" width="4" height="4"/>
+                      <rect x="6" y="32" width="4" height="4"/>
+                      <rect x="14" y="32" width="4" height="4"/>
+                      <rect x="22" y="32" width="4" height="4"/>
+                      <rect x="32" y="32" width="4" height="4"/>
+                      <rect x="40" y="32" width="4" height="4"/>
+                      <rect x="48" y="32" width="4" height="4"/>
+                      <rect x="56" y="32" width="4" height="4"/>
+                      <rect x="64" y="32" width="4" height="4"/>
+                      <rect x="72" y="32" width="4" height="4"/>
+                      <rect x="10" y="40" width="4" height="4"/>
+                      <rect x="18" y="40" width="4" height="4"/>
+                      <rect x="28" y="40" width="4" height="4"/>
+                      <rect x="36" y="40" width="4" height="4"/>
+                      <rect x="44" y="40" width="4" height="4"/>
+                      <rect x="52" y="40" width="4" height="4"/>
+                      <rect x="60" y="40" width="4" height="4"/>
+                      <rect x="68" y="40" width="4" height="4"/>
+                      <rect x="6" y="48" width="4" height="4"/>
+                      <rect x="22" y="48" width="4" height="4"/>
+                      <rect x="32" y="48" width="4" height="4"/>
+                      <rect x="40" y="48" width="4" height="4"/>
+                      <rect x="56" y="48" width="4" height="4"/>
+                      <rect x="64" y="48" width="4" height="4"/>
+                      <rect x="72" y="48" width="4" height="4"/>
+                      <rect x="32" y="56" width="4" height="4"/>
+                      <rect x="40" y="56" width="4" height="4"/>
+                      <rect x="48" y="56" width="4" height="4"/>
+                      <rect x="32" y="64" width="4" height="4"/>
+                      <rect x="44" y="64" width="4" height="4"/>
+                      <rect x="56" y="64" width="4" height="4"/>
+                      <rect x="64" y="64" width="4" height="4"/>
+                      <rect x="72" y="64" width="4" height="4"/>
+                      <rect x="36" y="72" width="4" height="4"/>
+                      <rect x="48" y="72" width="4" height="4"/>
+                      <rect x="60" y="72" width="4" height="4"/>
+                      <rect x="68" y="72" width="4" height="4"/>
+                    </g>
+                  </svg>
+                </div>
+                <div class="c8-id">
+                  <span class="c8-id-label">ID</span>
+                  <span class="c8-id-num">G7K-2H9P</span>
+                </div>
+                <div class="c8-refresh">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+                    <path d="M21 3v5h-5"/>
+                    <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+                    <path d="M3 21v-5h5"/>
+                  </svg>
+                  รีเฟรชใน 47 วินาที
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- C6 — Account menu -->
     <div class="mockup">
       <div class="mockup-caption">
@@ -4814,7 +5591,7 @@
     <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
     <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
   </svg>
-  <h3>ครบ 8 หน้าจอลูกค้า <span class="accent">·</span> Design v1</h3>
+  <h3>ครบ 12 หน้าจอลูกค้า <span class="accent">·</span> Design v1</h3>
   <p>
     เริ่มจาก C2 (สแกนครั้งแรก) ผ่าน C3 (ยืนยันเบอร์) ใช้งานประจำที่ C1/C4/C5 จัดการบัตรที่ C7/C6 และเพิ่มลงหน้าจอด้วย bottom sheet — ทำเสร็จก่อนค่อยขยับไปฝั่งร้าน
   </p>
