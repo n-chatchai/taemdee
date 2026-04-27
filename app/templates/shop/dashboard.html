@@ -143,21 +143,23 @@
       </div>
       <div class="sap-feed">
         <table class="sap-table" id="sap-table">
-          {% for kind, item, customer_name in feed[:3] %}
-            <tr class="feed-row{% if loop.first %} latest{% endif %}"
-                id="row-{{ item.id }}"
-                data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
-              <td class="t">{{ item.created_at.strftime('%H:%M') }}</td>
-              <td class="n">{{ customer_name }}</td>
-              <td class="a">
-                {% if kind == 'point' %}
-                  <span class="icon-mini">+</span> <strong>1 แต้ม</strong>
-                {% else %}
-                  <strong>รับรางวัล</strong>
-                {% endif %}
-              </td>
-            </tr>
-          {% endfor %}
+          <tbody id="sap-tbody">
+            {% for kind, item, customer_name in feed[:3] %}
+              <tr class="feed-row{% if loop.first %} latest{% endif %}"
+                  id="row-{{ item.id }}"
+                  data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
+                <td class="t">{{ item.created_at.strftime('%H:%M') }}</td>
+                <td class="n">{{ customer_name }}</td>
+                <td class="a">
+                  {% if kind == 'point' %}
+                    <span class="icon-mini">+</span> <strong>1 แต้ม</strong>
+                  {% else %}
+                    <strong>รับรางวัล</strong>
+                  {% endif %}
+                </td>
+              </tr>
+            {% endfor %}
+          </tbody>
         </table>
         <div class="sap-feed-hint">{% if feed %}แตะรายการเพื่อดูหรือยกเลิก{% else %}ยังไม่มีกิจกรรมวันนี้{% endif %}</div>
       </div>
@@ -220,10 +222,12 @@
     // Live SSE feed → dock table. New points/redemptions prepend; oldest
     // beyond 3 falls off. Tapping a row opens the S3.detail bottom sheet
     // (no more S6 toast popup — the design dropped it).
-    const feedTable = document.getElementById('sap-table');
+    const feedBody = document.getElementById('sap-tbody');
     const feedHint = document.querySelector('.sap-feed-hint');
     const flash = document.getElementById('dash-flash');
     const evt = new EventSource('/shop/events');
+    evt.onopen = () => console.log('[SSE] connected to /shop/events');
+    evt.onerror = (e) => console.warn('[SSE] error / disconnected', e);
 
     let flashTimer = null;
     function showFlash(msg, kind) {
@@ -234,15 +238,13 @@
       flashTimer = setTimeout(() => { flash.hidden = true; }, 3000);
     }
 
-    const rowsContainer = () => feedTable.tBodies[0] || feedTable;
-
     evt.addEventListener('feed-row', (e) => {
+      console.log('[SSE] feed-row received:', e.data.slice(0, 120));
       if (feedHint) feedHint.textContent = 'แตะรายการเพื่อดูหรือยกเลิก';
-      const c = rowsContainer();
-      c.querySelector('.feed-row.latest')?.classList.remove('latest');
-      c.insertAdjacentHTML('afterbegin', e.data);
-      c.firstElementChild?.classList.add('latest');
-      while (c.children.length > 3) c.lastElementChild?.remove();
+      feedBody.querySelector('.feed-row.latest')?.classList.remove('latest');
+      feedBody.insertAdjacentHTML('afterbegin', e.data);
+      feedBody.firstElementChild?.classList.add('latest');
+      while (feedBody.children.length > 3) feedBody.lastElementChild?.remove();
     });
 
     evt.addEventListener('void', (e) => {
