@@ -123,8 +123,8 @@ async def test_full_card_gates_redemption_for_guests(client, db, shop):
     assert response.status_code == 200
     body = response.text
     # Gate copy + signup-opening CTA, NOT the bare redeem form
-    assert "เป็นสมาชิกก่อนรับรางวัล" in body
-    assert "มาเป็นสมาชิกแต้มดี" in body
+    assert "สมัครก่อนรับรางวัล" in body
+    assert "สมัครรับรางวัล" in body
     assert 'data-open="signup-picker"' in body
     assert "/redeem" not in body  # no plain redeem form for guests
 
@@ -142,7 +142,7 @@ async def test_redeem_post_rejected_for_anonymous(client, db, shop):
 
     response = await client.post(f"/card/{shop.id}/redeem", follow_redirects=False)
     assert response.status_code == 403
-    assert "เป็นสมาชิกก่อน" in response.json()["detail"]
+    assert "สมัครก่อนรับรางวัล" in response.json()["detail"]
 
 
 async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):

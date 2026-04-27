@@ -327,7 +327,7 @@ async def redeem_reward(
     if customer.is_anonymous:
         raise HTTPException(
             status.HTTP_403_FORBIDDEN,
-            "เป็นสมาชิกก่อนรับรางวัลได้ — กดปุ่ม 'มาเป็นสมาชิกแต้มดี' เพื่อสมัครก่อน",
+            "สมัครก่อนรับรางวัลนะครับพี่ — กดปุ่ม 'สมัครรับรางวัล' เพื่อสมัครก่อน",
         )
 
     try:
