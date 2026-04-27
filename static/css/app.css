@@ -4731,8 +4731,19 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--accent);
   margin-right: 2px;
 }
-.s3-dock .sap-table tr.latest { background: var(--butter-soft); }
-.s3-dock .sap-table tr.latest td { border-bottom-color: var(--butter); }
+.s3-dock .sap-table tr.latest {
+  background: var(--butter-soft);
+  color: var(--accent);
+}
+.s3-dock .sap-table tr.latest td {
+  color: var(--accent);
+  border-bottom-color: var(--butter);
+}
+.s3-dock .sap-table tr.latest td.n {
+  color: var(--accent);
+  font-weight: 700;
+}
+.s3-dock .sap-table tr.latest td.a strong { color: var(--accent); }
 .s3-dock .sap-table tr.latest td:first-child {
   padding-left: 8px;
   border-top-left-radius: 8px;
