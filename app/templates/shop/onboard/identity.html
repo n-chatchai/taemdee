@@ -13,7 +13,7 @@
 <body>
   {% set picked = shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith('text:') else options[0].id %}
   <form method="POST" action="/shop/onboard/identity" class="td"
-        x-data="{ choice: '{{ picked }}', singleBranch: true }">
+        x-data="{ choice: '{{ picked }}' }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="s2-steps" style="margin-top:18px;">
@@ -25,7 +25,6 @@
 
     <div class="s2-counter">
       <span class="step-num"><strong>01</strong> / 04 · ตัวร้าน</span>
-      <a href="/shop/onboard/reward" class="skip">ข้าม</a>
     </div>
 
     <div class="s2-q">
@@ -40,16 +39,6 @@
              placeholder="เช่น ร้านกาแฟลุงหมี"
              style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--ink);background:var(--surface);box-shadow:2px 2px 0 var(--ink);font:inherit;font-weight:600;font-size:16px;letter-spacing:-0.01em;color:var(--ink);">
       <div class="s2-hint">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
-    </div>
-
-    <div class="s2-branch-row" @click="singleBranch = !singleBranch">
-      <div class="label-block">
-        <div class="h" x-text="singleBranch ? 'มีสาขาเดียว' : 'หลายสาขา'"></div>
-        <div class="s">เพิ่มสาขาภายหลังได้ในตั้งค่า</div>
-      </div>
-      <div class="s2-branch-toggle" :class="{ on: singleBranch }">
-        <div class="dot"></div>
-      </div>
     </div>
 
     <div class="s2-field" style="margin-top:18px;">
@@ -77,13 +66,13 @@
       <a href="/shop/onboard/identity?gen={{ next_gen }}" class="reroll">↻ สร้างใหม่อีก 3 แบบ</a>
     </div>
 
-    <div class="s2-upload" title="อัปโหลดเอง — เร็วๆ นี้">
+    <div class="s2-upload" title="อัปโหลดเอง — เร็วๆ นี้" aria-disabled="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
         <polyline points="17 8 12 3 7 8"/>
         <line x1="12" y1="3" x2="12" y2="15"/>
       </svg>
-      ใช้โลโก้ของฉันเอง (เร็วๆ นี้)
+      ใช้โลโก้ของฉันเอง
     </div>
 
     <input type="hidden" name="logo_choice" :value="choice">
