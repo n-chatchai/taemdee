@@ -558,60 +558,80 @@ body {
   border: 1.5px solid var(--ink);
 }
 
+/* S3 hero — compact, centered. Delta lives inline in the hero-top row. */
 .s3-hero {
-  padding: 32px 22px 18px;
+  padding: 22px 20px 14px;
   position: relative;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  gap: 14px;
+  text-align: center;
 }
 .s3-hero::before {
   content: '';
   position: absolute;
   top: 20px;
-  right: 0;
+  left: 50%;
   width: 220px;
-  height: 220px;
+  height: 180px;
+  transform: translateX(-50%);
   background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
-  opacity: 0.6;
+  opacity: 0.5;
   border-radius: 50%;
   z-index: 0;
 }
 .s3-hero > * { position: relative; z-index: 1; }
-.s3-hero .hero-meta { flex: 1; min-width: 0; }
+.s3-hero .hero-top {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 4px;
+}
 .s3-hero .label {
   display: inline-flex;
   align-items: center;
   gap: 6px;
+  font-family: 'Prompt', sans-serif;
   font-style: italic;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--ink-soft);
-  margin-bottom: 12px;
   background: var(--butter-soft);
-  padding: 6px 14px;
+  padding: 4px 10px;
   border-radius: 999px;
   border: 1px dashed var(--butter);
+}
+.s3-hero .delta {
+  display: inline-flex;
+  align-items: center;
+  gap: 3px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--mint-ink);
+  background: var(--mint);
+  padding: 4px 10px;
+  border-radius: 999px;
+}
+.s3-hero .delta.is-down {
+  color: var(--accent);
+  background: var(--accent-soft);
 }
 .s3-hero .num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 128px;
+  font-size: 110px;
   letter-spacing: -0.065em;
-  line-height: 0.85;
+  line-height: 0.95;
   color: var(--ink);
   position: relative;
   display: inline-block;
-  flex-shrink: 0;
+  margin: 0;
 }
 .s3-hero .num .accent { color: var(--accent); }
 .s3-hero .num .star {
   position: absolute;
-  top: -4px;
+  top: 6px;
   right: -22px;
-  width: 24px;
-  height: 24px;
+  width: 22px;
+  height: 22px;
   color: var(--butter);
   stroke: var(--ink);
   stroke-width: 2;
@@ -622,52 +642,42 @@ body {
   to { transform: rotate(360deg); }
 }
 .s3-hero .caption {
-  font-size: 20px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
-.s3-hero .delta {
-  display: inline-flex;
-  align-items: center;
-  gap: 4px;
-  margin-top: 14px;
-  font-weight: 700;
-  font-size: 15px;
-  color: var(--mint-ink);
-  background: var(--mint);
-  padding: 6px 12px;
-  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  letter-spacing: -0.01em;
+  color: var(--ink-soft);
+  margin-top: 2px;
 }
 
-.s3-stats {
-  display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 10px;
-  padding: 8px 20px 22px;
-}
-.s3-stat {
-  padding: 16px 18px;
+/* Single-line stats pill — replaces the 3-stat grid. */
+.s3-stats-pills {
+  margin: 4px 20px 16px;
+  padding: 8px 14px;
   background: var(--surface);
   border: 1.5px solid var(--ink);
-  border-radius: 18px;
+  border-radius: 999px;
   box-shadow: 2px 2px 0 var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
 }
-.s3-stat .n {
+.s3-stats-pills .sp strong {
   font-family: 'Host Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 32px;
-  letter-spacing: -0.025em;
-  line-height: 1;
-  margin-bottom: 5px;
+  font-weight: 800;
+  font-size: 16px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-right: 2px;
 }
-.s3-stat .l {
-  font-size: 14px;
-  font-weight: 500;
+.s3-stats-pills .sp-sep {
   color: var(--ink-softer);
+  opacity: 0.5;
 }
-.s3-stat.balance .n { color: var(--accent); }
 
 .s3-reach {
   margin: 0 20px 18px;
@@ -714,29 +724,26 @@ body {
   line-height: 1.4;
   margin-bottom: 14px;
 }
-.s3-reach .reach-btn {
+/* Brief-card now links to the S13 list (not a per-suggestion send form),
+   so the previous .reach-btn is replaced by a non-button .reach-cta strip. */
+a.s3-reach { text-decoration: none; color: inherit; display: block; }
+.s3-reach .reach-cta {
+  margin-top: 4px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 10px 14px;
   background: var(--ink);
   color: var(--bg);
-  border: none;
-  padding: 12px 14px 12px 18px;
-  border-radius: 14px;
-  font-family: inherit;
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
   font-weight: 700;
   font-size: 15px;
-  width: 100%;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  cursor: pointer;
 }
-.s3-reach .reach-btn .cost {
-  background: var(--accent);
-  color: #fff;
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  letter-spacing: 0.04em;
+.s3-reach .reach-cta .reach-arrow {
+  color: var(--butter);
+  font-size: 16px;
+  font-weight: 800;
 }
 
 /* DeeReach empty-state placeholder — shown when the suggestion engine
@@ -4746,7 +4753,178 @@ body {
 }
 
 /* ==========================================================
-   S3 — Manual-issue FAB + bottom sheet (S3.choose)
+   S3 — Sticky bottom dock (live feed + 3 inline issuance actions)
+   ========================================================== */
+
+.s3-spacer { height: 16px; }
+
+.s3-dock {
+  position: sticky;
+  bottom: 0;
+  background: var(--bg);
+  border-top: 1.5px solid var(--ink);
+  border-top-left-radius: 18px;
+  border-top-right-radius: 18px;
+  margin: 0;
+  padding: 6px 14px max(6px, env(safe-area-inset-bottom));
+  box-shadow: 0 -6px 18px -6px rgba(0, 0, 0, 0.12);
+  z-index: 4;
+}
+.s3-dock .dock-handle {
+  width: 36px;
+  height: 4px;
+  background: var(--ink-softer);
+  border-radius: 999px;
+  margin: 0 auto 8px;
+  opacity: 0.5;
+}
+.s3-dock .dock-brand {
+  margin: 8px -14px 0;
+  padding: 6px 14px;
+  border-top: 1px solid var(--line);
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.s3-dock .dock-brand .fm-brand { display: flex; align-items: center; gap: 8px; }
+.s3-dock .dock-brand .brand {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1;
+}
+.s3-dock .dock-brand .brand .dot { color: var(--accent); }
+
+.s3-dock .sap-feed-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+.s3-dock .sap-live {
+  color: var(--accent);
+  font-size: 12px;
+  animation: dock-live-pulse 1.6s ease-in-out infinite;
+}
+@keyframes dock-live-pulse {
+  0%, 100% { opacity: 1; }
+  50% { opacity: 0.4; }
+}
+.s3-dock .sap-feed { padding: 0 4px; margin-bottom: 8px; }
+.s3-dock .sap-feed-empty {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-softer);
+  text-align: center;
+  padding: 8px 0;
+}
+.s3-dock .sap-table {
+  width: 100%;
+  border-collapse: collapse;
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+}
+.s3-dock .sap-table tr { border-bottom: 1px solid var(--line); }
+.s3-dock .sap-table tr:last-child { border-bottom: none; }
+.s3-dock .sap-table td { padding: 5px 0; vertical-align: middle; }
+.s3-dock .sap-table td.t {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 12px;
+  color: var(--ink-softer);
+  width: 50px;
+}
+.s3-dock .sap-table td.n { font-weight: 600; color: var(--ink); font-size: 12px; }
+.s3-dock .sap-table td.a {
+  text-align: right;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.s3-dock .sap-table td.a strong { font-weight: 700; color: var(--ink); }
+.s3-dock .sap-table td.a .icon-mini {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  color: var(--accent);
+  margin-right: 2px;
+}
+.s3-dock .sap-table tr.latest { background: var(--butter-soft); }
+.s3-dock .sap-table tr.latest td { border-bottom-color: var(--butter); }
+.s3-dock .sap-table tr.latest td:first-child {
+  padding-left: 8px;
+  border-top-left-radius: 8px;
+  border-bottom-left-radius: 8px;
+}
+.s3-dock .sap-table tr.latest td:last-child {
+  padding-right: 8px;
+  border-top-right-radius: 8px;
+  border-bottom-right-radius: 8px;
+}
+.s3-dock .sap-table tr.voided td { opacity: 0.4; text-decoration: line-through; }
+.s3-dock .sap-table td.v { width: 60px; text-align: right; padding-left: 6px; }
+.s3-dock .sap-table .void-mini {
+  appearance: none;
+  -webkit-appearance: none;
+  background: transparent;
+  border: 1px solid var(--ink-softer);
+  border-radius: 999px;
+  padding: 3px 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+.s3-dock .sap-actions-h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 4px;
+  padding: 0 4px;
+}
+.s3-dock .sap-actions {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 8px;
+}
+.s3-dock .sap-action {
+  appearance: none;
+  -webkit-appearance: none;
+  background: var(--ink);
+  color: var(--bg);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  padding: 8px 4px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 3px;
+  box-shadow: 2px 2px 0 var(--accent);
+  text-decoration: none;
+}
+.s3-dock .sap-action svg { width: 18px; height: 18px; }
+.s3-dock .sap-action span {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+}
+
+/* ==========================================================
+   Legacy S3.choose FAB + sheet — no longer rendered (replaced by the
+   sticky dock above) but kept for now; cleaned up in a later DS4 sweep.
    ========================================================== */
 
 .s3-issue-fab {

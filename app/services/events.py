@@ -46,16 +46,20 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
 
 
 def feed_row_html(kind: str, item_id: UUID, when_iso: str) -> str:
-    """Render one feed row used by the DeeBoard live feed (S3) and SSE stream."""
+    """Render one feed row used by the DeeBoard live feed (S3 dock) and SSE
+    stream. Emits a `<tr class="feed-row">` so it slots straight into the
+    sap-table inside the sticky bottom dock. The dashboard JS marks the
+    most-recently-inserted row with `.latest` for the butter highlight."""
     short = item_id.hex[:4].upper()
     label = '<span class="icon-mini">+</span><strong>1 แต้ม</strong>' if kind == "point" else "<strong>รับรางวัล</strong>"
     void_url = f"/shop/{'points' if kind == 'point' else 'redemptions'}/{item_id}/void"
     return (
-        f'<div class="feed-row" id="row-{item_id}">'
-        f'<div class="t">{when_iso}</div>'
-        f'<div class="w">{label} <span class="id">#{short}</span></div>'
-        f'<button class="void" data-void-url="{void_url}" data-row="row-{item_id}">ยกเลิก</button>'
-        f"</div>"
+        f'<tr class="feed-row" id="row-{item_id}">'
+        f'<td class="t">{when_iso}</td>'
+        f'<td class="n"><span class="id">#{short}</span></td>'
+        f'<td class="a">{label}</td>'
+        f'<td class="v"><button class="void-mini" data-void-url="{void_url}" data-row="row-{item_id}">ยกเลิก</button></td>'
+        f"</tr>"
     )
 
 

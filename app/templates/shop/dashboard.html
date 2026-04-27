@@ -24,8 +24,6 @@
         <span class="day">{{ weekday_th }} · เริ่มต้นวันได้ดี</span>
       </div>
       <div class="actions">
-        {# Single-branch shops see no branch UI anywhere (per PRD §6.I).
-           Pill only appears once the shop has added a 2nd branch. #}
         {% if branches_count > 1 %}
           <a href="/shop/branches" class="branch-pill" title="เลือกสาขา">{{ branch_label }}</a>
         {% endif %}
@@ -33,14 +31,14 @@
       </div>
     </div>
 
+    {# Compact hero — delta lives inside the box header instead of a row below. #}
     <div class="s3-hero">
-      <div class="hero-meta">
+      <div class="hero-top">
         <div class="label">✦ สัปดาห์นี้</div>
-        <div class="caption">ลูกค้ากลับมา</div>
         {% if wow_delta > 0 %}
-          <div class="delta">↑ +{{ wow_delta }} จากสัปดาห์ที่แล้ว</div>
+          <div class="delta">↑ +{{ wow_delta }}</div>
         {% elif wow_delta < 0 %}
-          <div class="delta" style="background:var(--accent-soft); color:var(--accent);">↓ {{ wow_delta }} จากสัปดาห์ที่แล้ว</div>
+          <div class="delta is-down">↓ {{ wow_delta }}</div>
         {% endif %}
       </div>
       <div class="num">
@@ -49,107 +47,146 @@
           <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
         </svg>
       </div>
+      <div class="caption">ลูกค้ากลับมา</div>
     </div>
 
-    <div class="s3-stats">
-      <div class="s3-stat"><div class="n">{{ points_total }}</div><div class="l">แต้ม</div></div>
-      <div class="s3-stat"><div class="n">{{ redemptions_total }}</div><div class="l">รับรางวัล</div></div>
-      <div class="s3-stat balance"><div class="n">{{ shop.credit_balance }}</div><div class="l">เครดิต</div></div>
+    {# Single-line stats pills replace the 3 stat cards. #}
+    <div class="s3-stats-pills">
+      <span class="sp"><strong>{{ points_total }}</strong> แจก</span>
+      <span class="sp-sep">·</span>
+      <span class="sp"><strong>{{ redemptions_total }}</strong> แลก</span>
+      <span class="sp-sep">·</span>
+      <span class="sp"><strong>{{ shop.credit_balance }}</strong> เครดิต</span>
     </div>
 
     <div class="ph-section-h">
-      <div class="label">ดีรีช ✦</div>
+      <div class="label">แต้มดีแนะนำ ✦</div>
     </div>
+
+    {# One brief card linking to the full list page (S13). Inline-suggestion
+       cards are gone — the list lives on its own page so the dashboard stays
+       fast to glance at. #}
     {% if suggestions %}
-      {% for s in suggestions %}
-        {% set affordable = s.cost_credit <= shop.credit_balance %}
-        <div class="s3-reach" {% if not affordable %}style="opacity:0.7;"{% endif %}>
-          <div class="reach-kicker">{{ s.label }}</div>
-          <div class="reach-head">{{ s.head }}</div>
-          <div class="reach-body">{{ s.body }}</div>
-          <form method="POST" action="/shop/deereach/send" style="margin:0;">
-            <input type="hidden" name="kind" value="{{ s.kind }}">
-            <button class="reach-btn" type="submit" {% if not affordable %}disabled{% endif %}>
-              <span>{% if affordable %}ส่งเลย{% else %}เครดิตไม่พอ{% endif %}</span>
-              <span class="cost">{{ s.cost_credit }} เครดิต</span>
-            </button>
-          </form>
+      {% set top = suggestions[0] %}
+      {% set extra = suggestions|length - 1 %}
+      <a class="s3-reach" href="/shop/deereach">
+        <div class="reach-kicker">{{ suggestions|length }} แคมเปญ</div>
+        <div class="reach-head">
+          {{ top.head }}{% if extra > 0 %} · เพิ่มอีก {{ extra }} แคมเปญ{% endif %}
         </div>
-      {% endfor %}
+        <div class="reach-body">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับแก้ก่อนส่งได้</div>
+        <div class="reach-cta">
+          <span>ดูคำแนะนำทั้งหมด</span>
+          <span class="reach-arrow">→</span>
+        </div>
+      </a>
     {% else %}
       <div class="s3-reach placeholder">
         <div class="reach-kicker">ยังไม่มีคำแนะนำ</div>
         <div class="reach-head">ลูกค้าที่หายไปจะปรากฏที่นี่</div>
-        <div class="reach-body">
-          เมื่อมีลูกค้าหายเกิน 60 วัน หรือใกล้ครบบัตร แต้มดีจะแนะนำให้ส่งโปรชวนกลับด้วย LINE หรือ SMS
-        </div>
+        <div class="reach-body">เมื่อมีลูกค้าหายเกิน 60 วัน หรือใกล้ครบบัตร แต้มดีจะแนะนำให้ส่งโปรชวนกลับ</div>
       </div>
     {% endif %}
 
-    <div class="ph-section-h">
-      <div class="label">ฟีดสด</div>
-      <div class="live">สด</div>
-    </div>
-
-    <div id="feed-rows">
-      {% if feed %}
-        {% for kind, item in feed %}
-          <div class="feed-row" id="row-{{ item.id }}">
-            <div class="t">{{ item.created_at.strftime('%H:%M') }}</div>
-            <div class="w">
-              {% if kind == 'point' %}
-                <span class="icon-mini">+</span><strong>1 แต้ม</strong>
-              {% else %}
-                <strong>รับรางวัล</strong>
-              {% endif %}
-              <span class="id">#{{ item.id.hex[:4]|upper }}</span>
-            </div>
-            <button class="void"
-                    data-void-url="/shop/{% if kind == 'point' %}stamps{% else %}redemptions{% endif %}/{{ item.id }}/void"
-                    data-row="row-{{ item.id }}">ยกเลิก</button>
-          </div>
-        {% endfor %}
-      {% endif %}
-    </div>
-    <div id="feed-empty" class="feed-empty" {% if feed %}style="display:none"{% endif %}>ยังไม่มีกิจกรรมวันนี้</div>
-
-    {# S6 stamp-notification toast mounts here; populated via SSE #}
+    {# S6 stamp-notification toast mounts here; populated via SSE. #}
     <div id="point-toast-mount"></div>
 
     {# Inline error banner — replaces alert(); auto-dismisses #}
     <div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
 
-    {# S3 manual-issue FAB — must live INSIDE .td so position:sticky's scroll
-       anchor is the dashboard's flex column (matches the design). Outside,
-       sticky falls back to body and the pill loses its bottom-aligned dock. #}
-    <a href="#" class="s3-issue-fab" id="s3-issue-fab"
-       onclick="document.getElementById('issue-choose').classList.add('open'); return false;">
-      <div class="fab-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-      </div>
-      <div class="fab-text">
-        <div class="fab-name">ออกแต้มลูกค้า</div>
-        <div class="fab-meta">เลือกวิธีออกแต้ม</div>
-      </div>
-      <span class="fab-arrow">→</span>
-    </a>
+    {# Spacer so the sticky dock always has room above it on short content. #}
+    <div class="s3-spacer"></div>
 
-    {% include "_partials/footer_mark.html" %}
+    {# Sticky bottom dock — compact live feed + 3 inline issuance buttons.
+       Replaces the older floating "ออกแต้มลูกค้า" FAB which only had one
+       primary action; the dock keeps all 3 issuance methods visible AND
+       the most-recent activity in glance-distance. #}
+    <div class="s3-dock">
+      <div class="dock-handle"></div>
 
-    {# Modal must live INSIDE .td so the CSS custom properties (--bg, --surface,
-       --ink) it relies on resolve. Variables are scoped to .td, not :root. #}
-    {% include "_partials/issue_choose.html" %}
+      <div class="sap-feed-h">
+        <span>ลูกค้าล่าสุด</span>
+        <span class="sap-live">●</span>
+      </div>
+      <div class="sap-feed">
+        <table class="sap-table">
+          <tbody id="sap-feed">
+            {% if feed %}
+              {% for kind, item in feed[:3] %}
+                <tr class="feed-row {% if loop.first %}latest{% endif %}" id="row-{{ item.id }}">
+                  <td class="t">{{ item.created_at.strftime('%H:%M') }}</td>
+                  <td class="n"><span class="id">#{{ item.id.hex[:4]|upper }}</span></td>
+                  <td class="a">
+                    {% if kind == 'point' %}
+                      <span class="icon-mini">+</span><strong>1 แต้ม</strong>
+                    {% else %}
+                      <strong>รับรางวัล</strong>
+                    {% endif %}
+                  </td>
+                  <td class="v">
+                    <button class="void-mini"
+                            data-void-url="/shop/{% if kind == 'point' %}points{% else %}redemptions{% endif %}/{{ item.id }}/void"
+                            data-row="row-{{ item.id }}">ยกเลิก</button>
+                  </td>
+                </tr>
+              {% endfor %}
+            {% endif %}
+          </tbody>
+        </table>
+      </div>
+      <div id="sap-feed-empty" class="sap-feed-empty" {% if feed %}style="display:none"{% endif %}>ยังไม่มีกิจกรรมวันนี้</div>
+
+      <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
+      <div class="sap-actions">
+        {% if shop.issue_method_shop_scan %}
+          <a class="sap-action" href="/shop/issue/scan">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/>
+              <rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/>
+            </svg>
+            <span>สแกน</span>
+          </a>
+        {% endif %}
+        {% if shop.issue_method_phone_entry %}
+          <a class="sap-action" href="/shop/issue/phone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+            <span>กรอกเบอร์</span>
+          </a>
+        {% endif %}
+        {% if shop.issue_method_grant %}
+          <a class="sap-action" href="/shop/issue/grant">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            </svg>
+            <span>ค้นชื่อ</span>
+          </a>
+        {% endif %}
+      </div>
+
+      <div class="dock-brand">
+        <span class="fm-brand">
+          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+            <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+            <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+          <span class="brand">taemdee<span class="dot">.</span></span>
+        </span>
+      </div>
+    </div>
   </div>
 
   <script>
-    // Live feed via SSE — new stamps/redemptions stream in from /shop/events.
-    const feedRows = document.getElementById('feed-rows');
-    const feedEmpty = document.getElementById('feed-empty');
+    // Live feed via SSE — new stamps/redemptions stream into the dock's feed table.
+    const feedRows = document.getElementById('sap-feed');
+    const feedEmpty = document.getElementById('sap-feed-empty');
     const toastMount = document.getElementById('point-toast-mount');
     const flash = document.getElementById('dash-flash');
     const evt = new EventSource('/shop/events');
 
-    // Replace browser alert() — inline banner that auto-dismisses.
     let flashTimer = null;
     function showFlash(msg, kind) {
       flash.textContent = msg;
@@ -161,23 +198,25 @@
 
     evt.addEventListener('feed-row', (e) => {
       feedEmpty.style.display = 'none';
+      // Drop the "latest" highlight from the previously-newest row, then prepend.
+      feedRows.querySelector('.feed-row.latest')?.classList.remove('latest');
       feedRows.insertAdjacentHTML('afterbegin', e.data);
+      feedRows.firstElementChild?.classList.add('latest');
+      // Cap to 3 rows in the dock — older entries fall off.
+      while (feedRows.children.length > 3) feedRows.lastElementChild?.remove();
     });
 
     evt.addEventListener('void', (e) => {
-      // Server emits a span with data-row pointing at the row that got voided.
       const tmp = document.createElement('div');
       tmp.innerHTML = e.data;
       const rowId = tmp.firstElementChild?.dataset.row;
       if (rowId) {
         document.getElementById(rowId)?.classList.add('voided');
-        // If a matching toast is open, dismiss it too.
         const stampId = rowId.replace(/^row-/, '');
         document.getElementById('toast-' + stampId)?.classList.add('dismissing');
       }
     });
 
-    // S6: stamp-notification toast — overlay with 60s countdown + void button.
     function dismissToast(el) {
       if (!el) return;
       el.classList.add('dismissing');
@@ -185,17 +224,14 @@
     }
 
     evt.addEventListener('point-toast', (e) => {
-      // Replace any open toast with the newest scan.
       toastMount.innerHTML = e.data;
       const overlay = toastMount.firstElementChild;
       if (!overlay) return;
 
-      // Tap outside the toast card → dismiss
       overlay.addEventListener('click', (ev) => {
         if (ev.target === overlay) dismissToast(overlay);
       });
 
-      // 60-second countdown that ticks the .countdown chip
       const cd = overlay.querySelector('.countdown');
       let secsLeft = parseInt(cd?.dataset.deadline || '60', 10);
       cd && (cd.textContent = secsLeft + ' วิ');
@@ -211,14 +247,12 @@
       overlay.dataset.timerId = timerId;
     });
 
-    // Single delegated click handler covers feed-row void buttons AND the toast's void button.
     document.addEventListener('click', async (e) => {
       const toastBtn = e.target.closest('.s6-toast .void-btn');
       if (toastBtn) {
         const r = await fetch(toastBtn.dataset.voidUrl, { method: 'POST' });
         const overlay = document.getElementById(toastBtn.dataset.toast);
         if (r.ok) {
-          // Mark the matching feed row as voided too
           const stampId = toastBtn.dataset.voidUrl.split('/').slice(-2, -1)[0];
           document.getElementById('row-' + stampId)?.classList.add('voided');
           dismissToast(overlay);
@@ -228,7 +262,7 @@
         }
         return;
       }
-      const rowBtn = e.target.closest('#feed-rows .void');
+      const rowBtn = e.target.closest('#sap-feed .void-mini');
       if (rowBtn) {
         const r = await fetch(rowBtn.dataset.voidUrl, { method: 'POST' });
         if (r.ok) {
