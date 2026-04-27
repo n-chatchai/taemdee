@@ -27,9 +27,16 @@ cd "$PROJECT_ROOT"
 # Pull SLACK_DEPLOY_WEBHOOK_URL out of .env if set (so the script
 # matches the same registry app/core/config.py reads from). Already-set
 # environment values win, so a one-off `SLACK_DEPLOY_WEBHOOK_URL=... bash
-# scripts/deploy.sh` overrides without editing the file.
+# scripts/deploy.sh` overrides without editing the file. Tolerates an
+# optional `export ` prefix and surrounding quotes.
 if [ -z "${SLACK_DEPLOY_WEBHOOK_URL:-}" ] && [ -f .env ]; then
-  SLACK_DEPLOY_WEBHOOK_URL=$(grep -E '^SLACK_DEPLOY_WEBHOOK_URL=' .env | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'")
+  SLACK_DEPLOY_WEBHOOK_URL=$(grep -E '^(export[[:space:]]+)?SLACK_DEPLOY_WEBHOOK_URL=' .env | head -1 | sed -E 's/^(export[[:space:]]+)?SLACK_DEPLOY_WEBHOOK_URL=//' | tr -d '"' | tr -d "'")
+fi
+
+if [ -n "${SLACK_DEPLOY_WEBHOOK_URL:-}" ]; then
+  echo "[deploy] Slack notify: enabled"
+else
+  echo "[deploy] Slack notify: disabled (set SLACK_DEPLOY_WEBHOOK_URL in .env)"
 fi
 
 # ─── Slack helper ────────────────────────────────────────────────────────
