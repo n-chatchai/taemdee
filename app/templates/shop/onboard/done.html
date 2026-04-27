@@ -36,39 +36,28 @@
         </svg>
       </div>
       <div class="s2-done-title"><em>พร้อมใช้งาน</em><br>แล้วครับ!</div>
-      <div class="s2-done-sub">QR ของร้านคุณพร้อมแล้ว เริ่มออกแต้มได้เลย</div>
+      <div class="s2-done-sub">โหลด QR ของร้าน พิมพ์ติดที่เคาน์เตอร์</div>
     </div>
 
-    {# S2.4 customer preview — what the customer sees on their phone after the first scan. #}
-    {% set logo = shop_logo(shop) %}
-    <div class="s2-customer-preview">
-      <div class="cp-label">มุมมองลูกค้า · หลังสแกน QR</div>
-      <div class="cp-phone-wrap">
-        <div class="cp-phone">
-          <div class="cp-screen">
-            <div class="cp-shop">
-              <svg class="cp-logo" viewBox="0 0 100 100">
-                <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-                <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-                <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-                <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
-              </svg>
-              <div class="cp-shop-name">{{ shop.name[:18] }}</div>
-            </div>
-            <div class="cp-num">1<span class="cp-sub">/{{ shop.reward_threshold }}</span></div>
-            <div class="cp-msg">ยินดีต้อนรับ! ได้แต้มแรกแล้ว ✦</div>
-            <div class="cp-stamps">
-              {# Show up to 10 cells (capped) so it fits the mini-phone grid #}
-              {% set cap = shop.reward_threshold if shop.reward_threshold <= 10 else 10 %}
-              {% for i in range(1, cap + 1) %}
-                <div class="cp-s {% if i == 1 %}on{% endif %}"></div>
-              {% endfor %}
-            </div>
-            <div class="cp-reward">✦ {{ shop.reward_description[:24] }} ✦</div>
-          </div>
-        </div>
+    {# S2.4 ends with the actual print QR + download. /shop/qr.png streams a
+       high-DPI PNG straight into the user's downloads folder. #}
+    <div class="s2-qr-block">
+      <div class="s2-qr-card">
+        <div class="s2-qr-svg">{{ qr_svg|safe }}</div>
+        <div class="s2-qr-shop">{{ shop.name }}</div>
+        <div class="s2-qr-url">{{ scan_url }}</div>
       </div>
-      <div class="cp-hint">ลูกค้าเห็นบัตรนี้บนมือถือ — ไม่ต้องโหลดแอป</div>
+
+      <a class="s2-qr-download" href="/shop/qr.png" download>
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>ดาวน์โหลดคิวอาร์โค๊ด</span>
+      </a>
+
+      <div class="s2-qr-hint">ติดตั้งที่จุดที่ลูกค้าเห็นชัด</div>
     </div>
 
     <form method="POST" action="/shop/onboard/done" style="margin:0;">
@@ -77,7 +66,7 @@
         <span class="arrow">→</span>
       </button>
     </form>
-    <a href="/shop/qr" class="s2-cta-secondary">พิมพ์ QR ก่อน</a>
+
     {% include "_partials/footer_mark.html" %}
   </div>
 </body>
