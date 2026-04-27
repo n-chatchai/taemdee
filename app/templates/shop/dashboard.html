@@ -148,7 +148,7 @@
               <tr class="feed-row{% if loop.first %} latest{% endif %}"
                   id="row-{{ item.id }}"
                   data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
-                <td class="t">{{ item.created_at.strftime('%H:%M') }}</td>
+                <td class="t">{{ item.created_at|bkk_hms }}</td>
                 <td class="n">{{ customer_name }}</td>
                 <td class="a">
                   {% if kind == 'point' %}

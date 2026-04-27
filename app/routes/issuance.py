@@ -17,7 +17,7 @@ from app.core.auth import (
 )
 from app.core.database import get_session
 from app.models import Customer, Redemption, Shop, Point, StaffMember
-from app.models.util import utcnow
+from app.models.util import bkk_hms, utcnow
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point, void_point
 from app.services.redemption import active_point_count, void_redemption
@@ -117,7 +117,7 @@ async def issue_scan_grant(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
+        feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
     )
     return {
         "point_id": str(point.id),
@@ -219,7 +219,7 @@ async def issue_grant_action(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
+            feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
         )
     return {"granted": points, "point_ids": issued_ids, "customer_id": str(customer.id)}
 
@@ -292,7 +292,7 @@ async def staff_issue_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
+        feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
     )
     return {"point_id": str(point.id), "customer_id": str(customer.id)}
 
@@ -329,7 +329,7 @@ async def staff_issue_manual_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
+        feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
     )
     return {"point_id": str(point.id), "customer_id": str(customer.id)}
 
@@ -377,7 +377,7 @@ async def feed_detail(
 
     weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[item.created_at.weekday()]
     month_th = ("ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.")[item.created_at.month - 1]
-    time_full = f"{item.created_at.strftime('%H:%M')} · {weekday_th} {item.created_at.day} {month_th}"
+    time_full = f"{bkk_hms(item.created_at)} · {weekday_th} {item.created_at.day} {month_th}"
 
     new_count = await active_point_count(db, shop.id, item.customer_id)
 

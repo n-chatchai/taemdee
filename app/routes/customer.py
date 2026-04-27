@@ -16,6 +16,7 @@ from app.core.auth import (
 )
 from app.core.database import get_session
 from app.models import Branch, Redemption, Shop, Point
+from app.models.util import bkk_hms
 from app.services.auth import verify_otp
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point
@@ -282,7 +283,7 @@ async def scan(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
+            feed_row_html("point", stamp.id, bkk_hms(stamp.created_at), customer.display_name or "ลูกค้า"),
         )
         just_stamped = True
     except IssuanceError:
@@ -337,7 +338,7 @@ async def redeem_reward(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
+        feed_row_html("redemption", redemption.id, bkk_hms(redemption.created_at), customer.display_name or "ลูกค้า"),
     )
 
     return RedirectResponse(
@@ -420,7 +421,7 @@ async def claim_phone(
                     publish(
                         shop.id,
                         "feed-row",
-                        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M"), claimed.display_name or "ลูกค้า"),
+                        feed_row_html("redemption", redemption.id, bkk_hms(redemption.created_at), claimed.display_name or "ลูกค้า"),
                     )
                     next_url = f"/card/{shop.id}/claimed?r={redemption.id}"
                 except RedemptionError:
