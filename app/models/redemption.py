@@ -13,10 +13,12 @@ class Redemption(SQLModel, table=True):
     Voiding sets `is_voided` — the points become available again.
     """
 
+    __tablename__ = "redemptions"
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    shop_id: UUID = Field(foreign_key="shop.id", index=True)
-    customer_id: UUID = Field(foreign_key="customer.id", index=True)
-    branch_id: Optional[UUID] = Field(default=None, foreign_key="branch.id", index=True)
+    shop_id: UUID = Field(foreign_key="shops.id", index=True)
+    customer_id: UUID = Field(foreign_key="customers.id", index=True)
+    branch_id: Optional[UUID] = Field(default=None, foreign_key="branches.id", index=True)
 
     is_voided: bool = Field(default=False)
     voided_at: Optional[datetime] = Field(default=None)

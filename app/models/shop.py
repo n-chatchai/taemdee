@@ -8,6 +8,8 @@ from app.models.util import utcnow
 
 
 class Shop(SQLModel, table=True):
+    __tablename__ = "shops"
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     name: str
     phone: Optional[str] = Field(default=None, unique=True, index=True)

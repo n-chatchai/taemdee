@@ -8,8 +8,10 @@ from app.models.util import utcnow
 
 
 class Branch(SQLModel, table=True):
+    __tablename__ = "branches"
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    shop_id: UUID = Field(foreign_key="shop.id", index=True)
+    shop_id: UUID = Field(foreign_key="shops.id", index=True)
     name: str
     address: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)

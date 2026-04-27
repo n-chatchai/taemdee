@@ -17,7 +17,7 @@ class DeeReachCampaign(SQLModel, table=True):
 
     __tablename__ = "deereach_campaigns"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    shop_id: UUID = Field(foreign_key="shop.id", index=True)
+    shop_id: UUID = Field(foreign_key="shops.id", index=True)
 
     # Discriminator for the suggestion engine.
     # Valid: win_back, almost_there, unredeemed_reward, birthday, new_product, manual.

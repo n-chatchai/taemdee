@@ -12,7 +12,7 @@ class StaffMember(SQLModel, table=True):
 
     __tablename__ = "staff_members"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    shop_id: UUID = Field(foreign_key="shop.id", index=True)
+    shop_id: UUID = Field(foreign_key="shops.id", index=True)
 
     phone: Optional[str] = Field(default=None, index=True)
     line_id: Optional[str] = Field(default=None, index=True)

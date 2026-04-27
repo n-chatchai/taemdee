@@ -8,6 +8,8 @@ from app.models.util import utcnow
 
 
 class Customer(SQLModel, table=True):
+    __tablename__ = "customers"
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     is_anonymous: bool = Field(default=True)
     line_id: Optional[str] = Field(default=None, unique=True, index=True)

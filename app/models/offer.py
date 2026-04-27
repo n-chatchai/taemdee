@@ -11,17 +11,19 @@ from app.models.util import utcnow
 
 
 class Offer(SQLModel, table=True):
+    __tablename__ = "offers"
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
 
     # Source — who's giving. Nullable depending on type.
     source_type: str  # "system" | "shop" | "customer"
-    source_shop_id: Optional[UUID] = Field(default=None, foreign_key="shop.id", index=True)
-    source_customer_id: Optional[UUID] = Field(default=None, foreign_key="customer.id")
+    source_shop_id: Optional[UUID] = Field(default=None, foreign_key="shops.id", index=True)
+    source_customer_id: Optional[UUID] = Field(default=None, foreign_key="customers.id")
 
     # Target — who's receiving.
     target_type: str  # "shop" | "customer"
-    target_shop_id: Optional[UUID] = Field(default=None, foreign_key="shop.id", index=True)
-    target_customer_id: Optional[UUID] = Field(default=None, foreign_key="customer.id", index=True)
+    target_shop_id: Optional[UUID] = Field(default=None, foreign_key="shops.id", index=True)
+    target_customer_id: Optional[UUID] = Field(default=None, foreign_key="customers.id", index=True)
 
     # Discriminator. v1 kinds:
     #   credit_grant  — adds credits to a Shop's balance
@@ -50,9 +52,11 @@ class Referral(SQLModel, table=True):
     On referee onboarding completion, both parties receive a credit_grant Offer.
     """
 
+    __tablename__ = "referrals"
+
     id: UUID = Field(default_factory=uuid4, primary_key=True)
-    referrer_shop_id: UUID = Field(foreign_key="shop.id", index=True)
-    referee_shop_id: Optional[UUID] = Field(default=None, foreign_key="shop.id", index=True)
+    referrer_shop_id: UUID = Field(foreign_key="shops.id", index=True)
+    referee_shop_id: Optional[UUID] = Field(default=None, foreign_key="shops.id", index=True)
     code: str = Field(unique=True, index=True)
     completed_at: Optional[datetime] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)
