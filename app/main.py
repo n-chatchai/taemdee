@@ -16,8 +16,13 @@ from app.services.auth import decode_customer_token, decode_session_token
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Schema is managed by Alembic — run `alembic upgrade head` before starting the server.
-    yield
-    await engine.dispose()
+    from app.services import events
+    await events.start()
+    try:
+        yield
+    finally:
+        await events.stop()
+        await engine.dispose()
 
 
 app = FastAPI(title="TaemDee — Digital Point Cards", lifespan=lifespan)

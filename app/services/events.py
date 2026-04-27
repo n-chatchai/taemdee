@@ -1,36 +1,156 @@
-"""In-process event broker for live DeeBoard updates.
+"""Cross-worker event broker for live DeeBoard updates.
 
-When something happens at a shop (stamp issued, redemption, void), services
-publish an event keyed by shop_id. The SSE endpoint at `/shop/events`
-subscribes per request and streams events to the connected dashboard.
+Runs over Postgres LISTEN/NOTIFY so events fan out across all gunicorn
+workers. Each worker on startup:
 
-This is single-process — fine for v1 / single uvicorn worker. Multi-worker
-deployments should swap to Redis pub/sub before scaling.
+  - opens one dedicated asyncpg Connection that LISTENs on `taemdee_events`
+  - opens a small asyncpg Pool used by `publish()` to issue NOTIFY
+  - keeps a local `_subscribers` dict for SSE clients connected to it
+
+When any worker calls `publish()`, every worker (including itself) receives
+the NOTIFY and dispatches to its own local subscribers. Without this, a
+4-worker prod sees only ~1/4 of scans on the dashboard since the SSE
+connection lives on a single random worker.
+
+Tests run on SQLite — `start()` short-circuits and `publish()` falls back
+to in-process dispatch, so no Postgres is required for the test suite.
 """
 
 from __future__ import annotations
 
 import asyncio
+import json
+import logging
 from collections import defaultdict
-from typing import AsyncIterator, Dict, List
+from typing import AsyncIterator, Dict, List, Optional
 from uuid import UUID
 
-# shop_id → list of subscriber queues
+import asyncpg
+
+from app.core.config import settings
+
+log = logging.getLogger(__name__)
+
+CHANNEL = "taemdee_events"
+
+# shop_id → list of subscriber queues (per-worker)
 _subscribers: Dict[UUID, List[asyncio.Queue]] = defaultdict(list)
+_listener_conn: Optional[asyncpg.Connection] = None
+_publisher_pool: Optional[asyncpg.Pool] = None
+
+
+def _pg_dsn() -> Optional[str]:
+    """Return a plain asyncpg DSN, or None if the configured DB isn't Postgres."""
+    url = settings.database_url
+    if url.startswith("postgresql+asyncpg://"):
+        return "postgresql://" + url[len("postgresql+asyncpg://"):]
+    if url.startswith("postgresql://"):
+        return url
+    return None
+
+
+def _on_notify(connection, pid, channel, payload):
+    """asyncpg listener callback — dispatch a NOTIFY payload to local queues."""
+    try:
+        msg = json.loads(payload)
+        shop_id = UUID(msg["shop_id"])
+        item = (msg["event_name"], msg["html"])
+        for q in _subscribers.get(shop_id, []):
+            try:
+                q.put_nowait(item)
+            except asyncio.QueueFull:
+                # Drop for slow subscribers rather than block the listener.
+                pass
+    except Exception:
+        log.exception("events: failed to dispatch notify payload=%r", payload)
+
+
+async def start() -> None:
+    """Open the LISTEN connection + publisher pool. Idempotent.
+
+    Called from the FastAPI lifespan on each worker boot. If Postgres isn't
+    configured (tests), this is a no-op and `publish()` uses local dispatch.
+    """
+    global _listener_conn, _publisher_pool
+    if _listener_conn is not None:
+        return
+    dsn = _pg_dsn()
+    if dsn is None:
+        return
+    try:
+        _listener_conn = await asyncpg.connect(dsn)
+        await _listener_conn.add_listener(CHANNEL, _on_notify)
+        _publisher_pool = await asyncpg.create_pool(dsn, min_size=1, max_size=4)
+        log.info("events: LISTEN/NOTIFY started on channel=%s", CHANNEL)
+    except Exception:
+        log.exception("events: failed to start LISTEN/NOTIFY; falling back to local dispatch")
+        if _listener_conn is not None:
+            try:
+                await _listener_conn.close()
+            except Exception:
+                pass
+            _listener_conn = None
+        _publisher_pool = None
+
+
+async def stop() -> None:
+    """Tear down the LISTEN connection + publisher pool on shutdown."""
+    global _listener_conn, _publisher_pool
+    if _listener_conn is not None:
+        try:
+            await _listener_conn.remove_listener(CHANNEL, _on_notify)
+        except Exception:
+            pass
+        try:
+            await _listener_conn.close()
+        except Exception:
+            pass
+        _listener_conn = None
+    if _publisher_pool is not None:
+        try:
+            await _publisher_pool.close()
+        except Exception:
+            pass
+        _publisher_pool = None
+
+
+async def _notify_async(shop_id: UUID, event_name: str, html: str) -> None:
+    """Internal async path: send a NOTIFY via the publisher pool."""
+    if _publisher_pool is None:
+        return
+    payload = json.dumps({
+        "shop_id": str(shop_id),
+        "event_name": event_name,
+        "html": html,
+    })
+    try:
+        async with _publisher_pool.acquire() as conn:
+            await conn.execute("SELECT pg_notify($1, $2)", CHANNEL, payload)
+    except Exception:
+        log.exception("events: pg_notify failed for shop=%s event=%s", shop_id, event_name)
 
 
 def publish(shop_id: UUID, event_name: str, html: str) -> None:
-    """Push a pre-rendered HTML fragment to every subscriber of this shop.
+    """Broadcast an event to every dashboard listening for `shop_id`.
 
-    `event_name` becomes the SSE `event:` field (e.g., "feed-row", "void").
-    `html` is what the client will receive in `data:`.
+    Cross-worker via Postgres NOTIFY when initialized; in-process dispatch
+    otherwise (tests, single-worker dev without Postgres). Fire-and-forget —
+    the route doesn't await delivery so a slow NOTIFY can't stall the response.
     """
-    payload = (event_name, html)
+    if _publisher_pool is not None:
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(_notify_async(shop_id, event_name, html))
+            return
+        except RuntimeError:
+            # No running loop — should never happen from a route, but fall
+            # through to local dispatch rather than crash.
+            pass
+    item = (event_name, html)
     for q in _subscribers.get(shop_id, []):
         try:
-            q.put_nowait(payload)
+            q.put_nowait(item)
         except asyncio.QueueFull:
-            # Drop the event for this slow subscriber rather than blocking the publisher.
             pass
 
 

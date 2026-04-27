@@ -226,8 +226,6 @@
     const feedHint = document.querySelector('.sap-feed-hint');
     const flash = document.getElementById('dash-flash');
     const evt = new EventSource('/shop/events');
-    evt.onopen = () => console.log('[SSE] connected to /shop/events');
-    evt.onerror = (e) => console.warn('[SSE] error / disconnected', e);
 
     let flashTimer = null;
     function showFlash(msg, kind) {
@@ -239,7 +237,6 @@
     }
 
     evt.addEventListener('feed-row', (e) => {
-      console.log('[SSE] feed-row received:', e.data.slice(0, 120));
       if (feedHint) feedHint.textContent = 'แตะรายการเพื่อดูหรือยกเลิก';
       feedBody.querySelector('.feed-row.latest')?.classList.remove('latest');
       feedBody.insertAdjacentHTML('afterbegin', e.data);
