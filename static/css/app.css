@@ -5177,21 +5177,22 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    view instead of pinning). Fixed always pins regardless of which
    ancestor scrolls. The dashboard reserves padding-bottom on .td-dashboard
    so content can scroll above the dock without ending up hidden under it. */
+/* Sticky dock — rounded card hugging the bottom of the viewport, sits 44px
+   above the .s3-footer-brand bar. Per design verbatim (taemdee-shop.html).
+   Content scrolls beneath as user moves through the dashboard. */
 .s3-dock {
-  position: fixed;
-  left: 0;
-  right: 0;
-  /* Sit on top of the brand bar (40px) instead of the viewport bottom. */
-  bottom: 40px;
+  position: sticky;
+  bottom: 44px;
   background: var(--bg);
-  border-top: 1px solid rgba(17, 17, 17, 0.18);
-  border-top-left-radius: 18px;
-  border-top-right-radius: 18px;
-  padding: 6px 14px;
-  box-shadow: 0 -6px 18px -6px rgba(0, 0, 0, 0.12);
+  border-radius: 18px;
+  margin: 0 14px;
+  padding: 6px 14px 14px;
   z-index: 4;
 }
-.td.td-dashboard { padding-bottom: 380px; }
+/* Spacer expands to fill remaining vertical space when content is short, so
+   the dock+brand pair always end up at the bottom of the viewport even on
+   a near-empty dashboard. */
+.td.td-dashboard .s3-spacer { flex: 1; }
 .s3-dock .dock-handle {
   width: 36px;
   height: 4px;
@@ -5200,36 +5201,33 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin: 0 auto 8px;
   opacity: 0.5;
 }
-/* Standalone brand bar at the very bottom — sits below .s3-dock so it's
-   always visible regardless of how tall the dock is. */
-.dock-brand {
-  position: fixed;
-  left: 0;
-  right: 0;
+/* Footer brand bar — sticky to the very bottom, full-width, soft top border.
+   Renders below .s3-dock as a sibling. */
+.s3-footer-brand {
+  position: sticky;
   bottom: 0;
-  margin: 0 auto;
-  max-width: 480px;
+  z-index: 5;
+  margin: 0;
+  padding: 8px 18px max(8px, env(safe-area-inset-bottom));
   background: var(--bg);
-  padding: 6px 14px max(6px, env(safe-area-inset-bottom));
-  border-top: 1px solid var(--line);
+  border-top: 1px solid rgba(17, 17, 17, 0.12);
   display: flex;
   align-items: center;
   justify-content: space-between;
-  z-index: 4;
 }
-.dock-brand .fm-brand { display: flex; align-items: center; gap: 8px; }
-.dock-brand .brand {
+.s3-footer-brand .fm-brand { display: flex; align-items: center; gap: 8px; }
+.s3-footer-brand .brand {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 15px;
   letter-spacing: -0.025em;
   color: var(--ink);
   line-height: 1;
 }
-.dock-brand .brand .dot { color: var(--accent); }
-.dock-brand .fm-install {
+.s3-footer-brand .brand .dot { color: var(--accent); }
+.s3-footer-brand .fm-install {
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: 12px;
   font-weight: 600;
   color: var(--ink-soft);
   display: flex;
@@ -5238,7 +5236,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
   cursor: pointer;
 }
-.dock-brand .fm-install svg { width: 12px; height: 12px; }
+.s3-footer-brand .fm-install svg { width: 12px; height: 12px; }
 
 .s3-dock .sap-feed-h {
   display: flex;
