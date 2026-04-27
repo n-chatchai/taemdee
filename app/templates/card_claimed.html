@@ -25,18 +25,25 @@
         </svg>
       </div>
       <div class="claimed-title"><em>รับรางวัล</em><br>เรียบร้อย!</div>
-
-      {# Live counter — anti-screenshot proof. JS bumps each second. #}
-      <div class="live-pulse">
-        <span class="pulse-dot"></span>
-        <span>สด · <span id="claim-counter">0</span> วิที่แล้ว</span>
-      </div>
     </div>
 
     <div class="voucher">
+      {# Floating particles — continuous CSS animation that a screenshot
+         can't reproduce. Per the revised C5 design this replaces the older
+         "0 sec ago" pulse counter. #}
+      <div class="v-particles" aria-hidden="true">
+        <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      </div>
       <div class="v-label">✦ คูปอง ✦</div>
       <div class="v-title">{{ shop.reward_description }}</div>
-      <div class="v-id">#{{ redemption.id.hex[:8]|upper }} · {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
+      <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
     </div>
 
     <div class="reset">
@@ -61,17 +68,5 @@
 
     {% include "_partials/footer_mark.html" %}
   </div>
-
-  <script>
-    // Live counter — proves the screen is current (anti-screenshot).
-    const claimedAt = new Date('{{ redemption.created_at.isoformat() }}Z').getTime();
-    const counter = document.getElementById('claim-counter');
-    function tick() {
-      const secs = Math.max(0, Math.floor((Date.now() - claimedAt) / 1000));
-      counter.textContent = secs;
-    }
-    tick();
-    setInterval(tick, 1000);
-  </script>
 </body>
 </html>
