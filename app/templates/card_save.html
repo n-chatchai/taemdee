@@ -27,8 +27,8 @@
     <div class="sheet">
       {# Step 1: phone entry → request OTP #}
       <div x-show="step === 'phone'">
-        <div class="headline">ใส่<em>เบอร์ของคุณ</em></div>
-        <div class="body-copy">เราจะส่ง OTP ทาง SMS เพื่อยืนยัน — เก็บแต้มไว้กับเบอร์นี้ถาวร</div>
+        <div class="headline">ใส่<em>เบอร์ของพี่</em></div>
+        <div class="body-copy">ผมจะส่ง OTP ทาง SMS เพื่อยืนยัน — แล้วเก็บแต้มไว้กับเบอร์นี้ตลอดไปครับ</div>
 
         <form @submit.prevent="
                 const fd = new FormData(); fd.append('phone', phone);
@@ -57,9 +57,9 @@
           หรือ
           <a class="alt-link"
              :href="'/auth/line/customer/start' + (nextRedeem ? '?next_redeem=' + nextRedeem : '')">
-            มาเป็นสมาชิกแต้มดี
+            เข้าด้วย LINE
           </a>
-          (LINE · เร็วกว่า)
+          (เร็วกว่า)
         </div>
 
         <div class="trust">
@@ -83,7 +83,7 @@
               }
             ">
         <div class="headline">ใส่<em>รหัสจาก SMS</em></div>
-        <div class="body-copy">รหัสส่งไปที่ <strong x-text="phone"></strong></div>
+        <div class="body-copy">ผมส่งรหัสไปที่ <strong x-text="phone"></strong> แล้วครับ</div>
 
         <div x-show="simulatedCode" class="trust" style="background:#F6F1E5; color:#111; margin-bottom:12px; border:1px dashed var(--ink);">
           OTP ทดสอบ: <strong x-text="simulatedCode"></strong>
