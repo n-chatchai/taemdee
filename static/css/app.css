@@ -1116,6 +1116,17 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
   font-weight: 700;
 }
+
+/* C2.1 welcome — mascot avatar above the nickname prompt sheet. */
+.welcome-mascot {
+  margin: 6px auto 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.welcome-mascot svg {
+  filter: drop-shadow(0 6px 16px rgba(255, 94, 58, 0.32));
+}
 .shop-head .side-spark {
   position: absolute;
   top: 56px;
