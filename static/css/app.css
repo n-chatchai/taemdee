@@ -4646,23 +4646,33 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    S3 — Sticky bottom dock (live feed + 3 inline issuance actions)
    ========================================================== */
 
-/* Eats the remaining vertical space inside .td (flex column) so the
-   sticky dock below it always sits flush at the viewport bottom, even
-   on a freshly-onboarded shop with empty stats / no suggestions. */
-.s3-spacer { flex: 1; min-height: 16px; }
+/* Spacer no longer needs flex: 1 — the dock is now position: fixed and
+   doesn't take part in the .td flex flow, so content sits above it
+   naturally with the page's padding-bottom reservation below. */
+.s3-spacer { height: 16px; }
 
+/* position:fixed (was sticky) — sticky inside .td was unreliable when
+   the page scrolled (overflow-x: hidden on the parent makes .td its own
+   scroll container in some browsers, so the dock would scroll out of
+   view instead of pinning). Fixed always pins regardless of which
+   ancestor scrolls. The dashboard reserves padding-bottom on .td-dashboard
+   so content can scroll above the dock without ending up hidden under it. */
 .s3-dock {
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
   background: var(--bg);
   border-top: 1.5px solid var(--ink);
   border-top-left-radius: 18px;
   border-top-right-radius: 18px;
-  margin: 0;
+  margin: 0 auto;
+  max-width: 480px;
   padding: 6px 14px max(6px, env(safe-area-inset-bottom));
   box-shadow: 0 -6px 18px -6px rgba(0, 0, 0, 0.12);
   z-index: 4;
 }
+.td.td-dashboard { padding-bottom: 340px; }
 .s3-dock .dock-handle {
   width: 36px;
   height: 4px;
