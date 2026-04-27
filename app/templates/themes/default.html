@@ -17,21 +17,10 @@
     {% if just_stamped %}{% include "_partials/scan_celebration.html" %}{% endif %}
     <div class="topbar"><span></span><span></span></div>
 
-    {# Top-right control per C1 design.
-       Member  → .c1-avatar (initial) → /my-cards (C7).
-       Guest   → .c1-myqr   (QR icon) → /my-id    (C8). #}
-    {% if is_guest %}
-      <a href="/my-id" class="c1-myqr" title="โชว์ QR ให้ร้านสแกน" aria-label="QR ของฉัน">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="3" y="3" width="7" height="7" rx="1"/>
-          <rect x="14" y="3" width="7" height="7" rx="1"/>
-          <rect x="3" y="14" width="7" height="7" rx="1"/>
-          <rect x="14" y="14" width="7" height="7" rx="1"/>
-        </svg>
-      </a>
-    {% else %}
-      <a href="/my-cards" class="c1-avatar" title="ดูบัตรทั้งหมด" aria-label="บัตรทั้งหมด">{{ (customer.display_name or 'ล')[0] }}</a>
-    {% endif %}
+    {# Top-right control per C1 design — both member and guest use the same
+       .c1-avatar (initial) link to /my-cards (C7). The guest can still reach
+       their identity QR via the camera/QR row in /my-cards. #}
+    <a href="/my-cards" class="c1-avatar" title="ดูบัตรทั้งหมด" aria-label="บัตรทั้งหมด">{{ (customer.display_name or 'ล')[0] }}</a>
 
     <div class="shop-head">
       <div class="shop-logo-mark">

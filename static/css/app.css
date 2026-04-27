@@ -1059,27 +1059,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c1-back svg { width: 18px; height: 18px; }
 
-/* C1 top-right QR icon (→ /my-id, the C8 page) — always visible so claimed
-   customers can also reach their identity QR from a shop card. */
-.c1-myqr {
-  position: absolute;
-  top: 18px;
-  right: 18px;
-  z-index: 5;
-  width: 36px;
-  height: 36px;
-  background: var(--ink);
-  color: var(--butter);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  text-decoration: none;
-  box-shadow: 2px 2px 0 var(--accent);
-}
-.c1-myqr svg { width: 18px; height: 18px; }
-
 .c1-avatar {
   position: absolute;
   top: 18px;
@@ -2775,7 +2754,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 /* C7 top-right icon buttons — left=camera (open in-app QR scanner for shop
    QRs), right=QR (show /my-id for shops to scan). Both share the same dark
-   pill chrome that visually matches the C1 .c1-myqr. */
+   pill chrome — flat per the latest design drop (no accent drop-shadow). */
 .c7-greet .c7-icon-btn {
   width: 38px;
   height: 38px;
@@ -2788,7 +2767,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
   cursor: pointer;
   text-decoration: none;
-  box-shadow: 2px 2px 0 var(--accent);
 }
 .c7-greet .c7-icon-btn svg { width: 18px; height: 18px; }
 .c7-greet .avatar {
@@ -2942,10 +2920,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c8-qr-card {
   background: #FDFAF2;
-  border: 2px solid var(--ink);
+  border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 22px;
   padding: 18px;
-  box-shadow: 4px 4px 0 var(--accent);
   display: flex;
   flex-direction: column;
   align-items: center;
