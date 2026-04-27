@@ -9,6 +9,7 @@ from app.services.deereach import (
     compute_suggestions,
     find_almost_there_customers,
     find_lapsed_customers,
+    find_new_customers,
     find_unredeemed_reward_customers,
 )
 
@@ -38,9 +39,9 @@ async def test_lapsed_returns_only_in_window(db, shop):
     too_recent = await _customer(db, line_id="U_too_recent")
     too_old = await _customer(db, line_id="U_too_old")
 
-    await _stamp(db, shop, in_window, days_ago=60)   # 30..90 → match
-    await _stamp(db, shop, too_recent, days_ago=10)  # under 30 → skip
-    await _stamp(db, shop, too_old, days_ago=120)    # over 90 → skip
+    await _stamp(db, shop, in_window, days_ago=60)    # 14..365 → match
+    await _stamp(db, shop, too_recent, days_ago=7)    # under 14 → skip
+    await _stamp(db, shop, too_old, days_ago=400)     # over 365 → skip
 
     lapsed = await find_lapsed_customers(db, shop)
     assert {c.line_id for c in lapsed} == {"U_in_window"}
@@ -87,12 +88,43 @@ async def test_unredeemed_reward(db, shop):
     assert {c.line_id for c in matches} == {"U_forgot"}
 
 
+async def test_new_customer_first_stamp_within_window(db, shop):
+    """First stamp at this shop must be within the last 7 days. A customer
+    whose earliest stamp here is older than 7 days isn't 'new' anymore — even
+    if they kept stamping today."""
+    fresh = await _customer(db, line_id="U_fresh")
+    not_so_fresh = await _customer(db, line_id="U_not_so_fresh")
+
+    # U_fresh: first (and only) stamp 2 days ago → match
+    await _stamp(db, shop, fresh, days_ago=2)
+    # U_not_so_fresh: oldest stamp 30 days ago, latest stamp today → SKIP
+    await _stamp(db, shop, not_so_fresh, days_ago=30)
+    await _stamp(db, shop, not_so_fresh, days_ago=0)
+
+    matches = await find_new_customers(db, shop)
+    assert {c.line_id for c in matches} == {"U_fresh"}
+
+
+async def test_new_customer_skips_no_line_id(db, shop):
+    """No LINE id = unreachable, so don't surface them."""
+    anon = await _customer(db)
+    await _stamp(db, shop, anon, days_ago=1)
+    assert await find_new_customers(db, shop) == []
+
+
 async def test_compute_suggestions_orders_by_urgency(db, shop):
-    """Unredeemed-reward should come first, then almost-there, then win-back."""
-    # Seed one customer in each bucket.
+    """Unredeemed-reward → almost-there → win-back → new-customer.
+
+    The almost-there customer's stamps all land within the new-customer
+    7-day window, so the same person counts for both kinds — that's
+    expected (audiences can overlap; the shop owner picks).
+    """
+    # Seed one customer in each bucket — forgot's stamps land at day=10
+    # (idle long enough for unredeemed_reward, but newer than the 14-day
+    # win_back cutoff, so the kinds don't overlap on this customer).
     forgot = await _customer(db, line_id="U_forgot")
     for _ in range(10):
-        await _stamp(db, shop, forgot, days_ago=14)
+        await _stamp(db, shop, forgot, days_ago=10)
 
     almost = await _customer(db, line_id="U_almost")
     for _ in range(9):
@@ -102,7 +134,9 @@ async def test_compute_suggestions_orders_by_urgency(db, shop):
     await _stamp(db, shop, lapsed, days_ago=60)
 
     suggestions = await compute_suggestions(db, shop)
-    assert [s.kind for s in suggestions] == ["unredeemed_reward", "almost_there", "win_back"]
+    assert [s.kind for s in suggestions] == [
+        "unredeemed_reward", "almost_there", "win_back", "new_customer"
+    ]
     for s in suggestions:
         assert s.audience_count == 1
         assert s.cost_credit == 1  # 1 LINE message per recipient

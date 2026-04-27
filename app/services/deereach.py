@@ -29,8 +29,10 @@ CREDIT_PER_LINE = 1
 CREDIT_PER_SMS = 3
 
 # Win-back: customer's last stamp at this shop is between MIN and MAX days ago.
-WIN_BACK_DAYS_MIN = 30
-WIN_BACK_DAYS_MAX = 90
+# Design says "14+ วัน" — bump min to 14 and widen the upper bound to a year so
+# we don't silently drop customers who have been gone longer.
+WIN_BACK_DAYS_MIN = 14
+WIN_BACK_DAYS_MAX = 365
 
 # Almost-there: customer is within N stamps of reward AND last stamp recent.
 ALMOST_THERE_GAP_MAX = 2
@@ -38,6 +40,10 @@ ALMOST_THERE_LAST_VISIT_DAYS = 14
 
 # Unredeemed reward: card is at goal but customer hasn't claimed in K days.
 UNREDEEMED_DAYS_MIN = 7
+
+# New-customer: first stamp at this shop within the last K days. Encourages
+# the shop to thank brand-new visitors and convert them into regulars.
+NEW_CUSTOMER_DAYS = 7
 
 
 @dataclass
@@ -189,6 +195,39 @@ async def find_unredeemed_reward_customers(
     return list(result.all())
 
 
+async def find_new_customers(
+    db: AsyncSession,
+    shop: Shop,
+    days: int = NEW_CUSTOMER_DAYS,
+) -> List[Customer]:
+    """Customers whose FIRST stamp at this shop landed within the last `days`
+    days — they're new to *this* shop (could still be regulars elsewhere).
+    Send a thank-you to convert them into repeat visitors."""
+    now = utcnow()
+    cutoff = now - timedelta(days=days)
+
+    first_stamp = (
+        select(
+            Point.customer_id.label("cid"),
+            func.min(Point.created_at).label("first_at"),
+        )
+        .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
+        .group_by(Point.customer_id)
+        .subquery()
+    )
+
+    stmt = (
+        select(Customer)
+        .join(first_stamp, first_stamp.c.cid == Customer.id)
+        .where(
+            first_stamp.c.first_at >= cutoff,
+            Customer.line_id.is_not(None),
+        )
+    )
+    result = await db.exec(stmt)
+    return list(result.all())
+
+
 # ----------------------------------------------------------------------
 # Suggestion composition
 # ----------------------------------------------------------------------
@@ -202,7 +241,7 @@ async def compute_suggestions(
     db: AsyncSession,
     shop: Shop,
     *,
-    max_suggestions: int = 3,
+    max_suggestions: int = 4,
 ) -> List[Suggestion]:
     """Returns up to N DeeReach suggestions ranked by impact / freshness.
 
@@ -246,9 +285,23 @@ async def compute_suggestions(
                 kind="win_back",
                 label="ชวนกลับ",
                 head=f"ชวน {len(lapsed)} คนที่หายไปกลับมา?",
-                body=f"พวกเขาหายไป {WIN_BACK_DAYS_MIN}–{WIN_BACK_DAYS_MAX} วัน",
+                body=f"พวกเขาหายไป {WIN_BACK_DAYS_MIN}+ วัน",
                 audience_count=len(lapsed),
                 cost_credit=_line_cost(len(lapsed)),
+            )
+        )
+
+    # 4. New customers — say thank-you to first-timers within the last K days
+    new_customers = await find_new_customers(db, shop)
+    if new_customers:
+        out.append(
+            Suggestion(
+                kind="new_customer",
+                label="ขอบคุณลูกค้าใหม่",
+                head=f"ขอบคุณ {len(new_customers)} คนที่มาครั้งแรกสัปดาห์นี้",
+                body=f"พวกเขาแวะมาครั้งแรกใน {NEW_CUSTOMER_DAYS} วันที่ผ่านมา",
+                audience_count=len(new_customers),
+                cost_credit=_line_cost(len(new_customers)),
             )
         )
 
@@ -272,6 +325,8 @@ async def render_message(kind: str, shop: Shop) -> str:
         return f"ใกล้ครบแล้ว! เก็บอีกนิดเดียวรับ {shop.reward_description} ที่ {shop.name}"
     if kind == "unredeemed_reward":
         return f"คุณมี {shop.reward_description} รออยู่ที่ {shop.name} — แวะมารับได้เลย"
+    if kind == "new_customer":
+        return f"ขอบคุณที่แวะมา {shop.name} นะ — แวะอีกครั้งครบ {shop.reward_threshold} แต้ม รับ {shop.reward_description}"
     return f"ทักทายจาก {shop.name}"
 
 
@@ -282,6 +337,8 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
         return await find_almost_there_customers(db, shop)
     if kind == "unredeemed_reward":
         return await find_unredeemed_reward_customers(db, shop)
+    if kind == "new_customer":
+        return await find_new_customers(db, shop)
     raise DeeReachSendError(f"Unsupported kind: {kind}")
 
 
