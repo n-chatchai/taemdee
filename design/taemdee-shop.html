@@ -683,42 +683,206 @@
   }
 
   /* ========================================================== */
-  /* S3v — Floating bottom CTA (when method ≠ ลูกค้าสแกน)      */
+  /* S3 — Sticky action panel (bottom)                           */
   /* ========================================================== */
-  .s3-issue-fab {
+  .s3-spacer {
+    height: 16px;
+  }
+  .s3-dock {
     position: sticky;
-    bottom: 12px;
-    margin: 16px 16px 0;
-    background: var(--ink); color: #FFF;
-    border: 1.5px solid var(--ink);
-    border-radius: 999px;
-    padding: 12px 18px 12px 14px;
-    display: flex; align-items: center; gap: 10px;
-    box-shadow: 4px 4px 0 var(--accent);
+    bottom: 0;
+    background: var(--bg);
+    border-top: 1.5px solid var(--ink);
+    border-top-left-radius: 18px;
+    border-top-right-radius: 18px;
+    margin: 0;
+    padding: 6px 14px 0;
+    box-shadow: 0 -6px 18px -6px rgba(0,0,0,0.12);
+    z-index: 4;
     cursor: pointer;
-    z-index: 5;
   }
-  .s3-issue-fab .fab-icon {
-    width: 32px; height: 32px;
-    background: var(--accent); color: #FFF;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
+  .s3-dock .dock-handle {
+    width: 36px; height: 4px;
+    background: var(--ink-softer);
+    border-radius: 999px;
+    margin: 0 auto 8px;
+    opacity: 0.5;
   }
-  .s3-issue-fab .fab-icon svg { width: 16px; height: 16px; }
-  .s3-issue-fab .fab-text { flex: 1; line-height: 1.2; }
-  .s3-issue-fab .fab-text .fab-name {
+  .s3-dock .dock-brand {
+    margin: 8px -14px 0;
+    padding: 6px 14px;
+    border-top: 1px solid var(--line);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .s3-dock .dock-brand .fm-brand {
+    display: flex; align-items: center; gap: 8px;
+  }
+  .s3-dock .dock-brand .brand {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .s3-dock .dock-brand .brand .dot { color: var(--accent); }
+  .s3-dock .dock-brand .fm-install {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px; letter-spacing: -0.01em;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    display: flex; align-items: center; gap: 4px;
+    text-decoration: none;
+    cursor: pointer;
   }
-  .s3-issue-fab .fab-text .fab-meta {
+  .s3-dock .dock-brand .fm-install svg { width: 12px; height: 12px; }
+  .s3-action-panel {
+    position: sticky;
+    bottom: 38px;
+    background: var(--bg);
+    border-top: 1.5px solid var(--ink);
+    border-left: 1.5px solid var(--ink);
+    border-right: 1.5px solid var(--ink);
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    margin: 0 -10px;
+    padding: 12px 16px 14px;
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.15);
+    z-index: 4;
+  }
+  .s3-action-panel .sap-feed-h, .s3-dock .sap-feed-h {
+    display: flex; align-items: center; justify-content: space-between;
     font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+    padding: 0 4px;
+  }
+  .s3-action-panel .sap-live, .s3-dock .sap-live {
+    color: var(--accent);
+    font-size: 10px;
+    animation: live-pulse 1.6s ease-in-out infinite;
+  }
+  @keyframes live-pulse {
+    0%, 100% { opacity: 1; }
+    50% { opacity: 0.4; }
+  }
+  .s3-action-panel .sap-feed, .s3-dock .sap-feed {
+    padding: 0 4px;
+    margin-bottom: 8px;
+  }
+  .s3-action-panel .sap-table, .s3-dock .sap-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .s3-action-panel .sap-table tr, .s3-dock .sap-table tr {
+    border-bottom: 1px solid var(--line);
+  }
+  .s3-action-panel .sap-table tr:last-child, .s3-dock .sap-table tr:last-child {
+    border-bottom: none;
+  }
+  .s3-action-panel .sap-table td, .s3-dock .sap-table td {
+    padding: 5px 0;
+    vertical-align: middle;
+  }
+  .s3-action-panel .sap-table td.t, .s3-dock .sap-table td.t {
+    font-family: 'JetBrains Mono', monospace;
     font-size: 10px;
     color: var(--ink-softer);
-    margin-top: 1px;
+    width: 44px;
   }
-  .s3-issue-fab .fab-arrow {
-    color: var(--butter); font-size: 16px; font-weight: 700;
+  .s3-action-panel .sap-table td.n, .s3-dock .sap-table td.n {
+    font-weight: 600;
+    color: var(--ink);
+  }
+  .s3-action-panel .sap-table td.a, .s3-dock .sap-table td.a {
+    text-align: right;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .s3-action-panel .sap-table td.a strong, .s3-dock .sap-table td.a strong {
+    font-weight: 700;
+    color: var(--ink);
+  }
+  .s3-action-panel .sap-table td.a .icon-mini, .s3-dock .sap-table td.a .icon-mini {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    color: var(--accent);
+  }
+  .s3-action-panel .sap-table tr.latest, .s3-dock .sap-table tr.latest {
+    background: var(--butter-soft);
+  }
+  .s3-action-panel .sap-table tr.latest td, .s3-dock .sap-table tr.latest td {
+    border-bottom-color: var(--butter);
+  }
+  .s3-action-panel .sap-table tr.latest td:first-child, .s3-dock .sap-table tr.latest td:first-child {
+    padding-left: 8px;
+    border-top-left-radius: 8px;
+    border-bottom-left-radius: 8px;
+  }
+  .s3-action-panel .sap-table tr.latest td:last-child, .s3-dock .sap-table tr.latest td:last-child {
+    padding-right: 8px;
+    border-top-right-radius: 8px;
+    border-bottom-right-radius: 8px;
+  }
+  .s3-action-panel .sap-table .star-mark, .s3-dock .sap-table .star-mark {
+    color: var(--accent);
+    margin-right: 2px;
+  }
+  .s3-action-panel .sap-table td.v, .s3-dock .sap-table td.v {
+    width: 50px;
+    text-align: right;
+    padding-left: 6px;
+  }
+  .s3-action-panel .sap-table .void-mini, .s3-dock .sap-table .void-mini {
+    appearance: none; -webkit-appearance: none;
+    background: transparent;
+    border: 1px solid var(--ink-softer);
+    border-radius: 999px;
+    padding: 3px 8px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .s3-action-panel .sap-actions-h, .s3-dock .sap-actions-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 10px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+    padding: 0 4px;
+  }
+  .s3-action-panel .sap-actions, .s3-dock .sap-actions {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+  }
+  .s3-action-panel .sap-action, .s3-dock .sap-action {
+    appearance: none; -webkit-appearance: none;
+    background: var(--ink); color: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 12px;
+    padding: 7px 4px;
+    cursor: pointer;
+    display: flex; flex-direction: column; align-items: center;
+    gap: 3px;
+    box-shadow: 2px 2px 0 var(--accent);
+  }
+  .s3-action-panel .sap-action svg, .s3-dock .sap-action svg {
+    width: 16px; height: 16px;
+  }
+  .s3-action-panel .sap-action span, .s3-dock .sap-action span {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 10.5px;
   }
 
   /* ========================================================== */
@@ -890,22 +1054,81 @@
     box-shadow: none;
   }
   .phone-numpad .key.del svg { width: 18px; height: 18px; }
+  .phone-confirm-row {
+    margin: 14px 20px 0;
+  }
   .phone-confirm {
-    margin: 0 20px;
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
     padding: 14px 16px;
     background: var(--accent); color: #FFF;
     border: 1.5px solid var(--ink);
     border-radius: 14px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 14px;
-    text-align: center;
     box-shadow: 3px 3px 0 var(--ink);
     cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .phone-confirm .arrow {
+    color: var(--butter);
+    font-size: 16px; font-weight: 800;
+    flex-shrink: 0;
   }
   .phone-confirm.disabled {
     background: var(--surface); color: var(--ink-softer);
     box-shadow: 2px 2px 0 var(--ink-softer);
     border-color: var(--ink-softer);
+  }
+  .phone-not-found {
+    margin: 14px 20px 0;
+    padding: 12px 14px;
+    background: var(--butter-soft);
+    border: 1.5px dashed var(--butter);
+    border-radius: 14px;
+  }
+  .phone-not-found .pnf-row {
+    display: flex; align-items: flex-start; gap: 10px;
+  }
+  .phone-not-found .pnf-icon {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    color: var(--accent);
+    margin-top: 1px;
+  }
+  .phone-not-found .pnf-icon svg { width: 20px; height: 20px; }
+  .phone-not-found .pnf-text { flex: 1; line-height: 1.35; }
+  .phone-not-found .pnf-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .phone-not-found .pnf-s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .search-confirm {
+    appearance: none; -webkit-appearance: none;
+    margin: 14px 20px 0;
+    width: calc(100% - 40px);
+    padding: 14px 16px;
+    background: var(--accent); color: #FFF;
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 8px;
+  }
+  .search-confirm .arrow {
+    color: var(--butter);
+    font-size: 16px; font-weight: 800;
+    flex-shrink: 0;
   }
 
   /* Method picker (S3.choose) */
@@ -2434,6 +2657,38 @@
     text-underline-offset: 2px;
   }
 
+  /* S1 — Branch info note */
+  .s1-branch-note {
+    margin: 18px 22px 0;
+    padding: 12px 14px;
+    border: 1.5px dashed var(--ink-softer);
+    border-radius: 14px;
+    display: flex; align-items: flex-start; gap: 10px;
+    background: var(--surface);
+  }
+  .s1-branch-note .bn-icon {
+    flex-shrink: 0;
+    width: 22px; height: 22px;
+    color: var(--ink-soft);
+    display: flex; align-items: center; justify-content: center;
+    margin-top: 1px;
+  }
+  .s1-branch-note .bn-icon svg { width: 18px; height: 18px; }
+  .s1-branch-note .bn-text {
+    flex: 1; line-height: 1.35;
+  }
+  .s1-branch-note .bn-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .s1-branch-note .bn-s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
   /* Role tabs */
   .s1-tabs {
     margin: 18px 22px 0;
@@ -2825,16 +3080,19 @@
     color: var(--accent); font-weight: 700;
   }
 
-  /* S2.2 — Reward image tiles (AI-generated, mirrors .s2-logos pattern) */
+  /* S2.2 — Reward image tiles */
+  .s2-rewards-wrap {
+    margin-top: 4px;
+  }
   .s2-rewards {
     padding: 4px 20px 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
-    gap: 10px;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
   }
   .s2-reward {
     aspect-ratio: 1;
-    border-radius: 16px;
+    border-radius: 14px;
     border: 1.5px solid var(--ink);
     background: var(--surface);
     box-shadow: 2px 2px 0 var(--ink);
@@ -2842,7 +3100,7 @@
     position: relative;
     overflow: hidden;
   }
-  .s2-reward.selected { transform: translateY(-2px); }
+  .s2-reward.selected { box-shadow: 3px 3px 0 var(--accent); }
   .s2-reward.selected::after {
     content: '✓';
     position: absolute;
@@ -2855,81 +3113,9 @@
     border: 1.5px solid var(--ink);
     z-index: 2;
   }
-  .s2-reward .reward-img {
+  .s2-reward .reward-svg {
     width: 100%; height: 100%;
-    position: relative;
-  }
-
-  /* Reward image styles — stylized "AI-generated" mockup visuals */
-  .s2-reward .r-coffee-cup {
-    background:
-      radial-gradient(ellipse at 50% 40%, rgba(255,255,255,0.4) 0%, transparent 40%),
-      radial-gradient(circle at 50% 50%, #6B3F1F 0%, #3D2510 70%);
-  }
-  .s2-reward .r-coffee-cup::before {
-    content: '';
-    position: absolute;
-    top: 28%; left: 50%; transform: translateX(-50%);
-    width: 60%; height: 8%;
-    background: radial-gradient(ellipse, rgba(255,255,255,0.55) 0%, transparent 70%);
-    border-radius: 50%;
-    filter: blur(2px);
-  }
-  .s2-reward .r-coffee-cup::after {
-    content: '';
-    position: absolute;
-    inset: 30% 22% 18%;
-    background: linear-gradient(180deg, #C8A47A 0%, #8B5A2B 60%, #5C3A1A 100%);
-    border-radius: 50% 50% 8px 8px;
-    box-shadow: inset 0 4px 8px rgba(0,0,0,0.4);
-  }
-
-  .s2-reward .r-latte-art {
-    background: linear-gradient(135deg, #D9B591 0%, #B58450 50%, #8B5A2B 100%);
-  }
-  .s2-reward .r-latte-art::before {
-    content: '';
-    position: absolute;
-    top: 32%; left: 50%; transform: translateX(-50%);
-    width: 60%; aspect-ratio: 1;
-    background: radial-gradient(circle at 40% 40%, #FFF8E8 0%, #E8D8B5 35%, transparent 65%);
-    border-radius: 50%;
-  }
-  .s2-reward .r-latte-art::after {
-    content: '';
-    position: absolute;
-    top: 50%; left: 50%; transform: translate(-50%, -50%);
-    width: 18%; height: 14%;
-    background: #5C3A1A;
-    border-radius: 50% 50% 30% 30%;
-    box-shadow:
-      -10px -2px 0 -3px #5C3A1A,
-      10px -2px 0 -3px #5C3A1A;
-  }
-
-  .s2-reward .r-iced {
-    background: linear-gradient(180deg, #E8D8B5 0%, #C8A47A 40%, #8B5A2B 100%);
-  }
-  .s2-reward .r-iced::before {
-    content: '';
-    position: absolute;
-    top: 25%; left: 30%;
-    width: 18%; aspect-ratio: 1;
-    background: rgba(255,255,255,0.55);
-    border-radius: 4px;
-    transform: rotate(15deg);
-    box-shadow:
-      14px 8px 0 -2px rgba(255,255,255,0.45),
-      -2px 18px 0 -3px rgba(255,255,255,0.4);
-  }
-  .s2-reward .r-iced::after {
-    content: '';
-    position: absolute;
-    bottom: 12%; left: 50%; transform: translateX(-50%);
-    width: 70%; height: 6px;
-    background: #5C3A1A;
-    border-radius: 4px;
-    opacity: 0.4;
+    display: block;
   }
   .s2-foot {
     margin: auto 20px 20px;
@@ -3291,6 +3477,14 @@
     color: var(--ink);
     line-height: 1;
   }
+  .cp-screen .cp-label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500; font-size: 7px;
+    color: var(--ink-soft);
+    margin: 2px 0 1px;
+    text-transform: none;
+    letter-spacing: 0;
+  }
   .cp-num {
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800; font-size: 28px;
@@ -3347,6 +3541,181 @@
     font-size: 11px;
     color: var(--ink-soft);
   }
+
+  /* S2.4 — QR block + download */
+  .s2-qr-block {
+    margin: 8px 22px 20px;
+  }
+  .s2-qr-card {
+    background: #FDFAF2;
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    padding: 16px 14px 12px;
+    box-shadow: 4px 4px 0 var(--accent);
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .s2-qr-card .s2-qr-svg {
+    width: 100%;
+    max-width: 160px;
+    aspect-ratio: 1;
+    margin: 0 auto 10px;
+    display: block;
+  }
+  .s2-qr-card .s2-qr-shop {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .s2-qr-card .s2-qr-url {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+    color: var(--ink-softer);
+  }
+  .s2-qr-download {
+    width: 100%;
+    background: var(--accent);
+    color: #FFF;
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 12px 16px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+  }
+  .s2-qr-download svg { width: 18px; height: 18px; flex-shrink: 0; }
+  .s2-qr-hint {
+    margin-top: 10px;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+
+  /* S2.3 — Customer view preview matching C1 (full card, not mini phone) */
+  .s2-c1-preview {
+    margin: 8px 18px 16px;
+    padding: 16px 16px 14px;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 4px 4px 0 var(--accent);
+    text-align: center;
+  }
+  .s2-c1-preview .shop-head-mini {
+    margin-bottom: 4px;
+  }
+  .s2-c1-preview .shop-logo-mark-mini {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 22px;
+    letter-spacing: -0.04em;
+    line-height: 1;
+    color: var(--ink);
+  }
+  .s2-c1-preview .shop-logo-mark-mini .dot { color: var(--accent); }
+  .s2-c1-preview .shop-sub-mini {
+    font-family: 'Prompt', sans-serif;
+    font-size: 9px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    letter-spacing: 0.02em;
+  }
+  .s2-c1-preview .hero-num-wrap-mini {
+    margin: 8px 0 4px;
+  }
+  .s2-c1-preview .hero-label-mini {
+    font-family: 'Prompt', sans-serif;
+    font-size: 9px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+    margin-bottom: 1px;
+  }
+  .s2-c1-preview .hero-num-mini {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 56px;
+    line-height: 1;
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    display: inline-flex; align-items: flex-start; gap: 4px;
+  }
+  .s2-c1-preview .mini-star-mini {
+    width: 10px; height: 10px;
+    color: var(--butter);
+    margin-top: 4px;
+  }
+  .s2-c1-preview .hero-num-sub-mini {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    color: var(--ink);
+    margin-top: 4px;
+  }
+  .s2-c1-preview .hero-num-sub-mini em {
+    font-style: italic; font-weight: 700;
+    color: var(--accent);
+  }
+  .s2-c1-preview .hero-num-sub-mini .of {
+    color: var(--ink-softer);
+  }
+  .s2-c1-preview .stamps-mini {
+    margin: 10px 0 12px;
+    display: grid;
+    grid-template-columns: repeat(5, 1fr);
+    gap: 5px;
+  }
+  .s2-c1-preview .stamps-mini .sm {
+    aspect-ratio: 1;
+    border: 1.5px dashed var(--ink-softer);
+    border-radius: 50%;
+    background: transparent;
+  }
+  .s2-c1-preview .stamps-mini .sm.on {
+    background: var(--ink);
+    border: 1.5px solid var(--ink);
+  }
+  .s2-c1-preview .stamps-mini .sm.on.butter {
+    background: var(--butter);
+    border-color: var(--ink);
+  }
+  .s2-c1-preview .reward-pill-mini {
+    display: flex; align-items: center; gap: 8px;
+    padding: 8px 10px;
+    background: var(--butter);
+    border: 1.5px solid var(--ink);
+    border-radius: 999px;
+    box-shadow: 2px 2px 0 var(--ink);
+    margin-top: 6px;
+    text-align: left;
+  }
+  .s2-c1-preview .gift-mini {
+    width: 22px; height: 22px;
+    background: var(--ink); color: var(--butter);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .s2-c1-preview .gift-mini svg { width: 12px; height: 12px; }
+  .s2-c1-preview .rtxt-mini { flex: 1; line-height: 1.2; }
+  .s2-c1-preview .rlabel-mini {
+    font-family: 'Prompt', sans-serif;
+    font-size: 8px;
+    color: var(--ink); opacity: 0.6;
+    text-transform: uppercase;
+    letter-spacing: 0.1em;
+  }
+  .s2-c1-preview .rname-mini {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 11px;
+    color: var(--ink);
+    margin-top: 1px;
+  }
+
   .s2-cta-final {
     margin: 0 22px 12px;
     background: var(--ink);
@@ -3430,42 +3799,56 @@
     font-family: 'Prompt', sans-serif;
   }
   .s3-hero {
-    padding: 26px 20px 14px;
+    padding: 22px 20px 14px;
     position: relative;
+    text-align: center;
   }
   .s3-hero::before {
     content: '';
     position: absolute;
-    top: 20px; right: 0;
-    width: 180px; height: 180px;
+    top: 20px; left: 50%;
+    width: 220px; height: 180px;
+    transform: translateX(-50%);
     background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
-    opacity: 0.6; border-radius: 50%; z-index: 0;
+    opacity: 0.5; border-radius: 50%; z-index: 0;
   }
   .s3-hero > * { position: relative; z-index: 1; }
+  .s3-hero .hero-top {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 4px;
+  }
   .s3-hero .label {
     display: inline-flex; align-items: center; gap: 6px;
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500; font-size: 12px;
     color: var(--ink-soft);
-    margin-bottom: 8px;
     background: var(--butter-soft);
     padding: 4px 10px;
     border-radius: 999px;
     border: 1px dashed var(--butter);
   }
+  .s3-hero .delta {
+    display: inline-flex; align-items: center; gap: 3px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12px;
+    color: var(--mint-ink);
+    background: var(--mint);
+    padding: 4px 10px;
+    border-radius: 999px;
+  }
   .s3-hero .num {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 124px;
+    font-weight: 700; font-size: 110px;
     letter-spacing: -0.065em;
-    line-height: 0.85;
+    line-height: 0.95;
     color: var(--ink);
-    margin-bottom: 10px;
     position: relative; display: inline-block;
+    margin: 0;
   }
   .s3-hero .num .accent { color: var(--accent); }
   .s3-hero .num .star {
     position: absolute;
-    top: -4px; right: -22px;
+    top: 6px; right: -22px;
     width: 22px; height: 22px;
     color: var(--butter);
     stroke: var(--ink); stroke-width: 2;
@@ -3473,20 +3856,35 @@
   }
   .s3-hero .caption {
     font-family: 'Prompt', sans-serif;
-    font-size: 16px; font-weight: 700;
-    letter-spacing: -0.02em;
-    line-height: 1.25;
-    margin-bottom: 4px;
+    font-size: 14px; font-weight: 600;
+    letter-spacing: -0.01em;
+    color: var(--ink-soft);
+    margin-top: 2px;
   }
-  .s3-hero .delta {
-    display: inline-flex; align-items: center; gap: 4px;
-    margin-top: 12px;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 12px;
-    color: var(--mint-ink);
-    background: var(--mint);
-    padding: 4px 10px;
+  .s3-stats-pills {
+    margin: 4px 20px 16px;
+    padding: 8px 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
     border-radius: 999px;
+    box-shadow: 2px 2px 0 var(--ink);
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .s3-stats-pills .sp strong {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-right: 2px;
+  }
+  .s3-stats-pills .sp-sep {
+    color: var(--ink-softer);
+    opacity: 0.5;
   }
   .s3-stats {
     display: grid;
@@ -3550,21 +3948,20 @@
     font-size: 12px; color: var(--ink); opacity: 0.75;
     line-height: 1.4; margin-bottom: 14px;
   }
-  .s3-reach .reach-btn {
+  .s3-reach { text-decoration: none; color: inherit; display: block; }
+  .s3-reach .reach-cta {
+    margin-top: 4px;
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 10px 14px;
     background: var(--ink); color: var(--bg);
-    border: none; padding: 12px 14px 12px 18px;
-    border-radius: 14px;
+    border-radius: 12px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 13px;
-    width: 100%;
-    display: flex; justify-content: space-between; align-items: center;
-    cursor: pointer;
   }
-  .s3-reach .reach-btn .cost {
-    background: var(--accent); color: #FFF;
-    padding: 4px 10px; border-radius: 999px;
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px; letter-spacing: 0.04em;
+  .s3-reach .reach-cta .reach-arrow {
+    color: var(--butter);
+    font-size: 16px;
+    font-weight: 800;
   }
 
   /* ========================================================== */
@@ -3700,19 +4097,12 @@
   .s5-toggle.on .dot { left: 19px; background: var(--butter); }
   .s5-toggle.locked {
     cursor: not-allowed;
-    opacity: 0.85;
-  }
-  .s5-toggle.locked::after {
-    content: '🔒';
-    position: absolute;
-    top: -6px; right: -6px;
-    font-size: 9px;
     background: var(--ink);
-    color: var(--butter);
-    width: 14px; height: 14px;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    border: 1px solid var(--ink);
+    border-color: var(--ink);
+  }
+  .s5-toggle.locked .dot {
+    background: var(--ink-softer);
+    border-color: var(--ink);
   }
 
   .s5-tip {
@@ -3740,74 +4130,63 @@
   }
 
   /* ========================================================== */
-  /* S6 — Stamp notification toast                               */
+  /* S6 — Stamp notification toast (top, pushes content down)    */
   /* ========================================================== */
-  .s6-bg {
-    position: absolute; inset: 0;
-    z-index: 0;
-    filter: blur(0.5px); opacity: 0.4;
-    pointer-events: none;
-  }
-  .s6-bg .row {
-    height: 60px; margin: 8px 20px;
-    background: var(--surface);
-    border: 1.5px solid var(--ink);
-    border-radius: 14px;
-  }
-  .s6-bg .header {
-    height: 130px; margin: 60px 20px 16px;
-    background: linear-gradient(160deg, var(--butter-soft), transparent);
-    border-radius: 18px;
-  }
-  .s6-overlay {
-    position: absolute; inset: 0;
-    background: rgba(17,17,17,0.4);
-    backdrop-filter: blur(1px);
-    z-index: 1;
-  }
   .s6-toast {
-    position: relative;
-    margin: 280px 18px 0;
-    padding: 16px 16px 14px;
+    margin: 14px 14px 0;
+    padding: 14px 14px 12px;
     background: var(--ink);
     color: var(--bg);
     border: 1.5px solid var(--ink);
-    border-radius: 22px;
-    box-shadow: 0 16px 40px -10px rgba(0,0,0,0.5), 4px 4px 0 var(--accent);
-    z-index: 2;
+    border-radius: 18px;
+    box-shadow: 4px 4px 0 var(--accent);
+    animation: s6-drop 0.35s ease-out;
+  }
+  @keyframes s6-drop {
+    from { transform: translateY(-12px); opacity: 0; }
+    to { transform: translateY(0); opacity: 1; }
   }
   .s6-toast .top-row {
     display: flex; align-items: center; gap: 12px;
     margin-bottom: 12px;
   }
   .s6-toast .plus {
-    width: 44px; height: 44px;
+    width: 40px; height: 40px;
     background: var(--accent); color: #fff;
-    border-radius: 14px;
+    border-radius: 12px;
     border: 1.5px solid var(--bg);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 22px;
+    font-weight: 800; font-size: 19px;
     transform: rotate(-6deg);
     flex-shrink: 0;
   }
-  .s6-toast .info { flex: 1; line-height: 1.25; }
+  .s6-toast .info { flex: 1; line-height: 1.2; min-width: 0; }
   .s6-toast .info .h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 16px;
+    font-weight: 700; font-size: 17px;
     letter-spacing: -0.015em;
     margin-bottom: 2px;
   }
   .s6-toast .info .s {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--ink-softer);
+    font-size: 10px; color: var(--ink-softer);
     letter-spacing: 0.05em;
   }
-  .s6-toast .progress-mini {
+  .s6-toast .countdown {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--butter);
     background: rgba(255,255,255,0.1);
-    border-radius: 12px;
-    padding: 12px 14px;
-    margin-bottom: 12px;
+    padding: 4px 8px;
+    border-radius: 999px;
+    flex-shrink: 0;
+  }
+  .s6-toast .progress-mini {
+    background: rgba(255,255,255,0.08);
+    border-radius: 10px;
+    padding: 10px 12px;
+    margin-bottom: 10px;
   }
   .s6-toast .progress-mini .row {
     display: flex; justify-content: space-between; align-items: center;
@@ -3815,60 +4194,135 @@
   }
   .s6-toast .progress-mini .name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 12px;
+    font-weight: 600; font-size: 11px;
+    color: var(--ink-softer);
   }
   .s6-toast .progress-mini .count {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 18px;
+    font-weight: 800; font-size: 18px;
     letter-spacing: -0.02em;
     color: var(--butter);
   }
   .s6-toast .progress-mini .count .of {
-    color: var(--ink-softer); font-weight: 400; font-size: 12px;
+    color: var(--ink-softer); font-weight: 400; font-size: 11px;
   }
   .s6-toast .progress-mini .stamps-mini {
     display: grid;
     grid-template-columns: repeat(10, 1fr);
     gap: 3px;
   }
-  .s6-toast .progress-mini .stamps-mini .ms {
-    height: 8px; border-radius: 3px;
-    background: rgba(255,255,255,0.15);
+  .s6-toast .progress-mini .ms {
+    aspect-ratio: 1;
+    border: 1px dashed rgba(255,255,255,0.3);
+    border-radius: 50%;
   }
-  .s6-toast .progress-mini .stamps-mini .ms.on { background: var(--accent); }
-  .s6-toast .progress-mini .stamps-mini .ms.just-now {
-    background: var(--butter);
-    box-shadow: 0 0 0 2px var(--butter), 0 0 12px var(--butter);
-    animation: justnow-pulse 1.5s ease-in-out infinite;
+  .s6-toast .progress-mini .ms.on {
+    background: var(--bg);
+    border-color: var(--bg);
   }
+  .s6-toast .progress-mini .ms.just-now {
+    background: var(--accent);
+    border: 1px solid var(--bg);
+    box-shadow: 0 0 0 2px var(--accent);
+  }
+  .s6-toast .void-btn {
+    width: 100%;
+    background: transparent;
+    border: 1.5px solid rgba(255,255,255,0.25);
+    color: var(--bg);
+    border-radius: 10px;
+    padding: 8px 10px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 11px;
+    cursor: pointer;
+  }
+
+  /* Pushed-down dashboard preview below toast */
+  .s6-pushed {
+    padding: 16px 18px 18px;
+  }
+  .s6-pushed .s6-greet-row {
+    margin-bottom: 12px;
+  }
+  .s6-pushed .s6-greet {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .s6-pushed .s6-greet strong {
+    color: var(--ink); font-weight: 700;
+  }
+  .s6-pushed .s6-hero-mini {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 12px 14px;
+    margin-bottom: 14px;
+    box-shadow: 2px 2px 0 var(--ink);
+  }
+  .s6-pushed .hm-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 9px;
+    color: var(--ink-softer);
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+  }
+  .s6-pushed .hm-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 32px;
+    line-height: 1;
+    letter-spacing: -0.03em;
+    color: var(--accent);
+    margin: 2px 0;
+  }
+  .s6-pushed .hm-cap {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .s6-pushed .s6-feed-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 11px;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
+    color: var(--ink);
+    margin-bottom: 8px;
+  }
+  .s6-pushed .s6-feed-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 0;
+    border-bottom: 1px solid var(--line);
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .s6-pushed .s6-feed-row:last-child { border-bottom: none; }
+  .s6-pushed .s6-feed-row.latest {
+    background: var(--butter-soft);
+    margin: 0 -10px;
+    padding: 8px 10px;
+    border-radius: 8px;
+    border-bottom: none;
+  }
+  .s6-pushed .s6-feed-row .t {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-softer);
+    width: 56px; flex-shrink: 0;
+  }
+  .s6-pushed .s6-feed-row .w {
+    flex: 1;
+    display: flex; align-items: center; gap: 6px;
+  }
+  .s6-pushed .s6-feed-row .icon-mini {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 13px;
+    color: var(--accent);
+  }
+  .s6-pushed .s6-feed-row strong { font-weight: 700; }
   @keyframes justnow-pulse {
     0%, 100% { box-shadow: 0 0 0 2px var(--butter), 0 0 12px var(--butter); }
     50% { box-shadow: 0 0 0 2px var(--butter), 0 0 4px var(--butter); }
-  }
-  .s6-toast .void-row {
-    display: flex; gap: 8px; align-items: center;
-  }
-  .s6-toast .void-btn {
-    flex: 1;
-    background: var(--bg); color: var(--ink);
-    border: 1.5px solid var(--bg);
-    padding: 12px 14px;
-    border-radius: 12px;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
-    cursor: pointer;
-  }
-  .s6-toast .countdown {
-    width: 56px;
-    background: rgba(255,94,58,0.15);
-    border: 1.5px dashed var(--accent);
-    color: var(--accent);
-    border-radius: 12px;
-    padding: 11px 0;
-    text-align: center;
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700;
-    font-size: 14px;
   }
 
   /* ========================================================== */
@@ -4901,6 +5355,388 @@
     .phone { box-shadow: none; }
     .end { page-break-before: always; padding-top: 40px; }
   }
+  /* ========================================================== */
+  /* S13 — แต้มดีแนะนำ                                           */
+  /* ========================================================== */
+  .s13-intro {
+    padding: 22px 22px 0;
+    margin-bottom: 14px;
+  }
+  .s13-intro .ask {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 26px;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .s13-intro .ask em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .s13-intro .ask-th {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    line-height: 1.4;
+  }
+  .s13-list {
+    padding: 0 18px;
+    display: flex; flex-direction: column;
+    gap: 10px;
+  }
+  .s13-card {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 12px 14px;
+    box-shadow: 2px 2px 0 var(--ink);
+    text-decoration: none;
+    color: inherit;
+    position: relative;
+  }
+  .s13-card.primary {
+    background: var(--ink); color: var(--bg);
+    box-shadow: 3px 3px 0 var(--accent);
+  }
+  .s13-card .sc-tag {
+    position: absolute;
+    top: -8px; right: 12px;
+    background: var(--butter); color: var(--ink);
+    border: 1.5px solid var(--ink);
+    padding: 2px 8px;
+    border-radius: 999px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 9px;
+    letter-spacing: 0.04em;
+  }
+  .s13-card .sc-row {
+    display: flex; align-items: center; gap: 12px;
+  }
+  .s13-card .sc-icon {
+    width: 36px; height: 36px;
+    background: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 10px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    flex-shrink: 0;
+  }
+  .s13-card.primary .sc-icon {
+    background: var(--accent); border-color: var(--accent); color: #FFF;
+  }
+  .s13-card .sc-icon svg { width: 18px; height: 18px; }
+  .s13-card .sc-info { flex: 1; line-height: 1.25; min-width: 0; }
+  .s13-card .sc-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13.5px;
+    letter-spacing: -0.01em;
+    margin-bottom: 1px;
+  }
+  .s13-card .sc-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-softer);
+  }
+  .s13-card.primary .sc-meta { color: var(--butter); opacity: 0.95; }
+  .s13-card .sc-cost {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 4px 8px;
+    border-radius: 999px;
+    border: 1px solid var(--accent);
+    flex-shrink: 0;
+    font-weight: 600;
+  }
+  .s13-card.primary .sc-cost {
+    background: var(--accent); color: #FFF; border-color: var(--accent);
+  }
+  .s13-create {
+    margin: 14px 18px 0;
+    width: calc(100% - 36px);
+    padding: 12px;
+    background: transparent;
+    border: 1.5px dashed var(--ink-softer);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 13px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+    gap: 6px;
+  }
+  .s13-create .plus {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 16px;
+    color: var(--accent);
+  }
+
+  /* ========================================================== */
+  /* S13.detail — campaign detail page                          */
+  /* ========================================================== */
+  .s13d-section {
+    padding: 14px 20px 0;
+  }
+  .s13d-h {
+    display: flex; align-items: center; justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .s13d-h .s13d-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 12px;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    color: var(--ink);
+  }
+  .s13d-h .s13d-count {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-softer);
+  }
+  .s13d-h .s13d-edit {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 11px;
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    cursor: pointer;
+  }
+  .s13d-customers {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    padding: 4px 8px;
+  }
+  .customer-row {
+    display: flex; align-items: center; gap: 10px;
+    padding: 8px 6px;
+    border-bottom: 1px solid var(--line);
+  }
+  .customer-row:last-of-type { border-bottom: none; }
+  .customer-row .cr-check {
+    width: 20px; height: 20px;
+    border: 1.5px solid var(--ink);
+    border-radius: 6px;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+    color: var(--ink-softer);
+    background: var(--bg);
+  }
+  .customer-row .cr-check.on {
+    background: var(--accent); color: #FFF; border-color: var(--accent);
+  }
+  .customer-row .cr-avatar {
+    width: 28px; height: 28px;
+    background: var(--bg); color: var(--ink);
+    border: 1.5px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 11px;
+    flex-shrink: 0;
+  }
+  .customer-row .cr-info {
+    flex: 1; line-height: 1.25; min-width: 0;
+  }
+  .customer-row .cr-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 13px;
+    color: var(--ink);
+  }
+  .customer-row .cr-meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-softer);
+    margin-top: 1px;
+  }
+  .customer-more {
+    text-align: center;
+    padding: 10px 6px 6px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 11px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .s13d-message {
+    padding: 14px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.6;
+  }
+  .s13d-message .var {
+    background: var(--butter);
+    color: var(--ink);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    border: 1px solid var(--ink);
+    font-weight: 700;
+  }
+  .s13d-message .msg-cursor {
+    display: inline-block;
+    width: 2px; height: 14px;
+    background: var(--accent);
+    vertical-align: middle;
+    animation: blink 1.1s infinite;
+  }
+  .s13d-vars {
+    margin-top: 8px;
+    display: flex; flex-wrap: wrap; gap: 6px;
+  }
+  .s13d-vars .var-chip {
+    padding: 4px 8px;
+    background: var(--bg);
+    border: 1px dashed var(--ink-softer);
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+
+  .s13d-preview {
+    padding: 12px 14px;
+    background: var(--mint);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--mint-ink);
+    line-height: 1.5;
+  }
+  .s13d-preview .prev-line { margin-bottom: 4px; }
+  .s13d-preview .prev-line:last-child { margin-bottom: 0; }
+  .s13d-preview strong {
+    background: var(--ink);
+    color: var(--butter);
+    padding: 1px 6px;
+    border-radius: 4px;
+    font-weight: 700;
+  }
+
+  .s13d-send {
+    margin: 18px 20px 12px;
+    width: calc(100% - 40px);
+    background: var(--accent);
+    color: #FFF;
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--ink);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .s13d-send .s13d-cost {
+    background: var(--ink); color: var(--butter);
+    padding: 4px 10px;
+    border-radius: 999px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px;
+    letter-spacing: 0.04em;
+  }
+
+  /* ========================================================== */
+  /* S13.sent — confirmation                                     */
+  /* ========================================================== */
+  .s13s-stage {
+    padding: 36px 24px 24px;
+    text-align: center;
+  }
+  .s13s-mark {
+    width: 60px; height: 60px;
+    margin: 0 auto 18px;
+    background: var(--accent); color: #FFF;
+    border: 2px solid var(--ink);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    box-shadow: 4px 4px 0 var(--butter);
+  }
+  .s13s-mark svg { width: 28px; height: 28px; }
+  .s13s-title {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 30px;
+    line-height: 1.05;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .s13s-title em {
+    font-style: italic;
+    color: var(--accent);
+  }
+  .s13s-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 20px;
+  }
+  .s13s-card {
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 14px 16px;
+    box-shadow: 3px 3px 0 var(--ink);
+    text-align: left;
+  }
+  .s13s-row {
+    display: flex; align-items: center; justify-content: space-between;
+    padding: 6px 0;
+  }
+  .s13s-row .s13s-label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600; font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .s13s-row .s13s-val {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 22px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+  }
+  .s13s-row .s13s-val.accent { color: var(--accent); }
+  .s13s-divider {
+    border-top: 1px dashed var(--line);
+    margin: 4px 0;
+  }
+  .s13s-hint {
+    margin-top: 8px;
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 10.5px;
+    color: var(--ink-softer);
+    line-height: 1.4;
+  }
+  .s13s-cta {
+    margin: 18px 22px 12px;
+    width: calc(100% - 44px);
+    background: var(--ink); color: var(--bg);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    padding: 14px 16px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    cursor: pointer;
+    box-shadow: 3px 3px 0 var(--accent);
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .s13s-cta .arrow {
+    color: var(--butter);
+    font-size: 16px;
+    font-weight: 800;
+  }
+
 </style>
 </head>
 <body>
@@ -4932,7 +5768,7 @@
       <span class="hl">ฝั่งเจ้าของ</span> <span class="accent">·</span>
     </h1>
     <p class="lead">
-      หน้าจอที่เจ้าของร้านใช้ — สมัครและตั้งค่าใน 60 วินาที แดชบอร์ดประจำวัน ออกแต้ม จัดการทีมและสาขา รวมไปถึงการเติมเครดิตเพื่อชวนลูกค้า — ทำหลังจากฝั่งลูกค้าเสร็จ
+      หน้าจอที่เจ้าของร้านใช้ — สมัครและตั้งค่าในไม่กี่นาที แดชบอร์ดประจำวัน ออกแต้ม จัดการทีมและสาขา รวมไปถึงการเติมเครดิตเพื่อชวนลูกค้า — ทำหลังจากฝั่งลูกค้าเสร็จ
     </p>
 
     <div class="cover-stats">
@@ -5006,7 +5842,7 @@
                 ใหม่ · ใช้ได้ทั่วไทย
               </div>
               <h1 class="hm-h1">บัตรสะสมแต้ม<br><span class="hl">ที่ลูกค้ารัก<span class="accent">.</span></span></h1>
-              <p class="hm-lead">ลูกค้าสแกน QR ได้แต้มทันที ไม่ต้องโหลดแอป ร้านเปิดใช้ฟรี ใน 60 วินาที</p>
+              <p class="hm-lead">ลูกค้าสแกน QR ได้แต้มทันที ไม่ต้องโหลดแอป ร้านเปิดใช้ฟรี ในไม่กี่นาที</p>
             </div>
 
             <div class="hm-roles">
@@ -5020,7 +5856,7 @@
                 </div>
                 <div class="role-info">
                   <div class="role-name">สำหรับร้าน</div>
-                  <div class="role-meta">เปิดร้านฟรี ใน 60 วินาที</div>
+                  <div class="role-meta">เปิดร้านฟรี ในไม่กี่นาที</div>
                 </div>
                 <span class="role-arrow">→</span>
               </a>
@@ -5086,7 +5922,7 @@
                 </svg>
               </div>
               <div class="s1-name">แต้มดี<span class="dot">.</span></div>
-              <div class="s1-tag">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรี · ไม่มีค่ารายเดือน</div>
+              <div class="s1-tag">เปิดร้านค้าใหม่ในไม่กี่นาที<br>ฟรี · ไม่มีค่ารายเดือน</div>
             </div>
 
             <div class="s1-buttons">
@@ -5098,6 +5934,20 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
                 ใช้เบอร์โทร · รับ OTP
               </button>
+            </div>
+
+            <div class="s1-branch-note">
+              <div class="bn-icon">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <circle cx="12" cy="12" r="10"/>
+                  <line x1="12" y1="16" x2="12" y2="12"/>
+                  <line x1="12" y1="8" x2="12.01" y2="8"/>
+                </svg>
+              </div>
+              <div class="bn-text">
+                <div class="bn-h">เป็นสาขาของร้านที่มีอยู่แล้ว?</div>
+                <div class="bn-s">ติดต่อเจ้าของร้านให้เพิ่มเป็นสาขา</div>
+              </div>
             </div>
 
             <div class="s1-foot">
@@ -5128,7 +5978,7 @@
       <div class="num">02</div>
       <h2>ร้าน · <em>ตั้งค่าร้าน</em></h2>
     </div>
-    <div class="desc">4 ขั้นตอน รวม 60 วินาที — ตั้งชื่อร้าน อัปโหลดโลโก้ เลือกธีม และยืนยัน พร้อมเริ่มออกแต้ม</div>
+    <div class="desc">4 ขั้นตอน ใช้เวลาไม่กี่นาที — ตั้งชื่อร้าน อัปโหลดโลโก้ เลือกธีม และยืนยัน พร้อมเริ่มออกแต้ม</div>
   </div>
 
   <div class="grid">
@@ -5153,7 +6003,6 @@
 
             <div class="s2-counter">
               <span class="step-num"><strong>01</strong> / 04 · ตัวร้าน</span>
-              <span class="skip">ข้าม</span>
             </div>
 
             <div class="s2-q">
@@ -5168,16 +6017,6 @@
                 <span class="cursor"></span>
               </div>
               <div class="s2-hint">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
-            </div>
-
-            <div class="s2-branch-row">
-              <div class="label-block">
-                <div class="h">มีสาขาเดียว</div>
-                <div class="s">เพิ่มสาขาภายหลังได้ในตั้งค่า</div>
-              </div>
-              <div class="s2-branch-toggle">
-                <div class="dot"></div>
-              </div>
             </div>
 
             <div class="s2-field" style="margin-top:18px;">
@@ -5243,7 +6082,6 @@
 
             <div class="s2-counter">
               <span class="step-num"><strong>02</strong> / 04 · รางวัล</span>
-              <span class="skip">ข้าม</span>
             </div>
 
             <div class="s2-q">
@@ -5263,21 +6101,47 @@
               <div class="label">รูปรางวัล</div>
             </div>
 
-            <div class="s2-rewards">
-              <div class="s2-reward selected">
-                <div class="reward-img r-coffee-cup"></div>
-              </div>
-              <div class="s2-reward">
-                <div class="reward-img r-latte-art"></div>
-              </div>
-              <div class="s2-reward">
-                <div class="reward-img r-iced"></div>
+            <div class="s2-rewards-wrap">
+              <div class="s2-rewards">
+                <div class="s2-reward selected">
+                  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" fill="#FFE6DF"/>
+                    <rect x="22" y="38" width="56" height="44" rx="3" fill="#FDFAF2" stroke="#111" stroke-width="2.5"/>
+                    <rect x="18" y="32" width="64" height="12" rx="2" fill="#FFD952" stroke="#111" stroke-width="2.5"/>
+                    <line x1="50" y1="32" x2="50" y2="82" stroke="#111" stroke-width="2.5"/>
+                    <path d="M50 32 Q42 22 36 24 Q32 28 36 32 Q42 32 50 32" fill="#FF5E3A" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M50 32 Q58 22 64 24 Q68 28 64 32 Q58 32 50 32" fill="#FF5E3A" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="s2-reward">
+                  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" fill="#FFF1B8"/>
+                    <rect x="20" y="34" width="60" height="38" rx="4" fill="#FDFAF2" stroke="#111" stroke-width="2.5"/>
+                    <rect x="20" y="44" width="60" height="6" fill="#111"/>
+                    <circle cx="68" cy="60" r="4" fill="#FF5E3A" stroke="#111" stroke-width="2"/>
+                    <line x1="28" y1="60" x2="56" y2="60" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+                  </svg>
+                </div>
+                <div class="s2-reward">
+                  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" fill="#C8E8D0"/>
+                    <path d="M50 18 L58 40 L82 40 L62 54 L70 76 L50 62 L30 76 L38 54 L18 40 L42 40 Z" fill="#FFD952" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+                  </svg>
+                </div>
+                <div class="s2-reward">
+                  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect width="100" height="100" fill="#FFF1B8"/>
+                    <path d="M30 38 L70 38 L66 78 Q66 82 62 82 L38 82 Q34 82 34 78 Z" fill="#FDFAF2" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+                    <path d="M70 46 Q82 46 82 56 Q82 66 70 66" fill="none" stroke="#111" stroke-width="2.5"/>
+                    <ellipse cx="50" cy="38" rx="20" ry="3" fill="#7A4A1F"/>
+                    <path d="M44 30 Q42 24 44 18 M50 30 Q48 24 50 18 M56 30 Q54 24 56 18" stroke="#111" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
+                  </svg>
+                </div>
               </div>
             </div>
 
             <div class="s2-helper">
-              AI สร้างจาก <em>"กาแฟ Signature"</em><br>
-              <span class="reroll">↻ สร้างใหม่อีก 3 แบบ</span>
+              เลือกรูปที่ใช่ หรือ <em>อัปโหลดของคุณเอง</em>
             </div>
 
             <div class="s2-upload">
@@ -5322,7 +6186,7 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S2.3</span>ตั้งค่าร้าน · 3/4</div>
         <h3>เลือกธีม</h3>
-        <p>พรีวิวบัตรลูกค้าจริงด้านบน เปลี่ยนสีทันทีจาก swatch 4 ธีมด้านล่าง — แต่ละธีมเปลี่ยนสีเลข สี stamp และสีรางวัล</p>
+        <p>มุมมองลูกค้าบนมือถือ — เลือกธีมแล้วเปลี่ยนสีทันที (1 แต้ม, ตรงกับสิ่งที่ลูกค้าจะเห็นจริงตอน C2)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5337,34 +6201,50 @@
 
             <div class="s2-counter">
               <span class="step-num"><strong>03</strong> / 04 · ธีม</span>
-              <span class="skip">ข้าม</span>
             </div>
 
             <div class="s2-q">
               <div class="ask">เลือก<em>ธีม.</em></div>
-              <div class="sub">หน้าตาบัตรสะสมแต้มของลูกค้า</div>
+              <div class="sub">มุมมองลูกค้า</div>
             </div>
 
-            <div class="s2-theme-preview t-taemdee">
-              <div class="preview-shop">
-                <div class="preview-shop-name">ร้านกาแฟลุงหมี</div>
-                <div class="preview-shop-sub">mhee. · เชียงใหม่</div>
+            <div class="s2-c1-preview">
+              <div class="shop-head-mini">
+                <div class="shop-logo-mark-mini">mhee<span class="dot">.</span></div>
+                <div class="shop-sub-mini">ร้านกาแฟลุงหมี · เชียงใหม่</div>
               </div>
-              <div class="preview-num">7</div>
-              <div class="preview-meta">อีก 3 แต้มรับรางวัล</div>
-              <div class="preview-stamps">
-                <div class="ps on"></div>
-                <div class="ps on"></div>
-                <div class="ps butter"></div>
-                <div class="ps on"></div>
-                <div class="ps on"></div>
-                <div class="ps butter"></div>
-                <div class="ps on"></div>
-                <div class="ps"></div>
-                <div class="ps"></div>
-                <div class="ps"></div>
+
+              <div class="hero-num-wrap-mini">
+                <div class="hero-label-mini">แต้มของคุณ</div>
+                <div class="hero-num-mini">
+                  7
+                  <svg class="mini-star-mini" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                </div>
+                <div class="hero-num-sub-mini"><em>อีก 3 แต้ม!</em> <span class="of">/ จาก 10</span></div>
               </div>
-              <div class="preview-reward">✦ กาแฟ Signature ฟรี 1 แก้ว ✦</div>
+
+              <div class="stamps-mini">
+                <div class="sm on"></div>
+                <div class="sm on"></div>
+                <div class="sm on butter"></div>
+                <div class="sm on"></div>
+                <div class="sm on"></div>
+                <div class="sm on butter"></div>
+                <div class="sm on"></div>
+                <div class="sm"></div>
+                <div class="sm"></div>
+                <div class="sm"></div>
+              </div>
+
+              <div class="reward-pill-mini">
+                <div class="gift-mini">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+                </div>
+                <div class="rtxt-mini">
+                  <div class="rlabel-mini">รางวัล</div>
+                  <div class="rname-mini">กาแฟ Signature ฟรี 1 แก้ว</div>
+                </div>
+              </div>
             </div>
 
             <div class="s2-theme-swatches">
@@ -5424,8 +6304,8 @@
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S2.4</span>ตั้งค่าร้าน · 4/4</div>
-        <h3>เสร็จเรียบร้อย!</h3>
-        <p>ขั้นสุดท้าย — celebration พร้อม preview "มุมมองลูกค้า" บนมือถือ ให้เจ้าของร้านเห็นว่าลูกค้าจะเห็นอะไรหลังสแกน QR ก่อนเริ่มใช้งานจริง</p>
+        <h3>QR ของร้านพร้อมแล้ว</h3>
+        <p>ขั้นสุดท้าย — โชว์ QR ของร้าน + ปุ่มโหลด PDF ให้พิมพ์ติดที่เคาน์เตอร์ · ก่อนเข้าแดชบอร์ด</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5452,37 +6332,68 @@
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
               </div>
               <div class="s2-done-title"><em>พร้อมใช้งาน</em><br>แล้วครับ!</div>
-              <div class="s2-done-sub">QR ของร้านคุณพร้อมแล้ว เริ่มออกแต้มได้เลย</div>
+              <div class="s2-done-sub">โหลด QR ของร้าน พิมพ์ติดที่เคาน์เตอร์</div>
             </div>
 
-            <div class="s2-customer-preview">
-              <div class="cp-label">มุมมองลูกค้า · หลังสแกน QR</div>
-              <div class="cp-phone-wrap">
-                <div class="cp-phone">
-                  <div class="cp-screen">
-                    <div class="cp-shop">
-                      <svg class="cp-logo" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                      <div class="cp-shop-name">ร้านกาแฟลุงหมี</div>
-                    </div>
-                    <div class="cp-num">1<span class="cp-sub">/10</span></div>
-                    <div class="cp-msg">ยินดีต้อนรับ! ได้แต้มแรกแล้ว ✦</div>
-                    <div class="cp-stamps">
-                      <div class="cp-s on"></div>
-                      <div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div>
-                      <div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div><div class="cp-s"></div>
-                    </div>
-                    <div class="cp-reward">✦ กาแฟ Signature ฟรี ✦</div>
-                  </div>
-                </div>
+            <div class="s2-qr-block">
+              <div class="s2-qr-card">
+                <svg class="s2-qr-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
+                  <rect width="80" height="80" fill="#FDFAF2"/>
+                  <rect x="6" y="6" width="20" height="20" rx="2" fill="#111"/>
+                  <rect x="11" y="11" width="10" height="10" rx="1" fill="#FDFAF2"/>
+                  <rect x="13" y="13" width="6" height="6" fill="#111"/>
+                  <rect x="54" y="6" width="20" height="20" rx="2" fill="#111"/>
+                  <rect x="59" y="11" width="10" height="10" rx="1" fill="#FDFAF2"/>
+                  <rect x="61" y="13" width="6" height="6" fill="#111"/>
+                  <rect x="6" y="54" width="20" height="20" rx="2" fill="#111"/>
+                  <rect x="11" y="59" width="10" height="10" rx="1" fill="#FDFAF2"/>
+                  <rect x="13" y="61" width="6" height="6" fill="#111"/>
+                  <g fill="#111">
+                    <rect x="32" y="6" width="4" height="4"/><rect x="40" y="6" width="4" height="4"/>
+                    <rect x="32" y="14" width="4" height="4"/><rect x="44" y="14" width="4" height="4"/>
+                    <rect x="36" y="22" width="4" height="4"/>
+                    <rect x="6" y="32" width="4" height="4"/><rect x="14" y="32" width="4" height="4"/>
+                    <rect x="22" y="32" width="4" height="4"/><rect x="32" y="32" width="4" height="4"/>
+                    <rect x="40" y="32" width="4" height="4"/><rect x="48" y="32" width="4" height="4"/>
+                    <rect x="56" y="32" width="4" height="4"/><rect x="64" y="32" width="4" height="4"/>
+                    <rect x="72" y="32" width="4" height="4"/>
+                    <rect x="10" y="40" width="4" height="4"/><rect x="18" y="40" width="4" height="4"/>
+                    <rect x="28" y="40" width="4" height="4"/><rect x="36" y="40" width="4" height="4"/>
+                    <rect x="44" y="40" width="4" height="4"/><rect x="52" y="40" width="4" height="4"/>
+                    <rect x="60" y="40" width="4" height="4"/><rect x="68" y="40" width="4" height="4"/>
+                    <rect x="6" y="48" width="4" height="4"/><rect x="22" y="48" width="4" height="4"/>
+                    <rect x="32" y="48" width="4" height="4"/><rect x="40" y="48" width="4" height="4"/>
+                    <rect x="56" y="48" width="4" height="4"/><rect x="64" y="48" width="4" height="4"/>
+                    <rect x="72" y="48" width="4" height="4"/>
+                    <rect x="32" y="56" width="4" height="4"/><rect x="40" y="56" width="4" height="4"/>
+                    <rect x="48" y="56" width="4" height="4"/>
+                    <rect x="32" y="64" width="4" height="4"/><rect x="44" y="64" width="4" height="4"/>
+                    <rect x="56" y="64" width="4" height="4"/><rect x="64" y="64" width="4" height="4"/>
+                    <rect x="72" y="64" width="4" height="4"/>
+                    <rect x="36" y="72" width="4" height="4"/><rect x="48" y="72" width="4" height="4"/>
+                    <rect x="60" y="72" width="4" height="4"/><rect x="68" y="72" width="4" height="4"/>
+                  </g>
+                </svg>
+                <div class="s2-qr-shop">ร้านกาแฟลุงหมี</div>
+                <div class="s2-qr-url">taemdee.co/mhee</div>
               </div>
-              <div class="cp-hint">ลูกค้าเห็นบัตรนี้บนมือถือ — ไม่ต้องโหลดแอป</div>
+
+              <button class="s2-qr-download">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+                  <polyline points="7 10 12 15 17 10"/>
+                  <line x1="12" y1="15" x2="12" y2="3"/>
+                </svg>
+                <span>ดาวน์โหลดคิวอาร์โค๊ด</span>
+              </button>
+
+              <div class="s2-qr-hint">ติดตั้งที่จุดที่ลูกค้าเห็นชัด</div>
             </div>
 
             <button class="s2-cta-final">
               <span>ไปที่แดชบอร์ด</span>
               <span class="arrow">→</span>
             </button>
-            <div class="s2-cta-secondary">พิมพ์ QR ก่อน</div>
                       <div class="footer-mark">
                         <span class="fm-brand">
                           <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
@@ -5507,7 +6418,7 @@
       <div class="num">03</div>
       <h2>ร้าน · <em>ใช้งานประจำวัน</em></h2>
     </div>
-    <div class="desc">6 หน้าจอ — แดชบอร์ดประจำวันมี FAB ออกแต้ม, sheet เลือกวิธี (สแกน/กรอกเบอร์/ให้แต้ม), modal สแกน QR, modal กรอกเบอร์, modal ค้นลูกค้า + ให้แต้ม, แจ้งเตือนแต้ม</div>
+    <div class="desc">4 หน้าจอ — แดชบอร์ดประจำวันมี dock ล่างสุดเห็นตลอด (ลูกค้าล่าสุด + ปุ่มยกเลิกแต้มล่าสุด + 3 ปุ่มออกแต้ม), modal สแกน QR, modal กรอกเบอร์, modal ค้นลูกค้า + ให้แต้ม</div>
   </div>
 
   <div class="grid">
@@ -5517,7 +6428,7 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S3</span>แดชบอร์ดร้าน</div>
         <h3>หน้าหลักของร้าน</h3>
-        <p>ตัวเลขใหญ่บอกลูกค้าที่กลับมาสัปดาห์นี้ การ์ดเหลือง DeeReach ชวนลูกค้าเก่ากลับมา ฟีดสดด้านล่าง · floating ปุ่ม "ออกแต้มลูกค้า" อยู่ติด bottom เสมอ — ลูกค้าสแกน QR เป็นค่าหลัก แต่ร้านเลือกออกแต้มเองได้สำหรับเคสพิเศษ</p>
+        <p>ตัวเลขใหญ่บอกลูกค้าที่กลับมาสัปดาห์นี้ · stat tiles · brief แต้มดีแนะนำ ที่กดเข้าหน้าแคมเปญ · sticky bottom panel เห็นตลอด: ลูกค้าล่าสุด 3 คน + 3 ปุ่มออกแต้ม (สแกน/เบอร์/ค้นชื่อ)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5536,166 +6447,108 @@
             </div>
 
             <div class="s3-hero">
-              <div class="label">✦ สัปดาห์นี้</div>
+              <div class="hero-top">
+                <div class="label">✦ สัปดาห์นี้</div>
+                <div class="delta">↑ +8</div>
+              </div>
               <div class="num">
                 <span class="accent">23</span>
                 <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               </div>
               <div class="caption">ลูกค้ากลับมา</div>
-              <div class="delta">↑ +8 จากสัปดาห์ที่แล้ว</div>
             </div>
 
-            <div class="s3-stats">
-              <div class="s3-stat"><div class="n">147</div><div class="l">แต้ม</div></div>
-              <div class="s3-stat"><div class="n">6</div><div class="l">รับรางวัล</div></div>
-              <div class="s3-stat balance"><div class="n">412</div><div class="l">เครดิต</div></div>
-            </div>
-
-            <div class="ph-section-h">
-              <div class="label">ดีรีช ✦</div>
-            </div>
-            <div class="s3-reach">
-              <div class="reach-kicker">ชวนกลับ</div>
-              <div class="reach-head">ชวนลูกค้า 23 คนที่หายไปกลับมา?</div>
-              <div class="reach-body">23 คนหายไป 60 วัน ส่งส่วนลดผ่าน LINE ได้เลย</div>
-              <button class="reach-btn">
-                <span>ส่งเลย</span>
-                <span class="cost">50 เครดิต</span>
-              </button>
+            <div class="s3-stats-pills">
+              <span class="sp"><strong>147</strong> แจก</span>
+              <span class="sp-sep">·</span>
+              <span class="sp"><strong>6</strong> แลก</span>
+              <span class="sp-sep">·</span>
+              <span class="sp"><strong>412</strong> เครดิต</span>
             </div>
 
             <div class="ph-section-h">
-              <div class="label">ฟีดสด</div>
-              <div class="live">สด</div>
+              <div class="label">แต้มดีแนะนำ ✦</div>
             </div>
-            <div class="feed-row">
-              <div class="t">09:38</div>
-              <div class="w"><span class="icon-mini">+</span><strong>1 แต้ม</strong> <span class="id">#A72B</span></div>
-              <button class="void">ยกเลิก</button>
-            </div>
-            <div class="feed-row">
-              <div class="t">09:31</div>
-              <div class="w"><strong>รับรางวัล</strong> <span class="id">#F04C</span></div>
-              <button class="void">ยกเลิก</button>
-            </div>
-            <div class="feed-row">
-              <div class="t">09:22</div>
-              <div class="w"><span class="icon-mini">+</span><strong>1 แต้ม</strong> <span class="id">#B19D</span></div>
-              <button class="void">ยกเลิก</button>
-            </div>
-
-            <div class="s3-issue-fab">
-              <div class="fab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
+            <a class="s3-reach" href="#">
+              <div class="reach-kicker">3 แคมเปญ</div>
+              <div class="reach-head">ชวน 23 คนที่หายไปกลับมา · เพิ่มอีก 2 แคมเปญ</div>
+              <div class="reach-body">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับแก้ก่อนส่งได้</div>
+              <div class="reach-cta">
+                <span>ดูคำแนะนำทั้งหมด</span>
+                <span class="reach-arrow">→</span>
               </div>
-              <div class="fab-text">
-                <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
-              </div>
-              <span class="fab-arrow">→</span>
-            </div>
+            </a>
 
-            <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            <div class="s3-spacer"></div>
+
+            <div class="s3-dock">
+              <div class="dock-handle"></div>
+              <div class="sap-feed-h">
+                <span>ลูกค้าล่าสุด</span>
+                <span class="sap-live">●</span>
+              </div>
+              <div class="sap-feed">
+                <table class="sap-table">
+                  <tr class="latest">
+                    <td class="t">เพิ่งเกิด</td>
+                    <td class="n"><span class="star-mark">★</span> สมศรี</td>
+                    <td class="a"><span class="icon-mini">+</span> <strong>1 แต้ม</strong></td>
+                    <td class="v"><button class="void-mini">ยกเลิก</button></td>
+                  </tr>
+                  <tr>
+                    <td class="t">09:31</td>
+                    <td class="n">น้อย</td>
+                    <td class="a"><strong>รับรางวัล</strong></td>
+                    <td class="v"></td>
+                  </tr>
+                  <tr>
+                    <td class="t">09:22</td>
+                    <td class="n">ก้อง</td>
+                    <td class="a"><span class="icon-mini">+</span> <strong>1 แต้ม</strong></td>
+                    <td class="v"></td>
+                  </tr>
+                </table>
+              </div>
+
+              <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
+              <div class="sap-actions">
+                <button class="sap-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                  <span>สแกน</span>
+                </button>
+                <button class="sap-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                  </svg>
+                  <span>กรอกเบอร์</span>
+                </button>
+                <button class="sap-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="11" cy="11" r="8"/>
+                    <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+                  </svg>
+                  <span>ค้นชื่อ</span>
+                </button>
+              </div>
+
+              <div class="dock-brand">
+                <span class="fm-brand">
+                  <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                  <span class="brand">taemdee<span class="dot">.</span></span>
+                </span>
+                <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
-    <!-- S3.choose — Manual point issuing · method picker -->
-    <div class="mockup">
-      <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.choose</span>ออกแต้มลูกค้า · เลือกวิธี</div>
-        <h3>เปิดเมื่อกด FAB "ออกแต้มลูกค้า"</h3>
-        <p>Bottom sheet โชว์ 1-3 วิธีตามที่ shop เปิดใช้ใน S5 — case ปกติ "ลูกค้าสแกน" เป็นค่าหลัก, ร้านยังออกแต้มเองได้สำหรับเคสพิเศษ (ลูกค้าลืมโทรศัพท์, ลูกค้าใหม่ที่ยังไม่มีบัตร)</p>
-      </div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="td">
-
-            <div class="s3-top">
-              <div class="hi">
-                สวัสดีพี่หมี
-                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์</span>
-              </div>
-              <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
-                <div class="avatar">ม</div>
-              </div>
-            </div>
-
-            <div class="s3-hero">
-              <div class="label">✦ สัปดาห์นี้</div>
-              <div class="num"><span class="accent">23</span></div>
-              <div class="caption">ลูกค้ากลับมา</div>
-            </div>
-
-            <div class="s3-issue-fab">
-              <div class="fab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </div>
-              <div class="fab-text">
-                <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
-              </div>
-              <span class="fab-arrow">→</span>
-            </div>
-
-            <div class="issue-modal-overlay"></div>
-            <div class="issue-modal-sheet">
-              <div class="issue-modal-handle"></div>
-              <div class="issue-modal-head">
-                <div class="title">ออกแต้มลูกค้า</div>
-                <div class="x-btn">×</div>
-              </div>
-
-              <div class="method-picker">
-                <div class="method-row">
-                  <div class="method-icon primary">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="18" height="18" rx="2"/><line x1="3" y1="9" x2="21" y2="9"/><circle cx="12" cy="15" r="2"/></svg>
-                  </div>
-                  <div class="method-info">
-                    <div class="method-name">สแกนบัตรลูกค้า</div>
-                    <div class="method-meta">เปิดกล้องร้าน · สแกน QR ลูกค้า</div>
-                  </div>
-                  <span class="method-arrow">›</span>
-                </div>
-
-                <div class="method-row">
-                  <div class="method-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
-                  </div>
-                  <div class="method-info">
-                    <div class="method-name">กรอกเบอร์ลูกค้า</div>
-                    <div class="method-meta">พิมพ์เบอร์โทรลูกค้าด้วยตัวเอง</div>
-                  </div>
-                  <span class="method-arrow">›</span>
-                </div>
-
-                <div class="method-row">
-                  <div class="method-icon">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/><line x1="11" y1="8" x2="11" y2="14"/><line x1="8" y1="11" x2="14" y2="11"/></svg>
-                  </div>
-                  <div class="method-info">
-                    <div class="method-name">ให้แต้มลูกค้า</div>
-                    <div class="method-meta">ค้นหาลูกค้าจากชื่อ/เบอร์ แล้วเพิ่มแต้ม</div>
-                  </div>
-                  <span class="method-arrow">›</span>
-                </div>
-              </div>
-
-              <div class="method-foot">เปิด/ปิดวิธีได้ที่ Settings → วิธีออกแต้ม</div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
     <!-- S3.scan — Manual point issuing modal (ร้านสแกน) -->
     <div class="mockup">
       <div class="mockup-caption">
@@ -5723,17 +6576,6 @@
               <div class="label">✦ สัปดาห์นี้</div>
               <div class="num"><span class="accent">23</span></div>
               <div class="caption">ลูกค้ากลับมา</div>
-            </div>
-
-            <div class="s3-issue-fab">
-              <div class="fab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </div>
-              <div class="fab-text">
-                <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
-              </div>
-              <span class="fab-arrow">→</span>
             </div>
 
             <div class="issue-modal-overlay"></div>
@@ -5766,8 +6608,8 @@
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S3.phone</span>ออกแต้ม · กรอกเบอร์</div>
-        <h3>โหมดกรอกเบอร์</h3>
-        <p>เปิดเมื่อกดปุ่ม "ออกแต้มลูกค้า" ใน S3v ถ้า config = กรอกเบอร์ (หรือ fallback จาก scan modal) — bottom sheet กับ phone display + custom numpad + ปุ่ม "ออกแต้ม" disabled จนกรอกครบ 10 หลัก</p>
+        <h3>ลูกค้าใหม่ · สร้างบัตรอัตโนมัติ</h3>
+        <p>เปิดเมื่อกด "กรอกเบอร์" จาก dock — กรอกครบ 10 หลักแล้วถ้าเบอร์ยังไม่มีในระบบ โชว์ banner เหลือง "ลูกค้าใหม่" + ปุ่ม "ออกแต้ม · สร้างบัตรใหม่" สร้างให้อัตโนมัติพร้อมออกแต้มแรก ลูกค้าไม่ต้องสมัครก่อน</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5785,17 +6627,6 @@
               </div>
             </div>
 
-            <div class="s3-issue-fab">
-              <div class="fab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </div>
-              <div class="fab-text">
-                <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
-              </div>
-              <span class="fab-arrow">→</span>
-            </div>
-
             <div class="issue-modal-overlay"></div>
             <div class="issue-modal-sheet">
               <div class="issue-modal-handle"></div>
@@ -5806,27 +6637,27 @@
 
               <div class="phone-display">
                 <div class="label">เบอร์โทรลูกค้า</div>
-                <div class="number">081 234<span class="placeholder"> ____</span><span class="cursor"></span></div>
+                <div class="number">081 234 5678<span class="cursor"></span></div>
               </div>
 
-              <div class="phone-numpad">
-                <div class="key">1</div>
-                <div class="key">2</div>
-                <div class="key">3</div>
-                <div class="key">4</div>
-                <div class="key">5</div>
-                <div class="key">6</div>
-                <div class="key">7</div>
-                <div class="key">8</div>
-                <div class="key">9</div>
-                <div class="key" style="visibility:hidden;"></div>
-                <div class="key">0</div>
-                <div class="key del">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 4H8l-7 8 7 8h13a2 2 0 002-2V6a2 2 0 00-2-2zM18 9l-6 6M12 9l6 6"/></svg>
+              <div class="phone-not-found">
+                <div class="pnf-row">
+                  <div class="pnf-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 9v4"/><path d="M12 17h.01"/><circle cx="12" cy="12" r="10"/></svg>
+                  </div>
+                  <div class="pnf-text">
+                    <div class="pnf-h">ลูกค้าใหม่ — ยังไม่มีในระบบ</div>
+                    <div class="pnf-s">สร้างบัตรอัตโนมัติพร้อมออกแต้มแรก</div>
+                  </div>
                 </div>
               </div>
 
-              <div class="phone-confirm disabled">ออกแต้ม · กรอกเบอร์ให้ครบ 10 หลัก</div>
+              <div class="phone-confirm-row">
+                <button class="phone-confirm">
+                  <span>ออกแต้ม</span>
+                  <span class="arrow">→</span>
+                </button>
+              </div>
             </div>
           </div>
         </div>
@@ -5838,7 +6669,7 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S3.search</span>ออกแต้ม · ให้แต้มลูกค้า</div>
         <h3>ค้นลูกค้าแล้วให้คะแนน</h3>
-        <p>เปิดเมื่อกด "ให้แต้มลูกค้า" จาก S3.choose — ค้นจากชื่อหรือเบอร์ → เลือกลูกค้า → ระบุจำนวนแต้ม → ยืนยัน · ใช้กับเคสลูกค้าเก่าที่ลืมโทรศัพท์ หรือลูกค้าที่ร้านอยากให้แต้มย้อนหลัง</p>
+        <p>เปิดเมื่อกด "ค้นชื่อ" จาก dock — ค้นจากชื่อหรือเบอร์ → เลือกลูกค้า → ระบุจำนวนแต้ม → ยืนยัน · ใช้กับเคสลูกค้าเก่าที่ลืมโทรศัพท์</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5860,17 +6691,6 @@
               <div class="label">✦ สัปดาห์นี้</div>
               <div class="num"><span class="accent">23</span></div>
               <div class="caption">ลูกค้ากลับมา</div>
-            </div>
-
-            <div class="s3-issue-fab">
-              <div class="fab-icon">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12h14"/></svg>
-              </div>
-              <div class="fab-text">
-                <div class="fab-name">ออกแต้มลูกค้า</div>
-                <div class="fab-meta">เลือกวิธีออกแต้ม</div>
-              </div>
-              <span class="fab-arrow">→</span>
             </div>
 
             <div class="issue-modal-overlay"></div>
@@ -5916,64 +6736,10 @@
                 </div>
               </div>
 
-              <button class="phone-confirm">ให้ 1 แต้มแก่ สมศรี ม.</button>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- S6 Stamp notification -->
-    <div class="mockup">
-      <div class="mockup-caption">
-        <div class="kicker"><span class="n">S6</span>แจ้งเตือนแต้ม</div>
-        <h3>เด้งบนแดชบอร์ด</h3>
-        <p>โผล่ขึ้นเมื่อมีลูกค้าได้แต้ม โชว์ความคืบหน้า ปุ่มยกเลิก และนับถอยหลัง 60 วินาที</p>
-      </div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="td">
-
-            <div class="s6-bg">
-              <div class="header"></div>
-              <div class="row"></div>
-              <div class="row"></div>
-              <div class="row"></div>
-            </div>
-            <div class="s6-overlay"></div>
-
-            <div class="s6-toast">
-              <div class="top-row">
-                <div class="plus">+1</div>
-                <div class="info">
-                  <div class="h">ออกแต้มสำเร็จ</div>
-                  <div class="s">ลูกค้า · #A72B</div>
-                </div>
-              </div>
-
-              <div class="progress-mini">
-                <div class="row">
-                  <div class="name">ลูกค้าคนนี้สะสมไว้</div>
-                  <div class="count">8<span class="of">/10</span></div>
-                </div>
-                <div class="stamps-mini">
-                  <div class="ms on"></div>
-                  <div class="ms on"></div>
-                  <div class="ms on"></div>
-                  <div class="ms on"></div>
-                  <div class="ms on"></div>
-                  <div class="ms on"></div>
-                  <div class="ms on"></div>
-                  <div class="ms just-now"></div>
-                  <div class="ms"></div>
-                  <div class="ms"></div>
-                </div>
-              </div>
-
-              <div class="void-row">
-                <button class="void-btn">ยกเลิกแต้มนี้</button>
-                <div class="countdown">58 วิ</div>
-              </div>
+              <button class="search-confirm">
+                <span>ออกแต้ม</span>
+                <span class="arrow">→</span>
+              </button>
             </div>
           </div>
         </div>
@@ -5992,7 +6758,7 @@
       <div class="num">04</div>
       <h2>ร้าน · <em>ตั้งค่า</em></h2>
     </div>
-    <div class="desc">8 หน้าจอ — ตั้งค่าหลัก, วิธีออกแต้ม, เติมเครดิต DeeReach, QR สำหรับพิมพ์, ธีม, ทีม, สาขา</div>
+    <div class="desc">8 หน้าจอ — ตั้งค่าหลัก, วิธีออกแต้ม, เติมเครดิต แต้มดี, QR สำหรับพิมพ์, ธีม, ทีม, สาขา</div>
   </div>
 
   <div class="grid">
@@ -6145,7 +6911,7 @@
                 <div class="t-info">
                   <div class="t-name-row">
                     <span class="t-name">ลูกค้าสแกน</span>
-                    <span class="t-tag">ค่ามาตรฐาน</span>
+                    <span class="t-tag">ปิดไม่ได้</span>
                   </div>
                   <div class="t-sub">ติด QR ที่เคาน์เตอร์ ลูกค้าสแกนเอง</div>
                 </div>
@@ -6583,7 +7349,7 @@
 
             <div class="page-title">
               <div class="h">เลือก<em>ธีม.</em></div>
-              <div class="sub">มุมมองลูกค้า — เปลี่ยนสีทันที</div>
+              <div class="sub">มุมมองลูกค้า</div>
             </div>
 
             <div class="s9-preview-frame">
@@ -6816,6 +7582,272 @@
 
 
 <!-- ========================================================= -->
+<!-- SECTION 05 — ร้าน · แต้มดีแนะนำ                          -->
+<!-- ========================================================= -->
+<section class="section">
+  <div class="section-head">
+    <div class="left">
+      <div class="num">05</div>
+      <h2>ร้าน · <em>แต้มดีแนะนำ</em></h2>
+    </div>
+    <div class="desc">3 หน้าจอ — campaign suggestions ที่ระบบเลือกลูกค้าและเขียนข้อความให้, shop ปรับแก้ก่อนส่ง · เริ่มจาก S3 brief card</div>
+  </div>
+
+  <div class="grid">
+
+    <!-- S13 — แต้มดีแนะนำ list -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S13</span>แต้มดีแนะนำ</div>
+        <h3>คำแนะนำ + สร้างเอง</h3>
+        <p>เปิดเมื่อกด brief card "แต้มดีแนะนำ" จาก S3 — list ของ template campaigns พร้อมจำนวนลูกค้าที่ระบบเลือก + ปุ่มสร้างเอง</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">แต้มดีแนะนำ</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s13-intro">
+              <div class="ask">แคมเปญ<em>แนะนำ.</em></div>
+              <div class="ask-th">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับก่อนส่งได้</div>
+            </div>
+
+            <div class="s13-list">
+              <a class="s13-card primary" href="#">
+                <div class="sc-tag">ใหม่ · แนะนำ</div>
+                <div class="sc-row">
+                  <div class="sc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="9 13 12 10 15 13 21 7"/></svg>
+                  </div>
+                  <div class="sc-info">
+                    <div class="sc-name">ชวนลูกค้าหายไปกลับมา</div>
+                    <div class="sc-meta">23 คนหายไป 14+ วัน</div>
+                  </div>
+                  <div class="sc-cost">23 เครดิต</div>
+                </div>
+              </a>
+
+              <a class="s13-card" href="#">
+                <div class="sc-row">
+                  <div class="sc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L15 9 L22 9 L17 14 L19 22 L12 18 L5 22 L7 14 L2 9 L9 9 Z"/></svg>
+                  </div>
+                  <div class="sc-info">
+                    <div class="sc-name">ใกล้รับรางวัล · กระตุ้น</div>
+                    <div class="sc-meta">14 คนเก็บแต้ม 8-9/10</div>
+                  </div>
+                  <div class="sc-cost">14 เครดิต</div>
+                </div>
+              </a>
+
+              <a class="s13-card" href="#">
+                <div class="sc-row">
+                  <div class="sc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
+                  </div>
+                  <div class="sc-info">
+                    <div class="sc-name">รางวัลค้าง · เตือนมารับ</div>
+                    <div class="sc-meta">6 คนครบ 10 แต้มแล้ว</div>
+                  </div>
+                  <div class="sc-cost">6 เครดิต</div>
+                </div>
+              </a>
+
+              <a class="s13-card" href="#">
+                <div class="sc-row">
+                  <div class="sc-icon">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  </div>
+                  <div class="sc-info">
+                    <div class="sc-name">ลูกค้าใหม่ · ขอบคุณ</div>
+                    <div class="sc-meta">9 คนมาครั้งแรกสัปดาห์นี้</div>
+                  </div>
+                  <div class="sc-cost">9 เครดิต</div>
+                </div>
+              </a>
+            </div>
+
+            <button class="s13-create">
+              <span class="plus">+</span>
+              สร้างแคมเปญเอง
+            </button>
+
+            <div class="footer-mark">
+              <span class="fm-brand">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span class="brand">taemdee<span class="dot">.</span></span>
+              </span>
+              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S13.detail — แคมเปญ detail (winback example) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S13.detail</span>ปรับแคมเปญ · ส่ง</div>
+        <h3>เลือกลูกค้า + แก้ข้อความ</h3>
+        <p>เปิดเมื่อกดแคมเปญใน S13 — ลูกค้า list (เลือกได้ทั้งหมด default), ตัวแก้ข้อความที่มี $name $points, preview ที่ลูกค้าจะเห็น, ปุ่มส่ง · ใช้ N เครดิต</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">ชวนลูกค้าหายไป</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">ลูกค้าที่เลือก</span>
+                <span class="s13d-count">23 / 23</span>
+              </div>
+              <div class="s13d-customers">
+                <div class="customer-row">
+                  <div class="cr-check on">✓</div>
+                  <div class="cr-avatar">ส</div>
+                  <div class="cr-info">
+                    <div class="cr-name">สมศรี ม.</div>
+                    <div class="cr-meta">หายไป 18 วัน · 7 แต้ม</div>
+                  </div>
+                </div>
+                <div class="customer-row">
+                  <div class="cr-check on">✓</div>
+                  <div class="cr-avatar">น</div>
+                  <div class="cr-info">
+                    <div class="cr-name">น้อย ป.</div>
+                    <div class="cr-meta">หายไป 21 วัน · 4 แต้ม</div>
+                  </div>
+                </div>
+                <div class="customer-row">
+                  <div class="cr-check">○</div>
+                  <div class="cr-avatar">ก</div>
+                  <div class="cr-info">
+                    <div class="cr-name">กิ่ง พ.</div>
+                    <div class="cr-meta">หายไป 32 วัน · 2 แต้ม</div>
+                  </div>
+                </div>
+                <div class="customer-more">+ อีก 20 คน · แตะดูทั้งหมด</div>
+              </div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">ข้อความ</span>
+                <span class="s13d-edit">แก้</span>
+              </div>
+              <div class="s13d-message">
+                สวัสดี <span class="var">$ชื่อ</span> 👋<br>
+                คิดถึงคุณนะ! บัตรของคุณยังเก็บแต้มไว้อยู่ <span class="var">$แต้ม</span> แต้ม<br>
+                เก็บอีก <span class="var">$ที่เหลือ</span> แต้ม รับ <strong>กาแฟ Signature ฟรี</strong><br>
+                <span class="msg-cursor"></span>
+              </div>
+              <div class="s13d-vars">
+                <span class="var-chip">$ชื่อ</span>
+                <span class="var-chip">$แต้ม</span>
+                <span class="var-chip">$ที่เหลือ</span>
+                <span class="var-chip">$รางวัล</span>
+              </div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span>
+              </div>
+              <div class="s13d-preview">
+                <div class="prev-line">สวัสดี สมศรี 👋</div>
+                <div class="prev-line">คิดถึงคุณนะ! บัตรของคุณยังเก็บแต้มไว้อยู่ 7 แต้ม</div>
+                <div class="prev-line">เก็บอีก 3 แต้ม รับ <strong>กาแฟ Signature ฟรี</strong></div>
+              </div>
+            </div>
+
+            <button class="s13d-send">
+              <span>ส่งให้ 23 คน</span>
+              <span class="s13d-cost">23 เครดิต</span>
+            </button>
+
+            <div class="footer-mark">
+              <span class="fm-brand">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span class="brand">taemdee<span class="dot">.</span></span>
+              </span>
+              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S13.sent — confirmation -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S13.sent</span>ส่งสำเร็จ</div>
+        <h3>ส่งแล้ว · รอผล</h3>
+        <p>หลังกด "ส่ง" — confirmation พร้อมเครดิตคงเหลือ + ประมาณการณ์ลูกค้าจะกลับมา (จาก historical conversion rate)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">×</div>
+              <div class="title-mid"></div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s13s-stage">
+              <div class="s13s-mark">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+              </div>
+
+              <div class="s13s-title">ส่ง<em>เรียบร้อย!</em></div>
+              <div class="s13s-sub">ส่งให้ 23 คน · ใช้ 23 เครดิต</div>
+
+              <div class="s13s-card">
+                <div class="s13s-row">
+                  <span class="s13s-label">เครดิตคงเหลือ</span>
+                  <span class="s13s-val">389</span>
+                </div>
+                <div class="s13s-divider"></div>
+                <div class="s13s-row">
+                  <span class="s13s-label">ประมาณการณ์</span>
+                  <span class="s13s-val accent">7 คน</span>
+                </div>
+                <div class="s13s-hint">ลูกค้าน่าจะกลับมาภายใน 7 วัน · จากค่าเฉลี่ยที่ผ่านมา</div>
+              </div>
+            </div>
+
+            <button class="s13s-cta">
+              <span>กลับแดชบอร์ด</span>
+              <span class="arrow">→</span>
+            </button>
+
+            <div class="footer-mark">
+              <span class="fm-brand">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span class="brand">taemdee<span class="dot">.</span></span>
+              </span>
+              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+  </div>
+</section>
+
+
+<!-- ========================================================= -->
 <!-- END                                                        -->
 <!-- ========================================================= -->
 <div class="end">
@@ -6826,7 +7858,7 @@
   </svg>
   <h3>ครบ 20 หน้าจอร้าน <span class="accent">·</span> Design v1</h3>
   <p>
-    เริ่มจาก HM (หน้าแรกบนมือถือ) → S1 (เข้าสู่ระบบ) → S2.1-S2.4 (ตั้งค่าร้าน 60 วินาที) ใช้งานประจำวันที่ S3/S5/S6/S7 และจัดการตั้งค่าที่ S10/S8/S9/S11/S12 — ทำหลังจากฝั่งลูกค้าเสร็จ
+    เริ่มจาก HM (หน้าแรกบนมือถือ) → S1 (เข้าสู่ระบบ) → S2.1-S2.4 (ตั้งค่าร้านไม่กี่นาที) ใช้งานประจำวันที่ S3/S5/S6/S7 และจัดการตั้งค่าที่ S10/S8/S9/S11/S12 — ทำหลังจากฝั่งลูกค้าเสร็จ
   </p>
 </div>
 
