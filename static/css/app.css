@@ -829,49 +829,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   50% { opacity: 0.4; transform: scale(0.8); }
 }
 
-.feed-row {
-  margin: 0 20px 6px;
-  display: grid;
-  grid-template-columns: 48px 1fr auto;
-  gap: 10px;
-  align-items: center;
-  padding: 12px 14px;
-  background: var(--surface);
-  border: 1.5px solid var(--ink);
-  border-radius: 16px;
-  box-shadow: 2px 2px 0 var(--ink);
-}
-.feed-row .t {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
-  color: var(--ink-softer);
-}
-.feed-row .w {
-  font-size: 15px;
-  font-weight: 500;
-  letter-spacing: -0.005em;
-}
-.feed-row .w .id {
-  font-family: 'JetBrains Mono', monospace;
-  color: var(--ink-softer);
-  font-size: 13px;
-  font-weight: 400;
-}
-.feed-row .w .icon-mini {
-  color: var(--accent);
-  margin-right: 4px;
-}
-.feed-row .void {
-  font-family: inherit;
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid var(--ink);
-  padding: 4px 10px;
-  border-radius: 999px;
-  font-size: 13px;
-  font-weight: 600;
-  cursor: pointer;
-}
+/* The old .feed-row was a 3-column grid card (display:grid + border +
+   box-shadow) used when feed rows were standalone <div>s. Now they're
+   <tr>s inside .sap-table — those styles forced tr→grid which broke
+   table layout (each row rendered as a stacked rounded card). All
+   row styling now lives under .s3-dock .sap-table tr.feed-row above. */
 
 .feed-empty {
   margin: 0 20px;
@@ -2131,11 +2093,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Feed-row void state (after the [Void] button is tapped)
    ========================================================== */
 
-.feed-row.voided {
-  opacity: 0.5;
-  text-decoration: line-through;
-}
-.feed-row.voided .void { display: none; }
+/* Voided state on dock feed rows — table-scoped variant lives under
+   .s3-dock .sap-table tr.voided. (.feed-row.voided + .void selector were
+   for the old div-based feed; .void button no longer exists.) */
 
 /* ==========================================================
    C3 — Soft Wall (claim account: LINE or phone)
@@ -4829,7 +4789,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--bg);
   border: 1.5px solid var(--ink);
   border-radius: 12px;
-  padding: 8px 4px;
+  padding: 7px 4px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -4838,11 +4798,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   box-shadow: 2px 2px 0 var(--accent);
   text-decoration: none;
 }
-.s3-dock .sap-action svg { width: 18px; height: 18px; }
+.s3-dock .sap-action svg { width: 16px; height: 16px; }
 .s3-dock .sap-action span {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 13px;
+  font-size: 11px;
 }
 
 
