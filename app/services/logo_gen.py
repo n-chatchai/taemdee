@@ -24,57 +24,110 @@ class LogoStyle:
     show_dot: bool = False  # render an accent-coloured trailing "." after the text
 
 
+# Generic category words shop owners pad their name with — strip these so
+# the logo highlights the distinctive brand. Sorted longest-first so
+# "ร้านกาแฟ" matches before "ร้าน" / "กาแฟ".
+_CATEGORY_PREFIXES = (
+    "ก๋วยเตี๋ยว",
+    "ร้านกาแฟ",
+    "ร้านอาหาร",
+    "ร้าน",
+    "กาแฟ",
+    "บ้าน",
+    "ครัว",
+    "ขนม",
+    "เบเกอรี่",
+    "ซาลอน",
+    "Café",
+    "Cafe",
+)
+
+
+def _safe_slice(s: str, n: int) -> str:
+    """Slice to n chars but never strand a Thai leading vowel at the end.
+
+    Thai leading vowels (เ แ โ ใ ไ — Unicode 0E40–0E44) are written before the
+    base consonant they belong to. If a hard slice lands right after one,
+    it leaves the vowel hanging visually ('ชัดเ' instead of 'ชัด'). Trim
+    those trailing leading-vowels back to the previous consonant.
+    """
+    if n >= len(s):
+        return s
+    end = n
+    while end > 0 and 0x0E40 <= ord(s[end - 1]) <= 0x0E44:
+        end -= 1
+    return s[:end]
+
+
+def _brand_part(name: str) -> str:
+    """Drop a category prefix so 'กาแฟชัดเจน' → 'ชัดเจน'.
+
+    Tries word-boundary split first ('กาแฟ ชัดเจน' → 'ชัดเจน'), then
+    substring strip ('กาแฟชัดเจน' → 'ชัดเจน'). Returns the original name
+    if nothing reasonable is left after stripping.
+    """
+    cleaned = (name or "").strip() or "ร้าน"
+    parts = cleaned.split()
+    if len(parts) > 1 and parts[0] in _CATEGORY_PREFIXES:
+        return " ".join(parts[1:])
+    for prefix in _CATEGORY_PREFIXES:
+        if cleaned.startswith(prefix) and len(cleaned) > len(prefix):
+            rest = cleaned[len(prefix):].lstrip()
+            if rest:
+                return rest
+    return cleaned
+
+
 def _initial(name: str) -> str:
-    name = name.strip() or "ร้าน"
-    return name[0].upper()
+    return _brand_part(name)[0].upper()
 
 
 def _two_initials(name: str) -> str:
-    parts = (name.strip() or "ร้าน").split()
+    brand = _brand_part(name)
+    parts = brand.split()
     if len(parts) >= 2:
         return (parts[0][:1] + parts[1][:1]).upper()
-    return name.strip()[:2].upper()
+    return _safe_slice(brand, 2).upper()
 
 
 def _first_n(n: int) -> Callable[[str], str]:
     def fn(name: str) -> str:
-        clean = name.strip() or "ร้าน"
-        return clean[:n]
+        return _safe_slice(_brand_part(name), n)
 
     return fn
 
 
 def _bracket(n: int) -> Callable[[str], str]:
     def fn(name: str) -> str:
-        return f"[{(name.strip() or 'ร้าน')[:n]}]"
+        return f"[{_safe_slice(_brand_part(name), n)}]"
 
     return fn
 
 
 def _sparkle(n: int) -> Callable[[str], str]:
     def fn(name: str) -> str:
-        return f"✦ {(name.strip() or 'ร้าน')[:n]}"
+        return f"✦ {_safe_slice(_brand_part(name), n)}"
 
     return fn
 
 
 def _all_caps(n: int) -> Callable[[str], str]:
     def fn(name: str) -> str:
-        return ((name.strip() or "ร้าน")[:n]).upper()
+        return _safe_slice(_brand_part(name), n).upper()
 
     return fn
 
 
 def _dot_shop(n: int) -> Callable[[str], str]:
     def fn(name: str) -> str:
-        return f"{(name.strip() or 'ร้าน')[:n]}.shop"
+        return f"{_safe_slice(_brand_part(name), n)}.shop"
 
     return fn
 
 
 def _lower(n: int) -> Callable[[str], str]:
     def fn(name: str) -> str:
-        return ((name.strip() or "ร้าน")[:n]).lower()
+        return _safe_slice(_brand_part(name), n).lower()
 
     return fn
 
