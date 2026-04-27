@@ -220,7 +220,7 @@ async def test_account_renders_for_claimed_customer(client, db, shop):
     response = await client.get("/card/account")
     assert response.status_code == 200
     body = response.text
-    assert "บัญชีของฉัน" in body
+    assert "บัญชีของพี่" in body
     assert "Ploy" in body
     # last 4 digits of phone shown, middle masked
     assert "4444" in body
