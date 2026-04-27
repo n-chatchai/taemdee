@@ -25,7 +25,13 @@
         <span class="day">วัน{{ weekday_th }} · พี่มี {{ cards|length }} บัตรอยู่นี่</span>
       </div>
       <div class="c7-actions">
-        <a href="/my-id" class="c7-myqr" title="โชว์ QR ที่ร้าน" aria-label="โชว์ QR">
+        <a href="/scan-shop" class="c7-icon-btn" title="สแกน QR ของร้าน" aria-label="สแกน QR ของร้าน">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </a>
+        <a href="/my-id" class="c7-icon-btn" title="โชว์ QR ที่ร้าน" aria-label="โชว์ QR">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
             <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -33,11 +39,11 @@
             <rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </a>
-        {# Claimed customers see their initial → /card/account. Guests have no
-           account page yet, so the QR icon above is the only top-right control. #}
+        {# Claimed customers see their initial → /card/account. Guests skip
+           the avatar — the camera + QR buttons above are their only chrome. #}
         {% if not is_guest %}
           {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
-          <a href="/card/account" class="avatar" title="บัญชีของฉัน">{{ initial }}</a>
+          <a href="/card/account" class="avatar" title="บัญชีของพี่">{{ initial }}</a>
         {% endif %}
       </div>
     </div>

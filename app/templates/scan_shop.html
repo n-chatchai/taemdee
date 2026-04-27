@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>สแกน QR ร้าน · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/my-cards" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">สแกน QR ร้าน</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="scan-page">
+      <div class="scan-viewfinder" id="scan-viewfinder">
+        <video id="scan-video" playsinline muted autoplay></video>
+        <div class="scan-corners">
+          <span class="tl"></span><span class="tr"></span>
+          <span class="bl"></span><span class="br"></span>
+        </div>
+        <div class="scan-line"></div>
+      </div>
+
+      <div class="scan-hint" id="scan-hint">
+        วาง QR ของร้านให้อยู่ในกรอบ<br>
+        ผมจะอ่านอัตโนมัติครับพี่
+      </div>
+
+      <div class="scan-status" id="scan-status" hidden></div>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+
+  {# Same qr-scanner library as the shop-side issue_scan page. #}
+  <script type="module">
+    import QrScanner from 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js';
+
+    const video = document.getElementById('scan-video');
+    const hint = document.getElementById('scan-hint');
+    const statusBox = document.getElementById('scan-status');
+    let busy = false;
+
+    function setStatus(msg, kind) {
+      statusBox.textContent = msg;
+      statusBox.className = 'scan-status ' + (kind || '');
+      statusBox.hidden = false;
+    }
+
+    function navigateOnSuccess(scannedValue) {
+      if (busy) return;
+      // Accept either the full https://<host>/scan/<uuid> URL or a bare
+      // /scan/<uuid> path. Reject anything else so a malicious QR can't
+      // bounce us off-domain.
+      const m = (scannedValue || '').match(/\/scan\/([0-9a-fA-F-]{36})(?:\?|$|\/)/);
+      if (!m) {
+        setStatus('QR นี้ไม่ใช่ของแต้มดี — ลอง QR อื่น', 'err');
+        setTimeout(() => { statusBox.hidden = true; }, 2000);
+        return;
+      }
+      busy = true;
+      setStatus('✓ พบร้านแล้วครับพี่', 'ok');
+      setTimeout(() => { window.location.href = '/scan/' + m[1]; }, 600);
+    }
+
+    const scanner = new QrScanner(
+      video,
+      (result) => navigateOnSuccess(result.data),
+      { highlightScanRegion: false, highlightCodeOutline: false, preferredCamera: 'environment' }
+    );
+
+    scanner.start().catch((err) => {
+      hint.hidden = true;
+      setStatus('เปิดกล้องไม่ได้ — กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์', 'err');
+      console.warn('QrScanner.start failed:', err);
+    });
+
+    window.addEventListener('pagehide', () => scanner.stop(), { once: true });
+  </script>
+</body>
+</html>

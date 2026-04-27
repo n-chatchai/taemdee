@@ -245,6 +245,18 @@ async def view_card(
     return response
 
 
+@router.get("/scan-shop", response_class=HTMLResponse)
+async def scan_shop(request: Request):
+    """C7 camera viewfinder — opens the device camera, decodes shop QR codes,
+    and navigates to `/scan/{shop_id}` on a valid hit. Linked from the C7
+    'สแกน QR ของร้าน' button in /my-cards."""
+    return templates.TemplateResponse(
+        request=request,
+        name="scan_shop.html",
+        context={},
+    )
+
+
 @router.get("/onboard/{shop_id}", response_class=HTMLResponse)
 async def onboard(
     request: Request,

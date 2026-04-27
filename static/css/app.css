@@ -2773,9 +2773,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
   gap: 8px;
 }
-/* C7 top-right QR icon — dark pill that visually matches the C1 .c1-myqr.
-   Tapping it opens C8 (the customer's identity QR for the shop to scan). */
-.c7-greet .c7-myqr {
+/* C7 top-right icon buttons — left=camera (open in-app QR scanner for shop
+   QRs), right=QR (show /my-id for shops to scan). Both share the same dark
+   pill chrome that visually matches the C1 .c1-myqr. */
+.c7-greet .c7-icon-btn {
   width: 38px;
   height: 38px;
   background: var(--ink);
@@ -2789,7 +2790,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
   box-shadow: 2px 2px 0 var(--accent);
 }
-.c7-greet .c7-myqr svg { width: 18px; height: 18px; }
+.c7-greet .c7-icon-btn svg { width: 18px; height: 18px; }
 .c7-greet .avatar {
   width: 38px;
   height: 38px;
