@@ -4646,7 +4646,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    S3 — Sticky bottom dock (live feed + 3 inline issuance actions)
    ========================================================== */
 
-.s3-spacer { height: 16px; }
+/* Eats the remaining vertical space inside .td (flex column) so the
+   sticky dock below it always sits flush at the viewport bottom, even
+   on a freshly-onboarded shop with empty stats / no suggestions. */
+.s3-spacer { flex: 1; min-height: 16px; }
 
 .s3-dock {
   position: sticky;
@@ -4686,6 +4689,18 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1;
 }
 .s3-dock .dock-brand .brand .dot { color: var(--accent); }
+.s3-dock .dock-brand .fm-install {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 4px;
+  text-decoration: none;
+  cursor: pointer;
+}
+.s3-dock .dock-brand .fm-install svg { width: 12px; height: 12px; }
 
 .s3-dock .sap-feed-h {
   display: flex;

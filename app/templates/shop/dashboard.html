@@ -167,8 +167,17 @@
           </svg>
           <span class="brand">taemdee<span class="dot">.</span></span>
         </span>
+        <a href="#install" class="fm-install" onclick="document.getElementById('install-sheet')?.classList.add('open'); return false;">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M12 5v14"/><path d="M5 12l7 7 7-7"/>
+          </svg> เพิ่มลงหน้าจอ
+        </a>
       </div>
     </div>
+
+    {# Install instructions sheet — same partial used in footer_mark.
+       Keeping it inside .td so the CSS variables it references resolve. #}
+    {% include "_partials/install_sheet.html" %}
   </div>
 
   <script>
