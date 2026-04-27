@@ -1,12 +1,12 @@
 # TaemDee (แต้มดี) — Product Requirements Document
 
-**Audience:** Designer · **Scope:** v1 · **Last updated:** 2026-04-24
+**Audience:** Designer · **Scope:** v1 · **Last updated:** 2026-04-27
 
 ---
 
 ## 1. What we're building
 
-TaemDee is a digital stamp-card platform for Thai SME shops (cafés, salons, food stalls). It replaces the paper stamp card with a friction-free digital experience: customer scans a QR, gets a stamp, sees progress — no app install, no signup. Shops sign up in 60 seconds and pay **nothing** for the loyalty engine itself.
+TaemDee is a digital point-card platform for Thai SME shops (cafés, salons, food stalls). It replaces the paper point card with a friction-free digital experience: customer scans a QR, gets a point, sees progress — no app install, no signup. Shops sign up in 60 seconds and pay **nothing** for the loyalty engine itself.
 
 We earn only when a shop taps "Send" on an outbound, system-generated message we surfaced (**DeeReach™**).
 
@@ -25,7 +25,7 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 
 ### Shop Staff (optional)
 - Invited by the Shop Owner via phone OTP or LINE.
-- Permissions are **per-staff toggles** set at invite time: Issue stamps (always on), Void (default on), DeeReach (off), Top-up (off), Settings (off). Owner can edit anytime.
+- Permissions are **per-staff toggles** set at invite time: Issue points (always on), Void (default on), DeeReach (off), Top-up (off), Settings (off). Owner can edit anytime.
 - DeeBoard surfaces hide/show based on permissions — a staff member without DeeReach permission sees no DeeReach cards; without Top-up sees no credit balance; and so on.
 
 ## 3. Brand & voice
@@ -39,7 +39,7 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 
 | Term | Meaning |
 |---|---|
-| **DeeCard™** | The customer's digital stamp card |
+| **DeeCard™** | The customer's digital point card |
 | **DeeBoard™** | The shop's dashboard |
 | **DeeReach™** | An outbound message the shop sends (win-back, birthday, new-product, almost-there) |
 
@@ -48,9 +48,9 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 ### Customer-facing
 | # | Screen | Purpose |
 |---|---|---|
-| C1 | **DeeCard** | Shows stamp progress (e.g., 7/10), shop logo, theme branding, "Redeem" button when full |
-| C2 | **First-stamp welcome** | After the first scan ever: "+1 stamp at [Shop]. No signup needed." |
-| C3 | **Soft Wall prompt** | Appears at redeem or "Save my stamps" — two options: Link LINE / Verify Phone |
+| C1 | **DeeCard** | Shows point progress (e.g., 7/10), shop logo, theme branding, "Redeem" button when full |
+| C2 | **First-point welcome** | After the first scan ever: "+1 point at [Shop]. No signup needed." |
+| C3 | **Soft Wall prompt** | Appears at redeem or "Save my points" — two options: Link LINE / Verify Phone |
 | C4 | **Redeem state** | DeeCard at full progress (e.g., 10/10). A "Redeem Now" button appears on the card; customer taps to claim. |
 | C5 | **Reward claimed** | Success screen after redemption — *"Reward claimed!"* with a subtle live pulse (anti-screenshot). Card resets to 0/N. Simultaneously fires on shop's DeeBoard (S3) with a [Void] button (60-sec window). |
 | C6 | **Account menu** | Customer can log out, delete account (PDPA right) |
@@ -64,9 +64,9 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 | S3 | **DeeBoard home** | One big number + live notification feed + 1–3 DeeReach suggestion cards. Multi-branch shops show a branch selector at top that filters all three. |
 | S4 | **DeeReach suggestion card** | Inline in feed: *"23 customers silent 60 days. Send win-back? [Yes · 50 Credit]"* |
 | S5 | **Issuance** | Three buttons: Customer Scans / Shop Scans / Phone Entry. Multi-branch shops: staff picks their current branch context at login. |
-| S6 | **Stamp notification** | Guest ID + [Void] button (60-sec window) |
+| S6 | **Point notification** | Guest ID + [Void] button (60-sec window) |
 | S7 | **Top-up** | Pick package → PromptPay QR → upload slip → done |
-| S8 | **Shop QR print page** | Printable PDF/PNG of the shop's stamping QR |
+| S8 | **Shop QR print page** | Printable PDF/PNG of the shop's pointing QR |
 | S9 | **Theme picker** | Gallery of free themes — one tap to apply |
 | S10 | **Settings** | Edit shop name, reward goal, logo, theme |
 | S11 | **Team (in Settings)** | Owner-only: invite staff via phone/LINE with per-staff permission toggles. Edit permissions or remove a member anytime. |
@@ -76,36 +76,36 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 
 ### A. Customer — first visit (≤3 seconds)
 1. Sees QR sticker → scans with phone camera.
-2. Browser opens DeeCard URL → "+1 stamp at [Shop]" (~1 sec).
-3. Sees **1/10** stamps and the reward goal. Walks away.
+2. Browser opens DeeCard URL → "+1 point at [Shop]" (~1 sec).
+3. Sees **1/10** points and the reward goal. Walks away.
 
 ### B. Customer — return visit
-1. Same scan → "+1 stamp" → progress updates (2/10 → 3/10).
+1. Same scan → "+1 point" → progress updates (2/10 → 3/10).
 2. At 8/10 the DeeCard reads "**ใกล้แล้ว! อีก 2 แต้ม**" (Almost there! 2 to go).
 
 ### C. Customer — reach reward
-1. Stamp lands at 10/10 → celebration animation → **"Redeem Now"** button glows.
+1. Point lands at 10/10 → celebration animation → **"Redeem Now"** button glows.
 2. Customer taps Redeem → **"Reward claimed!"** screen appears (with a subtle live pulse so a screenshot can't fake it).
-3. Same moment, the redemption fires on the shop's DeeBoard with a [Void] button (60-sec window) — same trust model as a stamp issuance.
+3. Same moment, the redemption fires on the shop's DeeBoard with a [Void] button (60-sec window) — same trust model as a point issuance.
 4. Card resets to 0/10. Staff hands over the reward.
 
 ### D. Customer — Soft Wall (preserve identity)
-1. Anonymous customer taps "Save my stamps" banner OR initiates a Redeem.
+1. Anonymous customer taps "Save my points" banner OR initiates a Redeem.
 2. Soft Wall screen: **"Link LINE"** or **"Verify Phone (OTP)"**.
 3. Anonymous data merges into permanent account → accessible from any device.
-4. Customer now sees **My Cards** (C7) — every shop they've stamped at, in one list.
+4. Customer now sees **My Cards** (C7) — every shop they've pointed at, in one list.
 
 ### E. Shop — onboarding (60-second setup)
 1. Open TaemDee → "Sign up free" → phone OTP or LINE login.
-2. Type shop name → set reward (e.g., "10 stamps = free latte").
+2. Type shop name → set reward (e.g., "10 points = free latte").
 3. **Logo:** default path is **"Create with AI"** — system generates 3 logo options from the shop name across different typography styles; owner taps the one they like. Escape hatch: **"Upload my own"** for shops that already have a logo.
 4. Pick a theme.
 5. Download/print Shop QR (S8).
-6. Live. First batch of stamps is free immediately.
+6. Live. First batch of points is free immediately.
 
 ### F. Shop — daily use
 1. Glance at DeeBoard (S3) → see one big number, e.g., **"23 customers came back this week."**
-2. Notification feed updates live as stamps are issued. Tap [Void] within 60 sec if any are wrong.
+2. Notification feed updates live as points are issued. Tap [Void] within 60 sec if any are wrong.
 3. Optional: tap a DeeReach suggestion (S4) — *"Send birthday wishes to 5 customers? [Yes · 10 Credit]"* → done.
 
 ### G. Shop — top-up
@@ -116,7 +116,7 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 
 ### H. Shop — invite staff (multi-staff only)
 1. Owner opens Settings → Team (S11) → "Invite staff" → enters phone or LINE ID.
-2. Sets permissions via checklist: Void (default on), DeeReach, Top-up, Settings. Issue stamps is implicit.
+2. Sets permissions via checklist: Void (default on), DeeReach, Top-up, Settings. Issue points is implicit.
 3. Invitation link sent → staff logs in via OTP/LINE.
 4. Staff lands on DeeBoard with surfaces hidden based on their permissions.
 5. Owner can edit permissions or remove a member anytime from S11.
@@ -124,7 +124,7 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 ### I. Shop — add a branch (multi-branch only)
 1. Owner opens Settings → Branches (S12) → "Add branch" → enters name + address.
 2. **On the 2nd branch only:** owner picks **reward mode**:
-   - **Shared** (default) — one reward across all branches. Customer DeeCards accumulate stamps across every branch toward a single card. Redemption works at any branch.
+   - **Shared** (default) — one reward across all branches. Customer DeeCards accumulate points across every branch toward a single card. Redemption works at any branch.
    - **Separate** — each branch has its own reward goal. Customers get a DeeCard per branch. Visiting 3 branches = 3 cards in their My Cards list (C7).
 3. System generates a QR for the new branch (printable via S8).
 4. From now on: DeeBoard shows a branch selector; staff pick their current branch at login.
@@ -136,14 +136,14 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 This is the screen the shop owner sees most. It must communicate three things at a glance:
 
 1. **One headline number.** *"23 customers came back this week."* Big, single number, weekly cadence.
-2. **Live stamp feed.** Real-time entries as stamps are issued. Each row: time + guest ID + method + [Void].
+2. **Live point feed.** Real-time entries as points are issued. Each row: time + guest ID + method + [Void].
 3. **1–3 DeeReach suggestion cards.** Each is one tap to act on, with cost shown. Owner can ignore or tap Yes.
 
 **Anti-pattern:** no multi-tab analytics, no charts, no segments, no campaign builders. The shop owner cannot configure anything from this screen.
 
 ## 8. UI principles
 
-- **Speed.** Stamp interaction must complete in <3 seconds. Use HTMX partial updates everywhere.
+- **Speed.** Point interaction must complete in <3 seconds. Use HTMX partial updates everywhere.
 - **One action per screen.** No multi-step forms in v1.
 - **Tap targets ≥48px.** Cashier may have wet fingers.
 - **No silent spinners.** Always show text ("Verifying slip…").
@@ -159,13 +159,13 @@ This is the screen the shop owner sees most. It must communicate three things at
 
 Shop owner sees fraud-relevant signals inline — no separate page:
 
-- Each stamp **or redemption** notification carries [Void] (60-sec window).
-- Pattern alerts show as a banner at the top of the feed: *"Unusual: 8 stamps in 2 minutes."*
-- Sane defaults baked in (1 stamp/customer/day, 60-min per-device rate limit). **No configuration UI in v1.**
+- Each point **or redemption** notification carries [Void] (60-sec window).
+- Pattern alerts show as a banner at the top of the feed: *"Unusual: 8 points in 2 minutes."*
+- Sane defaults baked in (1 point/customer/day, 60-min per-device rate limit). **No configuration UI in v1.**
 
 ## 11. Revenue model (designer context, not a screen)
 
-- **Free forever:** DeeCard, DeeBoard, stamping, voiding, redemption, themes. No fee on top-ups.
+- **Free forever:** DeeCard, DeeBoard, pointing, voiding, redemption, themes. No fee on top-ups.
 - **Pay-per-send:** DeeReach messages (~1–2 Credit / LINE, ~3 Credit / SMS) — deducted on tap.
 
 DeeReach is the **sole revenue source** in v1. In-app costs are always shown in **Credit** (THB-to-Credit ratio TBD). Shops top up Credit with real THB via PromptPay (§6.G).
@@ -176,30 +176,30 @@ DeeReach is the **sole revenue source** in v1. In-app costs are always shown in 
 
 - Customer data captured only after Soft Wall consent (phone or LINE ID only).
 - Anonymous profiles auto-expire after 12 months of inactivity.
-- "Delete my account" lives in the Customer Account menu (C6) — one tap + confirmation. Stamps are anonymized in shop reporting (counts kept, identity removed).
+- "Delete my account" lives in the Customer Account menu (C6) — one tap + confirmation. Points are anonymized in shop reporting (counts kept, identity removed).
 
 ## 13. Offers
 
-**An offer is a promise — system-funded or shop-funded — that gets redeemed later as stamps, credits, items, or gifts.** The customer never sees the word "offer"; they see a specific reward (*"Free pastry waiting at Café Tana"*).
+**An offer is a promise — system-funded or shop-funded — that gets redeemed later as points, credits, items, or gifts.** The customer never sees the word "offer"; they see a specific reward (*"Free pastry waiting at Café Tana"*).
 
 ### Directions (who → who)
 
 | Direction | Sponsor | Examples | v1? |
 |---|---|---|---|
 | **System → Shop** | TaemDee | Welcome credits, referral bonus, comp / make-good | ✅ |
-| **Shop → Customer** | Shop's credits | Free stamp, bonus stamps, free item | ✅ |
-| System → Customer | TaemDee | DeeWelcome stamps (TaemDee-funded first-visit bonus) | v2 |
-| Customer → Customer | TaemDee | Gifted stamps (needs cross-shop wallet) | v3 |
+| **Shop → Customer** | Shop's credits | Free point, bonus points, free item | ✅ |
+| System → Customer | TaemDee | DeeWelcome points (TaemDee-funded first-visit bonus) | v2 |
+| Customer → Customer | TaemDee | Gifted points (needs cross-shop wallet) | v3 |
 
 ### Shop → Customer kinds in v1
 
 | Kind | What it does |
 |---|---|
-| `free_stamp` | One-tap "give them a stamp" — birthday, apology, comp |
-| `bonus_stamp_count` | Hand them N stamps at once (welcome bonus = 3) |
+| `free_point` | One-tap "give them a point" — birthday, apology, comp |
+| `bonus_point_count` | Hand them N points at once (welcome bonus = 3) |
 | `free_item` | Specific item — *"Free pastry"* — different from the standard reward |
 
-Deferred (need extra UX): `stamp_multiplier` (double-stamps Tuesday), `free_reward` (skip stamps, claim reward), `free_gift` (physical merch), `discount` (% off — needs cashier UI).
+Deferred (need extra UX): `point_multiplier` (double-points Tuesday), `free_reward` (skip points, claim reward), `free_gift` (physical merch), `discount` (% off — needs cashier UI).
 
 ### Where customers see offers
 
@@ -211,12 +211,12 @@ Offers do **not** get their own screen. They appear:
 ### Where shops see offers
 
 Shops do **not** get an "offers" page either. Offers appear:
-- **Inside DeeReach suggestion cards** (*"Send birthday wishes with a free-stamp gift to 5 customers? [Yes · 10 Credit]"*)
+- **Inside DeeReach suggestion cards** (*"Send birthday wishes with a free-point gift to 5 customers? [Yes · 10 Credit]"*)
 - **In the live DeeBoard feed** when a customer redeems one
 
 ### Relation to existing models
 
-Offers are **promises**; the existing tables (`Stamp`, `CreditLog`, `Redemption`) are the **ledger**. Redeeming an offer creates the appropriate ledger record(s).
+Offers are **promises**; the existing tables (`Point`, `CreditLog`, `Redemption`) are the **ledger**. Redeeming an offer creates the appropriate ledger record(s).
 
 ## 14. Referrals
 
@@ -234,26 +234,73 @@ A referral is a two-party flow: a referrer shares a link, the referee acts on it
 
 - An existing shop's owner sees a **"Refer a shop"** action in their dashboard menu, generating a unique link (`/shop/register?ref=<code>`).
 - A new shop signup that includes a valid `ref` code is recorded with `referred_by_shop_id`.
-- Once the new shop completes onboarding (logo + first stamp issued), **both shops receive a `credit_grant` Offer** (System → Shop, §13). Amount TBD.
+- Once the new shop completes onboarding (logo + first point issued), **both shops receive a `credit_grant` Offer** (System → Shop, §13). Amount TBD.
 - Tracked in a `Referral` record; reward delivered via the Offer system.
 
 ### Why not Shop → Customer / Customer → Customer in v1
 
-- **Shop → Customer** needs cashier UX to confirm a referee's first visit, a per-shop shareable code, and a two-party stamp-grant flow that hasn't been designed.
+- **Shop → Customer** needs cashier UX to confirm a referee's first visit, a per-shop shareable code, and a two-party point-grant flow that hasn't been designed.
 - **Customer → Customer** is bound to DeePass (cross-shop wallet) which is v3.
 
-## 15. Not in v1 (roadmap + drops)
+## 15. Missions (gamification)
+
+**A mission is a challenge — a behaviour pattern that, when completed, grants a reward.** Where Offers (§13) are *promises already granted, waiting to be claimed*, Missions are *promises gated behind a goal*. Completing a mission creates an Offer.
+
+**Example.** *"Visit 3 times this week → free shop t-shirt."* On the 3rd visit, an Offer ("Claim your t-shirt at the counter") appears on the customer's DeeCard and the standard redemption flow (§6.C) takes over.
+
+### Why missions on top of offers
+Offers grant value immediately — useful for birthdays, comps, win-back. Missions grant value **only after the customer demonstrates a behaviour** — driving repeat visits, menu exploration, off-hours traffic, friend referrals. The two layers compose: a mission's reward is an Offer.
+
+### Mission shape
+
+| Field | Example |
+|---|---|
+| Goal | "visit N times" / "spend N THB" / "try N items" / "bring a friend" |
+| Window | "this week" / "this month" / "no limit" |
+| Reward | An Offer kind (§13): `free_item`, `bonus_point_count`, `credit_grant` |
+| Audience | All customers / claimed only / win-back targets |
+
+### v1 — single mission kind
+
+Ship one mission kind that's universally useful and doesn't need a builder UI:
+
+- **`visit_streak`** — *"Visit N times in M days → free [item]"*. Shop owner picks N, M, and the reward from a short list. One toggle in Settings → Missions, defaulting off.
+
+Tracking: count un-voided points in the window. When N reached → an Offer appears on the DeeCard; redemption follows §6.C.
+
+### Where customers see missions
+
+Like Offers, missions do **not** get their own screen. They appear:
+- **As a banner on the DeeCard** while in progress — *"2 of 3 visits this week — 1 more for a free t-shirt!"*
+- **As a DeeReach nudge** when 1 visit short of completion (*"ใกล้แล้ว! แวะมาอีกครั้งก่อนอาทิตย์"*)
+- **In the redemption flow** when claiming the reward
+
+### Where shops see missions
+
+Owner has a single Settings → Missions row: on/off + N + window + reward. No builder, no rule engine, no analytics. Active missions show a small completion counter on the DeeBoard headline ("3 customers earned a t-shirt this week").
+
+### v2+
+- More mission kinds: spend threshold, menu coverage, off-hours visits, friend-referral.
+- Per-customer missions (DeeReach-driven, *"Sirikorn — try our new latte before Friday"*).
+- System-funded missions (TaemDee sponsors network-wide challenges).
+
+### Relation to existing models
+Missions are a separate layer (`Mission`, `MissionProgress`); on completion they **create** an Offer (§13). The Offer machinery handles delivery and claim — no second redemption path.
+
+## 16. Not in v1 (roadmap + drops)
 
 | Feature | Ships in | Why deferred |
 |---|---|---|
 | Analytics dashboards | v2 | DeeBoard shows ONE number in v1 |
-| Offer kinds: stamp_multiplier, free_reward, free_gift, discount | v2 | Need extra UX surfaces (cashier, inventory) |
+| Offer kinds: point_multiplier, free_reward, free_gift, discount | v2 | Need extra UX surfaces (cashier, inventory) |
 | System → Customer offers (DeeWelcome) | v2 | Requires customer-discovery surface |
-| Customer → Customer offers (gifted stamps) | v3 | Bound to DeePass |
+| Customer → Customer offers (gifted points) | v3 | Bound to DeePass |
 | Shop → Customer referral | v2 | Cashier "first visit" UX not designed |
 | Customer → Customer referral | v3 | Bound to DeePass |
+| Mission kinds beyond `visit_streak` | v2 | Need cashier/inventory UX |
+| Per-customer & system-funded missions | v2 | Bound to DeeReach segmentation |
 
-## 16. Tech notes (for designer awareness)
+## 17. Tech notes (for designer awareness)
 
 - Web app, HTMX-powered. No native apps in v1.
 - Mobile-first responsive — desktop is a scaled-up phone view, not a separate design.
