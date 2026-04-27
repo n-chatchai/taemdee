@@ -72,8 +72,10 @@ async def test_scan_with_branch_tags_stamp_and_redirects(client, db, shop):
         f"/scan/{shop.id}?branch={branch.id}", follow_redirects=False
     )
     assert response.status_code == 303
+    # First-time scan goes through C2 onboarding; the branch is preserved as
+    # a query param so post-onboard navigation can land on the right card.
     assert response.headers["location"] == (
-        f"/card/{shop.id}?branch={branch.id}&stamped=1"
+        f"/onboard/{shop.id}?branch={branch.id}"
     )
 
     from app.models import Point

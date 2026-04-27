@@ -5,10 +5,22 @@ from sqlmodel import select
 from app.models import Point
 
 
-async def test_scan_creates_stamp_and_redirects(client, shop):
+async def test_scan_first_time_redirects_to_onboard(client, shop):
+    """First-ever scan (display_name still NULL) → C2 onboard 3-step flow.
+    Returners with display_name set fall through to the regular card view."""
     response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
     assert response.status_code == 303
-    # ?stamped=1 triggers the celebration overlay on the card view
+    assert response.headers["location"] == f"/onboard/{shop.id}"
+
+
+async def test_scan_returner_redirects_to_card_with_celebration(client, shop):
+    """After C2 onboard saves a nickname, subsequent scans go back to /card?stamped=1
+    for the regular celebration overlay (no re-onboarding)."""
+    # First scan + onboard nickname submission claims the customer name
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post("/card/nickname", data={"name": "พี่หมี"})
+    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    assert response.status_code == 303
     assert response.headers["location"] == f"/card/{shop.id}?stamped=1"
 
 
@@ -91,19 +103,20 @@ async def test_scan_publishes_feed_row_event(client, db, shop, monkeypatch):
     assert "data-detail-url" in row_html
 
 
-async def test_card_celebration_on_first_visit(client, shop):
-    """First visit gets the scan-cel confetti overlay AND a "แต้มแรก" hero
-    label, plus the green guest_banner_bottom inviting signup. The old
-    static C2 celebration banner is gone — the layout matches C1.guest now."""
-    # Single scan ⇒ point_count==1 ⇒ is_first_visit==True
+async def test_onboard_renders_for_first_time_guest(client, shop):
+    """First-time scan lands on /onboard which renders the 3-step Alpine flow.
+    Step 1 has the greeting + nickname input; steps 2/3 are x-show'd by the
+    Alpine state machine."""
     response = await client.get(f"/scan/{shop.id}", follow_redirects=True)
     assert response.status_code == 200
     body = response.text
-    assert 'class="scan-cel"' in body
-    assert "แต้มแรกของพี่" in body
-    # Guests see the green upgrade banner + signup picker partial below
-    assert "guest-banner-bottom" in body
-    assert 'id="signup-picker"' in body
+    # 3-step dots wired up
+    assert "ob-step-dots" in body
+    # Step 1 greeting + nickname prompt
+    assert "ผมเรียกพี่ว่าอะไรดี" in body
+    # Step 3 signup pills are in the markup (Alpine x-show toggles visibility)
+    assert "สมัครด้วยไลน์" in body
+    assert "สมัครด้วยเบอร์โทรศัพท์" in body
 
 
 async def test_full_card_gates_redemption_for_guests(client, db, shop):

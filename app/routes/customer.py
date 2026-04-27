@@ -245,6 +245,32 @@ async def view_card(
     return response
 
 
+@router.get("/onboard/{shop_id}", response_class=HTMLResponse)
+async def onboard(
+    request: Request,
+    shop_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """C2 onboarding — 3-step Alpine flow shown on the customer's first ever
+    scan (display_name IS NULL). Picks up the just-issued stamp count from
+    the DB so the C2.2 stamp screen renders accurately."""
+    shop = await db.get(Shop, shop_id)
+    if not shop:
+        return RedirectResponse(url=f"/card/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    point_count = await active_point_count(db, shop.id, customer.id)
+    return templates.TemplateResponse(
+        request=request,
+        name="onboard.html",
+        context={
+            "shop": shop,
+            "customer": customer,
+            "point_count": point_count,
+        },
+    )
+
+
 @router.get("/scan/{shop_id}")
 async def scan(
     shop_id: uuid.UUID,
@@ -289,6 +315,18 @@ async def scan(
     except IssuanceError:
         # Cooldown or other constraint — silently swallow; redirect lands on card.
         pass
+
+    # First-ever scan (display_name still NULL) → C2 onboarding flow
+    # (3-step welcome + reward preview + signup). Returners with display_name
+    # set fall through to the regular card view celebration.
+    if just_stamped and customer.display_name is None:
+        redirect_url = f"/onboard/{shop_id}"
+        if branch_obj:
+            redirect_url += f"?branch={branch_obj.id}"
+        response = RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
+        if was_created:
+            set_customer_cookie(response, customer.id)
+        return response
 
     params = []
     if branch_obj:
