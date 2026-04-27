@@ -54,7 +54,12 @@
         </form>
 
         <div class="alt-line">
-          หรือ <a class="alt-link" title="เร็วๆ นี้">เก็บกับ LINE แทน</a> (เร็วกว่า)
+          หรือ
+          <a class="alt-link"
+             :href="'/auth/line/customer/start' + (nextRedeem ? '?next_redeem=' + nextRedeem : '')">
+            มาเป็นสมาชิกแต้มดี
+          </a>
+          (LINE · เร็วกว่า)
         </div>
 
         <div class="trust">
