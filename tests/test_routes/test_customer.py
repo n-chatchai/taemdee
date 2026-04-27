@@ -107,6 +107,45 @@ async def test_card_celebration_on_first_visit(client, shop):
     assert 'id="signup-picker"' in body
 
 
+async def test_full_card_gates_redemption_for_guests(client, db, shop):
+    """Guest with a full card sees the signup gate, not the redeem form —
+    revised C4: signup is required before redemption (anti-fraud + lets the
+    shop contact the customer about the reward)."""
+    from app.models import Customer, Point
+
+    # Seed a full card via DB to skip the cooldown / scan-loop machinery.
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    customer = (await db.exec(select(Customer))).first()
+    for _ in range(shop.reward_threshold - 1):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    response = await client.get(f"/card/{shop.id}")
+    assert response.status_code == 200
+    body = response.text
+    # Gate copy + signup-opening CTA, NOT the bare redeem form
+    assert "เป็นสมาชิกก่อนรับรางวัล" in body
+    assert "มาเป็นสมาชิกแต้มดี" in body
+    assert 'data-open="signup-picker"' in body
+    assert "/redeem" not in body  # no plain redeem form for guests
+
+
+async def test_redeem_post_rejected_for_anonymous(client, db, shop):
+    """Even if a guest POSTs /redeem directly (bypassing the gated UI), the
+    server enforces the same membership rule — 403 with informative copy."""
+    from app.models import Customer, Point
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    customer = (await db.exec(select(Customer))).first()
+    for _ in range(shop.reward_threshold - 1):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    response = await client.post(f"/card/{shop.id}/redeem", follow_redirects=False)
+    assert response.status_code == 403
+    assert "เป็นสมาชิกก่อน" in response.json()["detail"]
+
+
 async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):
     """Scanning a QR for a deleted shop forwards to /card/{id}, which renders
     the Thai "ไม่พบร้านนี้" page (404) — not a JSON dead-end."""
