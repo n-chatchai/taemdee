@@ -3789,29 +3789,6 @@ img { max-width: 100%; }
 .section-phone .td.c5 .claimed-title em {
   font-style: italic; font-weight: 700; color: var(--accent);
 }
-.section-phone .td.c5 .live-pulse {
-  display: inline-flex; align-items: center; gap: 6px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  text-transform: uppercase;
-  background: var(--ink);
-  color: var(--bg);
-  padding: 6px 12px 6px 10px;
-  border-radius: 999px;
-  margin-bottom: 4px;
-  font-weight: 600;
-}
-.section-phone .td.c5 .live-pulse .pulse-dot {
-  width: 7px; height: 7px;
-  background: var(--accent);
-  border-radius: 50%;
-  animation: blink-dot 1.1s ease-in-out infinite;
-}
-@keyframes blink-dot {
-  0%, 100% { transform: scale(1); }
-  50% { transform: scale(1.3); }
-}
 .section-phone .td.c5 .voucher {
   margin: 0 22px;
   padding: 16px 18px;
