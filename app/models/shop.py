@@ -1,7 +1,10 @@
 from datetime import datetime
-from typing import List, Optional
+from typing import Any, Dict, List, Optional
 from uuid import UUID, uuid4
 
+from sqlalchemy import Column
+from sqlalchemy.dialects.postgresql import JSONB
+from sqlalchemy.types import JSON
 from sqlmodel import Field, Relationship, SQLModel
 
 from app.models.util import utcnow
@@ -51,7 +54,23 @@ class Shop(SQLModel, table=True):
 
     theme_name: str = Field(default="taemdee")
     logo_url: Optional[str] = Field(default=None)
-    location: Optional[str] = Field(default=None)  # e.g., "เชียงใหม่"
+
+    # S10.location — split address. `location` holds the province (free text
+    # but typically picked from a 77-province datalist on S2.1 / settings).
+    # `district` and `address_detail` are added later via S10.location.
+    location: Optional[str] = Field(default=None)  # province, e.g., "เชียงใหม่"
+    district: Optional[str] = Field(default=None)
+    address_detail: Optional[str] = Field(default=None)
+
+    # S10.contact — public-facing shop phone (separate from the owner login
+    # `phone` field above). `opening_hours` is a 7-key JSON map:
+    #   { "mon": {"open": "07:00", "close": "18:00", "closed": false}, ... }
+    # Days use 3-letter lowercase keys (mon/tue/wed/thu/fri/sat/sun).
+    shop_phone: Optional[str] = Field(default=None)
+    opening_hours: Optional[Dict[str, Any]] = Field(
+        default=None,
+        sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=True),
+    )
 
     created_at: datetime = Field(default_factory=utcnow)
 

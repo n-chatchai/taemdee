@@ -1,0 +1,77 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ข้อมูลร้าน · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  {% set picked = shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith('text:') else options[0].id %}
+  <form method="POST" action="/shop/settings/identity" class="td"
+        x-data="{ choice: '{{ picked }}' }">
+
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">ข้อมูลร้าน</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="s2-q" style="padding: 12px 20px 16px;">
+      <div class="ask">ข้อมูล<em>ร้านของคุณ.</em></div>
+      <div class="sub">ลูกค้าจะเห็นชื่อและโลโก้นี้บนบัตรสะสมแต้ม</div>
+    </div>
+
+    <div class="s2-field">
+      <label class="label" for="settings-name">ชื่อร้าน</label>
+      <input id="settings-name" name="name" type="text" required
+             class="s2-input"
+             value="{{ shop.name }}"
+             placeholder="เช่น ร้านกาแฟลุงหมี">
+    </div>
+
+    <div class="s2-field" style="margin-top:18px;">
+      <div class="label">โลโก้</div>
+    </div>
+
+    <div class="s2-logos">
+      {% for opt in options %}
+        <button type="button" class="s2-logo" :class="{ selected: choice === '{{ opt.id }}' }"
+                @click="choice = '{{ opt.id }}'">
+          <span class="{{ opt.css_class }}">{{ opt.text }}{% if opt.show_dot %}<span class="dot">.</span>{% endif %}</span>
+        </button>
+      {% endfor %}
+    </div>
+
+    {% if saved_pick %}
+      <div class="s2-logos" style="margin-top:8px;">
+        <button type="button" class="s2-logo" :class="{ selected: choice === '{{ saved_pick.id }}' }"
+                @click="choice = '{{ saved_pick.id }}'" title="ที่คุณเลือกไว้">
+          <span class="{{ saved_pick.css_class }}">{{ saved_pick.text }}{% if saved_pick.show_dot %}<span class="dot">.</span>{% endif %}</span>
+        </button>
+      </div>
+    {% endif %}
+
+    <div class="s2-helper">
+      <a href="/shop/settings/identity?gen={{ next_gen }}" class="reroll">↻ สร้างใหม่อีก 3 แบบ</a>
+    </div>
+
+    <input type="hidden" name="logo_choice" :value="choice">
+
+    <div class="s2-foot">
+      <button type="submit" class="next" style="flex:1;">
+        <span>บันทึก</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </form>
+</body>
+</html>

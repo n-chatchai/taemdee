@@ -483,6 +483,126 @@ async def settings_page(
     )
 
 
+# ── S10.identity ────────────────────────────────────────────────────────────
+# Edit shop name + logo from settings — same logo gen as the onboarding step.
+
+@router.get("/settings/identity", response_class=HTMLResponse)
+async def settings_identity_get(
+    request: Request,
+    gen: int = 0,
+    shop: Shop = Depends(get_current_shop),
+):
+    options = generate_logos(shop.name, seed=gen)
+    saved_pick = None
+    if shop.logo_url and shop.logo_url.startswith("text:"):
+        sid = shop.logo_url[5:]
+        if sid in VALID_STYLE_IDS and sid not in {o["id"] for o in options}:
+            saved_pick = render_style(shop.name, sid)
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/settings/identity.html",
+        context={"shop": shop, "options": options, "saved_pick": saved_pick, "next_gen": gen + 1},
+    )
+
+
+@router.post("/settings/identity")
+async def settings_identity_post(
+    name: str = Form(...),
+    logo_choice: Optional[str] = Form(None),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    shop.name = name.strip() or shop.name
+    if logo_choice in VALID_STYLE_IDS:
+        shop.logo_url = f"text:{logo_choice}"
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# ── S10.location ────────────────────────────────────────────────────────────
+# Province (existing Shop.location) + district + address detail.
+
+@router.get("/settings/location", response_class=HTMLResponse)
+async def settings_location_get(request: Request, shop: Shop = Depends(get_current_shop)):
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/settings/location.html",
+        context={"shop": shop},
+    )
+
+
+@router.post("/settings/location")
+async def settings_location_post(
+    province: Optional[str] = Form(None),
+    district: Optional[str] = Form(None),
+    address_detail: Optional[str] = Form(None),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    shop.location = (province or "").strip() or None
+    shop.district = (district or "").strip() or None
+    shop.address_detail = (address_detail or "").strip() or None
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# ── S10.contact ─────────────────────────────────────────────────────────────
+# Public shop phone + per-day opening hours.
+
+_DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
+
+
+@router.get("/settings/contact", response_class=HTMLResponse)
+async def settings_contact_get(request: Request, shop: Shop = Depends(get_current_shop)):
+    # Hydrate hours with defaults so the template can render every day even
+    # for shops that haven't saved yet. Default = closed.
+    saved = shop.opening_hours or {}
+    hours = {
+        d: {
+            "open": saved.get(d, {}).get("open", "07:00"),
+            "close": saved.get(d, {}).get("close", "18:00"),
+            "closed": saved.get(d, {}).get("closed", d == "sun"),
+        }
+        for d in _DAYS
+    }
+    day_th = {
+        "mon": "จันทร์", "tue": "อังคาร", "wed": "พุธ", "thu": "พฤหัสบดี",
+        "fri": "ศุกร์", "sat": "เสาร์", "sun": "อาทิตย์",
+    }
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/settings/contact.html",
+        context={"shop": shop, "hours": hours, "day_th": day_th, "days": _DAYS},
+    )
+
+
+@router.post("/settings/contact")
+async def settings_contact_post(
+    request: Request,
+    shop_phone: Optional[str] = Form(None),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Save contact info. Form fields per day: `mon_open`, `mon_close`,
+    `mon_closed` (checkbox). Build the JSON map server-side."""
+    form = await request.form()
+    hours = {}
+    for d in _DAYS:
+        closed = form.get(f"{d}_closed") == "1"
+        hours[d] = {
+            "open": (form.get(f"{d}_open") or "").strip() or "07:00",
+            "close": (form.get(f"{d}_close") or "").strip() or "18:00",
+            "closed": closed,
+        }
+    shop.shop_phone = (shop_phone or "").strip() or None
+    shop.opening_hours = hours
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.get("/refer", response_class=HTMLResponse)
 async def refer_page(
     request: Request,

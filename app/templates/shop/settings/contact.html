@@ -1,0 +1,82 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ติดต่อ · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <form method="POST" action="/shop/settings/contact" class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">ติดต่อ</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="s2-q" style="padding: 12px 20px 16px;">
+      <div class="ask">ติดต่อ<em>ร้าน.</em></div>
+      <div class="sub">ลูกค้าจะใช้ข้อมูลนี้ติดต่อคุณ</div>
+    </div>
+
+    <div class="s2-field">
+      <label class="label" for="settings-shop-phone">เบอร์โทรร้าน</label>
+      <input id="settings-shop-phone" name="shop_phone" type="tel" inputmode="tel"
+             class="s2-input"
+             value="{{ shop.shop_phone or '' }}"
+             placeholder="053-XXX-XXXX">
+    </div>
+
+    <div class="s2-field" style="margin-top:18px;">
+      <div class="label">เวลาเปิด-ปิด</div>
+    </div>
+
+    <div class="s10-hours">
+      {% for d in days %}
+        {% set h = hours[d] %}
+        <label class="s10-hour-row{% if h.closed %} closed{% endif %}">
+          <span class="s10-day">{{ day_th[d] }}</span>
+          <span class="s10-time">
+            <input type="time" name="{{ d }}_open" value="{{ h.open }}" {% if h.closed %}disabled{% endif %}>
+            <span style="margin: 0 6px;">—</span>
+            <input type="time" name="{{ d }}_close" value="{{ h.close }}" {% if h.closed %}disabled{% endif %}>
+          </span>
+          <span class="s10-edit">
+            <input type="checkbox" name="{{ d }}_closed" value="1" {% if h.closed %}checked{% endif %}>
+            <span style="font-size:11px; margin-left:4px; color:var(--ink-softer);">ปิด</span>
+          </span>
+        </label>
+      {% endfor %}
+    </div>
+
+    <div class="s2-foot">
+      <button type="submit" class="next" style="flex:1;">
+        <span>บันทึก</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </form>
+
+  {# Toggle the time inputs whenever 'ปิด' checkbox flips. No Alpine
+     dependency to keep the page light. #}
+  <script>
+    (function () {
+      document.querySelectorAll('.s10-hour-row').forEach(row => {
+        const cb = row.querySelector('input[type="checkbox"]');
+        const times = row.querySelectorAll('input[type="time"]');
+        cb.addEventListener('change', () => {
+          row.classList.toggle('closed', cb.checked);
+          times.forEach(t => { t.disabled = cb.checked; });
+        });
+      });
+    })();
+  </script>
+</body>
+</html>

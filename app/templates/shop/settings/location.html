@@ -1,0 +1,76 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ที่อยู่ · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <form method="POST" action="/shop/settings/location" class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">ที่อยู่</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="s2-q" style="padding: 12px 20px 16px;">
+      <div class="ask">ที่ตั้ง<em>ร้าน.</em></div>
+      <div class="sub">ลูกค้าจะใช้ข้อมูลนี้หาทางมาหาคุณ</div>
+    </div>
+
+    <div class="s2-field">
+      <label class="label" for="settings-province">จังหวัด</label>
+      <input id="settings-province" name="province" type="text"
+             class="s2-input"
+             value="{{ shop.location or '' }}"
+             placeholder="เช่น เชียงใหม่"
+             list="thai-provinces">
+      <datalist id="thai-provinces">
+        {% for p in [
+          'กรุงเทพมหานคร','นนทบุรี','สมุทรปราการ','ปทุมธานี','นครปฐม',
+          'เชียงใหม่','เชียงราย','ลำปาง','ลำพูน','แม่ฮ่องสอน','น่าน','พะเยา','แพร่','อุตรดิตถ์',
+          'พิษณุโลก','สุโขทัย','เพชรบูรณ์','พิจิตร','กำแพงเพชร','นครสวรรค์','อุทัยธานี','ตาก',
+          'ชัยภูมิ','ขอนแก่น','อุดรธานี','เลย','หนองคาย','หนองบัวลำภู','สกลนคร','นครพนม','มุกดาหาร',
+          'กาฬสินธุ์','ร้อยเอ็ด','ยโสธร','อำนาจเจริญ','อุบลราชธานี','ศรีสะเกษ','สุรินทร์','บุรีรัมย์',
+          'นครราชสีมา','มหาสารคาม','บึงกาฬ',
+          'ชลบุรี','ระยอง','จันทบุรี','ตราด','ฉะเชิงเทรา','ปราจีนบุรี','สระแก้ว','นครนายก',
+          'อยุธยา','สระบุรี','ลพบุรี','สิงห์บุรี','อ่างทอง','ชัยนาท','สุพรรณบุรี','กาญจนบุรี','ราชบุรี',
+          'เพชรบุรี','ประจวบคีรีขันธ์','สมุทรสาคร','สมุทรสงคราม',
+          'ชุมพร','ระนอง','สุราษฎร์ธานี','พังงา','ภูเก็ต','กระบี่','ตรัง','สงขลา','สตูล','พัทลุง','นครศรีธรรมราช','ยะลา','ปัตตานี','นราธิวาส',
+        ] %}<option value="{{ p }}">{% endfor %}
+      </datalist>
+    </div>
+
+    <div class="s2-field" style="margin-top:14px;">
+      <label class="label" for="settings-district">อำเภอ/เขต</label>
+      <input id="settings-district" name="district" type="text"
+             class="s2-input"
+             value="{{ shop.district or '' }}"
+             placeholder="เช่น เมืองเชียงใหม่">
+    </div>
+
+    <div class="s2-field" style="margin-top:14px;">
+      <label class="label" for="settings-address">ที่อยู่ละเอียด</label>
+      <textarea id="settings-address" name="address_detail" rows="3"
+                class="s2-input s10-textarea"
+                placeholder="123 ถ.นิมมานเหมินท์ ซ.7 ต.สุเทพ อ.เมือง 50200">{{ shop.address_detail or '' }}</textarea>
+      <div class="s2-hint">ใช้สำหรับให้ลูกค้าหาทางมาร้าน</div>
+    </div>
+
+    <div class="s2-foot">
+      <button type="submit" class="next" style="flex:1;">
+        <span>บันทึก</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </form>
+</body>
+</html>
