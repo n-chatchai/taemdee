@@ -100,7 +100,7 @@ async def test_card_celebration_on_first_visit(client, shop):
     assert response.status_code == 200
     body = response.text
     assert 'class="scan-cel"' in body
-    assert "แต้มแรกของคุณ" in body
+    assert "แต้มแรกของพี่" in body
     # Guests see the green upgrade banner + signup picker partial below
     assert "guest-banner-bottom" in body
     assert 'id="signup-picker"' in body

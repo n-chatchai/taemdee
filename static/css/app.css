@@ -1099,6 +1099,23 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   cursor: pointer;
   text-decoration: none;
 }
+
+/* C1 greeting line — น้องแต้ม welcomes the returning customer by name. */
+.c1-greet-bubble {
+  margin: 12px 18px 4px;
+  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+.c1-greet-bubble .cgb-text strong {
+  color: var(--ink);
+  font-weight: 700;
+}
 .shop-head .side-spark {
   position: absolute;
   top: 56px;
