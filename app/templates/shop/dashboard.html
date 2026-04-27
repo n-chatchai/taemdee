@@ -49,11 +49,18 @@
     </div>
 
     <div class="s3-stats-pills">
-      <span class="sp"><strong>{{ points_total }}</strong> แจก</span>
-      <span class="sp-sep">·</span>
-      <span class="sp"><strong>{{ redemptions_total }}</strong> แลก</span>
-      <span class="sp-sep">·</span>
-      <span class="sp"><strong>{{ shop.credit_balance }}</strong> เครดิต</span>
+      <div class="sp">
+        <div class="sp-num">{{ points_total }}</div>
+        <div class="sp-label">แจก</div>
+      </div>
+      <div class="sp">
+        <div class="sp-num">{{ redemptions_total }}</div>
+        <div class="sp-label">แลก</div>
+      </div>
+      <div class="sp">
+        <div class="sp-num">{{ shop.credit_balance }}</div>
+        <div class="sp-label">เครดิต</div>
+      </div>
     </div>
 
     {% if suggestions %}
@@ -118,10 +125,6 @@
         </div>
       </div>
       <div class="detail-void-row" id="fd-void-row" hidden>
-        <div class="dv-countdown">
-          <span class="dv-label">ยกเลิกได้ภายใน</span>
-          <span class="dv-time" id="fd-countdown">—</span>
-        </div>
         <button class="detail-void-btn" id="fd-void-btn">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M3 6h18"/>
@@ -139,16 +142,20 @@
       <div class="dock-handle"></div>
       <div class="sap-feed-h">
         <span>ลูกค้าล่าสุด</span>
-        <span class="sap-live">●</span>
+        {% if feed %}
+          <span class="sap-feed-hint-inline">แตะรายการเพื่อดูหรือยกเลิก</span>
+        {% else %}
+          <span class="sap-feed-hint-inline">ยังไม่มีกิจกรรมวันนี้</span>
+        {% endif %}
       </div>
       <div class="sap-feed">
         <table class="sap-table" id="sap-table">
           <tbody id="sap-tbody">
-            {% for kind, item, customer_name in feed[:3] %}
+            {% for kind, item, customer_name in feed[:5] %}
               <tr class="feed-row{% if loop.first %} latest{% endif %}"
                   id="row-{{ item.id }}"
                   data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
-                <td class="t">{{ item.created_at|bkk_hms }}</td>
+                <td class="t">{{ item.created_at|bkk_feed_time }}</td>
                 <td class="n">{{ customer_name }}</td>
                 <td class="a">
                   {% if kind == 'point' %}
@@ -161,7 +168,6 @@
             {% endfor %}
           </tbody>
         </table>
-        <div class="sap-feed-hint">{% if feed %}แตะรายการเพื่อดูหรือยกเลิก{% else %}ยังไม่มีกิจกรรมวันนี้{% endif %}</div>
       </div>
 
       <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
@@ -279,7 +285,7 @@
         // re-trigger (insert another row) replays the animation.
         setTimeout(() => newRow.classList.remove('just-arrived'), 2500);
       }
-      while (feedBody.children.length > 3) feedBody.lastElementChild?.remove();
+      while (feedBody.children.length > 5) feedBody.lastElementChild?.remove();
       playDing();
     });
 
@@ -336,22 +342,21 @@
         const voidRow = document.getElementById('fd-void-row');
         const voidBtn = document.getElementById('fd-void-btn');
         const voidLabel = document.getElementById('fd-void-label');
-        const cd = document.getElementById('fd-countdown');
         if (d.voidable) {
           voidRow.hidden = false;
           voidBtn.disabled = false;
           voidLabel.textContent = d.is_point ? 'ยกเลิกการออกแต้มนี้' : 'ยกเลิกการรับรางวัลนี้';
+          // Disable the button locally once the void window expires so the
+          // owner doesn't get a 400 from a stale sheet. Server enforces the
+          // same check authoritatively. Per the latest design we no longer
+          // show a visible countdown — quietly auto-disable when time is up.
           let secs = d.void_seconds_left;
-          cd.textContent = secs + ' วิ';
           fdCountdownTimer = setInterval(() => {
             secs -= 1;
             if (secs <= 0) {
               clearInterval(fdCountdownTimer); fdCountdownTimer = null;
-              cd.textContent = '0 วิ';
               voidBtn.disabled = true;
-              return;
             }
-            cd.textContent = secs + ' วิ';
           }, 1000);
           voidBtn.onclick = async () => {
             voidBtn.disabled = true;

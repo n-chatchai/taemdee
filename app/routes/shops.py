@@ -245,12 +245,18 @@ async def onboard_identity_get(
 async def onboard_identity_post(
     name: str = Form(...),
     logo_choice: Optional[str] = Form(None),
+    province: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
     shop.name = name.strip() or shop.name
     if logo_choice in VALID_STYLE_IDS:
         shop.logo_url = f"text:{logo_choice}"
+    # Province lands in the existing Shop.location field — district + detail
+    # come later via S10.location (deferred). Empty submission keeps current.
+    cleaned_province = (province or "").strip()
+    if cleaned_province:
+        shop.location = cleaned_province
     db.add(shop)
     await db.commit()
     return RedirectResponse(url="/shop/onboard/reward", status_code=status.HTTP_303_SEE_OTHER)

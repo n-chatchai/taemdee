@@ -165,7 +165,7 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
         _subscribers[shop_id].remove(q)
 
 
-def feed_row_html(kind: str, item_id: UUID, when_iso: str, customer_name: str = "ลูกค้า") -> str:
+def feed_row_html(kind: str, item_id: UUID, when_label: str, customer_name: str = "ลูกค้า") -> str:
     """Render one feed row for the DeeBoard live feed (S3 dock) and SSE
     stream. Emits a `<tr class="feed-row">` carrying data-detail-url so a
     tap opens the S3.detail bottom sheet (where the void button lives now)."""
@@ -173,7 +173,7 @@ def feed_row_html(kind: str, item_id: UUID, when_iso: str, customer_name: str = 
     detail_url = f"/shop/feed/{kind}/{item_id}"
     return (
         f'<tr class="feed-row" id="row-{item_id}" data-detail-url="{detail_url}">'
-        f'<td class="t">{when_iso}</td>'
+        f'<td class="t">{when_label}</td>'
         f'<td class="n">{customer_name}</td>'
         f'<td class="a">{label}</td>'
         f"</tr>"

@@ -19,3 +19,24 @@ def bkk_hms(dt: datetime) -> str:
     have to do timezone math when reading the live feed.
     """
     return dt.replace(tzinfo=timezone.utc).astimezone(BKK).strftime("%H:%M:%S")
+
+
+_THAI_WEEKDAY = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")
+_THAI_MONTH_SHORT = (
+    "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+    "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
+)
+
+
+def bkk_feed_time(dt: datetime) -> str:
+    """Format a (naive UTC) datetime as the dashboard feed-row label
+    `ศุกร์ 25 เม.ย. · HH:MM:SS` in Asia/Bangkok time. Used by the S3 dock
+    so each row carries enough context to read at a glance even when the
+    feed runs across midnight.
+    """
+    bkk = dt.replace(tzinfo=timezone.utc).astimezone(BKK)
+    return (
+        f"{_THAI_WEEKDAY[bkk.weekday()]} "
+        f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]} "
+        f"· {bkk.strftime('%H:%M:%S')}"
+    )

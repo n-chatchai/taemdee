@@ -681,30 +681,39 @@ body {
 /* Single-line stats pill — replaces the 3-stat grid. */
 .s3-stats-pills {
   margin: 4px 20px 16px;
-  padding: 8px 14px;
+  padding: 16px 14px;
   background: var(--surface);
   border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 999px;
-  box-shadow: none;
+  border-radius: 18px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 0;
+}
+.s3-stats-pills .sp {
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 10px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
+  gap: 4px;
+  padding: 0 8px;
+  border-right: 1px solid rgba(17, 17, 17, 0.1);
 }
-.s3-stats-pills .sp strong {
+.s3-stats-pills .sp:last-child {
+  border-right: none;
+}
+.s3-stats-pills .sp-num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 16px;
+  font-size: 26px;
   color: var(--ink);
-  letter-spacing: -0.02em;
-  margin-right: 2px;
+  letter-spacing: -0.025em;
+  line-height: 1;
 }
-.s3-stats-pills .sp-sep {
-  color: var(--ink-softer);
-  opacity: 0.5;
+.s3-stats-pills .sp-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  letter-spacing: 0.01em;
 }
 
 .s3-reach {
@@ -5055,27 +5064,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 
 .detail-void-row { margin: 4px 20px 0; }
-.dv-countdown {
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  padding: 8px 12px;
-  background: var(--accent-soft);
-  border: 1px dashed var(--accent);
-  border-radius: 10px;
-  margin-bottom: 10px;
-}
-.dv-label {
-  font-family: 'Prompt', sans-serif;
-  font-size: 11px;
-  color: var(--accent);
-}
-.dv-time {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
-  font-weight: 700;
-  color: var(--accent);
-}
 .detail-void-btn {
   appearance: none;
   -webkit-appearance: none;
@@ -5232,10 +5220,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Content scrolls beneath as user moves through the dashboard. */
 .s3-dock {
   position: sticky;
-  bottom: 44px;
+  bottom: 60px;
   background: var(--bg);
   border-radius: 18px;
-  margin: 0 14px;
+  margin: 0 20px;
   padding: 6px 14px 14px;
   z-index: 4;
 }
@@ -5258,7 +5246,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   bottom: 0;
   z-index: 5;
   margin: 0;
-  padding: 8px 18px max(8px, env(safe-area-inset-bottom));
+  padding: 16px 18px max(16px, env(safe-area-inset-bottom));
   background: var(--bg);
   border-top: 1px solid rgba(17, 17, 17, 0.12);
   display: flex;
@@ -5294,21 +5282,22 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   justify-content: space-between;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
   letter-spacing: 0.06em;
   text-transform: uppercase;
   color: var(--ink-soft);
   margin-bottom: 4px;
   padding: 0 4px;
 }
-.s3-dock .sap-live {
-  color: var(--accent);
-  font-size: 12px;
-  animation: dock-live-pulse 1.6s ease-in-out infinite;
-}
-@keyframes dock-live-pulse {
-  0%, 100% { opacity: 1; }
-  50% { opacity: 0.4; }
+/* Inline hint next to "ลูกค้าล่าสุด" — replaces the old pulsing live dot. */
+.s3-dock .sap-feed-h .sap-feed-hint-inline {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-softer);
+  font-style: italic;
+  font-weight: 400;
+  letter-spacing: 0;
+  text-transform: none;
 }
 .s3-dock .sap-feed { padding: 0 4px; margin-bottom: 8px; }
 .s3-dock .sap-feed-empty {
@@ -5329,12 +5318,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s3-dock .sap-table tr:last-child { border-bottom: none; }
 .s3-dock .sap-table td { padding: 5px 0; vertical-align: middle; }
 .s3-dock .sap-table td.t {
-  font-family: 'JetBrains Mono', monospace;
+  font-family: 'Prompt', sans-serif;
   font-size: 12px;
   color: var(--ink-softer);
-  width: 68px;
+  width: auto;
+  white-space: nowrap;
+  padding-right: 10px;
 }
-.s3-dock .sap-table td.n { font-weight: 600; color: var(--ink); font-size: 12px; }
+.s3-dock .sap-table td.n { font-weight: 600; color: var(--ink); font-size: 13px; }
 .s3-dock .sap-table td.a {
   text-align: right;
   font-size: 13px;
@@ -5344,6 +5335,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s3-dock .sap-table td.a .icon-mini {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
+  font-size: 14px;
   color: var(--accent);
   margin-right: 2px;
 }
@@ -5397,7 +5389,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-align: center;
   font-family: 'Prompt', sans-serif;
   font-style: italic;
-  font-size: 11px;
+  font-size: 12px;
   color: var(--ink-softer);
 }
 
@@ -5436,7 +5428,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s3-dock .sap-action span {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 11px;
+  font-size: 12px;
 }
 
 

@@ -16,7 +16,7 @@
 
     <div class="c7-greet">
       <div class="hi">
-        สวัสดีครับ{% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}พี่{{ customer.display_name }}{% else %}พี่{% endif %}
+        สวัสดี{% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}พี่{{ customer.display_name }}{% else %}พี่{% endif %}
         <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
           <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
           <circle cx="15" cy="3" r="1.5" fill="currentColor"/>

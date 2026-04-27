@@ -10,7 +10,7 @@ from typing import Optional
 
 from fastapi.templating import Jinja2Templates
 
-from app.models.util import bkk_hms
+from app.models.util import bkk_feed_time, bkk_hms
 from app.services.logo_gen import VALID_STYLE_IDS, render_style
 
 
@@ -57,3 +57,4 @@ templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["asset_version"] = ASSET_VERSION
 templates.env.globals["shop_logo"] = shop_logo
 templates.env.filters["bkk_hms"] = bkk_hms
+templates.env.filters["bkk_feed_time"] = bkk_feed_time

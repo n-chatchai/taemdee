@@ -17,7 +17,7 @@ from app.core.auth import (
 )
 from app.core.database import get_session
 from app.models import Customer, Redemption, Shop, Point, StaffMember
-from app.models.util import bkk_hms, utcnow
+from app.models.util import bkk_feed_time, bkk_hms, utcnow
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point, void_point
 from app.services.redemption import active_point_count, void_redemption
@@ -117,7 +117,7 @@ async def issue_scan_grant(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
     )
     return {
         "point_id": str(point.id),
@@ -219,7 +219,7 @@ async def issue_grant_action(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
+            feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
         )
     return {"granted": points, "point_ids": issued_ids, "customer_id": str(customer.id)}
 
@@ -292,7 +292,7 @@ async def staff_issue_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
     )
     return {"point_id": str(point.id), "customer_id": str(customer.id)}
 
@@ -329,7 +329,7 @@ async def staff_issue_manual_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, bkk_hms(point.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
     )
     return {"point_id": str(point.id), "customer_id": str(customer.id)}
 

@@ -198,7 +198,7 @@ async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem:
     shop = await db.get(Shop, shop_id)
     if not shop:
         return None
-    from app.models.util import bkk_hms
+    from app.models.util import bkk_feed_time
     from app.services.events import feed_row_html, publish
     from app.services.redemption import RedemptionError, redeem
     try:
@@ -208,7 +208,7 @@ async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem:
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("redemption", redemption.id, bkk_hms(redemption.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html("redemption", redemption.id, bkk_feed_time(redemption.created_at), customer.display_name or "ลูกค้า"),
     )
     return f"/card/{shop.id}/claimed?r={redemption.id}"
 
