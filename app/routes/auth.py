@@ -85,16 +85,16 @@ async def logout(response: Response):
     return {"ok": True}
 
 
-def _start_line_oauth(role: str) -> RedirectResponse:
-    """Common OAuth kickoff — only the role-tagged state cookie differs
-    between the shop and customer flows."""
+def _start_line_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
+    """Common OAuth kickoff — only the role-tagged state cookie + optional
+    next_redeem hint differ between the shop and customer flows."""
     if not line_is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "LINE Login not configured (set LINE_CHANNEL_ID + LINE_CHANNEL_SECRET in .env)",
         )
 
-    nonce, cookie_token = make_oauth_state(role=role)
+    nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
     redirect = RedirectResponse(
         url=build_authorize_url(nonce), status_code=status.HTTP_302_FOUND
     )
@@ -117,11 +117,13 @@ async def line_start():
 
 
 @router.get("/line/customer/start")
-async def line_customer_start():
+async def line_customer_start(next_redeem: Optional[str] = None):
     """Customer-side LINE Login — opened from the C2.signup picker. Returns
     the user to /my-cards on success with their guest cookie promoted to a
-    claimed account that holds their LINE id."""
-    return _start_line_oauth(role="customer")
+    claimed account. If `next_redeem=<shop_id>` is set (the C4 gate passes
+    it), the callback fires the redemption and lands on /card/{shop}/claimed
+    instead — auto-resuming the redeem the guest was trying to do."""
+    return _start_line_oauth(role="customer", next_redeem=next_redeem)
 
 
 @router.get("/line/callback")
@@ -137,10 +139,14 @@ async def line_callback(
       - role=shop     → find/create Shop, set shop session cookie, → /shop/dashboard
       - role=customer → claim/merge the anonymous Customer with line_id,
                         refresh customer cookie, → /my-cards
+                        (or /card/{shop}/claimed if next_redeem was set)
     """
-    role = verify_oauth_state(state, line_oauth_state)
-    if not role:
+    payload = verify_oauth_state(state, line_oauth_state)
+    if not payload:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
+
+    role = payload["role"]
+    next_redeem = payload.get("next_redeem")
 
     try:
         tokens = await exchange_code_for_token(code)
@@ -154,7 +160,9 @@ async def line_callback(
     if role == "customer":
         anon, _ = await find_or_create_customer(customer_cookie, db)
         claimed = await claim_by_line(db, anon, line_id, display_name=display_name)
-        redirect = RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+        target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
+        redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
         set_customer_cookie(redirect, claimed.id)
         redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
         return redirect
@@ -172,6 +180,36 @@ async def line_callback(
     _set_session_cookie(redirect, issue_session_token(shop.id))
     redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
     return redirect
+
+
+async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem: Optional[str]):
+    """If `next_redeem` is a valid shop id and the just-claimed customer has
+    a full card there, fire the redemption and return /card/{shop}/claimed?r=...
+    so the caller redirects to C5 directly. Returns None on any failure
+    (caller falls back to /my-cards) — auto-resume is best-effort, never
+    fails the LINE/OTP flow itself."""
+    if not next_redeem:
+        return None
+    try:
+        from uuid import UUID as _UUID
+        shop_id = _UUID(next_redeem)
+    except ValueError:
+        return None
+    shop = await db.get(Shop, shop_id)
+    if not shop:
+        return None
+    from app.services.events import feed_row_html, publish
+    from app.services.redemption import RedemptionError, redeem
+    try:
+        redemption = await redeem(db, shop, customer)
+    except RedemptionError:
+        return None
+    publish(
+        shop.id,
+        "feed-row",
+        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M")),
+    )
+    return f"/card/{shop.id}/claimed?r={redemption.id}"
 
 
 def _set_session_cookie(response: Response, token: str) -> None:

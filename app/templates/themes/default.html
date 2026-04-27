@@ -162,6 +162,9 @@
     {% include "_partials/footer_mark.html" %}
 
     {% if is_guest %}
+      {# Pass next_redeem only on the C4 gate (full card) so a guest who
+         taps the picker auto-resumes the redemption after signup. #}
+      {% set next_redeem = shop.id if is_full else None %}
       {% include "_partials/signup_picker.html" %}
       {% include "_partials/welcome_nickname.html" %}
     {% endif %}

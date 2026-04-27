@@ -29,9 +29,16 @@ router = APIRouter()
 # Literal /card/* paths — must be registered BEFORE /card/{shop_id} so FastAPI
 # doesn't try to parse "save", "account" etc. as a UUID and 422.
 @router.get("/card/save", response_class=HTMLResponse)
-async def soft_wall_page(request: Request):
-    """C3 — Soft Wall standalone page: claim by phone OTP (or LINE — coming)."""
-    return templates.TemplateResponse(request=request, name="card_save.html", context={})
+async def soft_wall_page(request: Request, next_redeem: Optional[str] = None):
+    """C3 — Soft Wall standalone page: claim by phone OTP. The optional
+    `?next_redeem=<shop_id>` query is forwarded into the claim POST so the
+    server can fire the redemption immediately after the OTP succeeds
+    (auto-resume from the C4 gate)."""
+    return templates.TemplateResponse(
+        request=request,
+        name="card_save.html",
+        context={"next_redeem": next_redeem},
+    )
 
 
 def _mask_phone(phone: Optional[str]) -> str:
@@ -384,12 +391,19 @@ async def claim_phone(
     phone: str = Form(...),
     code: str = Form(...),
     display_name: Optional[str] = Form(None),
+    next_redeem: Optional[str] = Form(None),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
     """Soft Wall: customer verifies their phone via OTP and merges/promotes the
     anonymous account to a claimed one. Refreshes the customer cookie since the
-    resulting customer_id may change (merge case)."""
+    resulting customer_id may change (merge case).
+
+    If `next_redeem=<shop_id>` is set (the C4 gate flow passes it through the
+    sheet), we attempt the redemption immediately and return its claimed URL
+    in `next_url` so the frontend lands on C5 directly. Best-effort —
+    failures fall back to `next_url=/my-cards`.
+    """
     if not await verify_otp(db, phone, code):
         raise HTTPException(
             status.HTTP_400_BAD_REQUEST,
@@ -399,7 +413,27 @@ async def claim_phone(
     customer, _ = await find_or_create_customer(customer_cookie, db)
     claimed = await claim_by_phone(db, customer, phone, display_name=display_name)
 
-    response = JSONResponse({"claimed": True, "customer_id": str(claimed.id)})
+    next_url = "/my-cards"
+    if next_redeem:
+        try:
+            shop_id = uuid.UUID(next_redeem)
+        except ValueError:
+            shop_id = None
+        if shop_id:
+            shop = await db.get(Shop, shop_id)
+            if shop:
+                try:
+                    redemption = await redeem(db, shop, claimed)
+                    publish(
+                        shop.id,
+                        "feed-row",
+                        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M")),
+                    )
+                    next_url = f"/card/{shop.id}/claimed?r={redemption.id}"
+                except RedemptionError:
+                    pass  # fall through to /my-cards
+
+    response = JSONResponse({"claimed": True, "customer_id": str(claimed.id), "next_url": next_url})
     set_customer_cookie(response, claimed.id)
     return response
 

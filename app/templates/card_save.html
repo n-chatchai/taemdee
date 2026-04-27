@@ -11,7 +11,10 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td c3" x-data="{ step: 'phone', phone: '', code: '', error: '', simulatedCode: '' }">
+  <div class="td c3" x-data="{
+        step: 'phone', phone: '', code: '', error: '', simulatedCode: '',
+        nextRedeem: '{{ next_redeem or '' }}'
+      }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="c3-bar">
@@ -66,10 +69,11 @@
             @submit.prevent="
               const fd = new FormData();
               fd.append('phone', phone); fd.append('code', code);
+              if (nextRedeem) fd.append('next_redeem', nextRedeem);
               const r = await fetch('/card/claim/phone', { method: 'POST', body: fd });
-              if (r.ok) { window.location.href = '/my-cards'; }
+              const j = await r.json().catch(() => ({}));
+              if (r.ok) { window.location.href = j.next_url || '/my-cards'; }
               else {
-                const j = await r.json().catch(() => ({}));
                 error = j.detail || (r.status + ' — ' + (r.statusText || 'ยืนยันไม่สำเร็จ'));
               }
             ">

@@ -44,12 +44,24 @@ def test_build_authorize_url_with_creds(monkeypatch):
 
 def test_state_round_trip_defaults_to_shop_role():
     nonce, cookie = make_oauth_state()
-    assert verify_oauth_state(nonce, cookie) == "shop"
+    payload = verify_oauth_state(nonce, cookie)
+    assert payload is not None
+    assert payload["role"] == "shop"
+    assert "next_redeem" not in payload
 
 
 def test_state_round_trip_carries_customer_role():
     nonce, cookie = make_oauth_state(role="customer")
-    assert verify_oauth_state(nonce, cookie) == "customer"
+    payload = verify_oauth_state(nonce, cookie)
+    assert payload is not None
+    assert payload["role"] == "customer"
+
+
+def test_state_round_trip_carries_next_redeem():
+    nonce, cookie = make_oauth_state(role="customer", next_redeem="abc-123")
+    payload = verify_oauth_state(nonce, cookie)
+    assert payload is not None
+    assert payload["next_redeem"] == "abc-123"
 
 
 def test_state_mismatch_rejected():

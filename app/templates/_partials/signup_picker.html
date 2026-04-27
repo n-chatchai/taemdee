@@ -14,7 +14,7 @@
       <div class="signup-sub">แต้มไม่หาย · เปลี่ยนมือถือก็ใช้ต่อได้ · ติดตามร้านโปรด</div>
     </div>
 
-    <a href="/auth/line/customer/start" class="signup-btn line">
+    <a href="/auth/line/customer/start{% if next_redeem %}?next_redeem={{ next_redeem }}{% endif %}" class="signup-btn line">
       <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
       <div class="bn-text">
         <div class="bn-name">เข้าด้วย LINE</div>
@@ -22,7 +22,7 @@
       </div>
     </a>
 
-    <a href="/card/save" class="signup-btn phone-btn">
+    <a href="/card/save{% if next_redeem %}?next_redeem={{ next_redeem }}{% endif %}" class="signup-btn phone-btn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12.01" y2="18"/></svg>
       <div class="bn-text">
         <div class="bn-name">ใช้เบอร์โทร</div>
