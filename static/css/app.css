@@ -4811,18 +4811,19 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 0;
+  /* Sit on top of the brand bar (40px) instead of the viewport bottom. */
+  bottom: 40px;
   background: var(--bg);
   border-top: 1.5px solid var(--ink);
   border-top-left-radius: 18px;
   border-top-right-radius: 18px;
   margin: 0 auto;
   max-width: 480px;
-  padding: 6px 14px max(6px, env(safe-area-inset-bottom));
+  padding: 6px 14px;
   box-shadow: 0 -6px 18px -6px rgba(0, 0, 0, 0.12);
   z-index: 4;
 }
-.td.td-dashboard { padding-bottom: 340px; }
+.td.td-dashboard { padding-bottom: 380px; }
 .s3-dock .dock-handle {
   width: 36px;
   height: 4px;
@@ -4831,16 +4832,25 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin: 0 auto 8px;
   opacity: 0.5;
 }
-.s3-dock .dock-brand {
-  margin: 8px -14px 0;
-  padding: 6px 14px;
+/* Standalone brand bar at the very bottom — sits below .s3-dock so it's
+   always visible regardless of how tall the dock is. */
+.dock-brand {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 0;
+  margin: 0 auto;
+  max-width: 480px;
+  background: var(--bg);
+  padding: 6px 14px max(6px, env(safe-area-inset-bottom));
   border-top: 1px solid var(--line);
   display: flex;
   align-items: center;
   justify-content: space-between;
+  z-index: 4;
 }
-.s3-dock .dock-brand .fm-brand { display: flex; align-items: center; gap: 8px; }
-.s3-dock .dock-brand .brand {
+.dock-brand .fm-brand { display: flex; align-items: center; gap: 8px; }
+.dock-brand .brand {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
   font-size: 18px;
@@ -4848,8 +4858,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
   line-height: 1;
 }
-.s3-dock .dock-brand .brand .dot { color: var(--accent); }
-.s3-dock .dock-brand .fm-install {
+.dock-brand .brand .dot { color: var(--accent); }
+.dock-brand .fm-install {
   font-family: 'Prompt', sans-serif;
   font-size: 13px;
   font-weight: 600;
@@ -4860,7 +4870,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
   cursor: pointer;
 }
-.s3-dock .dock-brand .fm-install svg { width: 12px; height: 12px; }
+.dock-brand .fm-install svg { width: 12px; height: 12px; }
 
 .s3-dock .sap-feed-h {
   display: flex;
