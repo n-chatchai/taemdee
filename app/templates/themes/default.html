@@ -31,7 +31,7 @@
       </a>
     {% else %}
       {% set avatar_initial = (customer.display_name[0]|upper) if (customer and customer.display_name) else 'ต' %}
-      <a href="/card/account" class="c1-avatar" title="ดูบัตรทั้งหมด">{{ avatar_initial }}</a>
+      <a href="/my-cards" class="c1-avatar" title="ดูบัตรทั้งหมด">{{ avatar_initial }}</a>
     {% endif %}
 
     <div class="shop-head">
