@@ -116,7 +116,7 @@ async def test_onboard_renders_for_first_time_guest(client, shop):
     assert "ผมเรียกพี่ว่าอะไรดี" in body
     # Step 3 signup pills are in the markup (Alpine x-show toggles visibility)
     assert "สมัครด้วยไลน์" in body
-    assert "สมัครด้วยเบอร์โทรศัพท์" in body
+    assert "สมัครด้วยเบอร์โทร" in body
 
 
 async def test_full_card_gates_redemption_for_guests(client, db, shop):
@@ -167,9 +167,10 @@ async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):
     assert response.headers["location"] == f"/card/{bogus}"
 
 
-async def test_my_cards_renders_for_guest_with_signup_banner(client, shop):
-    """Per the revised C7 design, guests see /my-cards with the green
-    signup banner — no longer redirected to /card/save."""
+async def test_my_cards_renders_for_guest_without_banner(client, shop):
+    """Per the latest C7 design, the guest-only upgrade banner is gone
+    (Option A — respect customer choice). The card list still renders and
+    signup_picker stays mounted in case any CTA wants to open it."""
     # /scan creates an anonymous customer cookie + 1 point at this shop
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
 
@@ -178,8 +179,8 @@ async def test_my_cards_renders_for_guest_with_signup_banner(client, shop):
     body = response.text
     # The user's one card is rendered
     assert shop.name in body
-    # Guest banner + signup picker partials are wired in
-    assert "guest-banner-bottom" in body
+    # Guest banner removed; picker still wired in for other CTAs
+    assert "guest-banner-bottom" not in body
     assert 'id="signup-picker"' in body
     # No claimed-only avatar shortcut (guests don't have an account page)
     assert 'href="/card/account"' not in body

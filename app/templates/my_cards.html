@@ -22,7 +22,7 @@
           <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
           <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
         </svg>
-        <span class="day">วัน{{ weekday_th }} · พี่มี {{ cards|length }} บัตรอยู่นี่</span>
+        <span class="day">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</span>
       </div>
       <div class="c7-actions">
         <a href="/scan-shop" class="c7-icon-btn" title="สแกน QR ของร้าน" aria-label="สแกน QR ของร้าน">
@@ -71,7 +71,6 @@
           </svg>
           ร้านที่พี่เก็บแต้มอยู่
         </div>
-        <div class="sort">เรียงใกล้สุด ↓</div>
       </div>
 
       {% for c in cards %}
@@ -111,9 +110,9 @@
       </div>
     {% endif %}
 
-    {% if is_guest %}
-      {% include "_partials/guest_banner.html" %}
-    {% endif %}
+    {# Per the latest customer design, the green guest upgrade banner is
+       removed from C7 (matches C1.guest — Option A: respect customer choice).
+       The signup_picker stays below in case other CTAs want to open it. #}
 
     {% include "_partials/footer_mark.html" %}
 

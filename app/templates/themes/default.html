@@ -36,7 +36,7 @@
 
     {% if customer.display_name and customer.display_name != 'คุณลูกค้า' and not is_full %}
       <div class="c1-greet-bubble">
-        <span class="cgb-text">สวัสดีครับ<strong>พี่{{ customer.display_name }}</strong> ดีใจที่พี่กลับมานะครับ</span>
+        <span class="cgb-text">สวัสดีครับ<strong>พี่{{ customer.display_name }}</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ</span>
       </div>
     {% endif %}
 
@@ -129,9 +129,9 @@
       </div>
     {% endif %}
 
-    {% if is_guest %}
-      {% include "_partials/guest_banner.html" %}
-    {% endif %}
+    {# Per the latest customer design, the C1.guest bottom upgrade banner is
+       removed (Option A — respect customer choice). Guests can still convert
+       via the C4 redeem gate (signup_picker still mounted below). #}
 
     {% include "_partials/footer_mark.html" %}
 
