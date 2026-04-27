@@ -400,9 +400,25 @@
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
     text-decoration: none;
-    box-shadow: 2px 2px 0 var(--accent);
+    box-shadow: none;
   }
   .c1-myqr svg { width: 18px; height: 18px; }
+
+  /* Back button — top-left corner of mockup */
+  .c1-back {
+    position: absolute;
+    top: 18px; left: 18px;
+    z-index: 5;
+    width: 36px; height: 36px;
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .c1-back svg { width: 18px; height: 18px; }
 
   /* C1.guest — bottom upgrade banner removed (Option A — respect customer choice) */
   .signup-head {
@@ -1135,7 +1151,7 @@
     font-family: 'Prompt', sans-serif;
     background: transparent;
     color: var(--ink);
-    border: 1px solid var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
     padding: 4px 10px;
     border-radius: 999px;
     font-size: 11px; font-weight: 600;
@@ -1425,7 +1441,7 @@
   .install-sheet .plat-step .step-ico {
     width: 22px; height: 22px;
     background: var(--bg);
-    border: 1px solid var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
     border-radius: 6px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -1816,10 +1832,10 @@
   }
   .c8-qr-card {
     background: #FDFAF2;
-    border: 2px solid var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
     border-radius: 22px;
     padding: 18px;
-    box-shadow: 4px 4px 0 var(--accent);
+    box-shadow: none;
     display: flex; flex-direction: column;
     align-items: center; gap: 12px;
   }
@@ -1885,7 +1901,7 @@
   .c8-tip .bulb {
     width: 18px; height: 18px;
     background: var(--butter); color: var(--ink);
-    border: 1px solid var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
@@ -2005,7 +2021,7 @@
   /* Pill variants used in c6 rows */
   .s10-row .pill.butter {
     background: var(--butter); color: var(--ink);
-    border: 1px solid var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
   }
 
   /* Version mark at bottom */
@@ -2072,7 +2088,7 @@
     flex-shrink: 0;
     cursor: pointer;
     text-decoration: none;
-    box-shadow: 2px 2px 0 var(--accent);
+    box-shadow: none;
   }
   .c7-myqr svg { width: 18px; height: 18px; }
 
@@ -2699,7 +2715,7 @@
   }
   .s2-field .input.focused {
     border-color: var(--accent);
-    box-shadow: 2px 2px 0 var(--accent);
+    box-shadow: none;
   }
   .s2-field .input .placeholder {
     color: var(--ink-softer); font-weight: 400;
@@ -3788,7 +3804,7 @@
     border: 1px solid rgba(17,17,17,0.18);
     border-radius: 12px;
     padding: 8px;
-    box-shadow: 3px 3px 0 var(--accent);
+    box-shadow: none;
   }
   .s7c-qr .qr-box svg { width: 100%; height: 100%; }
   .s7c-qr .recipient {
@@ -3936,7 +3952,7 @@
     border-radius: 16px;
     padding: 10px;
     position: relative;
-    box-shadow: 3px 3px 0 var(--accent);
+    box-shadow: none;
   }
   .s8-qr svg { width: 100%; height: 100%; }
   .s8-qr .center {
@@ -4153,6 +4169,197 @@
   .theme-card.selected .theme-meta { background: var(--butter); }
 
   /* ========================================================== */
+  /* ========================================================== */
+  /* C9 — Shop Story · ทำความรู้จักร้าน                          */
+  /* ========================================================== */
+  .c9-cover {
+    position: relative;
+    height: 140px;
+    margin: 0 0 16px;
+    background: linear-gradient(135deg, #FFD952 0%, #FF9E58 60%, #FF5E3A 100%);
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
+    align-items: center;
+    overflow: hidden;
+  }
+  .c9-cover::before {
+    content: '';
+    position: absolute; inset: 0;
+    background: radial-gradient(circle at 20% 30%, rgba(255,255,255,0.25), transparent 50%),
+                radial-gradient(circle at 80% 70%, rgba(0,0,0,0.08), transparent 50%);
+  }
+  .c9-cover .cover-mark {
+    position: relative; z-index: 1;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 38px;
+    color: var(--ink);
+    letter-spacing: -0.03em;
+    line-height: 1;
+  }
+  .c9-cover .cover-mark .dot { color: var(--accent); }
+  .c9-cover .cover-meta {
+    position: relative; z-index: 1;
+    margin-top: 6px;
+    display: flex; align-items: center; gap: 6px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .c9-cover .cover-dot { color: var(--ink-softer); }
+
+  .c9-thanks {
+    margin: 0 18px 24px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .c9-thanks-avatar {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 11px;
+    overflow: hidden;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .c9-thanks-avatar svg {
+    width: 100%; height: 100%;
+    display: block;
+  }
+  .c9-thanks-text { flex: 1; line-height: 1.35; }
+  .c9-thanks-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--ink);
+  }
+  .c9-thanks-s {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  .c9-section {
+    margin: 0 18px 24px;
+  }
+  .c9-section-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 10px;
+    text-transform: none;
+    letter-spacing: 0;
+    display: flex; align-items: center; justify-content: space-between;
+  }
+  .c9-rating {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--accent);
+  }
+
+  .c9-story {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+
+  .c9-menu {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 10px;
+  }
+  .c9-menu-item {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .c9-menu-img {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 4px;
+  }
+  .c9-menu-emoji {
+    font-size: 32px;
+    filter: drop-shadow(0 2px 4px rgba(0,0,0,0.2));
+  }
+  .c9-menu-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .c9-menu-price {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+
+  .c9-review {
+    padding: 12px;
+    margin-bottom: 8px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 14px;
+  }
+  .c9-review-stars {
+    color: var(--accent);
+    font-size: 13px;
+    letter-spacing: 1px;
+    margin-bottom: 4px;
+  }
+  .c9-review-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .c9-review-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-softer);
+    font-style: italic;
+  }
+
+  .c9-write-review {
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
+    margin-top: 4px;
+    padding: 12px 16px;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .c9-write-review svg {
+    width: 16px; height: 16px;
+    color: var(--butter);
+  }
+
   /* S10 — Settings                                              */
   /* ========================================================== */
   .s10-shop-card {
@@ -4932,14 +5139,7 @@
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
-            <a class="c1-myqr" title="โชว์ QR ให้ร้านสแกน">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <rect x="3" y="3" width="7" height="7" rx="1"/>
-                <rect x="14" y="3" width="7" height="7" rx="1"/>
-                <rect x="3" y="14" width="7" height="7" rx="1"/>
-                <rect x="14" y="14" width="7" height="7" rx="1"/>
-              </svg>
-            </a>
+            <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
 
             <div class="shop-head">
               <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
@@ -5014,6 +5214,8 @@
       <div class="phone">
         <div class="phone-screen">
           <div class="td c4">
+
+            <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
 
             <div class="shop-head">
               <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
@@ -5096,6 +5298,8 @@
         <div class="phone-screen">
           <div class="td c5">
 
+            <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
+
             <div class="claimed-hero">
               <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
@@ -5165,7 +5369,7 @@
       <div class="num">03</div>
       <h2>ลูกค้า · <em>ทุกร้านที่ผมดูแล</em></h2>
     </div>
-    <div class="desc">ทุกร้านที่พี่เก็บแต้มอยู่ · QR ของพี่สำหรับให้ร้านสแกน · และตั้งค่าบัญชี</div>
+    <div class="desc">ทุกร้านที่พี่เก็บแต้มอยู่ · QR ของพี่สำหรับให้ร้านสแกน · ตั้งค่าบัญชี · และทำความรู้จักร้านที่ชอบ</div>
   </div>
 
   <div class="grid">
@@ -5529,6 +5733,113 @@
                         </span>
                         <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
                       </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C9 — Shop Story · ทำความรู้จักร้าน -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C9</span>ทำความรู้จักร้าน</div>
+        <h3>ร้านขอบคุณ · ลูกค้ารีวิว</h3>
+        <p>เปิดจาก C2.2 (ดูร้าน) หรือ C7 (tap card) — ลูกค้าเห็นเรื่องราวของร้าน, ข้อความขอบคุณส่วนตัว, เมนูเด็ด และรีวิวจากลูกค้า · เน้น emotional connection มากกว่าการสะสมแต้ม</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <div class="x">←</div>
+              <div class="title-mid">ทำความรู้จัก</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="c9-cover">
+              <div class="cover-mark">mhee<span class="dot">.</span></div>
+              <div class="cover-meta">
+                <span>เปิดมา 5 ปี</span>
+                <span class="cover-dot">·</span>
+                <span>เชียงใหม่</span>
+              </div>
+            </div>
+
+            <div class="c9-thanks">
+              <div class="c9-thanks-avatar">
+                <svg viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              </div>
+              <div class="c9-thanks-text">
+                <div class="c9-thanks-h">ขอบคุณคุณสมศรีนะครับ ✦</div>
+                <div class="c9-thanks-s">ดีใจที่กลับมาทุกครั้ง · ทางร้านฝากบอก</div>
+              </div>
+            </div>
+
+            <div class="c9-section">
+              <div class="c9-section-h">เรื่องราวของร้าน</div>
+              <div class="c9-story">
+                ร้านกาแฟลุงหมีเริ่มจากความหลงใหลในกาแฟดอยช้าง — เริ่มเปิดที่บ้านก่อนย้ายมานิมมาน · ทุกแก้วคั่วเองทุกวัน
+              </div>
+            </div>
+
+            <div class="c9-section">
+              <div class="c9-section-h">เมนูเด็ดของร้าน</div>
+              <div class="c9-menu">
+                <div class="c9-menu-item">
+                  <div class="c9-menu-img" style="background: linear-gradient(135deg, #6B4423, #3E2716);">
+                    <span class="c9-menu-emoji">☕</span>
+                  </div>
+                  <div class="c9-menu-name">Signature Latte</div>
+                  <div class="c9-menu-price">75฿</div>
+                </div>
+                <div class="c9-menu-item">
+                  <div class="c9-menu-img" style="background: linear-gradient(135deg, #C99B5E, #8E5A2A);">
+                    <span class="c9-menu-emoji">🥐</span>
+                  </div>
+                  <div class="c9-menu-name">ครัวซองต์</div>
+                  <div class="c9-menu-price">45฿</div>
+                </div>
+                <div class="c9-menu-item">
+                  <div class="c9-menu-img" style="background: linear-gradient(135deg, #E8B4B0, #B86A6A);">
+                    <span class="c9-menu-emoji">🍰</span>
+                  </div>
+                  <div class="c9-menu-name">เค้กส้ม</div>
+                  <div class="c9-menu-price">85฿</div>
+                </div>
+              </div>
+            </div>
+
+            <div class="c9-section">
+              <div class="c9-section-h">
+                <span>รีวิวจากลูกค้า</span>
+                <span class="c9-rating">★ 4.8</span>
+              </div>
+              <div class="c9-review">
+                <div class="c9-review-stars">★★★★★</div>
+                <div class="c9-review-text">"กาแฟอร่อยมาก พี่หมีจำหน้าได้ตลอด · บรรยากาศร้านดี"</div>
+                <div class="c9-review-meta">— คุณน้อย · ลูกค้าประจำ 2 ปี</div>
+              </div>
+              <div class="c9-review">
+                <div class="c9-review-stars">★★★★★</div>
+                <div class="c9-review-text">"ครัวซองต์เนื้อนุ่ม กาแฟ Signature ฟินสุดๆ"</div>
+                <div class="c9-review-meta">— คุณก้อง · เก็บแต้มอยู่</div>
+              </div>
+
+              <button class="c9-write-review">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
+                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                </svg>
+                <span>เขียนรีวิวให้ร้าน</span>
+              </button>
+            </div>
+
+            <div class="footer-mark">
+              <span class="fm-brand">
+                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <span class="brand">taemdee<span class="dot">.</span></span>
+              </span>
+              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
           </div>
         </div>
       </div>
