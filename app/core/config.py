@@ -26,5 +26,10 @@ class Settings(BaseSettings):
     line_redirect_uri: str = "https://taemdee.com/auth/line/callback"
     login_otp_simulate: bool = False
 
+    # Slack incoming-webhook for deploy notifications. Read by scripts/deploy.sh
+    # via the same env var name; surfaced here so it lives in the same .env
+    # registry as everything else and is documented next to its peers.
+    slack_deploy_webhook_url: Optional[str] = None
+
 
 settings = Settings()

@@ -1,13 +1,87 @@
 #!/usr/bin/env bash
+# Pull latest, run migrations, restart the systemd service, ping Slack.
+#
+# Usage (on prod):
+#   bash scripts/deploy.sh
+#
+# Env (all optional — set in .env on prod alongside the rest):
+#   SLACK_DEPLOY_WEBHOOK_URL   Slack incoming-webhook URL — silent if unset
+#   SERVICE_NAME               systemd unit name (default: taemdee)
+#   SLACK_USERNAME             bot name shown in Slack (default: taemdee-deploy)
+#
+# Exit codes:
+#   0  success — Slack gets ✅ with commit SHA + subject + elapsed seconds
+#   1+ any phase failed — Slack gets ❌ with the failing phase name
+
 set -euo pipefail
 
-# Find the project root directory (one level up from this script)
+SERVICE_NAME="${SERVICE_NAME:-taemdee}"
+SLACK_USERNAME="${SLACK_USERNAME:-taemdee-deploy}"
+UV_BIN="${UV_BIN:-$HOME/.local/bin/uv}"
+START_TS="$(date +%s)"
+PHASE="setup"   # mutated by each phase below; ERR trap reads it
+
 PROJECT_ROOT="$(cd "$(dirname "$0")/.." && pwd)"
 cd "$PROJECT_ROOT"
 
+# Pull SLACK_DEPLOY_WEBHOOK_URL out of .env if set (so the script
+# matches the same registry app/core/config.py reads from). Already-set
+# environment values win, so a one-off `SLACK_DEPLOY_WEBHOOK_URL=... bash
+# scripts/deploy.sh` overrides without editing the file.
+if [ -z "${SLACK_DEPLOY_WEBHOOK_URL:-}" ] && [ -f .env ]; then
+  SLACK_DEPLOY_WEBHOOK_URL=$(grep -E '^SLACK_DEPLOY_WEBHOOK_URL=' .env | head -1 | cut -d= -f2- | tr -d '"' | tr -d "'")
+fi
+
+# ─── Slack helper ────────────────────────────────────────────────────────
+post_slack() {
+  local emoji="$1" text="$2"
+  [ -z "${SLACK_DEPLOY_WEBHOOK_URL:-}" ] && return 0
+  # JSON-escape via python so commit subjects with quotes/newlines don't break it.
+  local payload
+  payload=$(python3 -c '
+import json, sys
+print(json.dumps({
+  "username": sys.argv[1],
+  "icon_emoji": sys.argv[2],
+  "text": sys.argv[3],
+}))' "$SLACK_USERNAME" "$emoji" "$text")
+  curl -fsS -X POST -H 'Content-Type: application/json' \
+    --data "$payload" "$SLACK_DEPLOY_WEBHOOK_URL" > /dev/null || true
+}
+
+on_error() {
+  local code=$?
+  local elapsed=$(( $(date +%s) - START_TS ))
+  local sha
+  sha=$(git rev-parse --short HEAD 2>/dev/null || echo "unknown")
+  post_slack ":x:" "❌ Deploy failed at *${PHASE}* (exit ${code}) · \`${sha}\` · ${elapsed}s"
+  exit "$code"
+}
+trap on_error ERR
+
 echo "Deploying in $PROJECT_ROOT..."
 
+# ─── Phases ──────────────────────────────────────────────────────────────
+PHASE="git pull"
 git pull --ff-only
-~/.local/bin/uv sync --frozen
-~/.local/bin/uv run alembic upgrade head
-sudo systemctl reload taemdee
+
+PHASE="uv sync"
+"$UV_BIN" sync --frozen
+
+PHASE="alembic upgrade head"
+"$UV_BIN" run alembic upgrade head
+
+# stop+start (NOT reload) so asyncpg drops its connection pool and picks
+# up the new schema — see memory/reference_prod_deploy_restart.md.
+PHASE="systemctl stop ${SERVICE_NAME}"
+sudo systemctl stop "${SERVICE_NAME}"
+
+PHASE="systemctl start ${SERVICE_NAME}"
+sudo systemctl start "${SERVICE_NAME}"
+
+# ─── Success ─────────────────────────────────────────────────────────────
+SHA=$(git rev-parse --short HEAD)
+SUBJECT=$(git log -1 --pretty=%s)
+ELAPSED=$(( $(date +%s) - START_TS ))
+echo "✅ Deployed ${SHA} (${ELAPSED}s)"
+post_slack ":white_check_mark:" "✅ Deployed \`${SHA}\` · ${SUBJECT} · ${ELAPSED}s"
