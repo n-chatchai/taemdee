@@ -10,12 +10,13 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
+  {# Markup mirrors design/taemdee-shop.html S3 (lines 6548-6658) verbatim;
+     only Jinja loops + 2-tap dock void JS are added on top. #}
   <div class="td td-dashboard">
-    <div class="topbar"><span></span><span></span></div>
 
     <div class="s3-top">
       <div class="hi">
-        สวัสดี {{ shop.name }}
+        สวัสดี{{ shop.name }}
         <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
           <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
           <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
@@ -27,11 +28,10 @@
         {% if branches_count > 1 %}
           <a href="/shop/branches" class="branch-pill" title="เลือกสาขา">{{ branch_label }}</a>
         {% endif %}
-        <a href="/shop/settings" class="avatar" title="ตั้งค่า" style="text-decoration:none;">{{ shop.name[0]|upper }}</a>
+        <a href="/shop/settings" class="avatar" title="ตั้งค่า">{{ shop.name[0]|upper }}</a>
       </div>
     </div>
 
-    {# Compact hero — delta lives inside the box header instead of a row below. #}
     <div class="s3-hero">
       <div class="hero-top">
         <div class="label">✦ สัปดาห์นี้</div>
@@ -43,14 +43,11 @@
       </div>
       <div class="num">
         <span class="accent">{{ customers_this_week }}</span>
-        <svg class="star" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
-        </svg>
+        <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
       </div>
       <div class="caption">ลูกค้ากลับมา</div>
     </div>
 
-    {# Single-line stats pills replace the 3 stat cards. #}
     <div class="s3-stats-pills">
       <span class="sp"><strong>{{ points_total }}</strong> แจก</span>
       <span class="sp-sep">·</span>
@@ -59,8 +56,6 @@
       <span class="sp"><strong>{{ shop.credit_balance }}</strong> เครดิต</span>
     </div>
 
-    {# "แต้มดีแนะนำ" section + brief card link to the S13 list. Hidden entirely
-       when there are no suggestions — empty placeholder text was clutter. #}
     {% if suggestions %}
       <div class="ph-section-h">
         <div class="label">แต้มดีแนะนำ ✦</div>
@@ -86,16 +81,10 @@
     {# Inline error banner — replaces alert(); auto-dismisses #}
     <div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
 
-    {# Spacer so the sticky dock always has room above it on short content. #}
     <div class="s3-spacer"></div>
 
-    {# S3 sticky bottom dock — markup matches design/taemdee-shop.html
-       :6597-6658 verbatim, with Jinja loops + 2-tap row click added.
-       NO <tbody> (design uses bare <tr>s in <table>); NO empty-state
-       placeholder; .sap-feed-hint lives INSIDE .sap-feed. #}
     <div class="s3-dock">
       <div class="dock-handle"></div>
-
       <div class="sap-feed-h">
         <span>ลูกค้าล่าสุด</span>
         <span class="sap-live">●</span>
@@ -118,11 +107,7 @@
             </tr>
           {% endfor %}
         </table>
-        {% if feed %}
-          <div class="sap-feed-hint">แตะรายการเพื่อดูหรือยกเลิก</div>
-        {% else %}
-          <div class="sap-feed-hint">ยังไม่มีกิจกรรมวันนี้</div>
-        {% endif %}
+        <div class="sap-feed-hint">{% if feed %}แตะรายการเพื่อดูหรือยกเลิก{% else %}ยังไม่มีกิจกรรมวันนี้{% endif %}</div>
       </div>
 
       <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
@@ -176,13 +161,11 @@
       </div>
     </div>
 
-    {# Install instructions sheet — same partial used in footer_mark.
-       Keeping it inside .td so the CSS variables it references resolve. #}
     {% include "_partials/install_sheet.html" %}
   </div>
 
   <script>
-    // Live feed via SSE — new stamps/redemptions stream into the dock's table.
+    // Live SSE feed: new points/redemptions stream into the dock's <table>.
     const feedTable = document.getElementById('sap-table');
     const feedHint = document.querySelector('.sap-feed-hint');
     const toastMount = document.getElementById('point-toast-mount');
@@ -198,22 +181,17 @@
       flashTimer = setTimeout(() => { flash.hidden = true; }, 3000);
     }
 
-    function rowsContainer() {
-      // Browsers auto-insert <tbody> when parsing rows into a <table>;
-      // grab it dynamically so insertAdjacentHTML('afterbegin') works
-      // whether or not the original render had any rows.
-      return feedTable.tBodies[0] || feedTable;
-    }
+    // Browsers auto-insert <tbody> when parsing rows into a <table>. Grab it
+    // dynamically so insertAdjacentHTML('afterbegin') works whether or not
+    // the original render had any rows.
+    const rowsContainer = () => feedTable.tBodies[0] || feedTable;
 
     evt.addEventListener('feed-row', (e) => {
-      // Switch the hint copy from "ยังไม่มีกิจกรรมวันนี้" to the prompt.
       if (feedHint) feedHint.textContent = 'แตะรายการเพื่อดูหรือยกเลิก';
       const c = rowsContainer();
-      // Drop the "latest" highlight from the previously-newest row, then prepend.
       c.querySelector('.feed-row.latest')?.classList.remove('latest');
       c.insertAdjacentHTML('afterbegin', e.data);
       c.firstElementChild?.classList.add('latest');
-      // Cap to 3 rows in the dock — older entries fall off.
       while (c.children.length > 3) c.lastElementChild?.remove();
     });
 
@@ -238,27 +216,22 @@
       toastMount.innerHTML = e.data;
       const overlay = toastMount.firstElementChild;
       if (!overlay) return;
-
       overlay.addEventListener('click', (ev) => {
         if (ev.target === overlay) dismissToast(overlay);
       });
-
       const cd = overlay.querySelector('.countdown');
       let secsLeft = parseInt(cd?.dataset.deadline || '60', 10);
       cd && (cd.textContent = secsLeft + ' วิ');
       const timerId = setInterval(() => {
         secsLeft -= 1;
-        if (secsLeft <= 0) {
-          clearInterval(timerId);
-          dismissToast(overlay);
-          return;
-        }
+        if (secsLeft <= 0) { clearInterval(timerId); dismissToast(overlay); return; }
         cd && (cd.textContent = secsLeft + ' วิ');
       }, 1000);
       overlay.dataset.timerId = timerId;
     });
 
     document.addEventListener('click', async (e) => {
+      // S6 toast void button.
       const toastBtn = e.target.closest('.s6-toast .void-btn');
       if (toastBtn) {
         const r = await fetch(toastBtn.dataset.voidUrl, { method: 'POST' });
@@ -273,9 +246,8 @@
         }
         return;
       }
-      // 2-tap row void: first tap arms the row, 2nd within 3s confirms.
-      // Tap outside the armed row, or 3s timeout, disarms it. Avoids
-      // browser confirm() dialogs per the no-dialogs preference.
+
+      // 2-tap row void in the dock feed: 1st tap arms, 2nd within 3s confirms.
       const row = e.target.closest('#sap-table .feed-row');
       if (row && row.dataset.voidUrl) {
         if (row.classList.contains('armed')) {
@@ -289,13 +261,11 @@
           }
           return;
         }
-        // Disarm any other armed row, arm this one, set timeout.
         document.querySelectorAll('#sap-table .feed-row.armed').forEach(r => r.classList.remove('armed'));
         row.classList.add('armed');
         setTimeout(() => row.classList.remove('armed'), 3000);
         return;
       }
-      // Tap anywhere else disarms.
       document.querySelectorAll('#sap-table .feed-row.armed').forEach(r => r.classList.remove('armed'));
     });
   </script>
