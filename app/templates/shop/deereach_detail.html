@@ -1,0 +1,88 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ suggestion.label }} · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <div class="td" x-data="{ flash: '', flashKind: 'is-error' }">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/deereach" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">{{ suggestion.label }}</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="s13d-section">
+      <div class="s13d-h">
+        <span class="s13d-title">ลูกค้าที่เลือก</span>
+        <span class="s13d-count">{{ audience_total }} / {{ audience_total }}</span>
+      </div>
+      {# v1: read-only audience preview. Per-customer deselect ships in v2. #}
+      <div class="s13d-customers">
+        {% for c in audience %}
+          <div class="customer-row">
+            <div class="cr-check on">✓</div>
+            <div class="cr-avatar">{{ (c.display_name[0] if c.display_name else '?')|upper }}</div>
+            <div class="cr-info">
+              <div class="cr-name">{{ c.display_name or 'ลูกค้า' }}</div>
+              <div class="cr-meta">{{ c.phone or 'LINE' }}</div>
+            </div>
+          </div>
+        {% endfor %}
+        {% if audience_total > audience|length %}
+          <div class="customer-more">+ อีก {{ audience_total - audience|length }} คน · แตะดูทั้งหมด</div>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="s13d-section">
+      <div class="s13d-h">
+        <span class="s13d-title">ข้อความ</span>
+        <span class="s13d-edit" title="แก้ไขข้อความ — เร็วๆ นี้" style="opacity:0.5;">แก้</span>
+      </div>
+      <div class="s13d-message">{{ message }}</div>
+    </div>
+
+    <div class="s13d-section">
+      <div class="s13d-h">
+        <span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span>
+      </div>
+      <div class="s13d-preview">
+        <div class="prev-line">{{ message }}</div>
+      </div>
+    </div>
+
+    <form method="POST" action="/shop/deereach/send"
+          @submit.prevent="
+            const fd = new FormData(); fd.append('kind', '{{ suggestion.kind }}');
+            const r = await fetch('/shop/deereach/send', { method: 'POST', body: fd, redirect: 'manual' });
+            if (r.type === 'opaqueredirect' || r.ok) {
+              // FastAPI returns 303 → /shop/deereach/sent — follow it.
+              window.location.href = r.url || ('/shop/deereach/sent?campaign_id=__redirect__');
+            } else {
+              const j = await r.json().catch(() => ({}));
+              flash = j.detail || (r.status + ' — ส่งไม่สำเร็จ');
+            }
+          ">
+      <input type="hidden" name="kind" value="{{ suggestion.kind }}">
+      <button class="s13d-send" type="submit">
+        <span>ส่งให้ {{ audience_total }} คน</span>
+        <span class="s13d-cost">{{ suggestion.cost_credit }} เครดิต</span>
+      </button>
+    </form>
+
+    <div class="dash-flash is-error" x-show="flash" x-cloak x-text="flash"
+         style="margin: 12px 20px 0;"></div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

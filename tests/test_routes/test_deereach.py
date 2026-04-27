@@ -39,13 +39,17 @@ async def test_send_redirects_and_records(auth_client, db, shop):
         follow_redirects=False,
     )
     assert response.status_code == 303
-    assert response.headers["location"] == "/shop/dashboard"
+    # Per the S13.sent design, send now lands on the confirmation page with
+    # the new campaign id (was /shop/dashboard before the DS3 redesign).
+    assert response.headers["location"].startswith("/shop/deereach/sent?campaign_id=")
 
     rows = (await db.exec(
         select(DeeReachCampaign).where(DeeReachCampaign.shop_id == shop.id)
     )).all()
     assert len(rows) == 1
     assert rows[0].kind == "unredeemed_reward"
+    # Redirect target points at the just-created campaign.
+    assert str(rows[0].id) in response.headers["location"]
 
 
 async def test_send_unsupported_kind_400(auth_client, db, shop):
