@@ -36,8 +36,18 @@
     async function submit(name) {
       const fd = new FormData();
       fd.append('name', name || '');
-      try { await fetch('/card/nickname', { method: 'POST', body: fd }); }
-      catch (_) { /* offline — still close the sheet so we don't trap the user */ }
+      let saved = false;
+      try {
+        const r = await fetch('/card/nickname', { method: 'POST', body: fd });
+        saved = r.ok;
+      } catch (_) { /* offline — fall through to local close */ }
+      if (saved) {
+        // Reload so the page picks up the new display_name (greeting,
+        // avatar initial, etc.). Without this, the user sees their old
+        // null state until the next navigation.
+        window.location.reload();
+        return;
+      }
       sheet.setAttribute('hidden', '');
     }
 
