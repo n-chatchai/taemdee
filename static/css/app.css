@@ -2571,85 +2571,101 @@ body {
   text-underline-offset: 3px;
 }
 
-/* /my-id — fullscreen QR for the customer to show at the counter */
-.my-id {
-  padding: 24px 22px 28px;
+/* C8 — /my-id fullscreen QR for the shop to scan. Layout matches the
+   revised customer design (taemdee-customer.html C8 mockup). */
+.c8-stage {
+  padding: 32px 24px 0;
   text-align: center;
+  flex: 1;
   display: flex;
   flex-direction: column;
   align-items: center;
 }
-.my-id .mi-headline {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.02em;
-  margin-bottom: 6px;
-}
-.my-id .mi-headline em {
-  color: var(--accent);
-  font-style: normal;
-}
-.my-id .mi-sub {
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
-  line-height: 1.5;
-  max-width: 320px;
+.c8-instruction {
   margin-bottom: 22px;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 10px;
 }
-.my-id .mi-qr-card {
-  background: #fff;
-  border: 1.5px solid var(--ink);
-  border-radius: 22px;
-  padding: 22px;
-  box-shadow: 4px 4px 0 var(--accent);
-  max-width: 320px;
-  width: 100%;
-  margin-bottom: 18px;
-}
-.my-id .mi-qr {
-  width: 100%;
-  aspect-ratio: 1;
+.c8-icon {
+  width: 44px;
+  height: 28px;
+  color: var(--accent);
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.my-id .mi-qr svg {
-  width: 100%;
-  height: 100%;
-}
-.my-id .mi-id-label {
+.c8-icon svg { width: 100%; height: 100%; }
+.c8-msg {
   font-family: 'Prompt', sans-serif;
-  font-size: 10px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-softer);
-  margin-top: 14px;
-  margin-bottom: 2px;
-}
-.my-id .mi-id-code {
-  font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: 16px;
-  letter-spacing: 0.06em;
+  font-size: 18px;
+  line-height: 1.3;
+  letter-spacing: -0.02em;
   color: var(--ink);
 }
-.my-id .mi-tip {
+.c8-qr-card {
+  background: #FDFAF2;
+  border: 2px solid var(--ink);
+  border-radius: 22px;
+  padding: 18px;
+  box-shadow: 4px 4px 0 var(--accent);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 12px;
+  width: 100%;
+  max-width: 320px;
+}
+.c8-qr {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 220px;
+  background: #FDFAF2;
+  border-radius: 8px;
+  padding: 6px;
+}
+.c8-qr svg { display: block; width: 100%; height: 100%; }
+.c8-id {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  padding-top: 6px;
+  border-top: 1px dashed var(--ink-softer);
+  width: 100%;
+  justify-content: center;
+}
+.c8-id-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: 9px;
+  letter-spacing: 0.1em;
+  text-transform: uppercase;
+  color: var(--ink-softer);
+}
+.c8-id-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: 0.05em;
+  color: var(--ink);
+}
+.c8-refresh {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  color: var(--ink-soft);
   display: inline-flex;
   align-items: center;
-  gap: 8px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  color: var(--ink-soft);
-  font-style: italic;
+  gap: 5px;
 }
-.my-id .mi-tip .dot {
-  width: 6px;
-  height: 6px;
-  border-radius: 50%;
-  background: var(--accent);
-  flex-shrink: 0;
+.c8-refresh svg {
+  width: 11px;
+  height: 11px;
+  animation: c8-spin 4s linear infinite;
+}
+@keyframes c8-spin {
+  from { transform: rotate(0deg); }
+  to { transform: rotate(360deg); }
 }
 
 .c7-stats {

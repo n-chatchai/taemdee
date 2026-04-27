@@ -19,23 +19,58 @@
       <div class="placeholder"></div>
     </div>
 
-    <div class="my-id">
-      <div class="mi-headline">โชว์ QR นี้<em>ที่ร้าน</em></div>
-      <div class="mi-sub">ร้านสแกนแล้วได้แต้มทันที — ไม่ต้องบอกเบอร์</div>
-
-      <div class="mi-qr-card">
-        <div class="mi-qr">{{ qr_svg|safe }}</div>
-        <div class="mi-id-label">รหัสของคุณ</div>
-        <div class="mi-id-code">#{{ customer.id.hex[:8]|upper }}</div>
+    <div class="c8-stage">
+      <div class="c8-instruction">
+        <div class="c8-icon">
+          <svg viewBox="0 0 20 12" fill="none">
+            <circle cx="5" cy="3" r="1.7" fill="currentColor"/>
+            <circle cx="15" cy="3" r="1.7" fill="currentColor"/>
+            <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" fill="none"/>
+          </svg>
+        </div>
+        <div class="c8-msg">โชว์ QR นี้<br>ให้พนักงานสแกน</div>
       </div>
 
-      <div class="mi-tip">
-        <span class="dot"></span>
-        เก็บโทรศัพท์ตั้งให้สว่างที่สุด · ค้างไว้ที่กล้องร้าน
+      <div class="c8-qr-card">
+        <div class="c8-qr">{{ qr_svg|safe }}</div>
+        <div class="c8-id">
+          <span class="c8-id-label">ID</span>
+          {# Readable short id derived from the customer UUID — staff can read
+             it aloud as a fallback if the camera scan fails. Stable per user. #}
+          <span class="c8-id-num">{{ customer.id.hex[:4]|upper }}-{{ customer.id.hex[4:8]|upper }}</span>
+        </div>
+        <div class="c8-refresh" id="c8-refresh">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 12a9 9 0 0 1 15-6.7L21 8"/>
+            <path d="M21 3v5h-5"/>
+            <path d="M21 12a9 9 0 0 1-15 6.7L3 16"/>
+            <path d="M3 21v-5h5"/>
+          </svg>
+          <span>รีเฟรชใน <span id="c8-countdown">60</span> วินาที</span>
+        </div>
       </div>
     </div>
 
     {% include "_partials/footer_mark.html" %}
   </div>
+
+  {# Anti-screenshot: a visible 60-sec countdown that reloads the page when it
+     hits 0. The QR itself is a stable /c/<uuid> URL — the moving counter is
+     what defeats screenshot replay (a stale capture is obvious to staff). #}
+  <script>
+    (function () {
+      let secs = 60;
+      const el = document.getElementById('c8-countdown');
+      const tick = () => {
+        secs -= 1;
+        if (secs <= 0) {
+          window.location.reload();
+          return;
+        }
+        if (el) el.textContent = String(secs);
+      };
+      setInterval(tick, 1000);
+    })();
+  </script>
 </body>
 </html>

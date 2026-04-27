@@ -216,9 +216,11 @@ async def test_my_id_renders_identity_qr(client):
     assert "QR ของฉัน" in body
     # Inline SVG QR was rendered (segno output)
     assert "<svg" in body
-    # Short id chip (`#XXXXXXXX`) is visible to the human alongside the QR
+    # Readable short id (XXXX-XXXX) is shown for staff fallback
     import re
-    assert re.search(r"#[0-9A-F]{8}", body), "Short customer id chip not rendered"
+    assert re.search(r"[0-9A-F]{4}-[0-9A-F]{4}", body), "Readable short id not rendered"
+    # 60-sec anti-screenshot countdown is wired up
+    assert 'id="c8-countdown"' in body
 
 
 async def test_search_grant_caps_points_at_10(auth_client, db, shop):
