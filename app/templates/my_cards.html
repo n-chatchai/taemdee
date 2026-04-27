@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>บัตรของฉัน · TaemDee แต้มดี</title>
+  <title>บัตรของพี่ · TaemDee แต้มดี</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {% include "_partials/pwa_head.html" %}
@@ -16,13 +16,13 @@
 
     <div class="c7-greet">
       <div class="hi">
-        สวัสดี{% if customer.display_name %}คุณ{{ customer.display_name }}{% endif %}
+        สวัสดีครับ{% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}พี่{{ customer.display_name }}{% else %}พี่{% endif %}
         <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
           <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
           <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
           <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
         </svg>
-        <span class="day">มี {{ cards|length }} บัตรในกระเป๋า</span>
+        <span class="day">วัน{{ weekday_th }} · พี่มี {{ cards|length }} บัตรอยู่นี่</span>
       </div>
       <div class="c7-actions">
         <a href="/my-id" class="c7-myqr" title="โชว์ QR ที่ร้าน" aria-label="โชว์ QR">
@@ -47,13 +47,13 @@
         <div class="ss-row">
           <div class="ss-big">{{ total_stamps }}</div>
           <div class="ss-meta">
-            <div class="label">แต้มทั้งหมด</div>
+            <div class="label">แต้มที่ผมเก็บให้พี่</div>
             <div class="total">จาก {{ cards|length }} ร้าน</div>
           </div>
         </div>
         {% if closest is not none %}
         <div class="ss-bottom">
-          ใกล้สุด · <strong>อีก {{ closest }} แต้ม</strong> รับรางวัล
+          อีก <strong>{{ closest }} ครั้ง</strong> ได้รางวัลแล้วครับพี่ ✦
         </div>
         {% endif %}
       </div>
@@ -63,7 +63,7 @@
           <svg class="star" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
           </svg>
-          บัตรของคุณ
+          ร้านที่พี่เก็บแต้มอยู่
         </div>
         <div class="sort">เรียงใกล้สุด ↓</div>
       </div>
@@ -72,7 +72,7 @@
         {% set ready = c.point_count >= c.shop.reward_threshold %}
         <a href="/card/{{ c.shop.id }}" class="c7-card {% if ready %}featured{% endif %}">
           {% if ready %}
-            <div class="ready-tag"><span class="dot"></span>พร้อม!</div>
+            <div class="ready-tag"><span class="dot"></span>ครบแล้ว!</div>
           {% endif %}
           <div class="logo">{{ c.shop.name[0]|upper }}</div>
           <div class="info">

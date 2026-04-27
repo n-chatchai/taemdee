@@ -511,6 +511,12 @@ async def my_cards(
         default=None,
     )
 
+    from app.models.util import BKK
+    from datetime import datetime, timezone
+    weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[
+        datetime.now(timezone.utc).astimezone(BKK).weekday()
+    ]
+
     response = templates.TemplateResponse(
         request=request,
         name="my_cards.html",
@@ -519,6 +525,7 @@ async def my_cards(
             "cards": cards,
             "total_stamps": total_stamps,
             "closest": closest,
+            "weekday_th": weekday_th,
         },
     )
     if was_created:
