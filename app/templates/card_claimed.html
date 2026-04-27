@@ -24,7 +24,7 @@
           <polyline points="20 6 9 17 4 12"/>
         </svg>
       </div>
-      <div class="claimed-title"><em>รับรางวัล</em><br>เรียบร้อย!</div>
+      <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
     </div>
 
     <div class="voucher">
@@ -41,7 +41,7 @@
         <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
         <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
       </div>
-      <div class="v-label">✦ คูปอง ✦</div>
+      <div class="v-label">✦ คูปองของพี่ ✦</div>
       <div class="v-title">{{ shop.reward_description }}</div>
       <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
     </div>
@@ -52,7 +52,7 @@
           <line x1="12" y1="5" x2="12" y2="19"/>
           <polyline points="19 12 12 19 5 12"/>
         </svg>
-        บัตรถัดไปเริ่มที่นี่
+        ผมเริ่มเก็บใบใหม่ให้แล้วครับ
       </div>
       <a href="/card/{{ shop.id }}" class="mini-card" style="display:block; text-decoration:none; color:inherit;">
         <div class="mini-num">0<span class="of">/{{ shop.reward_threshold }}</span></div>
