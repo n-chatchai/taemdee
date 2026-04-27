@@ -10,6 +10,7 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
+  {% set is_guest = customer and customer.is_anonymous %}
   <div class="td">
     <div class="topbar"><span></span><span></span></div>
 
@@ -32,8 +33,12 @@
             <rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </a>
-        {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
-        <a href="/card/account" class="avatar" title="บัญชีของฉัน">{{ initial }}</a>
+        {# Claimed customers see their initial → /card/account. Guests have no
+           account page yet, so the QR icon above is the only top-right control. #}
+        {% if not is_guest %}
+          {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
+          <a href="/card/account" class="avatar" title="บัญชีของฉัน">{{ initial }}</a>
+        {% endif %}
       </div>
     </div>
 
@@ -100,7 +105,15 @@
       </div>
     {% endif %}
 
+    {% if is_guest %}
+      {% include "_partials/guest_banner.html" %}
+    {% endif %}
+
     {% include "_partials/footer_mark.html" %}
+
+    {% if is_guest %}
+      {% include "_partials/signup_picker.html" %}
+    {% endif %}
   </div>
 </body>
 </html>

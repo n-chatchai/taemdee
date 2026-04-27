@@ -423,13 +423,13 @@ async def my_cards(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """C7 — list of every shop the (claimed) customer has stamps at."""
-    customer, _ = await find_or_create_customer(customer_cookie, db)
-    if customer.is_anonymous:
-        # Anonymous customers can't see "my cards" — push them to claim first.
-        return RedirectResponse(url="/card/save", status_code=status.HTTP_303_SEE_OTHER)
+    """C7 — list of every shop the customer has points at. Per the revised
+    design, guests can see their cards too (cookie-bound on this device);
+    the page just adds the green signup banner + picker so they can convert.
+    """
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
 
-    # Active stamps grouped by shop. Same active-stamp rule as redemption service.
+    # Active points grouped by shop. Same active-point rule as redemption service.
     points_per_shop = (await db.exec(
         select(Point.shop_id, func.count().label("active_count"))
         .where(
@@ -458,7 +458,7 @@ async def my_cards(
         default=None,
     )
 
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request=request,
         name="my_cards.html",
         context={
@@ -468,5 +468,8 @@ async def my_cards(
             "closest": closest,
         },
     )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
 
 

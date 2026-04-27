@@ -76,14 +76,11 @@ async def home(request: Request, db: AsyncSession = Depends(get_session)):
     customer_cookie = request.cookies.get(CUSTOMER_COOKIE_NAME)
     if customer_cookie:
         customer_id = decode_customer_token(customer_cookie)
-        if customer_id:
-            customer = await db.get(Customer, customer_id)
-            if customer:
-                # Anonymous (auto-created on first /scan) → /my-id so they at
-                # least see their identity QR; /my-cards is meaningless without
-                # a claimed account.
-                target = "/my-cards" if not customer.is_anonymous else "/my-id"
-                return RedirectResponse(url=target, status_code=status.HTTP_303_SEE_OTHER)
+        if customer_id and await db.get(Customer, customer_id):
+            # Both claimed and guest customers land on /my-cards now — guests
+            # see the same list with the green signup banner pinned at the
+            # bottom (revised C7 design).
+            return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
 
     return templates.TemplateResponse(
         request=request,

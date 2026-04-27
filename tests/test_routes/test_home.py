@@ -38,14 +38,15 @@ async def test_home_redirects_claimed_customer_to_my_cards(client, db, shop):
     assert response.headers["location"] == "/my-cards"
 
 
-async def test_home_redirects_anonymous_customer_to_my_id(client, shop):
-    """An auto-created anonymous customer (just scanned a QR, never claimed)
-    has no stamp-collection page — send them to their identity QR instead."""
+async def test_home_redirects_anonymous_customer_to_my_cards(client, shop):
+    """Per the revised C7 design, guests see /my-cards too — same list,
+    just with the green signup banner pinned at the bottom inviting them
+    to convert. No need to bounce guests to a different page."""
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
 
     response = await client.get("/", follow_redirects=False)
     assert response.status_code == 303
-    assert response.headers["location"] == "/my-id"
+    assert response.headers["location"] == "/my-cards"
 
 
 async def test_legacy_register_redirects_to_login(client):

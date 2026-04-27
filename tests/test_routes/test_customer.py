@@ -155,6 +155,24 @@ async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):
     assert response.headers["location"] == f"/card/{bogus}"
 
 
+async def test_my_cards_renders_for_guest_with_signup_banner(client, shop):
+    """Per the revised C7 design, guests see /my-cards with the green
+    signup banner — no longer redirected to /card/save."""
+    # /scan creates an anonymous customer cookie + 1 point at this shop
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+
+    response = await client.get("/my-cards", follow_redirects=False)
+    assert response.status_code == 200
+    body = response.text
+    # The user's one card is rendered
+    assert shop.name in body
+    # Guest banner + signup picker partials are wired in
+    assert "guest-banner-bottom" in body
+    assert 'id="signup-picker"' in body
+    # No claimed-only avatar shortcut (guests don't have an account page)
+    assert 'href="/card/account"' not in body
+
+
 async def test_card_unknown_shop_renders_friendly_page(client):
     bogus = uuid4()
     response = await client.get(f"/card/{bogus}")
