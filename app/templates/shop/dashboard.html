@@ -24,7 +24,11 @@
         <span class="day">{{ weekday_th }} · เริ่มต้นวันได้ดี</span>
       </div>
       <div class="actions">
-        <a href="/shop/branches" class="branch-pill" title="เลือกสาขา">{{ branch_label }}</a>
+        {# Single-branch shops see no branch UI anywhere (per PRD §6.I).
+           Pill only appears once the shop has added a 2nd branch. #}
+        {% if branches_count > 1 %}
+          <a href="/shop/branches" class="branch-pill" title="เลือกสาขา">{{ branch_label }}</a>
+        {% endif %}
         <a href="/shop/settings" class="avatar" title="ตั้งค่า" style="text-decoration:none;">{{ shop.name[0]|upper }}</a>
       </div>
     </div>

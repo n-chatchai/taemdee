@@ -124,14 +124,15 @@ async def dashboard(
     branches_count = (await db.exec(
         select(func.count()).select_from(Branch).where(Branch.shop_id == shop.id)
     )).one()
-    first_branch = (await db.exec(
-        select(Branch).where(Branch.shop_id == shop.id).order_by(Branch.created_at)
-    )).first()
-    # Always surface a "current context" pill — branch name → shop location → "ทุกสาขา".
-    branch_label = (
-        first_branch.name if first_branch
-        else (shop.location or "ทุกสาขา")
-    )
+    # The branch-pill only shows for multi-branch shops (>=2 branches), per
+    # PRD §6.I — single-branch shops see no branch UI anywhere. Label is the
+    # first branch's name; the dashboard template gates on branches_count.
+    branch_label = None
+    if branches_count > 1:
+        first_branch = (await db.exec(
+            select(Branch).where(Branch.shop_id == shop.id).order_by(Branch.created_at)
+        )).first()
+        branch_label = first_branch.name if first_branch else None
 
     weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
 
