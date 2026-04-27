@@ -1,0 +1,19 @@
+{# Green "มาเป็นสมาชิกแต้มดี" banner shown to guest customers on the DeeCard
+   (C1.guest / C2 / C7). Tapping it opens the signup picker partial — include
+   _partials/signup_picker.html in the same template for the wiring to work. #}
+<a href="#" class="guest-banner-bottom" data-open="signup-picker">
+  <div class="gb-icon">
+    {# LINE-green smile icon — the green colour signals the LINE-first signup. #}
+    <svg viewBox="0 0 100 100" width="22" height="22">
+      <rect x="6" y="6" width="88" height="88" rx="22" fill="#06C755"/>
+      <circle cx="36" cy="42" r="6" fill="#fff"/>
+      <circle cx="64" cy="42" r="6" fill="#fff"/>
+      <path d="M30 62 Q50 80 70 62" stroke="#fff" stroke-width="6" fill="none" stroke-linecap="round"/>
+    </svg>
+  </div>
+  <div class="gb-text">
+    <div class="gb-h">มาเป็นสมาชิกแต้มดี</div>
+    <div class="gb-s">แต้มไม่หาย · เปลี่ยนมือถือก็ใช้ต่อได้ · ติดตามร้านโปรด</div>
+  </div>
+  <span class="gb-arrow">→</span>
+</a>

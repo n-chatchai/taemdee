@@ -1625,6 +1625,175 @@ body {
 }
 
 /* ==========================================================
+   Guest signup — green banner + bottom-sheet picker
+   Reused on C1.guest, C2 (first scan), C7 (My Cards). The picker is
+   the single signup entry point; the banner just opens it.
+   ========================================================== */
+
+.guest-banner-bottom {
+  margin: 14px 18px 0;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  box-shadow: 2px 2px 0 var(--ink);
+  text-decoration: none;
+  color: var(--ink);
+}
+.guest-banner-bottom .gb-icon {
+  flex-shrink: 0;
+  width: 28px;
+  height: 28px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.guest-banner-bottom .gb-icon svg { width: 22px; height: 22px; display: block; }
+.guest-banner-bottom .gb-text { flex: 1; line-height: 1.25; }
+.guest-banner-bottom .gb-h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink);
+}
+.guest-banner-bottom .gb-s {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.guest-banner-bottom .gb-arrow {
+  font-size: 16px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
+.signup-sheet-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.55);
+  z-index: 100;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.signup-sheet-overlay[hidden] { display: none; }
+.signup-sheet {
+  background: var(--bg);
+  border-top: 1.5px solid var(--ink);
+  border-top-left-radius: 22px;
+  border-top-right-radius: 22px;
+  padding: 14px 18px max(16px, env(safe-area-inset-bottom));
+  width: 100%;
+  box-shadow: 0 -8px 24px -8px rgba(0, 0, 0, 0.25);
+  animation: signup-sheet-in 240ms cubic-bezier(.34, 1.56, .64, 1);
+}
+@keyframes signup-sheet-in {
+  from { transform: translateY(20px); opacity: 0; }
+  to { transform: translateY(0); opacity: 1; }
+}
+.signup-sheet .sheet-handle {
+  width: 36px;
+  height: 4px;
+  border-radius: 999px;
+  background: var(--ink-softer);
+  margin: 0 auto 14px;
+  opacity: 0.4;
+}
+.signup-head {
+  text-align: center;
+  margin-bottom: 14px;
+  padding-bottom: 12px;
+  border-bottom: 1px solid var(--line);
+}
+.signup-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  line-height: 1.25;
+  letter-spacing: -0.02em;
+  color: var(--ink);
+  margin-bottom: 3px;
+}
+.signup-title em {
+  font-style: italic;
+  color: var(--accent);
+}
+.signup-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  line-height: 1.4;
+  color: var(--ink-soft);
+}
+.signup-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+  cursor: pointer;
+  margin: 0 0 8px;
+  text-align: left;
+  border: 1.5px solid var(--ink);
+  line-height: 1.2;
+  text-decoration: none;
+}
+.signup-btn.line {
+  background: #06C755;
+  color: #fff;
+  box-shadow: 3px 3px 0 var(--ink);
+}
+.signup-btn.phone-btn {
+  background: var(--surface);
+  color: var(--ink);
+  box-shadow: 2px 2px 0 var(--ink);
+}
+.signup-btn svg {
+  width: 22px;
+  height: 22px;
+  flex-shrink: 0;
+}
+.signup-btn .bn-text {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  line-height: 1.2;
+}
+.signup-btn .bn-name {
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.015em;
+}
+.signup-btn .bn-meta {
+  font-weight: 500;
+  font-size: 10.5px;
+  opacity: 0.85;
+  margin-top: 1px;
+}
+.signup-btn.phone-btn .bn-meta { color: var(--ink-soft); opacity: 1; }
+.signup-skip {
+  display: block;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-size: 12px;
+  color: var(--ink-softer);
+  padding: 8px 0 2px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 3px;
+  text-decoration-style: dashed;
+}
+
+/* ==========================================================
    C4 — Ready to redeem (full DeeCard)
    ========================================================== */
 
