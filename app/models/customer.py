@@ -14,7 +14,10 @@ class Customer(SQLModel, table=True):
     is_anonymous: bool = Field(default=True)
     line_id: Optional[str] = Field(default=None, unique=True, index=True)
     phone: Optional[str] = Field(default=None, unique=True, index=True)
-    display_name: Optional[str] = Field(default="Guest")
+    # NULL = "haven't been asked yet" — the welcome sheet auto-opens until
+    # the customer either provides a nickname or skips (skip stores the
+    # polite default "คุณลูกค้า" so we don't ask again).
+    display_name: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="customer")

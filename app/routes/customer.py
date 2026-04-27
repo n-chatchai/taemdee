@@ -438,19 +438,23 @@ async def claim_phone(
     return response
 
 
+SKIP_NICKNAME_DEFAULT = "คุณลูกค้า"
+
+
 @router.post("/card/nickname")
 async def save_nickname(
     name: str = Form(""),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """C2.welcome — save the optional display name a guest provided in the
-    nickname-ask sheet. Empty string is a valid "skip" signal: the customer
-    indicated they've been asked and don't want to give a name. Either way,
-    the frontend marks localStorage so the sheet doesn't reopen.
+    """C2.welcome — save the display name a guest provided in the welcome
+    sheet. Empty string = skip; we still set a polite default ("คุณลูกค้า")
+    so the welcome sheet sees a non-null display_name on the next page load
+    and doesn't reopen. NULL on customer.display_name is the "ask me" signal.
     """
     customer, was_created = await find_or_create_customer(customer_cookie, db)
-    customer.display_name = (name or "").strip() or None
+    cleaned = (name or "").strip()
+    customer.display_name = cleaned if cleaned else SKIP_NICKNAME_DEFAULT
     db.add(customer)
     await db.commit()
     response = JSONResponse({"ok": True, "display_name": customer.display_name})

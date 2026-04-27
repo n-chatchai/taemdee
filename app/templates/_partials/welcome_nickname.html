@@ -1,8 +1,9 @@
-{# C2.welcome — auto-opens once on a guest's first ever scan to ask their
-   nickname (just for app greeting, NOT signup). Skipping is fine; the
-   localStorage flag below records that we've asked, so it never reopens.
-   Include alongside _partials/signup_picker.html in the same template. #}
-<div id="welcome-nickname" class="signup-sheet-overlay" hidden
+{# C2.welcome — included only when customer.display_name is null/empty,
+   so the gate is server state (not localStorage). The sheet is rendered
+   already-open; save sets a real name, skip sets "คุณลูกค้า" — either
+   way the next page load won't include this partial. Include alongside
+   _partials/signup_picker.html in the same template. #}
+<div id="welcome-nickname" class="signup-sheet-overlay"
      onclick="this.setAttribute('hidden','')">
   <form class="signup-sheet" id="welcome-nickname-form"
         onclick="event.stopPropagation();" onsubmit="return false;">
@@ -26,23 +27,17 @@
 
 <script>
   (function () {
-    const KEY = 'taemdee_nickname_asked';
     const sheet = document.getElementById('welcome-nickname');
-    const form = document.getElementById('welcome-nickname-form');
     const input = document.getElementById('welcome-nickname-input');
     const saveBtn = document.getElementById('welcome-nickname-save');
     const skipLink = document.getElementById('welcome-nickname-skip');
-    if (!sheet || localStorage.getItem(KEY)) return;
-
-    // Auto-open on first scan ever (this device).
-    sheet.removeAttribute('hidden');
+    if (!sheet) return;
 
     async function submit(name) {
       const fd = new FormData();
       fd.append('name', name || '');
       try { await fetch('/card/nickname', { method: 'POST', body: fd }); }
       catch (_) { /* offline — still close the sheet so we don't trap the user */ }
-      localStorage.setItem(KEY, '1');
       sheet.setAttribute('hidden', '');
     }
 
@@ -52,7 +47,7 @@
     });
     skipLink.addEventListener('click', (e) => {
       e.preventDefault();
-      submit('');
+      submit('');  // server fills in "คุณลูกค้า"
     });
   })();
 </script>
