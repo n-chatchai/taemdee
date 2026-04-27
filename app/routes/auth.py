@@ -207,7 +207,7 @@ async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem:
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M")),
+        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
     return f"/card/{shop.id}/claimed?r={redemption.id}"
 

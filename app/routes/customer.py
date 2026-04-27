@@ -282,7 +282,7 @@ async def scan(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M")),
+            feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
         )
         # S6: live toast on the shop's DeeBoard with customer's running progress.
         new_count = await active_point_count(db, shop.id, customer.id)
@@ -344,7 +344,7 @@ async def redeem_reward(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M")),
+        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
 
     return RedirectResponse(
@@ -427,7 +427,7 @@ async def claim_phone(
                     publish(
                         shop.id,
                         "feed-row",
-                        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M")),
+                        feed_row_html("redemption", redemption.id, redemption.created_at.strftime("%H:%M"), claimed.display_name or "ลูกค้า"),
                     )
                     next_url = f"/card/{shop.id}/claimed?r={redemption.id}"
                 except RedemptionError:

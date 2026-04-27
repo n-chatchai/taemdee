@@ -117,7 +117,7 @@ async def issue_scan_grant(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
+        feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
     new_count = await active_point_count(db, shop.id, customer.id)
     publish(
@@ -226,7 +226,7 @@ async def issue_grant_action(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
+            feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
         )
 
     new_count = await active_point_count(db, shop.id, customer.id)
@@ -306,7 +306,7 @@ async def staff_issue_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
+        feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
     new_count = await active_point_count(db, shop.id, customer.id)
     publish(
@@ -349,7 +349,7 @@ async def staff_issue_manual_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, point.created_at.strftime("%H:%M")),
+        feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
     new_count = await active_point_count(db, shop.id, customer.id)
     publish(

@@ -4784,19 +4784,27 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-bottom-right-radius: 8px;
 }
 .s3-dock .sap-table tr.voided td { opacity: 0.4; text-decoration: line-through; }
-.s3-dock .sap-table td.v { width: 60px; text-align: right; padding-left: 6px; }
-.s3-dock .sap-table .void-mini {
-  appearance: none;
-  -webkit-appearance: none;
-  background: transparent;
-  border: 1px solid var(--ink-softer);
-  border-radius: 999px;
-  padding: 3px 8px;
+.s3-dock .sap-table tr.feed-row { cursor: pointer; }
+/* Armed state — first tap on a row primes it, the column flips to a
+   confirming "ยกเลิก?" cell that shows tapping again will fire the void.
+   3-second timeout (handled in JS) clears .armed if the owner taps away. */
+.s3-dock .sap-table tr.feed-row.armed { background: var(--accent-soft); }
+.s3-dock .sap-table tr.feed-row.armed td.t {
+  color: var(--accent);
+  font-weight: 700;
+}
+.s3-dock .sap-table tr.feed-row.armed td.t::after {
+  content: ' · แตะอีกครั้ง';
+  text-transform: none;
+  letter-spacing: 0;
+}
+.s3-dock .sap-feed-hint {
+  margin-top: 6px;
+  text-align: center;
   font-family: 'Prompt', sans-serif;
+  font-style: italic;
   font-size: 11px;
-  font-weight: 600;
-  color: var(--ink-soft);
-  cursor: pointer;
+  color: var(--ink-softer);
 }
 
 .s3-dock .sap-actions-h {

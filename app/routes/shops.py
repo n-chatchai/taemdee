@@ -136,7 +136,10 @@ async def dashboard(
 
     weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
 
-    # Live feed: most recent 8 points + redemptions, merged
+    # Live feed: most recent 8 points + redemptions, merged. Each entry
+    # carries the customer's display name so the dock can render
+    # "เพิ่งเกิด ★ สมศรี" instead of "#A12B" — the row is the unit the
+    # owner taps to void, so a recognisable name matters.
     recent_points = (await db.exec(
         select(Point).where(Point.shop_id == shop.id)
         .order_by(Point.created_at.desc()).limit(8)
@@ -145,8 +148,17 @@ async def dashboard(
         select(Redemption).where(Redemption.shop_id == shop.id)
         .order_by(Redemption.created_at.desc()).limit(4)
     )).all()
+
+    customer_ids = {p.customer_id for p in recent_points} | {r.customer_id for r in recent_redemptions}
+    customers_by_id = {}
+    if customer_ids:
+        from app.models import Customer
+        rows = (await db.exec(select(Customer).where(Customer.id.in_(customer_ids)))).all()
+        customers_by_id = {c.id: (c.display_name or "ลูกค้า") for c in rows}
+
     feed = sorted(
-        [("point", p) for p in recent_points] + [("redemption", r) for r in recent_redemptions],
+        [("point", p, customers_by_id.get(p.customer_id, "ลูกค้า")) for p in recent_points]
+        + [("redemption", r, customers_by_id.get(r.customer_id, "ลูกค้า")) for r in recent_redemptions],
         key=lambda x: x[1].created_at,
         reverse=True,
     )[:8]

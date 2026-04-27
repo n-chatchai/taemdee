@@ -45,20 +45,22 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
         _subscribers[shop_id].remove(q)
 
 
-def feed_row_html(kind: str, item_id: UUID, when_iso: str) -> str:
+def feed_row_html(kind: str, item_id: UUID, when_iso: str, customer_name: str = "ลูกค้า") -> str:
     """Render one feed row used by the DeeBoard live feed (S3 dock) and SSE
     stream. Emits a `<tr class="feed-row">` so it slots straight into the
     sap-table inside the sticky bottom dock. The dashboard JS marks the
-    most-recently-inserted row with `.latest` for the butter highlight."""
-    short = item_id.hex[:4].upper()
+    most-recently-inserted row with `.latest` for the butter highlight.
+
+    The void URL travels on data-void-url so the dock JS can fire a 2-tap
+    confirm flow when the owner taps the row (no per-row button — the
+    revised design uses the whole row as the tap target)."""
     label = '<span class="icon-mini">+</span><strong>1 แต้ม</strong>' if kind == "point" else "<strong>รับรางวัล</strong>"
     void_url = f"/shop/{'points' if kind == 'point' else 'redemptions'}/{item_id}/void"
     return (
-        f'<tr class="feed-row" id="row-{item_id}">'
+        f'<tr class="feed-row" id="row-{item_id}" data-void-url="{void_url}">'
         f'<td class="t">{when_iso}</td>'
-        f'<td class="n"><span class="id">#{short}</span></td>'
+        f'<td class="n">{customer_name}</td>'
         f'<td class="a">{label}</td>'
-        f'<td class="v"><button class="void-mini" data-void-url="{void_url}" data-row="row-{item_id}">ยกเลิก</button></td>'
         f"</tr>"
     )
 

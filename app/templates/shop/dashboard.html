@@ -104,21 +104,17 @@
         <table class="sap-table">
           <tbody id="sap-feed">
             {% if feed %}
-              {% for kind, item in feed[:3] %}
-                <tr class="feed-row {% if loop.first %}latest{% endif %}" id="row-{{ item.id }}">
+              {% for kind, item, customer_name in feed[:3] %}
+                <tr class="feed-row {% if loop.first %}latest{% endif %}" id="row-{{ item.id }}"
+                    data-void-url="/shop/{% if kind == 'point' %}points{% else %}redemptions{% endif %}/{{ item.id }}/void">
                   <td class="t">{{ item.created_at.strftime('%H:%M') }}</td>
-                  <td class="n"><span class="id">#{{ item.id.hex[:4]|upper }}</span></td>
+                  <td class="n">{{ customer_name }}</td>
                   <td class="a">
                     {% if kind == 'point' %}
                       <span class="icon-mini">+</span><strong>1 แต้ม</strong>
                     {% else %}
                       <strong>รับรางวัล</strong>
                     {% endif %}
-                  </td>
-                  <td class="v">
-                    <button class="void-mini"
-                            data-void-url="/shop/{% if kind == 'point' %}points{% else %}redemptions{% endif %}/{{ item.id }}/void"
-                            data-row="row-{{ item.id }}">ยกเลิก</button>
                   </td>
                 </tr>
               {% endfor %}
@@ -127,6 +123,9 @@
         </table>
       </div>
       <div id="sap-feed-empty" class="sap-feed-empty" {% if feed %}style="display:none"{% endif %}>ยังไม่มีกิจกรรมวันนี้</div>
+      {% if feed %}
+        <div class="sap-feed-hint">แตะรายการเพื่อดูหรือยกเลิก</div>
+      {% endif %}
 
       <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
       <div class="sap-actions">
@@ -263,16 +262,30 @@
         }
         return;
       }
-      const rowBtn = e.target.closest('#sap-feed .void-mini');
-      if (rowBtn) {
-        const r = await fetch(rowBtn.dataset.voidUrl, { method: 'POST' });
-        if (r.ok) {
-          document.getElementById(rowBtn.dataset.row)?.classList.add('voided');
-        } else {
-          const j = await r.json().catch(() => ({}));
-          showFlash(j.detail || (r.status + ' — ' + (r.statusText || 'ยกเลิกไม่สำเร็จ')), 'error');
+      // 2-tap row void: first tap arms the row, 2nd within 3s confirms.
+      // Tap outside the armed row, or 3s timeout, disarms it. Avoids
+      // browser confirm() dialogs per the no-dialogs preference.
+      const row = e.target.closest('#sap-feed .feed-row');
+      if (row && row.dataset.voidUrl) {
+        if (row.classList.contains('armed')) {
+          row.classList.remove('armed');
+          const r = await fetch(row.dataset.voidUrl, { method: 'POST' });
+          if (r.ok) {
+            row.classList.add('voided');
+          } else {
+            const j = await r.json().catch(() => ({}));
+            showFlash(j.detail || (r.status + ' — ' + (r.statusText || 'ยกเลิกไม่สำเร็จ')), 'error');
+          }
+          return;
         }
+        // Disarm any other armed row, arm this one, set timeout.
+        document.querySelectorAll('#sap-feed .feed-row.armed').forEach(r => r.classList.remove('armed'));
+        row.classList.add('armed');
+        setTimeout(() => row.classList.remove('armed'), 3000);
+        return;
       }
+      // Tap anywhere else disarms.
+      document.querySelectorAll('#sap-feed .feed-row.armed').forEach(r => r.classList.remove('armed'));
     });
   </script>
 </body>
