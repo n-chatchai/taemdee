@@ -15,7 +15,7 @@
      when customer.display_name is NULL (first-ever scan). On completion the
      final step redirects to /card/{shop.id}. #}
   {% set logo = shop_logo(shop) %}
-  <div class="td onboarding" x-data="{
+  <div class="td onboarding" :class="'step-' + step" x-data="{
         step: 1, name: '', error: '',
         async submitName() {
           const fd = new FormData();
