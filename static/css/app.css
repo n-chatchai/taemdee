@@ -1040,7 +1040,28 @@ body {
   position: relative;
 }
 
-/* C1 avatar (top-right) — entry to C7 My Cards home for logged-in users */
+/* C1 top-right control. Two variants:
+   - .c1-avatar  — claimed customer's initial (→ C7 My Cards)
+   - .c1-myqr    — guest's QR icon (→ /my-id, the C8 page) */
+.c1-myqr {
+  position: absolute;
+  top: 18px;
+  right: 18px;
+  z-index: 5;
+  width: 36px;
+  height: 36px;
+  background: var(--ink);
+  color: var(--butter);
+  border-radius: 12px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  box-shadow: 2px 2px 0 var(--accent);
+}
+.c1-myqr svg { width: 18px; height: 18px; }
+
 .c1-avatar {
   position: absolute;
   top: 18px;

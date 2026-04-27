@@ -93,15 +93,18 @@ async def test_scan_publishes_stamp_toast_event(client, db, shop, monkeypatch):
 
 
 async def test_card_celebration_on_first_visit(client, shop):
-    """First visit gets BOTH the C2 banner (contextual "your first stamp here")
-    AND the scan-cel confetti overlay — the most special stamp deserves the
-    same celebration as later ones, not less."""
+    """First visit gets the scan-cel confetti overlay AND a "แต้มแรก" hero
+    label, plus the green guest_banner_bottom inviting signup. The old
+    static C2 celebration banner is gone — the layout matches C1.guest now."""
     # Single scan ⇒ point_count==1 ⇒ is_first_visit==True
     response = await client.get(f"/scan/{shop.id}", follow_redirects=True)
     assert response.status_code == 200
     body = response.text
-    assert "c2-celebration" in body
     assert 'class="scan-cel"' in body
+    assert "แต้มแรกของคุณ" in body
+    # Guests see the green upgrade banner + signup picker partial below
+    assert "guest-banner-bottom" in body
+    assert 'id="signup-picker"' in body
 
 
 async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):

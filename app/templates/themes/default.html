@@ -11,32 +11,31 @@
 </head>
 <body>
   {% set is_full = point_count >= shop.reward_threshold %}
+  {% set is_guest = customer and customer.is_anonymous %}
   {% set logo = shop_logo(shop) %}
   <div class="td theme-{{ shop.theme_name|default('taemdee') }} {% if is_full %}c4{% endif %} {% if just_stamped %}cel-shake{% endif %}">
     {% if just_stamped %}{% include "_partials/scan_celebration.html" %}{% endif %}
     <div class="topbar"><span></span><span></span></div>
 
-    {# Avatar shortcut → /card/account for claimed, /card/save for anonymous. #}
-    {% set avatar_initial = (customer.display_name[0]|upper) if (customer and customer.display_name) else 'ต' %}
-    {% set avatar_href = '/card/account' if (customer and not customer.is_anonymous) else '/card/save' %}
-    <a href="{{ avatar_href }}" class="c1-avatar" title="ดูบัตรทั้งหมด">{{ avatar_initial }}</a>
-
-    {# C2 — first-stamp celebration banner: appears only on the very first scan #}
-    {% if is_first_visit %}
-    <div class="c2-celebration">
-      <svg class="corner-spark" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
-      </svg>
-      <div class="plus">+1</div>
-      <div class="ctxt">
-        <strong>ได้แต้มแล้ว</strong>
-        <span>แต้มแรกของคุณที่นี่</span>
-      </div>
-    </div>
+    {# Top-right control — guests see a QR icon (→ C8 / /my-id, for the shop
+       to scan when issuing the next point); claimed customers see their
+       avatar initial (→ C7 My Cards). #}
+    {% if is_guest %}
+      <a href="/my-id" class="c1-myqr" title="โชว์ QR ให้ร้านสแกน">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+      </a>
+    {% else %}
+      {% set avatar_initial = (customer.display_name[0]|upper) if (customer and customer.display_name) else 'ต' %}
+      <a href="/card/account" class="c1-avatar" title="ดูบัตรทั้งหมด">{{ avatar_initial }}</a>
     {% endif %}
 
-    <div class="shop-head" {% if is_first_visit %}style="padding-top:18px;"{% endif %}>
-      {% if not is_first_visit and not is_full %}
+    <div class="shop-head">
+      {% if not is_full %}
         <svg class="side-spark l" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
         <svg class="side-spark r" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
       {% endif %}
@@ -71,16 +70,18 @@
         <div class="done">บัตรเต็มแล้ว</div>
       </div>
     {% else %}
-      <div class="hero-num-wrap"{% if is_first_visit %} style="padding-top:16px;"{% endif %}>
-        <div class="hero-label">แต้มของคุณ</div>
-        <div class="hero-num"{% if is_first_visit %} style="font-size:100px;"{% endif %}>
+      <div class="hero-num-wrap">
+        <div class="hero-label">
+          {% if is_first_visit %}แต้มแรกของคุณ ✦{% else %}แต้มของคุณ{% endif %}
+        </div>
+        <div class="hero-num">
           {{ point_count }}
           <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor">
             <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
           </svg>
         </div>
         <div class="hero-num-sub">
-          <em>อีก {{ shop.reward_threshold - point_count }} แต้ม</em>
+          <em>อีก {{ shop.reward_threshold - point_count }} แต้ม{% if is_first_visit %}!{% endif %}</em>
           <span class="of">/ จาก {{ shop.reward_threshold }}</span>
         </div>
       </div>
@@ -102,45 +103,24 @@
         </button>
       </form>
       <div class="counter-note">กดเมื่ออยู่ที่เคาน์เตอร์เท่านั้น</div>
-    {% elif is_first_visit %}
-      {# C2 — benefits + 3-button CTA #}
-      <div class="c2-benefits">
-        <div class="bh">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          </svg>
-          เก็บแต้มไว้ ไม่ให้หาย
-        </div>
-        <div class="bl">
-          <div class="bi"><span class="ck">✓</span> เปลี่ยนมือถือก็ใช้ต่อได้</div>
-          <div class="bi"><span class="ck">✓</span> ใช้กับร้านอื่นที่มีแต้มดี</div>
-          <div class="bi"><span class="ck">✓</span> รับโปรโมชั่นและข่าวสารจากร้านโปรด</div>
-        </div>
-      </div>
-
-      <div class="c2-cta">
-        <a href="/card/save" class="line-save-btn">
-          <svg viewBox="0 0 100 100" width="20" height="20"><rect x="6" y="6" width="88" height="88" rx="22" fill="#fff"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#06C755" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-          เก็บแต้มกับ LINE
-          <span class="arr">→</span>
-        </a>
-        <a href="/card/save" class="phone-alt">ใช้เบอร์โทรแทน</a>
-        <a href="#" class="skip-link" onclick="this.closest('.c2-celebration')?.remove(); document.querySelectorAll('.c2-benefits, .c2-cta').forEach(el=>el.remove()); return false;">ใช้แบบไม่บันทึก</a>
-      </div>
     {% else %}
-      {# C1 — returning visit: encouragement + reward pill #}
-      <div class="encourage">
-        <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
-        </svg>
-        อีก {{ shop.reward_threshold - point_count }} แต้ม รับ{{ shop.reward_description }}
-        <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor">
-          <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
-        </svg>
-      </div>
+      {# Returning-visit encouragement line — claimed customers only. Guests
+         get the reward pill plus the green guest_banner_bottom below, which
+         carries the upgrade pitch on its own. #}
+      {% if not is_guest and not is_first_visit %}
+        <div class="encourage">
+          <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+          </svg>
+          อีก {{ shop.reward_threshold - point_count }} แต้ม รับ{{ shop.reward_description }}
+          <svg class="spark-mini" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+          </svg>
+        </div>
+      {% endif %}
 
       <div class="reward-pill">
-        {% if point_count * 10 >= shop.reward_threshold * 7 %}
+        {% if not is_guest and point_count * 10 >= shop.reward_threshold * 7 %}
           <div class="badge-tilted">ใกล้แล้ว!</div>
         {% endif %}
         <div class="gift">
@@ -159,7 +139,15 @@
       </div>
     {% endif %}
 
+    {% if is_guest %}
+      {% include "_partials/guest_banner.html" %}
+    {% endif %}
+
     {% include "_partials/footer_mark.html" %}
+
+    {% if is_guest %}
+      {% include "_partials/signup_picker.html" %}
+    {% endif %}
   </div>
 </body>
 </html>
