@@ -4329,385 +4329,151 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   height: 20px;
 }
 
-/* S2.3 — Theme picker (big live preview + swatch row)
-   ========================================================== */
-  .s2-theme-preview {
-    margin: 14px 18px 0;
-    border-radius: 22px;
-    border: 1.5px solid var(--ink);
-    box-shadow: 4px 4px 0 var(--ink);
-    overflow: hidden;
-    position: relative;
-    transition: background 0.2s;
-  }
-  .s2-theme-preview .preview-shop {
-    padding: 16px 18px 6px;
-    text-align: center;
-    border-bottom: 1px dashed currentColor;
-    border-bottom-color: rgba(255,255,255,0.15);
-  }
-  .s2-theme-preview .preview-shop-name {
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 16px;
-    letter-spacing: -0.02em;
-    line-height: 1;
-  }
-  .s2-theme-preview .preview-shop-sub {
-    font-family: 'Prompt', sans-serif;
-    font-size: 9.5px;
-    margin-top: 2px;
-    opacity: 0.6;
-  }
-  .s2-theme-preview .preview-num {
-    text-align: center;
-    padding: 12px 0 4px;
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 64px;
-    letter-spacing: -0.045em;
-    line-height: 1;
-  }
-  .s2-theme-preview .preview-meta {
-    text-align: center;
-    font-family: 'Prompt', sans-serif;
-    font-style: italic; font-weight: 400;
-    font-size: 10.5px;
-    margin-bottom: 10px;
-    opacity: 0.7;
-  }
-  .s2-theme-preview .preview-stamps {
-    padding: 0 22px 12px;
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 4px;
-  }
-  .s2-theme-preview .preview-stamps .ps {
-    aspect-ratio: 1; border-radius: 50%;
-    background: rgba(0,0,0,0.1);
-  }
-  .s2-theme-preview .preview-reward {
-    margin: 0 18px 14px;
-    padding: 8px 12px;
-    border-radius: 999px;
-    text-align: center;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 13px;
-    border: 1px dashed;
-  }
 
-  /* THEME: taemdee */
-  .s2-theme-preview.t-taemdee {
-    background: #F6F1E5; color: #111;
-  }
-  .s2-theme-preview.t-taemdee .preview-num { color: #FF5E3A; }
-  .s2-theme-preview.t-taemdee .preview-stamps .ps { background: rgba(17,17,17,0.1); }
-  .s2-theme-preview.t-taemdee .preview-stamps .ps.on { background: #FF5E3A; }
-  .s2-theme-preview.t-taemdee .preview-stamps .ps.butter { background: #FFD952; }
-  .s2-theme-preview.t-taemdee .preview-reward { border-color: #FF5E3A; color: #FF5E3A; }
-
-  /* THEME: mono */
-  .s2-theme-preview.t-mono {
-    background: #FFFFFF; color: #111;
-  }
-  .s2-theme-preview.t-mono .preview-num { color: #111; }
-  .s2-theme-preview.t-mono .preview-stamps .ps { background: rgba(0,0,0,0.08); }
-  .s2-theme-preview.t-mono .preview-stamps .ps.on { background: #111; }
-  .s2-theme-preview.t-mono .preview-stamps .ps.butter { background: #111; }
-  .s2-theme-preview.t-mono .preview-reward { border-color: #111; color: #111; }
-
-  /* THEME: night */
-  .s2-theme-preview.t-night {
-    background: #141414; color: #F6F1E5;
-  }
-  .s2-theme-preview.t-night .preview-num { color: #FFD952; }
-  .s2-theme-preview.t-night .preview-stamps .ps { background: rgba(255,255,255,0.12); }
-  .s2-theme-preview.t-night .preview-stamps .ps.on { background: #FFD952; }
-  .s2-theme-preview.t-night .preview-stamps .ps.butter { background: #FF5E3A; }
-  .s2-theme-preview.t-night .preview-reward { border-color: #FFD952; color: #FFD952; }
-
-  /* THEME: pastel */
-  .s2-theme-preview.t-pastel {
-    background: #FFEEE4; color: #5C2A1A;
-  }
-  .s2-theme-preview.t-pastel .preview-num { color: #E87A6A; }
-  .s2-theme-preview.t-pastel .preview-stamps .ps { background: rgba(232,122,106,0.18); }
-  .s2-theme-preview.t-pastel .preview-stamps .ps.on { background: #E87A6A; }
-  .s2-theme-preview.t-pastel .preview-stamps .ps.butter { background: #F4B583; }
-  .s2-theme-preview.t-pastel .preview-reward { border-color: #E87A6A; color: #E87A6A; }
-
-  /* Theme swatch row */
-  .s2-theme-swatches {
-    margin: 16px 18px 0;
-    display: flex; gap: 8px;
-  }
-  .s2-theme-swatch {
-    flex: 1;
-    cursor: pointer;
-    border-radius: 12px;
-    border: 1.5px solid var(--ink);
-    overflow: hidden;
-    background: var(--surface);
-    transition: transform 0.15s;
-    box-shadow: 2px 2px 0 var(--ink);
-  }
-  .s2-theme-swatch.selected {
-    transform: translateY(-3px);
-    box-shadow: 2px 4px 0 var(--accent);
-  }
-  .s2-theme-swatch .swatch-colors {
-    height: 32px;
-    display: flex;
-  }
-  .s2-theme-swatch .swatch-colors > div {
-    flex: 1;
-  }
-  .s2-theme-swatch .swatch-name {
-    padding: 5px 4px 6px;
-    text-align: center;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 10.5px;
-    color: var(--ink);
-    border-top: 1px solid var(--ink);
-    background: var(--bg);
-  }
-  .s2-theme-swatch.selected .swatch-name {
-    background: var(--butter);
-  }
-
-/* ==========================================================
-   S2.4 — Done (success + QR preview + final CTA)
-   ========================================================== */
-
-.s2-done-hero {
-  padding: 44px 22px 0;
-  text-align: center;
-  position: relative;
-}
-.s2-done-hero::before {
-  content: '';
-  position: absolute;
-  top: 30px;
-  left: 50%;
-  transform: translateX(-50%);
-  width: 240px;
-  height: 240px;
-  background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
-  opacity: 0.6;
-  border-radius: 50%;
-  z-index: 0;
-}
-.s2-done-hero > * { position: relative; z-index: 1; }
-.s2-done-hero .confetti {
-  position: absolute;
-  color: var(--butter);
-  stroke: var(--ink);
-  stroke-width: 1.5;
-  animation: twinkle-c 2s ease-in-out infinite;
-}
-.s2-done-hero .c1 { top: 50px; left: 18%; width: 14px; height: 14px; }
-.s2-done-hero .c2 { top: 80px; right: 14%; width: 12px; height: 12px; color: var(--accent); stroke: none; animation-delay: 0.6s; }
-.s2-done-hero .c3 { top: 130px; left: 12%; width: 10px; height: 10px; animation-delay: 1.1s; }
-.s2-done-hero .c4 { top: 60px; right: 22%; width: 10px; height: 10px; color: var(--accent); stroke: none; animation-delay: 1.6s; }
-
-.s2-done-mark {
-  width: 76px;
-  height: 76px;
-  margin: 0 auto 20px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  border: 1.5px solid var(--ink);
-  box-shadow: 0 8px 20px -6px rgba(255, 94, 58, 0.5), 3px 3px 0 var(--ink);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.s2-done-mark svg { width: 36px; height: 36px; }
-.s2-done-title {
-  font-weight: 700;
-  font-size: 26px;
-  letter-spacing: -0.02em;
-  line-height: 1.15;
-  margin-bottom: 6px;
-}
-.s2-done-title em {
-  font-style: italic;
-  font-weight: 700;
-  color: var(--accent);
-}
-.s2-done-sub {
-  font-size: 15px;
-  color: var(--ink-soft);
-  line-height: 1.5;
-  margin-bottom: 24px;
-}
-/* S2.4 — Customer view preview (mini phone showing what the buyer sees) */
-.s2-customer-preview {
-  margin: 0 22px 18px;
-  text-align: center;
-}
-.s2-customer-preview .cp-label {
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-softer);
-  margin-bottom: 10px;
-}
-.s2-customer-preview .cp-phone-wrap {
-  display: flex;
-  justify-content: center;
-}
-.s2-customer-preview .cp-phone {
-  width: 130px;
-  aspect-ratio: 9 / 17;
-  background: #111;
-  border: 1.5px solid #111;
-  border-radius: 18px;
-  padding: 6px;
-  box-shadow: 4px 4px 0 var(--accent);
-}
-.s2-customer-preview .cp-screen {
+/* S2 — shared real-input styling (looks like the design's faux .input.focused). */
+.s2-input {
   width: 100%;
-  height: 100%;
-  background: var(--bg);
-  border-radius: 12px;
-  padding: 10px 8px;
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  text-align: center;
-}
-.cp-shop {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
-  margin-bottom: 4px;
-}
-.cp-shop .cp-logo { width: 16px; height: 16px; }
-.cp-shop .cp-shop-name {
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+  box-shadow: 2px 2px 0 var(--ink);
   font-family: 'Prompt', sans-serif;
+  font-size: 16px;
   font-weight: 600;
-  font-size: 10px;
+  letter-spacing: -0.01em;
   color: var(--ink);
-  line-height: 1;
+  -webkit-appearance: none;
+  appearance: none;
+  display: block;
 }
-.cp-num {
+.s2-input::placeholder { color: var(--ink-softer); font-weight: 400; }
+.s2-input:focus {
+  outline: none;
+  border-color: var(--accent);
+  box-shadow: 2px 2px 0 var(--accent);
+}
+.s2-goal-custom-input { margin: 10px 20px 0; }
+.s2-goal-custom { text-align: center; font-size: 16px; padding: 12px 14px; }
+.s2-hint-pills { margin: 8px 24px 0; }
+
+/* S2.3 — Customer-view preview matching C1 (full card, not mini phone).
+   Re-tinted via .theme-* class so the swatch row live-previews colors. */
+.s2-c1-preview {
+  margin: 8px 18px 16px;
+  padding: 16px 16px 14px;
+  background: var(--bg);
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  box-shadow: 4px 4px 0 var(--accent);
+  text-align: center;
+  transition: background 0.2s, color 0.2s;
+}
+.s2-c1-preview .shop-head-mini { margin-bottom: 4px; }
+.s2-c1-preview .shop-logo-mark-mini {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 28px;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+  color: var(--ink);
+}
+.s2-c1-preview .shop-logo-mark-mini .dot { color: var(--accent); }
+.s2-c1-preview .shop-sub-mini {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+  letter-spacing: 0.02em;
+}
+.s2-c1-preview .hero-num-wrap-mini { margin: 8px 0 4px; }
+.s2-c1-preview .hero-label-mini {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+  margin-bottom: 1px;
+}
+.s2-c1-preview .hero-num-mini {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 56px;
   line-height: 1;
   letter-spacing: -0.04em;
   color: var(--accent);
-  margin: 2px 0;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
 }
-.cp-num .cp-sub {
-  font-size: 14px;
-  color: var(--ink-softer);
-  margin-left: 1px;
-}
-.cp-msg {
+.s2-c1-preview .mini-star-mini { width: 10px; height: 10px; color: var(--butter); margin-top: 4px; }
+.s2-c1-preview .hero-num-sub-mini {
   font-family: 'Prompt', sans-serif;
-  font-weight: 600;
-  font-size: 7px;
+  font-size: 12px;
   color: var(--ink);
-  line-height: 1.25;
-  margin-bottom: 6px;
+  margin-top: 4px;
 }
-.cp-stamps {
+.s2-c1-preview .hero-num-sub-mini em { font-style: italic; font-weight: 700; color: var(--accent); }
+.s2-c1-preview .hero-num-sub-mini .of { color: var(--ink-softer); }
+.s2-c1-preview .stamps-mini {
+  margin: 10px 0 12px;
   display: grid;
   grid-template-columns: repeat(5, 1fr);
-  gap: 2px;
-  width: 100%;
-  margin-bottom: 4px;
+  gap: 5px;
 }
-.cp-s {
+.s2-c1-preview .stamps-mini .sm {
   aspect-ratio: 1;
-  border: 1px dashed var(--ink-softer);
+  border: 1.5px dashed var(--ink-softer);
   border-radius: 50%;
   background: transparent;
 }
-.cp-s.on {
+.s2-c1-preview .stamps-mini .sm.on {
   background: var(--ink);
-  border-color: var(--ink);
-  border-style: solid;
-}
-.cp-reward {
-  margin-top: auto;
-  padding: 3px 6px;
-  background: var(--butter);
-  border: 1px solid var(--ink);
-  border-radius: 999px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 6.5px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-}
-.s2-customer-preview .cp-hint {
-  margin-top: 12px;
-  font-family: 'Prompt', sans-serif;
-  font-style: italic;
-  font-size: 13px;
-  color: var(--ink-soft);
-}
-
-/* S9 — customer-view label above the live theme preview */
-.s9-preview-frame .s9-pf-label {
-  margin: 0 18px 6px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-softer);
-}
-
-.s2-qr-prev {
-  margin: 0 22px 22px;
-  padding: 14px 16px;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 18px;
   border: 1.5px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
+}
+.s2-c1-preview .stamps-mini .sm.on.butter {
+  background: var(--butter);
+  border-color: var(--ink);
+}
+.s2-c1-preview .reward-pill-mini {
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 8px;
+  padding: 8px 10px;
+  background: var(--butter);
+  border: 1.5px solid var(--ink);
+  border-radius: 999px;
+  box-shadow: 2px 2px 0 var(--ink);
+  margin-top: 6px;
   text-align: left;
-  text-decoration: none;
 }
-.s2-qr-prev .mini-qr {
-  width: 56px;
-  height: 56px;
-  background: #fff;
-  border-radius: 10px;
-  flex-shrink: 0;
-  padding: 6px;
-  border: 1.5px solid var(--bg);
-}
-.s2-qr-prev .mini-qr svg { width: 100%; height: 100%; }
-.s2-qr-prev .meta { flex: 1; line-height: 1.3; color: var(--bg); }
-.s2-qr-prev .meta .h {
-  font-weight: 700;
-  font-size: 16px;
-  margin-bottom: 1px;
-}
-.s2-qr-prev .meta .s {
-  font-weight: 400;
-  font-size: 13px;
-  color: var(--ink-softer);
-}
-.s2-qr-prev .arrow {
-  width: 28px;
-  height: 28px;
-  background: var(--accent);
-  color: #fff;
+.s2-c1-preview .gift-mini {
+  width: 22px;
+  height: 22px;
+  background: var(--ink);
+  color: var(--butter);
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
   flex-shrink: 0;
+}
+.s2-c1-preview .gift-mini svg { width: 12px; height: 12px; }
+.s2-c1-preview .rtxt-mini { flex: 1; line-height: 1.2; }
+.s2-c1-preview .rlabel-mini {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  color: var(--ink);
+  opacity: 0.6;
+  text-transform: uppercase;
+  letter-spacing: 0.1em;
+}
+.s2-c1-preview .rname-mini {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  margin-top: 1px;
 }
 
 /* S2.4 — final QR block + download (replaces the old customer-preview).

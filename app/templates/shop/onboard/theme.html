@@ -11,11 +11,13 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
+  {% set logo = shop_logo(shop) %}
   <form method="POST" action="/shop/onboard/theme" class="td"
         x-data="{ theme: '{{ shop.theme_name }}' }">
+
     <div class="topbar"><span></span><span></span></div>
 
-    <div class="s2-steps" style="margin-top:18px;">
+    <div class="s2-steps">
       <div class="step done"></div>
       <div class="step done"></div>
       <div class="step active"></div>
@@ -28,7 +30,55 @@
 
     <div class="s2-q">
       <div class="ask">เลือก<em>ธีม.</em></div>
-      <div class="sub">หน้าตาบัตรสะสมแต้มของลูกค้า</div>
+      <div class="sub">มุมมองลูกค้า</div>
+    </div>
+
+    {# C1-style mini preview that re-tints when the swatch changes (theme-* live on .td via x-class). #}
+    <div class="s2-c1-preview" :class="'theme-' + theme">
+      <div class="shop-head-mini">
+        <div class="shop-logo-mark-mini">
+          {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+          {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
+        </div>
+        <div class="shop-sub-mini">{{ shop.name }}{% if shop.location %} · {{ shop.location }}{% endif %}</div>
+      </div>
+
+      <div class="hero-num-wrap-mini">
+        <div class="hero-label-mini">แต้มของคุณ</div>
+        <div class="hero-num-mini">
+          7
+          <svg class="mini-star-mini" viewBox="0 0 16 16" fill="currentColor">
+            <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+          </svg>
+        </div>
+        <div class="hero-num-sub-mini">
+          <em>อีก {{ (shop.reward_threshold - 7) if shop.reward_threshold > 7 else 1 }} แต้ม!</em>
+          <span class="of">/ จาก {{ shop.reward_threshold }}</span>
+        </div>
+      </div>
+
+      <div class="stamps-mini">
+        {% set cap = shop.reward_threshold if shop.reward_threshold <= 10 else 10 %}
+        {% for i in range(1, cap + 1) %}
+          <div class="sm{% if i <= 7 %} on{% if i % 3 == 0 %} butter{% endif %}{% endif %}"></div>
+        {% endfor %}
+      </div>
+
+      <div class="reward-pill-mini">
+        <div class="gift-mini">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 12 20 22 4 22 4 12"/>
+            <rect x="2" y="7" width="20" height="5"/>
+            <line x1="12" y1="22" x2="12" y2="7"/>
+            <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+            <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+          </svg>
+        </div>
+        <div class="rtxt-mini">
+          <div class="rlabel-mini">รางวัล</div>
+          <div class="rname-mini">{{ shop.reward_description }}</div>
+        </div>
+      </div>
     </div>
 
     {% set theme_meta = [
@@ -37,40 +87,23 @@
       ('night',   'กลางคืน', ['#141414', '#FFD952', '#FF5E3A']),
       ('pastel',  'พาสเทล',  ['#FFEEE4', '#E87A6A', '#F4B583'])
     ] %}
-
-    <div class="s2-theme-preview" :class="'t-' + theme">
-      <div class="preview-shop">
-        <div class="preview-shop-name">{{ shop.name }}</div>
-        <div class="preview-shop-sub">{{ shop.branches[0].name if shop.branches else 'สาขาหลัก' }}</div>
-      </div>
-      <div class="preview-num">7</div>
-      <div class="preview-meta">อีก {{ shop.reward_threshold - 7 }} แต้มรับรางวัล</div>
-      <div class="preview-stamps">
-        {% for i in range(10) %}
-          <div class="ps" :class="{
-            on: {{ i }} < 7,
-            butter: {{ i }} == 2 || {{ i }} == 5
-          }"></div>
-        {% endfor %}
-      </div>
-      <div class="preview-reward">✦ {{ shop.reward_description }} ✦</div>
-    </div>
-
     <div class="s2-theme-swatches">
       {% for t_id, t_name, colors in theme_meta %}
-        <div class="s2-theme-swatch" :class="{ selected: theme === '{{ t_id }}' }" @click="theme = '{{ t_id }}'">
+        <button type="button" class="s2-theme-swatch"
+                :class="{ selected: theme === '{{ t_id }}' }"
+                @click="theme = '{{ t_id }}'">
           <div class="swatch-colors">
             {% for c in colors %}<div style="background:{{ c }};"></div>{% endfor %}
           </div>
           <div class="swatch-name">{{ t_name }}</div>
-        </div>
+        </button>
       {% endfor %}
     </div>
 
     <input type="hidden" name="theme" :value="theme">
 
     <div class="s2-foot">
-      <a href="/shop/onboard/reward" class="back">←</a>
+      <a href="/shop/onboard/reward" class="back" aria-label="ย้อนกลับ">←</a>
       <button type="submit" class="next">
         <span>ถัดไป · พิมพ์ QR</span>
         <span class="arrow">→</span>
