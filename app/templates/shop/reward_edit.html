@@ -46,7 +46,7 @@
     <div class="s2-rewards">
       {% for img_id in reward_images %}
         <button type="button" class="s2-reward" :class="{ selected: rewardImage === '{{ img_id }}' }" @click="rewardImage = '{{ img_id }}'">
-          <div class="reward-img r-{{ img_id|replace('_','-') }}"></div>
+          {% include "_partials/reward_svg.html" %}
         </button>
       {% endfor %}
     </div>

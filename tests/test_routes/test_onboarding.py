@@ -47,7 +47,8 @@ async def test_reward_renders_image_picker_and_pills(auth_client):
     r = await auth_client.get("/shop/onboard/reward")
     assert r.status_code == 200
     body = r.text
-    for img_id in ("coffee_cup", "latte_art", "iced"):
+    # Reward images flipped to the design's 4 illustrated tiles.
+    for img_id in ("gift_box", "card", "star", "coffee_cup"):
         assert f"rewardImage === '{img_id}'" in body
     for goal in ("5", "10", "20"):
         assert f"goal === {goal}" in body
@@ -60,7 +61,7 @@ async def test_reward_post_saves_description_image_threshold(auth_client, db, sh
         "/shop/onboard/reward",
         data={
             "reward_description": "กาแฟ Signature ฟรี 1 แก้ว",
-            "reward_image": "latte_art",
+            "reward_image": "star",
             "reward_threshold": 20,
         },
         follow_redirects=False,
@@ -69,7 +70,7 @@ async def test_reward_post_saves_description_image_threshold(auth_client, db, sh
     assert response.headers["location"] == "/shop/onboard/theme"
     await db.refresh(shop)
     assert shop.reward_description == "กาแฟ Signature ฟรี 1 แก้ว"
-    assert shop.reward_image == "latte_art"
+    assert shop.reward_image == "star"
     assert shop.reward_threshold == 20
 
 

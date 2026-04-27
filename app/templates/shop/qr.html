@@ -60,7 +60,7 @@
       <div class="reward-strip">
         <div class="ll">★ รางวัล ★</div>
         <div class="vv">
-          {% if shop.reward_image == 'coffee_cup' %}☕{% elif shop.reward_image == 'latte_art' %}🥛{% elif shop.reward_image == 'iced' %}🧋{% endif %}
+          {% if shop.reward_image == 'gift_box' %}🎁{% elif shop.reward_image == 'card' %}💳{% elif shop.reward_image == 'star' %}⭐{% else %}☕{% endif %}
           <strong>{{ shop.reward_threshold }} แต้ม</strong>
           <span class="stars">·</span>
           {{ shop.reward_description }}

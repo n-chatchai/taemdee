@@ -181,7 +181,7 @@ TOPUP_PACKAGES = {
 
 # --------- Onboarding wizard (4 steps) ---------
 
-VALID_REWARD_IMAGES = {"coffee_cup", "latte_art", "iced"}
+VALID_REWARD_IMAGES = {"gift_box", "card", "star", "coffee_cup"}
 VALID_REWARD_GOALS = (5, 10, 20)
 
 
@@ -252,7 +252,7 @@ async def onboard_reward_get(request: Request, shop: Shop = Depends(get_current_
         name="shop/onboard/reward.html",
         context={
             "shop": shop,
-            "reward_images": ["coffee_cup", "latte_art", "iced"],
+            "reward_images": ["gift_box", "card", "star", "coffee_cup"],
             "goals": VALID_REWARD_GOALS,
         },
     )
@@ -287,7 +287,7 @@ async def reward_edit_get(request: Request, shop: Shop = Depends(get_current_sho
         name="shop/reward_edit.html",
         context={
             "shop": shop,
-            "reward_images": ["coffee_cup", "latte_art", "iced"],
+            "reward_images": ["gift_box", "card", "star", "coffee_cup"],
             "goals": VALID_REWARD_GOALS,
         },
     )

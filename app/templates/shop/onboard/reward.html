@@ -11,7 +11,8 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  {% set picked_image = shop.reward_image or 'coffee_cup' %}
+  {% set valid_images = ['gift_box', 'card', 'star', 'coffee_cup'] %}
+  {% set picked_image = shop.reward_image if shop.reward_image in valid_images else 'gift_box' %}
   <form method="POST" action="/shop/onboard/reward" class="td"
         x-data="{
           rewardImage: '{{ picked_image }}',
@@ -54,7 +55,7 @@
         <button type="button" class="s2-reward"
                 :class="{ selected: rewardImage === '{{ img_id }}' }"
                 @click="rewardImage = '{{ img_id }}'">
-          <div class="reward-img r-{{ img_id|replace('_','-') }}"></div>
+          {% include "_partials/reward_svg.html" %}
         </button>
       {% endfor %}
     </div>

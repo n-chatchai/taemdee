@@ -1,0 +1,37 @@
+{# Reward icon SVG by id — used in onboard/reward.html, shop/reward_edit.html
+   and shop/qr.html. Drops in 4 illustrations from design/taemdee-shop.html
+   verbatim (gift_box / card / star / coffee_cup). Caller wraps in whatever
+   container they need (.s2-reward, .reward-strip, etc.). #}
+{% set img_id = img_id|default('coffee_cup') %}
+{% if img_id == 'gift_box' %}
+  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#FFE6DF"/>
+    <rect x="22" y="38" width="56" height="44" rx="3" fill="#FDFAF2" stroke="#111" stroke-width="2.5"/>
+    <rect x="18" y="32" width="64" height="12" rx="2" fill="#FFD952" stroke="#111" stroke-width="2.5"/>
+    <line x1="50" y1="32" x2="50" y2="82" stroke="#111" stroke-width="2.5"/>
+    <path d="M50 32 Q42 22 36 24 Q32 28 36 32 Q42 32 50 32" fill="#FF5E3A" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M50 32 Q58 22 64 24 Q68 28 64 32 Q58 32 50 32" fill="#FF5E3A" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+  </svg>
+{% elif img_id == 'card' %}
+  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#FFF1B8"/>
+    <rect x="20" y="34" width="60" height="38" rx="4" fill="#FDFAF2" stroke="#111" stroke-width="2.5"/>
+    <rect x="20" y="44" width="60" height="6" fill="#111"/>
+    <circle cx="68" cy="60" r="4" fill="#FF5E3A" stroke="#111" stroke-width="2"/>
+    <line x1="28" y1="60" x2="56" y2="60" stroke="#111" stroke-width="2" stroke-linecap="round"/>
+  </svg>
+{% elif img_id == 'star' %}
+  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#C8E8D0"/>
+    <path d="M50 18 L58 40 L82 40 L62 54 L70 76 L50 62 L30 76 L38 54 L18 40 L42 40 Z" fill="#FFD952" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+  </svg>
+{% else %}
+  {# coffee_cup (default) #}
+  <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+    <rect width="100" height="100" fill="#FFF1B8"/>
+    <path d="M30 38 L70 38 L66 78 Q66 82 62 82 L38 82 Q34 82 34 78 Z" fill="#FDFAF2" stroke="#111" stroke-width="2.5" stroke-linejoin="round"/>
+    <path d="M70 46 Q82 46 82 56 Q82 66 70 66" fill="none" stroke="#111" stroke-width="2.5"/>
+    <ellipse cx="50" cy="38" rx="20" ry="3" fill="#7A4A1F"/>
+    <path d="M44 30 Q42 24 44 18 M50 30 Q48 24 50 18 M56 30 Q54 24 56 18" stroke="#111" stroke-width="2" stroke-linecap="round" fill="none" opacity="0.5"/>
+  </svg>
+{% endif %}
