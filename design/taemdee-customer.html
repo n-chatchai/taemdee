@@ -668,14 +668,14 @@
     font-family: 'Prompt', sans-serif;
     font-size: 17.5px;
     line-height: 1.55;
-    color: var(--ink);
+    color: var(--ink-soft);
     margin-bottom: 26px;
   }
   .ob-greet .ob-name {
     font-weight: 700;
     color: var(--accent);
   }
-  .ob-greet strong { font-weight: 700; }
+  .ob-greet strong { font-weight: 700; color: var(--ink); }
   .ob-q {
     font-family: 'Prompt', sans-serif;
     font-weight: 600;
@@ -842,7 +842,7 @@
   }
   .ob-pc-h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 16.5px;
+    font-weight: 700; font-size: 19px;
     color: var(--ink);
     margin-bottom: 4px;
   }
@@ -867,6 +867,11 @@
     flex-direction: column;
     align-items: stretch;
     gap: 8px;
+  }
+  /* Force single-line labels in pill */
+  .ob-pill .ob-pill-text {
+    white-space: nowrap;
+    line-height: 1;
   }
   .ob-skip {
     font-family: 'Prompt', sans-serif;
@@ -1020,6 +1025,8 @@
     padding: 8px 12px;
     display: flex;
     align-items: center;
+    justify-content: center;
+    text-align: center;
     gap: 8px;
     font-family: 'Prompt', sans-serif;
     font-size: 14px;
@@ -1088,7 +1095,7 @@
   }
 
   .footer-mark {
-    padding: 12px 16px 12px;
+    padding: 18px 18px 20px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -5037,7 +5044,7 @@
                     <line x1="12" y1="18" x2="12.01" y2="18"/>
                   </svg>
                 </span>
-                <span class="ob-pill-text">สมัครด้วยเบอร์โทรศัพท์</span>
+                <span class="ob-pill-text">สมัครด้วยเบอร์โทร</span>
               </button>
               <a class="ob-skip center">ขอบคุณแต่ยังก่อน</a>
             </div>
@@ -5051,7 +5058,7 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">C3</span>ยืนยันเบอร์ของพี่</div>
         <h3>ใส่เบอร์ ผมจะส่ง OTP</h3>
-        <p>เปิดเมื่อลูกค้ากด "สมัครด้วยเบอร์โทรศัพท์" จาก C2.3 — น้องแต้มเก็บแต้มไว้กับเบอร์ที่ยืนยันแล้ว</p>
+        <p>เปิดเมื่อลูกค้ากด "สมัครด้วยเบอร์โทร" จาก C2.3 — น้องแต้มเก็บแต้มไว้กับเบอร์ที่ยืนยันแล้ว</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5121,7 +5128,7 @@
             </div>
 
             <div class="c1-greet-bubble">
-              <span class="cgb-text">สวัสดีครับ<strong>พี่สมศรี</strong> ดีใจที่พี่กลับมานะครับ</span>
+              <span class="cgb-text">สวัสดีครับ<strong>พี่สมศรี</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ</span>
             </div>
 
             <div class="hero-num-wrap">
@@ -5192,7 +5199,7 @@
             </div>
 
             <div class="c1-greet-bubble">
-              <span class="cgb-text">สวัสดีครับ<strong>พี่สมศรี</strong> ดีใจที่พี่กลับมานะครับ</span>
+              <span class="cgb-text">สวัสดีครับ<strong>พี่สมศรี</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ</span>
             </div>
 
             <div class="hero-num-wrap">
@@ -5317,7 +5324,7 @@
                     <line x1="12" y1="18" x2="12.01" y2="18"/>
                   </svg>
                 </span>
-                <span class="ob-pill-text">สมัครด้วยเบอร์โทรศัพท์</span>
+                <span class="ob-pill-text">สมัครด้วยเบอร์โทร</span>
               </button>
             </div>
 
@@ -5434,7 +5441,7 @@
               <div class="hi">
                 สวัสดีครับพี่
                 <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์ · พี่มี 6 บัตรอยู่นี่</span>
+                <span class="day">วันศุกร์ · ขอให้เป็นวันที่ดี</span>
               </div>
               <div class="c7-actions">
                 <a class="c7-icon-btn" title="สแกน QR ของร้าน">
@@ -5472,7 +5479,6 @@
                 <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
                 ร้านที่พี่เก็บแต้มอยู่
               </div>
-              <div class="sort">เรียงใกล้สุด ↓</div>
             </div>
 
             <div class="c7-card featured">
