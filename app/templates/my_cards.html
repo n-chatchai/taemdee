@@ -113,6 +113,12 @@
 
     {% if is_guest %}
       {% include "_partials/signup_picker.html" %}
+      {# Welcome sheet only when we still need to ask — same server-state
+         gate as the DeeCard. Catches the case where a guest taps the PWA
+         icon and lands here directly without going through /card/<shop>. #}
+      {% if not customer.display_name %}
+        {% include "_partials/welcome_nickname.html" %}
+      {% endif %}
     {% endif %}
   </div>
 </body>
