@@ -270,9 +270,9 @@ async def onboard(
     shop = await db.get(Shop, shop_id)
     if not shop:
         return RedirectResponse(url=f"/card/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
-    customer, _ = await find_or_create_customer(customer_cookie, db)
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
     point_count = await active_point_count(db, shop.id, customer.id)
-    return templates.TemplateResponse(
+    response = templates.TemplateResponse(
         request=request,
         name="onboard.html",
         context={
@@ -281,6 +281,13 @@ async def onboard(
             "point_count": point_count,
         },
     )
+    # Re-issue the cookie if the customer was created here — covers the case
+    # where iOS Safari dropped the Set-Cookie from /scan's 303 redirect, which
+    # would otherwise spawn a fresh anonymous customer per page load and leave
+    # the saved nickname on a phantom row that the next request can't find.
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
 
 
 @router.get("/scan/{shop_id}")
