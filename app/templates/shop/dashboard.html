@@ -236,12 +236,50 @@
       flashTimer = setTimeout(() => { flash.hidden = true; }, 3000);
     }
 
+    // ── Notification ding (Web Audio API — synthesized, no asset file) ───
+    // Browsers block autoplay until the user interacts with the page; the
+    // first click/touch unlocks the AudioContext.
+    let audioCtx = null;
+    function unlockAudio() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        catch (_) { return; }
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    ['click', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, unlockAudio, { passive: true })
+    );
+
+    function playDing() {
+      if (!audioCtx || audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, t);          // A5
+      osc.frequency.setValueAtTime(660, t + 0.12);   // E5 — quick 2-tone chime
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.exponentialRampToValueAtTime(0.28, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.55);
+    }
+
     evt.addEventListener('feed-row', (e) => {
       if (feedHint) feedHint.textContent = 'แตะรายการเพื่อดูหรือยกเลิก';
       feedBody.querySelector('.feed-row.latest')?.classList.remove('latest');
       feedBody.insertAdjacentHTML('afterbegin', e.data);
-      feedBody.firstElementChild?.classList.add('latest');
+      const newRow = feedBody.firstElementChild;
+      if (newRow) {
+        newRow.classList.add('latest', 'just-arrived');
+        // Match the CSS animation duration; remove the class so a later
+        // re-trigger (insert another row) replays the animation.
+        setTimeout(() => newRow.classList.remove('just-arrived'), 2500);
+      }
       while (feedBody.children.length > 3) feedBody.lastElementChild?.remove();
+      playDing();
     });
 
     evt.addEventListener('void', (e) => {

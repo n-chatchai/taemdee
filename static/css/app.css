@@ -4930,6 +4930,29 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s3-dock .sap-table tr.latest td.a strong { color: var(--accent); }
 .s3-dock .sap-table tr.voided td { opacity: 0.4; text-decoration: line-through; }
 .s3-dock .sap-table tr.feed-row { cursor: pointer; }
+/* Just-arrived row — fired by JS on each SSE feed-row event. Bright accent
+   flash for the first 0.4s so the shop staff can't miss it (paired with
+   a Web Audio "ding"), then fades through accent-soft to transparent. */
+@keyframes feed-row-arrive-bg {
+  0%   { background: var(--accent); }
+  18%  { background: var(--accent); }
+  60%  { background: var(--accent-soft); }
+  100% { background: transparent; }
+}
+@keyframes feed-row-arrive-fg {
+  0%, 18% { color: #fff; }
+  100%    { color: var(--accent); }
+}
+.s3-dock .sap-table tr.feed-row.just-arrived td {
+  animation: feed-row-arrive-bg 2.5s ease-out;
+}
+.s3-dock .sap-table tr.feed-row.just-arrived td,
+.s3-dock .sap-table tr.feed-row.just-arrived td * {
+  animation: feed-row-arrive-fg 2.5s ease-out;
+}
+.s3-dock .sap-table tr.feed-row.just-arrived td {
+  animation: feed-row-arrive-bg 2.5s ease-out, feed-row-arrive-fg 2.5s ease-out;
+}
 /* Armed state — first tap on a row primes it, the column flips to a
    confirming "ยกเลิก?" cell that shows tapping again will fire the void.
    3-second timeout (handled in JS) clears .armed if the owner taps away. */
