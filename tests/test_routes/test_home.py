@@ -49,6 +49,18 @@ async def test_home_redirects_anonymous_customer_to_my_cards(client, shop):
     assert response.headers["location"] == "/my-cards"
 
 
+async def test_version_endpoint_returns_short_sha(client):
+    """The deploy script polls /version after restart to confirm the
+    new uvicorn process actually picked up the new code. Endpoint should
+    return JSON with a non-empty `version` string."""
+    response = await client.get("/version")
+    assert response.status_code == 200
+    body = response.json()
+    assert "version" in body
+    assert isinstance(body["version"], str)
+    assert body["version"]  # non-empty
+
+
 async def test_legacy_register_redirects_to_login(client):
     response = await client.get("/shop/register", follow_redirects=False)
     assert response.status_code == 303

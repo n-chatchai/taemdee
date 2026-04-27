@@ -7,7 +7,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import CUSTOMER_COOKIE_NAME, SESSION_COOKIE_NAME, SessionAuthError
 from app.core.database import engine, get_session
-from app.core.templates import templates
+from app.core.templates import ASSET_VERSION, templates
 from app.models import Customer, Shop
 from app.routes import auth, branches, customer, deereach, issuance, shops, team
 from app.services.auth import decode_customer_token, decode_session_token
@@ -87,6 +87,15 @@ async def home(request: Request, db: AsyncSession = Depends(get_session)):
         name="home.html",
         context={"is_logged_in": False},
     )
+
+
+@app.get("/version")
+async def version():
+    """Plain-text short git SHA the running process started with. Used by
+    the deploy script to verify systemctl actually picked up the new code
+    after restart (the value is computed at process start in
+    app/core/templates._compute_asset_version)."""
+    return {"version": ASSET_VERSION}
 
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])

@@ -8,6 +8,9 @@
 #   SLACK_DEPLOY_WEBHOOK_URL   Slack incoming-webhook URL — silent if unset
 #   SERVICE_NAME               systemd unit name (default: taemdee)
 #   SLACK_USERNAME             bot name shown in Slack (default: taemdee-deploy)
+#   PROD_URL                   base URL the script polls /version on after
+#                              restart to confirm the live process picked up
+#                              the new code (default: https://taemdee.com)
 #
 # Exit codes:
 #   0  success — Slack gets ✅ with commit SHA + subject + elapsed seconds
@@ -18,6 +21,7 @@ set -euo pipefail
 SERVICE_NAME="${SERVICE_NAME:-taemdee}"
 SLACK_USERNAME="${SLACK_USERNAME:-taemdee-deploy}"
 UV_BIN="${UV_BIN:-$HOME/.local/bin/uv}"
+PROD_URL="${PROD_URL:-https://taemdee.com}"
 START_TS="$(date +%s)"
 PHASE="setup"   # mutated by each phase below; ERR trap reads it
 
@@ -86,9 +90,31 @@ sudo systemctl stop "${SERVICE_NAME}"
 PHASE="systemctl start ${SERVICE_NAME}"
 sudo systemctl start "${SERVICE_NAME}"
 
-# ─── Success ─────────────────────────────────────────────────────────────
+# ─── Verify the live process is now serving the new SHA ─────────────────
+# /version returns {"version": "<short-sha>"}. We poll briefly so the
+# script doesn't beat the new uvicorn process to the punch — up to 6
+# attempts (~12s). If the live SHA still doesn't match after that, we
+# notify with a ⚠️ instead of ✅ so it's obvious the systemctl restart
+# didn't actually pick up the new code.
 SHA=$(git rev-parse --short HEAD)
 SUBJECT=$(git log -1 --pretty=%s)
+
+LIVE_SHA="?"
+for _ in 1 2 3 4 5 6; do
+  sleep 2
+  LIVE_SHA=$(curl -fsS --max-time 4 "${PROD_URL}/version" 2>/dev/null | python3 -c '
+import json, sys
+try: print(json.load(sys.stdin).get("version") or "?")
+except Exception: print("?")
+' || echo "?")
+  [ "$LIVE_SHA" = "$SHA" ] && break
+done
+
 ELAPSED=$(( $(date +%s) - START_TS ))
-echo "✅ Deployed ${SHA} (${ELAPSED}s)"
-post_slack ":white_check_mark:" "✅ Deployed \`${SHA}\` · ${SUBJECT} · ${ELAPSED}s"
+if [ "$LIVE_SHA" = "$SHA" ]; then
+  echo "✅ Deployed ${SHA} (${ELAPSED}s) — live SHA matches"
+  post_slack ":white_check_mark:" "✅ Deployed \`${SHA}\` · ${SUBJECT} · ${ELAPSED}s · live: \`${LIVE_SHA}\` ✓"
+else
+  echo "⚠️  Deployed ${SHA} but live still serves ${LIVE_SHA} (${ELAPSED}s)"
+  post_slack ":warning:" "⚠️ Deployed \`${SHA}\` · ${SUBJECT} · ${ELAPSED}s · live: \`${LIVE_SHA}\` ✗ (process didn't pick up new code)"
+fi
