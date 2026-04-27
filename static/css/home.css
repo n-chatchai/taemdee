@@ -3434,6 +3434,36 @@ img { max-width: 100%; }
 }
 .section-phone .td .shop-head .side-spark.l { left: 30px; transform: rotate(-15deg); }
 .section-phone .td .shop-head .side-spark.r { right: 30px; transform: rotate(15deg); color: var(--butter); }
+/* C1 avatar — top-right corner of customer mockup */
+.section-phone .td .c1-avatar {
+  position: absolute;
+  top: 18px; right: 18px;
+  z-index: 5;
+  width: 32px; height: 32px;
+  background: var(--accent); color: #FFF;
+  border-radius: 50%;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 12px;
+  cursor: pointer;
+}
+/* C1 greeting bubble — under shop-head */
+.section-phone .td .c1-greet-bubble {
+  margin: 10px 18px 0;
+  padding: 6px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.35;
+}
+.section-phone .td .c1-greet-bubble .cgb-text strong {
+  color: var(--ink);
+  font-weight: 700;
+}
 .section-phone .td .shop-logo-mark {
   display: inline-block;
   font-family: 'Host Grotesk', sans-serif;
