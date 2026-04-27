@@ -5,11 +5,17 @@ from fastapi.responses import RedirectResponse
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import SESSION_COOKIE_NAME
+from app.core.auth import (
+    CUSTOMER_COOKIE_NAME,
+    SESSION_COOKIE_NAME,
+    find_or_create_customer,
+    set_customer_cookie,
+)
 from app.core.config import settings
 from app.core.database import get_session
-from app.models import Shop
+from app.models import Customer, Shop
 from app.services.auth import generate_and_send_otp, issue_session_token, verify_otp
+from app.services.soft_wall import claim_by_line
 from app.services.referrals import consume_referral_on_signup, find_referral_by_code
 from app.services.line_login import (
     LineLoginError,
@@ -79,16 +85,16 @@ async def logout(response: Response):
     return {"ok": True}
 
 
-@router.get("/line/start")
-async def line_start():
-    """Start LINE Login: generate state, set cookie, redirect to LINE."""
+def _start_line_oauth(role: str) -> RedirectResponse:
+    """Common OAuth kickoff — only the role-tagged state cookie differs
+    between the shop and customer flows."""
     if not line_is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "LINE Login not configured (set LINE_CHANNEL_ID + LINE_CHANNEL_SECRET in .env)",
         )
 
-    nonce, cookie_token = make_oauth_state()
+    nonce, cookie_token = make_oauth_state(role=role)
     redirect = RedirectResponse(
         url=build_authorize_url(nonce), status_code=status.HTTP_302_FOUND
     )
@@ -104,15 +110,36 @@ async def line_start():
     return redirect
 
 
+@router.get("/line/start")
+async def line_start():
+    """Shop-side LINE Login: generate state, set cookie, redirect to LINE."""
+    return _start_line_oauth(role="shop")
+
+
+@router.get("/line/customer/start")
+async def line_customer_start():
+    """Customer-side LINE Login — opened from the C2.signup picker. Returns
+    the user to /my-cards on success with their guest cookie promoted to a
+    claimed account that holds their LINE id."""
+    return _start_line_oauth(role="customer")
+
+
 @router.get("/line/callback")
 async def line_callback(
     code: str,
     state: str,
     line_oauth_state: Optional[str] = Cookie(None, alias=LINE_STATE_COOKIE),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """LINE redirected back with code + state. Verify, exchange, find/create shop, login."""
-    if not verify_oauth_state(state, line_oauth_state):
+    """LINE redirected back with code + state. Verify, exchange, then branch
+    on the role embedded in the state cookie:
+      - role=shop     → find/create Shop, set shop session cookie, → /shop/dashboard
+      - role=customer → claim/merge the anonymous Customer with line_id,
+                        refresh customer cookie, → /my-cards
+    """
+    role = verify_oauth_state(state, line_oauth_state)
+    if not role:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
     try:
@@ -122,12 +149,21 @@ async def line_callback(
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
     line_id = profile["userId"]
-    display_name = profile.get("displayName", "Shop")
+    display_name = profile.get("displayName") or None
 
+    if role == "customer":
+        anon, _ = await find_or_create_customer(customer_cookie, db)
+        claimed = await claim_by_line(db, anon, line_id, display_name=display_name)
+        redirect = RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+        set_customer_cookie(redirect, claimed.id)
+        redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
+        return redirect
+
+    # role == "shop" (default — backwards compatible with existing flow)
     result = await db.exec(select(Shop).where(Shop.line_id == line_id))
     shop = result.first()
     if not shop:
-        shop = Shop(line_id=line_id, name=display_name)
+        shop = Shop(line_id=line_id, name=display_name or "Shop")
         db.add(shop)
         await db.commit()
         await db.refresh(shop)
