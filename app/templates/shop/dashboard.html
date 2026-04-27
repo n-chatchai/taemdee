@@ -59,14 +59,12 @@
       <span class="sp"><strong>{{ shop.credit_balance }}</strong> เครดิต</span>
     </div>
 
-    <div class="ph-section-h">
-      <div class="label">แต้มดีแนะนำ ✦</div>
-    </div>
-
-    {# One brief card linking to the full list page (S13). Inline-suggestion
-       cards are gone — the list lives on its own page so the dashboard stays
-       fast to glance at. #}
+    {# "แต้มดีแนะนำ" section + brief card link to the S13 list. Hidden entirely
+       when there are no suggestions — empty placeholder text was clutter. #}
     {% if suggestions %}
+      <div class="ph-section-h">
+        <div class="label">แต้มดีแนะนำ ✦</div>
+      </div>
       {% set top = suggestions[0] %}
       {% set extra = suggestions|length - 1 %}
       <a class="s3-reach" href="/shop/deereach">
@@ -80,12 +78,6 @@
           <span class="reach-arrow">→</span>
         </div>
       </a>
-    {% else %}
-      <div class="s3-reach placeholder">
-        <div class="reach-kicker">ยังไม่มีคำแนะนำ</div>
-        <div class="reach-head">ลูกค้าที่หายไปจะปรากฏที่นี่</div>
-        <div class="reach-body">เมื่อมีลูกค้าหายเกิน 60 วัน หรือใกล้ครบบัตร แต้มดีจะแนะนำให้ส่งโปรชวนกลับ</div>
-      </div>
     {% endif %}
 
     {# S6 stamp-notification toast mounts here; populated via SSE. #}
