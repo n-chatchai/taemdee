@@ -1625,6 +1625,36 @@ body {
   margin-top: 1px;
 }
 .signup-btn.phone-btn .bn-meta { color: var(--ink-soft); opacity: 1; }
+
+/* Nickname input + save — used by the C2.welcome auto-open sheet. */
+.welcome-nickname-input {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  margin: 0 0 12px;
+  padding: 14px 14px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 15px;
+  color: var(--ink);
+}
+.welcome-nickname-input::placeholder { color: var(--ink-softer); }
+.welcome-nickname-input:focus {
+  outline: none;
+  box-shadow: 2px 2px 0 var(--accent);
+}
+.signup-btn.nickname-save {
+  justify-content: center;
+  background: var(--accent);
+  color: #fff;
+  box-shadow: 3px 3px 0 var(--ink);
+  font-weight: 700;
+  font-size: 14px;
+  text-decoration: none;
+}
+
 .signup-skip {
   display: block;
   text-align: center;

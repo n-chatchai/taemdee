@@ -1,0 +1,58 @@
+{# C2.welcome — auto-opens once on a guest's first ever scan to ask their
+   nickname (just for app greeting, NOT signup). Skipping is fine; the
+   localStorage flag below records that we've asked, so it never reopens.
+   Include alongside _partials/signup_picker.html in the same template. #}
+<div id="welcome-nickname" class="signup-sheet-overlay" hidden
+     onclick="this.setAttribute('hidden','')">
+  <form class="signup-sheet" id="welcome-nickname-form"
+        onclick="event.stopPropagation();" onsubmit="return false;">
+    <div class="sheet-handle"></div>
+
+    <div class="signup-head">
+      <div class="signup-title">เรียกคุณว่า<em>อะไรดี?</em></div>
+      <div class="signup-sub">ใช้ทักทายในแอป · เปลี่ยนได้ตลอด</div>
+    </div>
+
+    <input type="text" name="name" id="welcome-nickname-input"
+           class="welcome-nickname-input" placeholder="ชื่อเล่น" maxlength="40"
+           autocomplete="given-name" autofocus>
+
+    <button type="submit" class="signup-btn nickname-save"
+            id="welcome-nickname-save">บันทึก</button>
+
+    <a href="#" class="signup-skip" id="welcome-nickname-skip">ข้ามไปก่อน</a>
+  </form>
+</div>
+
+<script>
+  (function () {
+    const KEY = 'taemdee_nickname_asked';
+    const sheet = document.getElementById('welcome-nickname');
+    const form = document.getElementById('welcome-nickname-form');
+    const input = document.getElementById('welcome-nickname-input');
+    const saveBtn = document.getElementById('welcome-nickname-save');
+    const skipLink = document.getElementById('welcome-nickname-skip');
+    if (!sheet || localStorage.getItem(KEY)) return;
+
+    // Auto-open on first scan ever (this device).
+    sheet.removeAttribute('hidden');
+
+    async function submit(name) {
+      const fd = new FormData();
+      fd.append('name', name || '');
+      try { await fetch('/card/nickname', { method: 'POST', body: fd }); }
+      catch (_) { /* offline — still close the sheet so we don't trap the user */ }
+      localStorage.setItem(KEY, '1');
+      sheet.setAttribute('hidden', '');
+    }
+
+    saveBtn.addEventListener('click', (e) => {
+      e.preventDefault();
+      submit(input.value.trim());
+    });
+    skipLink.addEventListener('click', (e) => {
+      e.preventDefault();
+      submit('');
+    });
+  })();
+</script>
