@@ -128,7 +128,7 @@ async def test_search_customers_empty_q_returns_empty(auth_client):
     assert r.json() == {"results": []}
 
 
-async def test_search_grant_issues_n_points_and_publishes_toast(auth_client, db, shop, monkeypatch):
+async def test_search_grant_issues_n_points_and_publishes_feed_rows(auth_client, db, shop, monkeypatch):
     from app.models import Customer
     from app.routes import issuance as issuance_routes
     received = []
@@ -151,9 +151,8 @@ async def test_search_grant_issues_n_points_and_publishes_toast(auth_client, db,
     points = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
     assert len(list(points)) == 3
 
-    # 3 feed-row events + 1 point-toast (toast only fires once after the batch)
+    # One feed-row event per granted point (S6 toast is gone — dock detail sheet replaces it).
     assert sum(1 for n, _ in received if n == "feed-row") == 3
-    assert sum(1 for n, _ in received if n == "point-toast") == 1
 
 
 async def test_issue_scan_grant_decodes_customer_url_and_issues(auth_client, db, shop):
@@ -238,7 +237,7 @@ async def test_search_grant_caps_points_at_10(auth_client, db, shop):
     assert response.json()["granted"] == 10
 
 
-async def test_manual_issue_publishes_toast_event(auth_client, db, shop, monkeypatch):
+async def test_manual_issue_publishes_feed_row_event(auth_client, db, shop, monkeypatch):
     from app.routes import issuance as issuance_routes
 
     received = []
@@ -253,7 +252,6 @@ async def test_manual_issue_publishes_toast_event(auth_client, db, shop, monkeyp
 
     event_names = [n for n, _ in received]
     assert "feed-row" in event_names
-    assert "point-toast" in event_names
 
 
 async def test_invalid_method_400(auth_client):

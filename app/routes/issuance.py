@@ -18,7 +18,7 @@ from app.core.auth import (
 from app.core.database import get_session
 from app.models import Customer, Redemption, Shop, Point, StaffMember
 from app.models.util import utcnow
-from app.services.events import feed_row_html, publish, point_toast_html
+from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point, void_point
 from app.services.redemption import active_point_count, void_redemption
 
@@ -119,17 +119,10 @@ async def issue_scan_grant(
         "feed-row",
         feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
-    new_count = await active_point_count(db, shop.id, customer.id)
-    publish(
-        shop.id,
-        "point-toast",
-        point_toast_html(point.id, new_count, shop.reward_threshold),
-    )
     return {
         "point_id": str(point.id),
         "customer_id": str(customer.id),
         "customer_name": customer.display_name or "ลูกค้า",
-        "current_count": new_count,
     }
 
 
@@ -228,13 +221,6 @@ async def issue_grant_action(
             "feed-row",
             feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
         )
-
-    new_count = await active_point_count(db, shop.id, customer.id)
-    publish(
-        shop.id,
-        "point-toast",
-        point_toast_html(point.id, new_count, shop.reward_threshold),
-    )
     return {"granted": points, "point_ids": issued_ids, "customer_id": str(customer.id)}
 
 
@@ -308,12 +294,6 @@ async def staff_issue_point(
         "feed-row",
         feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
-    new_count = await active_point_count(db, shop.id, customer.id)
-    publish(
-        shop.id,
-        "point-toast",
-        point_toast_html(point.id, new_count, shop.reward_threshold),
-    )
     return {"point_id": str(point.id), "customer_id": str(customer.id)}
 
 
@@ -351,13 +331,74 @@ async def staff_issue_manual_point(
         "feed-row",
         feed_row_html("point", point.id, point.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
     )
-    new_count = await active_point_count(db, shop.id, customer.id)
-    publish(
-        shop.id,
-        "point-toast",
-        point_toast_html(point.id, new_count, shop.reward_threshold),
-    )
     return {"point_id": str(point.id), "customer_id": str(customer.id)}
+
+
+@router.get("/feed/{kind}/{item_id}")
+async def feed_detail(
+    kind: str,
+    item_id: UUID,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """JSON payload for the S3.detail bottom sheet — shop taps a feed
+    row in the dock, the dashboard fetches this, and renders the sheet
+    with customer info, activity meta and a countdown to the void cutoff."""
+    if kind == "point":
+        item = await db.get(Point, item_id)
+    elif kind == "redemption":
+        item = await db.get(Redemption, item_id)
+    else:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "kind ต้องเป็น point หรือ redemption")
+    if not item or item.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบกิจกรรมที่ระบุ")
+
+    customer = await db.get(Customer, item.customer_id)
+    age_seconds = int((utcnow() - item.created_at).total_seconds())
+    voidable = (age_seconds <= VOID_WINDOW_SECONDS) and not item.is_voided
+
+    if kind == "point":
+        method_th = {
+            "customer_scan": "ลูกค้าสแกน QR",
+            "shop_scan": "ร้านสแกน QR ลูกค้า",
+            "phone_entry": "กรอกเบอร์ลูกค้า",
+            "system": "ระบบ (ให้แต้ม / โปร)",
+        }.get(item.issuance_method, item.issuance_method or "—")
+    else:
+        method_th = "รับรางวัล"
+
+    issuer = "—"
+    if getattr(item, "issued_by_staff_id", None):
+        staff = await db.get(StaffMember, item.issued_by_staff_id)
+        if staff:
+            issuer = staff.display_name or "พนักงาน"
+    elif kind == "point" and item.issuance_method == "customer_scan":
+        issuer = "ลูกค้า (สแกนเอง)"
+
+    weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[item.created_at.weekday()]
+    month_th = ("ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.")[item.created_at.month - 1]
+    time_full = f"{item.created_at.strftime('%H:%M')} · {weekday_th} {item.created_at.day} {month_th}"
+
+    new_count = await active_point_count(db, shop.id, item.customer_id)
+
+    return {
+        "kind": kind,
+        "id": str(item.id),
+        "customer_name": (customer.display_name if customer else None) or "ลูกค้า",
+        "customer_phone": (customer.phone if customer else None) or "—",
+        "is_anonymous": bool(customer.is_anonymous) if customer else True,
+        "activity": "1 แต้ม" if kind == "point" else "รับรางวัล",
+        "is_point": kind == "point",
+        "time_full": time_full,
+        "method_th": method_th,
+        "issuer": issuer,
+        "current_count": new_count,
+        "threshold": shop.reward_threshold,
+        "is_voided": item.is_voided,
+        "voidable": voidable,
+        "void_url": f"/shop/{'points' if kind == 'point' else 'redemptions'}/{item_id}/void",
+        "void_seconds_left": max(0, VOID_WINDOW_SECONDS - age_seconds) if voidable else 0,
+    }
 
 
 @router.post("/points/{point_id}/void")

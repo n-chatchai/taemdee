@@ -17,7 +17,7 @@ from app.core.auth import (
 from app.core.database import get_session
 from app.models import Branch, Redemption, Shop, Point
 from app.services.auth import verify_otp
-from app.services.events import feed_row_html, publish, point_toast_html
+from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point
 from app.services.pdpa import delete_customer_account
 from app.services.redemption import RedemptionError, active_point_count, redeem
@@ -283,13 +283,6 @@ async def scan(
             shop.id,
             "feed-row",
             feed_row_html("point", stamp.id, stamp.created_at.strftime("%H:%M"), customer.display_name or "ลูกค้า"),
-        )
-        # S6: live toast on the shop's DeeBoard with customer's running progress.
-        new_count = await active_point_count(db, shop.id, customer.id)
-        publish(
-            shop.id,
-            "point-toast",
-            point_toast_html(stamp.id, new_count, shop.reward_threshold),
         )
         just_stamped = True
     except IssuanceError:

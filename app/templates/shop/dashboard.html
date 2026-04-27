@@ -75,11 +75,63 @@
       </a>
     {% endif %}
 
-    {# S6 stamp-notification toast mounts here; populated via SSE. #}
-    <div id="point-toast-mount"></div>
-
     {# Inline error banner — replaces alert(); auto-dismisses #}
     <div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
+
+    {# S3.detail bottom sheet — opened by tapping a feed row in the dock.
+       Skeleton populated by JS via /shop/feed/{kind}/{id}. #}
+    <div id="feed-detail-overlay" class="issue-modal-overlay"
+         onclick="if (event.target === this) closeFeedDetail();"></div>
+    <div id="feed-detail-sheet" class="issue-modal-sheet" hidden>
+      <div class="issue-modal-handle"></div>
+      <div class="issue-modal-head">
+        <div class="title">รายละเอียดกิจกรรม</div>
+        <a href="#" class="x-btn" onclick="closeFeedDetail(); return false;">×</a>
+      </div>
+      <div class="detail-customer">
+        <div class="dc-avatar" id="fd-avatar">?</div>
+        <div class="dc-info">
+          <div class="dc-name" id="fd-name">—</div>
+          <div class="dc-meta" id="fd-meta">—</div>
+        </div>
+      </div>
+      <div class="detail-rows">
+        <div class="dr-row">
+          <span class="dr-label">กิจกรรม</span>
+          <span class="dr-value" id="fd-activity">—</span>
+        </div>
+        <div class="dr-row">
+          <span class="dr-label">เวลา</span>
+          <span class="dr-value" id="fd-time">—</span>
+        </div>
+        <div class="dr-row">
+          <span class="dr-label">วิธีออก</span>
+          <span class="dr-value" id="fd-method">—</span>
+        </div>
+        <div class="dr-row">
+          <span class="dr-label">ผู้ออก</span>
+          <span class="dr-value" id="fd-issuer">—</span>
+        </div>
+        <div class="dr-row" id="fd-progress-row">
+          <span class="dr-label">สะสมใหม่</span>
+          <span class="dr-value" id="fd-progress">—</span>
+        </div>
+      </div>
+      <div class="detail-void-row" id="fd-void-row" hidden>
+        <div class="dv-countdown">
+          <span class="dv-label">ยกเลิกได้ภายใน</span>
+          <span class="dv-time" id="fd-countdown">—</span>
+        </div>
+        <button class="detail-void-btn" id="fd-void-btn">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M3 6h18"/>
+            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+            <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+          </svg>
+          <span id="fd-void-label">ยกเลิกการออกแต้มนี้</span>
+        </button>
+      </div>
+    </div>
 
     <div class="s3-spacer"></div>
 
@@ -94,7 +146,7 @@
           {% for kind, item, customer_name in feed[:3] %}
             <tr class="feed-row{% if loop.first %} latest{% endif %}"
                 id="row-{{ item.id }}"
-                data-void-url="/shop/{% if kind == 'point' %}points{% else %}redemptions{% endif %}/{{ item.id }}/void">
+                data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
               <td class="t">{{ item.created_at.strftime('%H:%M') }}</td>
               <td class="n">{{ customer_name }}</td>
               <td class="a">
@@ -165,10 +217,11 @@
   </div>
 
   <script>
-    // Live SSE feed: new points/redemptions stream into the dock's <table>.
+    // Live SSE feed → dock table. New points/redemptions prepend; oldest
+    // beyond 3 falls off. Tapping a row opens the S3.detail bottom sheet
+    // (no more S6 toast popup — the design dropped it).
     const feedTable = document.getElementById('sap-table');
     const feedHint = document.querySelector('.sap-feed-hint');
-    const toastMount = document.getElementById('point-toast-mount');
     const flash = document.getElementById('dash-flash');
     const evt = new EventSource('/shop/events');
 
@@ -181,9 +234,6 @@
       flashTimer = setTimeout(() => { flash.hidden = true; }, 3000);
     }
 
-    // Browsers auto-insert <tbody> when parsing rows into a <table>. Grab it
-    // dynamically so insertAdjacentHTML('afterbegin') works whether or not
-    // the original render had any rows.
     const rowsContainer = () => feedTable.tBodies[0] || feedTable;
 
     evt.addEventListener('feed-row', (e) => {
@@ -199,74 +249,101 @@
       const tmp = document.createElement('div');
       tmp.innerHTML = e.data;
       const rowId = tmp.firstElementChild?.dataset.row;
-      if (rowId) {
-        document.getElementById(rowId)?.classList.add('voided');
-        const stampId = rowId.replace(/^row-/, '');
-        document.getElementById('toast-' + stampId)?.classList.add('dismissing');
-      }
+      if (rowId) document.getElementById(rowId)?.classList.add('voided');
     });
 
-    function dismissToast(el) {
-      if (!el) return;
-      el.classList.add('dismissing');
-      setTimeout(() => el.parentNode && el.parentNode.removeChild(el), 220);
+    // ── S3.detail bottom sheet ───────────────────────────────────────────
+    const fdOverlay = document.getElementById('feed-detail-overlay');
+    const fdSheet = document.getElementById('feed-detail-sheet');
+    let fdCountdownTimer = null;
+    let fdCurrentRowId = null;
+
+    function closeFeedDetail() {
+      fdOverlay.classList.remove('open');
+      fdSheet.hidden = true;
+      if (fdCountdownTimer) { clearInterval(fdCountdownTimer); fdCountdownTimer = null; }
+      fdCurrentRowId = null;
     }
 
-    evt.addEventListener('point-toast', (e) => {
-      toastMount.innerHTML = e.data;
-      const overlay = toastMount.firstElementChild;
-      if (!overlay) return;
-      overlay.addEventListener('click', (ev) => {
-        if (ev.target === overlay) dismissToast(overlay);
-      });
-      const cd = overlay.querySelector('.countdown');
-      let secsLeft = parseInt(cd?.dataset.deadline || '60', 10);
-      cd && (cd.textContent = secsLeft + ' วิ');
-      const timerId = setInterval(() => {
-        secsLeft -= 1;
-        if (secsLeft <= 0) { clearInterval(timerId); dismissToast(overlay); return; }
-        cd && (cd.textContent = secsLeft + ' วิ');
-      }, 1000);
-      overlay.dataset.timerId = timerId;
-    });
-
-    document.addEventListener('click', async (e) => {
-      // S6 toast void button.
-      const toastBtn = e.target.closest('.s6-toast .void-btn');
-      if (toastBtn) {
-        const r = await fetch(toastBtn.dataset.voidUrl, { method: 'POST' });
-        const overlay = document.getElementById(toastBtn.dataset.toast);
-        if (r.ok) {
-          const stampId = toastBtn.dataset.voidUrl.split('/').slice(-2, -1)[0];
-          document.getElementById('row-' + stampId)?.classList.add('voided');
-          dismissToast(overlay);
-        } else {
+    async function openFeedDetail(rowEl) {
+      const url = rowEl.dataset.detailUrl;
+      if (!url) return;
+      fdCurrentRowId = rowEl.id;
+      try {
+        const r = await fetch(url);
+        if (!r.ok) {
           const j = await r.json().catch(() => ({}));
-          showFlash(j.detail || (r.status + ' — ' + (r.statusText || 'ยกเลิกไม่สำเร็จ')), 'error');
-        }
-        return;
-      }
-
-      // 2-tap row void in the dock feed: 1st tap arms, 2nd within 3s confirms.
-      const row = e.target.closest('#sap-table .feed-row');
-      if (row && row.dataset.voidUrl) {
-        if (row.classList.contains('armed')) {
-          row.classList.remove('armed');
-          const r = await fetch(row.dataset.voidUrl, { method: 'POST' });
-          if (r.ok) {
-            row.classList.add('voided');
-          } else {
-            const j = await r.json().catch(() => ({}));
-            showFlash(j.detail || (r.status + ' — ' + (r.statusText || 'ยกเลิกไม่สำเร็จ')), 'error');
-          }
+          showFlash(j.detail || (r.status + ' — โหลดข้อมูลไม่สำเร็จ'), 'error');
           return;
         }
-        document.querySelectorAll('#sap-table .feed-row.armed').forEach(r => r.classList.remove('armed'));
-        row.classList.add('armed');
-        setTimeout(() => row.classList.remove('armed'), 3000);
-        return;
+        const d = await r.json();
+        // Customer card
+        const initial = (d.customer_name || 'ล')[0];
+        document.getElementById('fd-avatar').textContent = initial;
+        document.getElementById('fd-name').textContent = d.customer_name;
+        document.getElementById('fd-meta').textContent = d.is_anonymous
+          ? 'ลูกค้า guest · ยังไม่ได้สมัคร'
+          : `${d.customer_phone} · ลูกค้าประจำ`;
+        // Activity row — orange "+" only on point issuance
+        const activityEl = document.getElementById('fd-activity');
+        activityEl.innerHTML = d.is_point
+          ? '<span class="dr-icon">+</span> <strong>1 แต้ม</strong>'
+          : '<strong>รับรางวัล</strong>';
+        document.getElementById('fd-time').textContent = d.time_full;
+        document.getElementById('fd-method').textContent = d.method_th;
+        document.getElementById('fd-issuer').textContent = d.issuer;
+        document.getElementById('fd-progress').textContent =
+          `${d.current_count} / ${d.threshold} แต้ม`;
+
+        const voidRow = document.getElementById('fd-void-row');
+        const voidBtn = document.getElementById('fd-void-btn');
+        const voidLabel = document.getElementById('fd-void-label');
+        const cd = document.getElementById('fd-countdown');
+        if (d.voidable) {
+          voidRow.hidden = false;
+          voidBtn.disabled = false;
+          voidLabel.textContent = d.is_point ? 'ยกเลิกการออกแต้มนี้' : 'ยกเลิกการรับรางวัลนี้';
+          let secs = d.void_seconds_left;
+          cd.textContent = secs + ' วิ';
+          fdCountdownTimer = setInterval(() => {
+            secs -= 1;
+            if (secs <= 0) {
+              clearInterval(fdCountdownTimer); fdCountdownTimer = null;
+              cd.textContent = '0 วิ';
+              voidBtn.disabled = true;
+              return;
+            }
+            cd.textContent = secs + ' วิ';
+          }, 1000);
+          voidBtn.onclick = async () => {
+            voidBtn.disabled = true;
+            const vr = await fetch(d.void_url, { method: 'POST' });
+            if (vr.ok) {
+              const row = document.getElementById(fdCurrentRowId);
+              row?.classList.add('voided');
+              closeFeedDetail();
+            } else {
+              const j = await vr.json().catch(() => ({}));
+              showFlash(j.detail || (vr.status + ' — ยกเลิกไม่สำเร็จ'), 'error');
+              voidBtn.disabled = false;
+            }
+          };
+        } else {
+          voidRow.hidden = true;
+        }
+
+        fdSheet.hidden = false;
+        fdOverlay.classList.add('open');
+      } catch (_) {
+        showFlash('โหลดข้อมูลไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต', 'error');
       }
-      document.querySelectorAll('#sap-table .feed-row.armed').forEach(r => r.classList.remove('armed'));
+    }
+
+    document.addEventListener('click', (e) => {
+      const row = e.target.closest('#sap-table .feed-row');
+      if (row && row.dataset.detailUrl) {
+        openFeedDetail(row);
+      }
     });
   </script>
 </body>

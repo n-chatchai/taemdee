@@ -46,65 +46,17 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
 
 
 def feed_row_html(kind: str, item_id: UUID, when_iso: str, customer_name: str = "ลูกค้า") -> str:
-    """Render one feed row used by the DeeBoard live feed (S3 dock) and SSE
-    stream. Emits a `<tr class="feed-row">` so it slots straight into the
-    sap-table inside the sticky bottom dock. The dashboard JS marks the
-    most-recently-inserted row with `.latest` for the butter highlight.
-
-    The void URL travels on data-void-url so the dock JS can fire a 2-tap
-    confirm flow when the owner taps the row (no per-row button — the
-    revised design uses the whole row as the tap target)."""
+    """Render one feed row for the DeeBoard live feed (S3 dock) and SSE
+    stream. Emits a `<tr class="feed-row">` carrying data-detail-url so a
+    tap opens the S3.detail bottom sheet (where the void button lives now)."""
     label = '<span class="icon-mini">+</span><strong>1 แต้ม</strong>' if kind == "point" else "<strong>รับรางวัล</strong>"
-    void_url = f"/shop/{'points' if kind == 'point' else 'redemptions'}/{item_id}/void"
+    detail_url = f"/shop/feed/{kind}/{item_id}"
     return (
-        f'<tr class="feed-row" id="row-{item_id}" data-void-url="{void_url}">'
+        f'<tr class="feed-row" id="row-{item_id}" data-detail-url="{detail_url}">'
         f'<td class="t">{when_iso}</td>'
         f'<td class="n">{customer_name}</td>'
         f'<td class="a">{label}</td>'
         f"</tr>"
-    )
-
-
-def point_toast_html(point_id: UUID, current_count: int, threshold: int) -> str:
-    """Render the S6 point-notification toast pushed to the DeeBoard via SSE.
-
-    Shows up briefly when a customer scans, with the customer's running progress
-    + a [Void] button (60-sec window). Self-dismisses via dashboard JS.
-    """
-    short = point_id.hex[:4].upper()
-    void_url = f"/shop/points/{point_id}/void"
-    threshold = max(threshold, 1)
-    just_now_idx = max(min(current_count, threshold), 1)
-    cells = []
-    for i in range(1, threshold + 1):
-        if i == just_now_idx and current_count <= threshold:
-            cells.append('<div class="ms just-now"></div>')
-        elif i <= current_count:
-            cells.append('<div class="ms on"></div>')
-        else:
-            cells.append('<div class="ms"></div>')
-    cells_grid = "".join(cells)
-    return (
-        f'<div class="s6-overlay s6-modal" id="toast-{point_id}" data-point-id="{point_id}">'
-        f'<div class="s6-toast">'
-        f'<div class="top-row">'
-        f'<div class="plus">+1</div>'
-        f'<div class="info">'
-        f'<div class="h">ออกแต้มสำเร็จ</div>'
-        f'<div class="s">ลูกค้า · #{short}</div>'
-        f"</div></div>"
-        f'<div class="progress-mini">'
-        f'<div class="row">'
-        f'<div class="name">ลูกค้าคนนี้สะสมไว้</div>'
-        f'<div class="count">{current_count}<span class="of">/{threshold}</span></div>'
-        f"</div>"
-        f'<div class="stamps-mini">{cells_grid}</div>'
-        f"</div>"
-        f'<div class="void-row">'
-        f'<button class="void-btn" data-void-url="{void_url}" data-toast="toast-{point_id}">ยกเลิกแต้มนี้</button>'
-        f'<div class="countdown" data-deadline="60">60 วิ</div>'
-        f"</div>"
-        f"</div></div>"
     )
 
 
