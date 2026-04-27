@@ -212,7 +212,7 @@ async def test_my_id_renders_identity_qr(client):
     response = await client.get("/my-id")
     assert response.status_code == 200
     body = response.text
-    assert "QR ของฉัน" in body
+    assert "QR ของพี่" in body
     # Inline SVG QR was rendered (segno output)
     assert "<svg" in body
     # Readable short id (XXXX-XXXX) is shown for staff fallback
