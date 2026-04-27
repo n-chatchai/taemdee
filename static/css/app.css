@@ -4731,29 +4731,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--accent);
   margin-right: 2px;
 }
-.s3-dock .sap-table tr.latest {
-  background: var(--butter-soft);
-  color: var(--accent);
-}
-.s3-dock .sap-table tr.latest td {
-  color: var(--accent);
-  border-bottom-color: var(--butter);
-}
+.s3-dock .sap-table tr.latest { color: var(--accent); }
+.s3-dock .sap-table tr.latest td { color: var(--accent); }
 .s3-dock .sap-table tr.latest td.n {
   color: var(--accent);
   font-weight: 700;
 }
 .s3-dock .sap-table tr.latest td.a strong { color: var(--accent); }
-.s3-dock .sap-table tr.latest td:first-child {
-  padding-left: 8px;
-  border-top-left-radius: 8px;
-  border-bottom-left-radius: 8px;
-}
-.s3-dock .sap-table tr.latest td:last-child {
-  padding-right: 8px;
-  border-top-right-radius: 8px;
-  border-bottom-right-radius: 8px;
-}
 .s3-dock .sap-table tr.voided td { opacity: 0.4; text-decoration: line-through; }
 .s3-dock .sap-table tr.feed-row { cursor: pointer; }
 /* Armed state — first tap on a row primes it, the column flips to a
