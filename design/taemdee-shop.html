@@ -4271,9 +4271,19 @@
   /* ========================================================== */
   /* S3 — DeeBoard                                               */
   /* ========================================================== */
-  .s3-top {
-    padding: 14px 20px 0;
-    display: flex; justify-content: space-between; align-items: center;
+  .s3-top { padding: 14px 20px 0; display: flex; justify-content: space-between; align-items: center; }
+  .s3-day-caption {
+    margin: 6px 20px 8px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+  }
+  .s3-day-caption .dc-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    font-style: italic;
   }
   .s3-top .hi {
     font-family: 'Prompt', sans-serif;
@@ -4291,8 +4301,8 @@
     font-size: 11.5px; color: var(--ink-soft);
     margin-top: 1px;
   }
-  .s3-top .actions { display: flex; align-items: center; gap: 8px; }
-  .s3-top .branch-pill {
+  .s3-top .actions { display: flex; align-items: center; gap: 4px; }
+  .s3-top .branch-pill, .s3-day-caption .branch-pill {
     display: flex; align-items: center; gap: 6px;
     background: var(--surface);
     border: 1px solid rgba(17,17,17,0.18);
@@ -4302,7 +4312,7 @@
     font-weight: 600; font-size: 11px;
     box-shadow: none;
   }
-  .s3-top .branch-pill::before {
+  .s3-top .branch-pill::before, .s3-day-caption .branch-pill::before {
     content: ''; width: 6px; height: 6px;
     background: var(--accent); border-radius: 50%;
   }
@@ -4331,6 +4341,33 @@
   }
   .s3-top .settings-btn:active {
     transform: scale(0.92);
+  }
+
+  /* Notification bell — same style as settings */
+  .s3-top .bell-btn {
+    position: relative;
+    width: 38px; height: 38px;
+    background: transparent;
+    color: var(--ink);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .s3-top .bell-btn svg {
+    width: 22px; height: 22px;
+  }
+  .s3-top .bell-btn:active {
+    transform: scale(0.92);
+  }
+  .s3-top .bell-btn .bell-badge {
+    position: absolute;
+    top: 7px; right: 6px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg);
   }
   .s3-hero {
     padding: 22px 20px 14px;
@@ -7059,10 +7096,15 @@
               <div class="hi">
                 สวัสดี
                 <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์ · เริ่มต้นวันได้ดี</span>
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7070,6 +7112,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="s3-time-pills">
@@ -7221,7 +7268,13 @@
                 ออกแต้ม
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7229,6 +7282,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="ph-section-h" style="margin-top:8px;">
@@ -7356,7 +7414,13 @@
                 <span class="day">วันศุกร์</span>
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7364,6 +7428,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="s3-hero">
@@ -7416,7 +7485,13 @@
                 <span class="day">วันศุกร์</span>
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7424,6 +7499,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="issue-modal-overlay"></div>
@@ -7481,7 +7561,13 @@
                 <span class="day">วันศุกร์</span>
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7489,6 +7575,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="s3-hero">
@@ -7568,7 +7659,13 @@
                 <span class="day">วันศุกร์</span>
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7576,6 +7673,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="s3-hero">
@@ -7658,7 +7760,13 @@
                 ลูกค้า
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7666,6 +7774,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="s3-search-bar">
@@ -7818,7 +7931,13 @@
                 แต้มดีแนะนำ ✦
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7826,6 +7945,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="s3-ins-toggle">
@@ -7956,7 +8080,13 @@
                 แต้มดีแนะนำ ✦
               </div>
               <div class="actions">
-                <div class="branch-pill">นิมมาน</div>
+                <a class="bell-btn" title="แจ้งเตือน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                  </svg>
+                  <span class="bell-badge"></span>
+                </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7964,6 +8094,11 @@
                   </svg>
                 </a>
               </div>
+            </div>
+
+            <div class="s3-day-caption">
+              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="s3-ins-toggle">
