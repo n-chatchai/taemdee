@@ -2912,6 +2912,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    QRs), right=QR (show /my-id for shops to scan). Both share the same dark
    pill chrome — flat per the latest design drop (no accent drop-shadow). */
 .c7-greet .c7-icon-btn {
+  position: relative;
   width: 38px;
   height: 38px;
   background: var(--ink);
@@ -2925,6 +2926,130 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
 }
 .c7-greet .c7-icon-btn svg { width: 18px; height: 18px; }
+.c7-greet .c7-icon-btn .c7-icon-badge {
+  position: absolute;
+  top: -4px;
+  right: -4px;
+  min-width: 18px;
+  height: 18px;
+  padding: 0 5px;
+  background: var(--accent);
+  color: #fff;
+  border: 1.5px solid var(--bg);
+  border-radius: 999px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 10px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+
+/* Customer inbox list — DeeReach messages that landed in the inbox channel.
+   Card-style rows; unread rows get a soft accent stripe + bolder text. */
+.inbox-list {
+  margin: 14px 20px 0;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+}
+.inbox-row {
+  position: relative;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 14px;
+  padding: 12px 14px 12px 18px;
+  cursor: pointer;
+}
+.inbox-row.unread {
+  background: var(--accent-soft);
+  border-color: rgba(255, 94, 58, 0.32);
+}
+.inbox-row.unread::before {
+  content: '';
+  position: absolute;
+  left: 6px;
+  top: 50%;
+  transform: translateY(-50%);
+  width: 6px;
+  height: 6px;
+  border-radius: 50%;
+  background: var(--accent);
+}
+.inbox-row .ib-shop {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.inbox-row .ib-shop .dot { color: var(--accent); }
+.inbox-row .ib-body {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.4;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.inbox-row.unread .ib-body { font-weight: 600; }
+.inbox-row .ib-time {
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-softer);
+}
+.inbox-empty {
+  margin: 60px 22px 0;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  color: var(--ink-soft);
+}
+.inbox-empty .h {
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  margin-bottom: 8px;
+}
+.inbox-empty .s {
+  font-size: 13px;
+  line-height: 1.5;
+}
+.inbox-push-toggle {
+  margin: 14px 20px 0;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 14px;
+  text-align: center;
+}
+.inbox-push-toggle .push-btn {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  padding: 10px 14px;
+  background: var(--ink);
+  color: var(--butter);
+  border: none;
+  border-radius: 10px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  cursor: pointer;
+}
+.inbox-push-toggle .push-btn[data-state="on"] {
+  background: var(--mint);
+  color: var(--mint-ink);
+}
+.inbox-push-toggle .push-btn[disabled] { opacity: 0.5; cursor: wait; }
+.inbox-push-toggle .push-hint {
+  margin-top: 6px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  font-style: italic;
+  color: var(--ink-soft);
+}
 .c7-greet .avatar {
   width: 38px;
   height: 38px;

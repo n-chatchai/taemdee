@@ -1,0 +1,71 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>กล่องข้อความ · TaemDee แต้มดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/my-cards" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">กล่องข้อความ</div>
+      <div class="placeholder"></div>
+    </div>
+
+    {# Web Push toggle — JS hides this entirely when VAPID isn't configured
+       on the server (GET /push/vapid-public returns 503). #}
+    <div class="inbox-push-toggle">
+      <button type="button" class="push-btn"
+              data-push-toggle
+              data-on-label="✓ แจ้งเตือนเปิดอยู่"
+              data-off-label="🔔 เปิดแจ้งเตือน">เปิดแจ้งเตือน</button>
+      <div class="push-hint">รับข้อความใหม่ได้แม้ปิดแอปอยู่</div>
+    </div>
+
+    {% if items %}
+      <div class="inbox-list">
+        {% for it in items %}
+          {% set unread = it.row.read_at is none %}
+          <div class="inbox-row{% if unread %} unread{% endif %}"
+               data-inbox-id="{{ it.row.id }}"
+               onclick="window.markInboxRead(this)">
+            <div class="ib-shop">
+              {% if it.shop %}
+                {% set logo = shop_logo(it.shop) %}
+                {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+                {% else %}{{ it.shop.name }}{% endif %}
+              {% else %}TaemDee{% endif %}
+            </div>
+            <div class="ib-body">{{ it.row.body }}</div>
+            <div class="ib-time">{{ it.row.created_at|bkk_feed_time }}</div>
+          </div>
+        {% endfor %}
+      </div>
+    {% else %}
+      <div class="inbox-empty">
+        <div class="h">ยังไม่มีข้อความ</div>
+        <div class="s">เมื่อร้านส่งข้อความถึงคุณ<br>มันจะอยู่ในกล่องนี้</div>
+      </div>
+    {% endif %}
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+
+  <script>
+    window.markInboxRead = async function(rowEl) {
+      const id = rowEl.dataset.inboxId;
+      if (!id || !rowEl.classList.contains('unread')) return;
+      rowEl.classList.remove('unread');
+      try { await fetch(`/my-inbox/${id}/read`, { method: 'POST' }); } catch (_) {}
+    };
+  </script>
+  <script src="/static/js/push-subscribe.js?v={{ asset_version }}"></script>
+</body>
+</html>

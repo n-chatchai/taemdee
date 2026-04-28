@@ -58,10 +58,51 @@ CHANNEL_COST_SATANG: dict[str, int] = {
 # (R6c: replace each stub body with a real API call)
 # ---------------------------------------------------------------------------
 
-def _send_web_push(customer_id: UUID, message: str) -> bool:
-    """Stub: always succeeds. R6c: call VAPID push endpoint."""
-    log.info("web_push STUB → customer=%s msg=%r", customer_id, message[:40])
-    return True
+def _send_web_push(customer: Customer, message: str) -> bool:
+    """Encrypt + sign with VAPID and POST to the customer's push endpoint.
+    Returns True on 2xx, False on any error (including 410 Gone — caller
+    should clear the dead subscription separately).
+
+    Drops to log-only stub when web_push_vapid_private_key isn't set so
+    local dev / tests pass without any VAPID config.
+    """
+    if not (customer.web_push_endpoint and customer.web_push_p256dh and customer.web_push_auth):
+        log.warning("web_push → no subscription on customer=%s, marking failed", customer.id)
+        return False
+    if not (settings.web_push_vapid_private_key and settings.web_push_vapid_public_key):
+        log.info("web_push STUB (VAPID not configured) → customer=%s", customer.id)
+        return True
+    try:
+        import json
+        from pywebpush import WebPushException, webpush
+        webpush(
+            subscription_info={
+                "endpoint": customer.web_push_endpoint,
+                "keys": {
+                    "p256dh": customer.web_push_p256dh,
+                    "auth": customer.web_push_auth,
+                },
+            },
+            data=json.dumps({
+                "title": "แต้มดี",
+                "body": message,
+                "url": "/my-inbox",
+            }),
+            vapid_private_key=settings.web_push_vapid_private_key,
+            vapid_claims={"sub": settings.web_push_vapid_sub},
+            ttl=60 * 60 * 24,  # 24h — push services drop messages older than this
+        )
+        log.info("web_push delivered → customer=%s", customer.id)
+        return True
+    except WebPushException as e:
+        # 404/410 mean the endpoint is dead — caller can clear the
+        # subscription on the customer row. We log here and return False
+        # so the campaign reconciles to a refund.
+        log.warning("web_push failed → customer=%s status=%s", customer.id, getattr(e.response, "status_code", "?"))
+        return False
+    except Exception as e:  # noqa: BLE001
+        log.exception("web_push unexpected error → customer=%s: %s", customer.id, e)
+        return False
 
 
 def _send_line(line_id: Optional[str], message: str) -> bool:
@@ -113,7 +154,7 @@ async def _dispatch_channel(
 ) -> bool:
     """Route to the correct channel handler. Returns True = delivered."""
     if channel == "web_push":
-        return _send_web_push(customer.id, message)
+        return _send_web_push(customer, message)
     if channel == "line":
         return _send_line(customer.line_id, message)
     if channel == "sms":

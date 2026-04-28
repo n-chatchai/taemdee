@@ -38,5 +38,14 @@ class Settings(BaseSettings):
     # design; bump to 5/10 if a busy shop wants more history at a glance.
     shop_customer_last_scan_display_number: int = 10
 
+    # Web Push (VAPID) — generate a keypair once with:
+    #   uv run python -c "from py_vapid import Vapid01; v=Vapid01(); v.generate_keys(); print(v.private_key); print(v.public_key)"
+    # When unset, the DeeReach waterfall skips web_push and the customer
+    # subscribe route returns 503. `vapid_sub` must be a mailto:/https URL
+    # identifying the sender (push services use it to contact you on abuse).
+    web_push_vapid_public_key: Optional[str] = None
+    web_push_vapid_private_key: Optional[str] = None
+    web_push_vapid_sub: str = "mailto:contact@taemdee.com"
+
 
 settings = Settings()

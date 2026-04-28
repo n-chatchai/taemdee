@@ -15,8 +15,8 @@ from app.core.auth import (
     set_customer_cookie,
 )
 from app.core.database import get_session
-from app.models import Branch, Redemption, Shop, Point
-from app.models.util import bkk_feed_time
+from app.models import Branch, Inbox, Redemption, Shop, Point
+from app.models.util import bkk_feed_time, utcnow
 from app.services.auth import verify_otp
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point
@@ -574,6 +574,14 @@ async def my_cards(
         datetime.now(timezone.utc).astimezone(BKK).weekday()
     ]
 
+    # Per PRD §10 / DeeReach inbox channel — surface unread DeeReach
+    # messages so the customer notices and reads them.
+    inbox_unread = (await db.exec(
+        select(func.count())
+        .select_from(Inbox)
+        .where(Inbox.customer_id == customer.id, Inbox.read_at.is_(None))
+    )).one()
+
     response = templates.TemplateResponse(
         request=request,
         name="my_cards.html",
@@ -583,10 +591,118 @@ async def my_cards(
             "total_stamps": total_stamps,
             "closest": closest,
             "weekday_th": weekday_th,
+            "inbox_unread": inbox_unread,
         },
     )
     if was_created:
         set_customer_cookie(response, customer.id)
     return response
+
+
+# ── Customer inbox (DeeReach channel "inbox" lands here) ─────────────────────
+
+@router.get("/my-inbox", response_class=HTMLResponse)
+async def my_inbox(
+    request: Request,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """List of DeeReach messages this customer has received via the inbox
+    channel. Each row carries the shop's name + body; tap to open it
+    (POST mark-read endpoint flips read_at)."""
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    rows = (await db.exec(
+        select(Inbox).where(Inbox.customer_id == customer.id)
+        .order_by(Inbox.created_at.desc())
+        .limit(50)
+    )).all()
+
+    shop_ids = {r.shop_id for r in rows}
+    shops_by_id = {}
+    if shop_ids:
+        shop_rows = (await db.exec(select(Shop).where(Shop.id.in_(shop_ids)))).all()
+        shops_by_id = {s.id: s for s in shop_rows}
+
+    items = [{"row": r, "shop": shops_by_id.get(r.shop_id)} for r in rows]
+    response = templates.TemplateResponse(
+        request=request,
+        name="my_inbox.html",
+        context={"customer": customer, "items": items},
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
+@router.post("/my-inbox/{inbox_id}/read")
+async def my_inbox_mark_read(
+    inbox_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Flip read_at — owner-bound (only the customer who owns the row can
+    mark it). Idempotent: re-marking is fine, returns the same 204."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    row = await db.get(Inbox, inbox_id)
+    if row is None or row.customer_id != customer.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบข้อความ")
+    if row.read_at is None:
+        row.read_at = utcnow()
+        db.add(row)
+        await db.commit()
+    return JSONResponse({"ok": True}, status_code=200)
+
+
+# ── Web Push subscription (VAPID) ────────────────────────────────────────────
+
+@router.get("/push/vapid-public")
+async def push_vapid_public():
+    """Frontend service worker pulls the VAPID public key from here at
+    subscribe time. 503 when the operator hasn't configured VAPID — the
+    UI hides the 'enable notifications' button on the same signal."""
+    from app.core.config import settings as app_settings
+    if not app_settings.web_push_vapid_public_key:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Web Push not configured")
+    return JSONResponse({"public_key": app_settings.web_push_vapid_public_key})
+
+
+@router.post("/push/subscribe")
+async def push_subscribe(
+    endpoint: str = Form(...),
+    p256dh: str = Form(...),
+    auth: str = Form(...),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Save a Web Push subscription on the current customer. Replacing an
+    existing subscription is fine — most browsers rotate endpoints when
+    the user clears storage or reinstalls. Idempotent."""
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    customer.web_push_endpoint = endpoint
+    customer.web_push_p256dh = p256dh
+    customer.web_push_auth = auth
+    db.add(customer)
+    await db.commit()
+    response = JSONResponse({"ok": True}, status_code=200)
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
+@router.post("/push/unsubscribe")
+async def push_unsubscribe(
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Clear push subscription — used when the customer revokes notification
+    permission in their browser. Without this, send_web_push will keep
+    hitting an endpoint that returns 410 Gone."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    customer.web_push_endpoint = None
+    customer.web_push_p256dh = None
+    customer.web_push_auth = None
+    db.add(customer)
+    await db.commit()
+    return JSONResponse({"ok": True}, status_code=200)
 
 

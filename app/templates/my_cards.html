@@ -39,6 +39,13 @@
             <rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </a>
+        <a href="/my-inbox" class="c7-icon-btn" title="กล่องข้อความ" aria-label="กล่องข้อความ">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
+            <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
+          </svg>
+          {% if inbox_unread %}<span class="c7-icon-badge">{{ inbox_unread if inbox_unread < 10 else '9+' }}</span>{% endif %}
+        </a>
         {# Claimed customers see their initial → /card/account. Guests skip
            the avatar — the camera + QR buttons above are their only chrome. #}
         {% if not is_guest %}
