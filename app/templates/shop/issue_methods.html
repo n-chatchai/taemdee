@@ -1,0 +1,131 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>วิธีออกแต้ม · {{ shop.name }}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+</head>
+<body>
+  <form method="POST" action="/shop/issue/methods" class="td"
+        x-data="{
+          shopScan: {{ 'true' if shop.issue_method_shop_scan else 'false' }},
+          phoneEntry: {{ 'true' if shop.issue_method_phone_entry else 'false' }},
+          grant: {{ 'true' if shop.issue_method_grant else 'false' }},
+          dirty: false,
+        }"
+        x-init="$watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">วิธีออกแต้ม</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="s5-q">
+      <div class="ask">วิธี<em>ออกแต้ม.</em></div>
+      <div class="ask-th">เปิดวิธีที่ร้านอยากใช้ · ปิดได้ตลอด</div>
+    </div>
+
+    <div class="s5-toggles">
+      {# Customer scan — always on, locked. The shop's printed QR. #}
+      <div class="s5-toggle-row primary">
+        <div class="t-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </div>
+        <div class="t-info">
+          <div class="t-name-row">
+            <span class="t-name">ลูกค้าสแกน</span>
+            <span class="t-tag">ค่ามาตรฐาน</span>
+          </div>
+          <div class="t-sub">ติด QR ที่เคาน์เตอร์ ลูกค้าสแกนเอง</div>
+        </div>
+        <div class="s5-toggle on locked" aria-disabled="true" title="ปิดไม่ได้ — เป็นค่าหลักของร้าน">
+          <div class="dot"></div>
+        </div>
+      </div>
+
+      {# Shop scans the customer's QR with camera #}
+      <label class="s5-toggle-row" @click.prevent="shopScan = !shopScan">
+        <div class="t-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="18" height="18" rx="2"/>
+            <line x1="3" y1="9" x2="21" y2="9"/>
+            <circle cx="12" cy="15" r="2"/>
+          </svg>
+        </div>
+        <div class="t-info">
+          <div class="t-name-row"><span class="t-name">สแกนบัตรลูกค้า</span></div>
+          <div class="t-sub">เปิดกล้องร้าน · สแกน QR ลูกค้า</div>
+        </div>
+        <div class="s5-toggle" :class="{ on: shopScan }">
+          <div class="dot"></div>
+        </div>
+      </label>
+      <input type="hidden" name="shop_scan" :value="shopScan ? '1' : '0'">
+
+      {# Staff types customer phone #}
+      <label class="s5-toggle-row" @click.prevent="phoneEntry = !phoneEntry">
+        <div class="t-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+        </div>
+        <div class="t-info">
+          <div class="t-name-row"><span class="t-name">กรอกเบอร์ลูกค้า</span></div>
+          <div class="t-sub">พิมพ์เบอร์โทรลูกค้าด้วยตัวเอง</div>
+        </div>
+        <div class="s5-toggle" :class="{ on: phoneEntry }">
+          <div class="dot"></div>
+        </div>
+      </label>
+      <input type="hidden" name="phone_entry" :value="phoneEntry ? '1' : '0'">
+
+      {# Search existing customer + give points #}
+      <label class="s5-toggle-row" @click.prevent="grant = !grant">
+        <div class="t-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+            <line x1="11" y1="8" x2="11" y2="14"/>
+            <line x1="8" y1="11" x2="14" y2="11"/>
+          </svg>
+        </div>
+        <div class="t-info">
+          <div class="t-name-row"><span class="t-name">ให้แต้มลูกค้า</span></div>
+          <div class="t-sub">ค้นจากชื่อ/เบอร์ แล้วเพิ่มแต้ม</div>
+        </div>
+        <div class="s5-toggle" :class="{ on: grant }">
+          <div class="dot"></div>
+        </div>
+      </label>
+      <input type="hidden" name="grant" :value="grant ? '1' : '0'">
+    </div>
+
+    <div class="s5-tip">
+      <div class="tip-bulb">!</div>
+      <div>เปิดมากกว่า 1 วิธี → ปุ่ม "ออกแต้มลูกค้า" หน้าแดชบอร์ดจะ list ตัวเลือกให้เลือก</div>
+    </div>
+
+    <div class="s2-foot">
+      <button type="submit" class="next" style="flex:1;" :disabled="!dirty">
+        <span x-text="dirty ? 'บันทึก' : 'บันทึกแล้ว'"></span>
+        <span class="arrow">✓</span>
+      </button>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </form>
+</body>
+</html>

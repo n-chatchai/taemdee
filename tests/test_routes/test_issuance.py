@@ -6,6 +6,31 @@ from app.models import Customer, Point
 from app.models.util import utcnow
 
 
+async def test_issue_page_renders_full_hub_with_glass_nav(auth_client):
+    """GET /shop/issue is now the S3.issue full-page action hub —
+    headline 'ออกแต้ม' + recent feed + 3 method buttons + glass nav.
+    The old toggle-config UI moved to /shop/issue/methods."""
+    response = await auth_client.get("/shop/issue")
+    assert response.status_code == 200
+    body = response.text
+    assert ">ออกแต้ม<" in body
+    assert "s3-glass-nav" in body  # 4-tab nav
+    assert "ลูกค้าล่าสุด" in body
+    # All 3 method buttons present (default config has all toggled on)
+    assert "กรอกเบอร์" in body
+    assert "สแกน QR" in body
+    assert "ค้นชื่อ" in body
+
+
+async def test_issue_methods_page_renders_toggle_config(auth_client):
+    """GET /shop/issue/methods renders the S5 toggle config form."""
+    response = await auth_client.get("/shop/issue/methods")
+    assert response.status_code == 200
+    body = response.text
+    assert "วิธีออกแต้ม" in body
+    assert 'name="shop_scan"' in body
+
+
 async def test_phone_entry_creates_customer(auth_client, db):
     response = await auth_client.post(
         "/shop/issue", data={"method": "phone_entry", "phone": "0822222222"}

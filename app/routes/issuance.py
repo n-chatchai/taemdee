@@ -28,10 +28,58 @@ VOID_WINDOW_SECONDS = 60
 
 
 @router.get("/issue", response_class=HTMLResponse)
-async def issue_page(request: Request, shop: Shop = Depends(get_current_shop)):
+async def issue_page(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """S3.issue — full-page ออกแต้ม hub: recent feed + 3 method buttons.
+    Replaces the old /shop/issue page (which was the methods toggle config).
+    The toggle settings now live at /shop/issue/methods."""
+    from app.models import Customer, Redemption
+    from app.core.config import settings as app_settings
+
+    feed_cap = app_settings.shop_customer_last_scan_display_number
+
+    recent_points = (await db.exec(
+        select(Point).where(Point.shop_id == shop.id)
+        .order_by(Point.created_at.desc()).limit(feed_cap)
+    )).all()
+    recent_redemptions = (await db.exec(
+        select(Redemption).where(Redemption.shop_id == shop.id)
+        .order_by(Redemption.created_at.desc()).limit(feed_cap)
+    )).all()
+
+    customer_ids = {p.customer_id for p in recent_points} | {r.customer_id for r in recent_redemptions}
+    customers_by_id = {}
+    if customer_ids:
+        rows = (await db.exec(select(Customer).where(Customer.id.in_(customer_ids)))).all()
+        customers_by_id = {c.id: (c.display_name or "ลูกค้า") for c in rows}
+    feed = sorted(
+        [("point", p, customers_by_id.get(p.customer_id, "ลูกค้า")) for p in recent_points]
+        + [("redemption", r, customers_by_id.get(r.customer_id, "ลูกค้า")) for r in recent_redemptions],
+        key=lambda x: x[1].created_at,
+        reverse=True,
+    )[:feed_cap]
+
     return templates.TemplateResponse(
         request=request,
         name="shop/issue.html",
+        context={
+            "shop": shop,
+            "feed": feed,
+            "feed_cap": feed_cap,
+        },
+    )
+
+
+@router.get("/issue/methods", response_class=HTMLResponse)
+async def issue_methods_page(request: Request, shop: Shop = Depends(get_current_shop)):
+    """S5 — toggle which issuance methods this shop accepts. The form POSTs
+    back to the existing /shop/issue/methods handler below."""
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/issue_methods.html",
         context={"shop": shop},
     )
 
