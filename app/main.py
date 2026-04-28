@@ -13,10 +13,100 @@ from app.routes import auth, branches, customer, deereach, issuance, shops, team
 from app.services.auth import decode_customer_token, decode_session_token
 
 
+async def _ensure_vapid_keys(db=None) -> None:
+    """Bootstrap the VAPID keypair the DeeReach Web Push channel needs.
+
+    Order of precedence:
+      1. .env vars  (operator override; nothing to do)
+      2. app_secrets DB row  (already provisioned on a prior boot)
+      3. fresh keypair, written to app_secrets
+
+    Race-safe across gunicorn workers: each worker reads first, only one
+    INSERT will commit, the others see the row on the second read. We
+    swallow IntegrityError so the loser doesn't crash on boot.
+
+    `db` lets the test suite inject a SQLite session; production passes
+    None and we open a fresh AsyncSession on the global engine.
+    """
+    from app.core.config import settings as app_settings
+    if app_settings.web_push_vapid_public_key and app_settings.web_push_vapid_private_key:
+        return
+
+    import base64
+    import logging
+    from contextlib import asynccontextmanager
+    from cryptography.hazmat.primitives import serialization
+    from py_vapid import Vapid01
+    from sqlalchemy.exc import IntegrityError
+    from sqlmodel import select
+    from sqlmodel.ext.asyncio.session import AsyncSession
+
+    from app.models import AppSecret
+
+    log = logging.getLogger(__name__)
+    PUB_KEY_NAME = "web_push_vapid_public"
+    PRIV_KEY_NAME = "web_push_vapid_private"
+
+    @asynccontextmanager
+    async def _session():
+        if db is not None:
+            yield db
+        else:
+            async with AsyncSession(engine) as s:
+                yield s
+
+    async with _session() as session:
+        rows = (await session.exec(
+            select(AppSecret).where(AppSecret.name.in_([PUB_KEY_NAME, PRIV_KEY_NAME]))
+        )).all()
+        existing = {row.name: row.value for row in rows}
+
+        if PUB_KEY_NAME in existing and PRIV_KEY_NAME in existing:
+            app_settings.web_push_vapid_public_key = existing[PUB_KEY_NAME]
+            app_settings.web_push_vapid_private_key = existing[PRIV_KEY_NAME]
+            return
+
+        # Generate a fresh ECDSA P-256 keypair. Public key goes out in the
+        # X.962 uncompressed form, base64url-encoded — the format browsers
+        # expect for `applicationServerKey` on pushManager.subscribe().
+        # Private key serialises to PEM PKCS#8 — pywebpush takes that as
+        # `vapid_private_key`.
+        v = Vapid01()
+        v.generate_keys()
+        pub_b64 = base64.urlsafe_b64encode(
+            v.public_key.public_bytes(
+                serialization.Encoding.X962,
+                serialization.PublicFormat.UncompressedPoint,
+            )
+        ).decode().rstrip("=")
+        priv_pem = v.private_key.private_bytes(
+            serialization.Encoding.PEM,
+            serialization.PrivateFormat.PKCS8,
+            serialization.NoEncryption(),
+        ).decode()
+
+        session.add(AppSecret(name=PUB_KEY_NAME, value=pub_b64))
+        session.add(AppSecret(name=PRIV_KEY_NAME, value=priv_pem))
+        try:
+            await session.commit()
+            log.info("Generated fresh VAPID keypair (web_push) — stored in app_secrets")
+        except IntegrityError:
+            # Another worker beat us to it. Re-read.
+            await session.rollback()
+            rows = (await session.exec(
+                select(AppSecret).where(AppSecret.name.in_([PUB_KEY_NAME, PRIV_KEY_NAME]))
+            )).all()
+            existing = {row.name: row.value for row in rows}
+
+        app_settings.web_push_vapid_public_key = existing.get(PUB_KEY_NAME, pub_b64)
+        app_settings.web_push_vapid_private_key = existing.get(PRIV_KEY_NAME, priv_pem)
+
+
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Schema is managed by Alembic — run `alembic upgrade head` before starting the server.
     from app.services import events
+    await _ensure_vapid_keys()
     await events.start()
     try:
         yield

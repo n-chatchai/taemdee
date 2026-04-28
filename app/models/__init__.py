@@ -1,3 +1,4 @@
+from app.models.app_secret import AppSecret
 from app.models.branch import Branch
 from app.models.credit import CreditLog, TopupSlip
 from app.models.customer import Customer, CustomerShopMute
@@ -11,6 +12,7 @@ from app.models.shop import Shop
 from app.models.staff import StaffMember
 
 __all__ = [
+    "AppSecret",
     "Branch",
     "CreditLog",
     "Customer",
