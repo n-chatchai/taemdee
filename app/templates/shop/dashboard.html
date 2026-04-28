@@ -16,8 +16,6 @@
   <div class="td td-tabbed">
     <div class="topbar"><span></span><span></span></div>
 
-    {% set top_title = 'สวัสดี ' + shop.name if shop.name else 'สวัสดี' %}
-    {% set top_smile = True %}
     {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
     {% include "_partials/s3_top.html" %}
 

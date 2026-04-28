@@ -538,31 +538,30 @@ body {
    ========================================================== */
 
 .s3-top {
-  padding: 18px 22px 0;
+  padding: 14px 20px 0;
   display: flex;
   justify-content: space-between;
   align-items: center;
 }
 .s3-top .hi {
+  font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: 19px;
   letter-spacing: -0.02em;
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
 }
-.s3-top .hi .smile-inline {
-  display: inline-block;
-  width: 18px;
-  height: 11px;
+.s3-top .hi .td-brand {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1;
+}
+.s3-top .hi .td-brand .dot {
   color: var(--accent);
-  margin-left: 4px;
-  vertical-align: 1px;
-}
-.s3-top .hi .day {
-  display: block;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 15px;
-  color: var(--ink-soft);
-  margin-top: 2px;
 }
 .s3-top .actions { display: flex; align-items: center; gap: 10px; }
 .s3-top .branch-pill {
@@ -6001,6 +6000,15 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-size: 13px;
   color: var(--ink-soft);
   font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.s3-day-caption .dc-text .smile-inline {
+  width: 16px;
+  height: 9px;
+  color: var(--accent);
+  font-style: normal;
 }
 .s3-day-caption .branch-pill {
   display: flex;

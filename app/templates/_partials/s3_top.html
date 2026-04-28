@@ -1,26 +1,19 @@
-{# Shared S3.* page header — greeting line + bell/cog actions, plus an
-   optional day-caption row underneath with the weekday text and the
-   multi-branch pill.
+{# Shared S3.* page header — brand + bell/cog actions, plus an optional
+   day-caption row underneath with greeting + smile + branch pill.
+
+   Per the latest design rev all S3.* pages show the SAME 'taemdee.' brand
+   in the top bar (page identity is signaled by the active glass-nav tab
+   + the content below). The day-caption row carries the friendly
+   greeting and multi-branch pill.
 
    Caller sets vars before include:
-     top_title    — required string, the headline ('สวัสดี<shop>' or 'ออกแต้ม')
-     top_smile    — boolean, true on dashboard so the smile SVG renders
-                    after the greeting; false on tab pages where the title
-                    is a bold page label
      weekday_th   — string like 'วันศุกร์'; omit to hide the day row
      branch_label — string; only renders when multi-branch
      bell_unread  — truthy to show the pulsing badge on the bell icon
 #}
 <div class="s3-top">
-  <div class="hi"{% if not top_smile %} style="font-weight:700;color:var(--ink);"{% endif %}>
-    {{ top_title }}
-    {% if top_smile %}
-      <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
-        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-      </svg>
-    {% endif %}
+  <div class="hi">
+    <span class="td-brand">taemdee<span class="dot">.</span></span>
   </div>
   <div class="actions">
     <a class="bell-btn" href="#" title="แจ้งเตือน" aria-label="แจ้งเตือน">
@@ -41,7 +34,16 @@
 
 {% if weekday_th or branch_label %}
   <div class="s3-day-caption">
-    {% if weekday_th %}<span class="dc-text">{{ weekday_th }} · เริ่มต้นวันได้ดี</span>{% else %}<span></span>{% endif %}
+    {% if weekday_th %}
+      <span class="dc-text">
+        สวัสดี{{ weekday_th }} · เริ่มต้นวันได้ดี
+        <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
+          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
+      </span>
+    {% else %}<span></span>{% endif %}
     {% if branch_label %}
       <a class="branch-pill" href="/shop/branches" title="เลือกสาขา">{{ branch_label }}</a>
     {% endif %}
