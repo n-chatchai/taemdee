@@ -165,6 +165,8 @@ async def dashboard(
 
     suggestions = await compute_suggestions(db, shop)
 
+    from app.core.config import settings as app_settings
+
     return templates.TemplateResponse(
         request=request,
         name="shop/dashboard.html",
@@ -175,6 +177,7 @@ async def dashboard(
             "points_total": points_total,
             "redemptions_total": redemptions_total,
             "feed": feed,
+            "feed_cap": app_settings.shop_customer_last_scan_display_number,
             "suggestions": suggestions,
             "weekday_th": weekday_th,
             "branches_count": branches_count,

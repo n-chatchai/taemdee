@@ -151,7 +151,7 @@
       <div class="sap-feed">
         <table class="sap-table" id="sap-table">
           <tbody id="sap-tbody">
-            {% for kind, item, customer_name in feed[:5] %}
+            {% for kind, item, customer_name in feed[:feed_cap] %}
               <tr class="feed-row{% if loop.first %} latest{% endif %}"
                   id="row-{{ item.id }}"
                   data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
@@ -230,6 +230,7 @@
     // beyond 3 falls off. Tapping a row opens the S3.detail bottom sheet
     // (no more S6 toast popup — the design dropped it).
     const feedBody = document.getElementById('sap-tbody');
+    const FEED_CAP = {{ feed_cap }};
     const feedHint = document.querySelector('.sap-feed-hint');
     const flash = document.getElementById('dash-flash');
     const evt = new EventSource('/shop/events');
@@ -285,7 +286,7 @@
         // re-trigger (insert another row) replays the animation.
         setTimeout(() => newRow.classList.remove('just-arrived'), 2500);
       }
-      while (feedBody.children.length > 5) feedBody.lastElementChild?.remove();
+      while (feedBody.children.length > FEED_CAP) feedBody.lastElementChild?.remove();
       playDing();
     });
 

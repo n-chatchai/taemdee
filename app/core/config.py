@@ -31,5 +31,11 @@ class Settings(BaseSettings):
     # registry as everything else and is documented next to its peers.
     slack_deploy_webhook_url: Optional[str] = None
 
+    # How many "ลูกค้าล่าสุด" feed rows the S3 dock keeps visible. The route
+    # passes this into the dashboard template and the SSE handler trims old
+    # rows past this cap as new events arrive. Default 3 matches the original
+    # design; bump to 5/10 if a busy shop wants more history at a glance.
+    shop_customer_last_scan_display_number: int = 3
+
 
 settings = Settings()
