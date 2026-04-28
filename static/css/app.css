@@ -5073,6 +5073,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   bottom: 0;
   margin: 0 auto;
   max-width: 480px;
+  max-height: 90vh;
+  max-height: 90dvh;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
   background: var(--bg);
   border-top: 1px solid rgba(17, 17, 17, 0.18);
   border-top-left-radius: 24px;
