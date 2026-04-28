@@ -37,19 +37,17 @@
           <span class="brief-label">ภาพรวม 30 วัน</span>
           <span class="brief-link">ดูทั้งหมด →</span>
         </div>
-        <div class="brief-stats">
-          <span><strong>{{ funnel.sent }}</strong> ส่ง</span>
-          <span class="brief-sep">·</span>
-          <span>
-            <strong>{% if funnel.opened is not none %}{{ funnel.opened }}{% else %}—{% endif %}</strong> เปิด
-            {% if funnel.opened_pct is not none %}<em>({{ funnel.opened_pct }}%)</em>{% endif %}
-          </span>
-          <span class="brief-sep">·</span>
-          <span class="accent">
-            <strong>{% if funnel.returned is not none %}{{ funnel.returned }}{% else %}—{% endif %}</strong> กลับ
-            {% if funnel.returned_pct is not none %}<em>({{ funnel.returned_pct }}%)</em>{% endif %}
-          </span>
-        </div>
+        {% if funnel.sent > 0 %}
+          <div class="brief-stats">
+            <span><strong>{{ funnel.sent }}</strong> ส่ง</span>
+            <span class="brief-sep">·</span>
+            <span><strong>{% if funnel.opened is not none %}{{ funnel.opened }}{% else %}—{% endif %}</strong> เปิด{% if funnel.opened_pct is not none %} <em>({{ funnel.opened_pct }}%)</em>{% endif %}</span>
+            <span class="brief-sep">·</span>
+            <span class="accent"><strong>{% if funnel.returned is not none %}{{ funnel.returned }}{% else %}—{% endif %}</strong> กลับ{% if funnel.returned_pct is not none %} <em>({{ funnel.returned_pct }}%)</em>{% endif %}</span>
+          </div>
+        {% else %}
+          <div class="brief-stats"><span>ยังไม่ได้ส่งแคมเปญในช่วง 30 วัน</span></div>
+        {% endif %}
       </a>
 
       <div class="ph-section-h" style="margin-top:18px;">
@@ -94,7 +92,6 @@
       <button class="s13-create" type="button" disabled title="สร้างแคมเปญเอง — เร็วๆ นี้">
         <span class="plus">+</span>
         สร้างแคมเปญเอง
-        <span class="s13-create-hint">เร็วๆ นี้</span>
       </button>
 
     {% else %}
@@ -131,7 +128,7 @@
           <a class="s3-camp active" href="/shop/deereach/sent?campaign_id={{ c.id }}">
             <div class="camp-head">
               <span class="camp-status">⏱ กำลังดำเนินการ</span>
-              <span class="camp-date">ส่ง {{ c.sent_at|bkk_hms }}</span>
+              <span class="camp-date">ส่ง {{ c.sent_at|bkk_short_date }}</span>
             </div>
             <div class="camp-name">{{ c.name }}</div>
             <div class="camp-stats">
@@ -153,7 +150,7 @@
           <a class="s3-camp done" href="/shop/deereach/sent?campaign_id={{ c.id }}">
             <div class="camp-head">
               <span class="camp-status done">✓ เสร็จแล้ว</span>
-              <span class="camp-date">{{ c.sent_at|bkk_hms }}</span>
+              <span class="camp-date">{{ c.sent_at|bkk_short_date }}</span>
             </div>
             <div class="camp-name">{{ c.name }}</div>
             <div class="camp-stats">

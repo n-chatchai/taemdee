@@ -40,3 +40,10 @@ def bkk_feed_time(dt: datetime) -> str:
         f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]} "
         f"· {bkk.strftime('%H:%M:%S')}"
     )
+
+
+def bkk_short_date(dt: datetime) -> str:
+    """Short Thai date `25 เม.ย.` in Asia/Bangkok — used on campaign cards
+    where time-of-day is noise compared to the day of send."""
+    bkk = dt.replace(tzinfo=timezone.utc).astimezone(BKK)
+    return f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]}"
