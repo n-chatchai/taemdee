@@ -127,8 +127,73 @@ sudo nano /etc/sudoers.d/pace6
 
 Add the following line:
 ```text
-pace6 ALL=(root) NOPASSWD: /usr/bin/systemctl reload taemdee, /usr/bin/systemctl start taemdee, /usr/bin/systemctl stop taemdee, /usr/bin/systemctl status taemdee
+pace6 ALL=(root) NOPASSWD: /usr/bin/systemctl reload taemdee, /usr/bin/systemctl start taemdee, /usr/bin/systemctl stop taemdee, /usr/bin/systemctl status taemdee, /usr/bin/systemctl reload taemdee-worker, /usr/bin/systemctl start taemdee-worker, /usr/bin/systemctl stop taemdee-worker, /usr/bin/systemctl status taemdee-worker
 ```
+
+---
+
+## 4b. RQ Worker Service (DeeReach dispatcher)
+
+The DeeReach send pipeline (`send_campaign`) enqueues a job per campaign on
+the `deereach_tasks` queue. A long-running RQ worker (`worker.py`) picks
+each job up, encrypts the payload with VAPID, fans out per-recipient pushes
+(LINE / SMS / web push / inbox) and refunds failed-message satang back to
+the shop's balance. Without this service, campaigns sit in `status='locked'`
+forever and credits never reconcile.
+
+**Prerequisite:** Redis must be reachable on the URL set in `REDIS_URL` (the
+default `redis://localhost:6379` matches the `redis-server` package — install
+with `sudo apt install -y redis-server` if you don't have one yet).
+
+Create the worker service file:
+
+```bash
+sudo nano /etc/systemd/system/taemdee-worker.service
+```
+
+```ini
+[Unit]
+Description=taemdee — DeeReach RQ worker (campaign dispatcher)
+After=network.target redis-server.service taemdee.service
+# Worker writes back to the same DB the web app reads from; not strictly a
+# hard dependency, but starting after the web ensures schema is migrated.
+Wants=redis-server.service
+
+[Service]
+Type=simple
+User=pace6
+Group=pace6
+WorkingDirectory=/path/to/your/app
+EnvironmentFile=/path/to/your/app/.env
+ExecStart=/home/pace6/.local/bin/uv run python worker.py
+KillMode=mixed
+Restart=always
+RestartSec=3
+# Worker is single-process; let it crash + restart rather than spawning N
+# replicas (RQ already handles parallelism via the `--workers` count if you
+# need it later — duplicate the unit with `taemdee-worker@N.service`).
+Environment=ENV=prod
+Environment=APP_NAME=taemdee-worker
+
+[Install]
+WantedBy=multi-user.target
+```
+
+**Start the worker**:
+```bash
+sudo systemctl daemon-reload
+sudo systemctl enable taemdee-worker
+sudo systemctl start taemdee-worker
+
+# Tail the dispatch log to confirm it's picking up jobs
+sudo journalctl -u taemdee-worker -f
+```
+
+You should see `Listening on deereach_tasks...` shortly after start. When a
+shop sends a DeeReach campaign you'll see lines like
+`Campaign <uuid> enqueued — kind=...` (from the web side) followed by
+`Campaign <uuid>: dispatching N messages` and the per-channel delivery logs
+(from the worker).
 
 ---
 
