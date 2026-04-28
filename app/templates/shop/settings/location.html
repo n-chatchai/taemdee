@@ -63,6 +63,21 @@
       <div class="s2-hint">ใช้สำหรับให้ลูกค้าหาทางมาร้าน</div>
     </div>
 
+    {# Map preview per design — links to Google Maps with whatever
+       address pieces are saved. When fields are empty the link goes to a
+       blank Maps so the affordance still hints at the eventual integration. #}
+    {% set parts = [shop.address_detail, shop.district, shop.location]|select|list %}
+    {% set map_q = ', '.join(parts) %}
+    <a class="s10-map-preview"
+       href="https://www.google.com/maps/search/?api=1&query={{ map_q|urlencode }}"
+       target="_blank" rel="noopener">
+      <div class="s10-map-bg"></div>
+      <div class="s10-map-pin">
+        <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 0C7.6 0 4 3.6 4 8c0 5.4 8 16 8 16s8-10.6 8-16c0-4.4-3.6-8-8-8zm0 11a3 3 0 110-6 3 3 0 010 6z"/></svg>
+      </div>
+      <div class="s10-map-label">ดูบนแผนที่</div>
+    </a>
+
     <div class="s2-foot">
       <button type="submit" class="next" style="flex:1;">
         <span>บันทึก</span>

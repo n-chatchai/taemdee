@@ -3776,6 +3776,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 /* S10.location — flat map placeholder card (decorative; no real map yet). */
 .s10-map-preview {
+  display: block;
   margin: 14px 20px 0;
   height: 110px;
   border-radius: 14px;
@@ -3783,6 +3784,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   position: relative;
   overflow: hidden;
   cursor: pointer;
+  text-decoration: none;
 }
 .s10-map-bg {
   position: absolute;

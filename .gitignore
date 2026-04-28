@@ -24,3 +24,6 @@ htmlcov/
 
 # macOS metadata
 .DS_Store
+
+# graphify
+graphify-out/
