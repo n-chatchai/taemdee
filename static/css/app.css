@@ -5400,6 +5400,160 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s3-footer-brand .fm-install svg { width: 12px; height: 12px; }
 
 /* ==========================================================
+   S3.customers — Search bar + filter chips + customer list
+   ========================================================== */
+.s3-search-bar {
+  margin: 8px 20px 12px;
+  padding: 10px 14px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.s3-search-bar svg {
+  width: 18px; height: 18px;
+  color: var(--ink-softer);
+  flex-shrink: 0;
+}
+.s3-search-bar input {
+  flex: 1;
+  border: none;
+  background: transparent;
+  outline: none;
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+}
+.s3-search-bar input::placeholder { color: var(--ink-softer); }
+
+.s3-filter-chips {
+  margin: 0 20px 16px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 4px 0;
+  min-height: 42px;
+  align-items: center;
+  scrollbar-width: none;
+  -ms-overflow-style: none;
+}
+.s3-filter-chips::-webkit-scrollbar { display: none; }
+.s3-filter-chips .fc {
+  flex-shrink: 0;
+  padding: 7px 14px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-decoration: none;
+  white-space: nowrap;
+}
+.s3-filter-chips .fc.active {
+  background: var(--ink);
+  color: var(--bg);
+  border-color: var(--ink);
+  font-weight: 600;
+}
+
+.s3-cust-count {
+  margin: 0 20px 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-softer);
+  letter-spacing: 0.02em;
+}
+
+.s3-cust-list {
+  margin: 0 20px 100px;
+}
+.cust-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+  cursor: pointer;
+  text-decoration: none;
+}
+.cust-row:last-child { border-bottom: none; }
+.cust-row .cust-avatar {
+  flex-shrink: 0;
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #FFF;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+}
+.cust-row .cust-avatar.mint { background: var(--mint); color: var(--mint-ink); }
+.cust-row .cust-info { flex: 1; line-height: 1.3; min-width: 0; }
+.cust-row .cust-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 14.5px;
+  color: var(--ink);
+  margin-bottom: 2px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cust-row .cust-tag {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  color: var(--accent);
+  background: rgba(255, 94, 58, 0.1);
+  padding: 2px 8px;
+  border-radius: 999px;
+  letter-spacing: 0;
+}
+.cust-row .cust-tag.soft {
+  color: var(--ink-softer);
+  background: rgba(17, 17, 17, 0.06);
+}
+.cust-row .cust-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+.cust-row .cust-progress {
+  flex-shrink: 0;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-align: right;
+}
+.cust-row .cust-progress .cp-num { font-size: 17px; color: var(--ink); }
+.cust-row .cust-progress .cp-of { font-size: 12px; color: var(--ink-softer); }
+.cust-row .cust-progress.accent .cp-num { color: var(--accent); }
+.cust-row .cust-progress.claimed {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--mint-ink);
+}
+.cust-row .cust-arrow {
+  color: var(--ink-softer);
+  font-size: 22px;
+  flex-shrink: 0;
+}
+
+/* Tabbed layouts (customers / insights / etc.) reserve room at the bottom
+   for the floating glass nav. */
+.td.td-tabbed { padding-bottom: 100px; }
+
+/* ==========================================================
    S3 — Liquid-glass bottom navigation (4 tabs)
    Used across every S3.* full-page (home / issue / customers / insights).
    Position fixed because .td has overflow-x:hidden — same trick we use for

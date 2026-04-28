@@ -113,7 +113,7 @@ async def test_onboard_renders_for_first_time_guest(client, shop):
     # 3-step dots wired up
     assert "ob-step-dots" in body
     # Step 1 greeting + nickname prompt
-    assert "ขอทราบชื่อ" in body
+    assert "ผมเรียกพี่ว่าอะไรดี" in body
     # Step 3 signup pills are in the markup (Alpine x-show toggles visibility)
     assert "สมัครด้วยไลน์" in body
     assert "สมัครด้วยเบอร์โทร" in body

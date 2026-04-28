@@ -1,0 +1,95 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ลูกค้า · {{ shop.name }} · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td td-tabbed">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s3-top">
+      <div class="hi" style="font-weight:700;color:var(--ink);">ลูกค้า</div>
+      <div class="actions">
+        <a href="/shop/settings" class="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <form method="GET" action="/shop/customers" class="s3-search-bar"
+          {# Submit on input change debounced — keeps URL in sync without
+             extra JS framework. Form GET preserves the active filter. #}>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="11" cy="11" r="8"/>
+        <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+      </svg>
+      <input type="text" name="q" placeholder="ค้นชื่อ/เบอร์..."
+             value="{{ q }}"
+             autocomplete="off"
+             oninput="clearTimeout(window._csTimer); window._csTimer = setTimeout(()=>this.form.submit(), 300);">
+      {% if active_filter and active_filter != 'all' %}
+        <input type="hidden" name="filter" value="{{ active_filter }}">
+      {% endif %}
+    </form>
+
+    <div class="s3-filter-chips">
+      {% set filters = [
+        ('all', 'ทั้งหมด'),
+        ('regular', 'ลูกค้าประจำ'),
+        ('near', 'ใกล้รับ'),
+        ('lapsed', 'หายไป'),
+      ] %}
+      {% for fid, flabel in filters %}
+        <a class="fc{% if active_filter == fid %} active{% endif %}"
+           href="/shop/customers?filter={{ fid }}{% if q %}&q={{ q }}{% endif %}">{{ flabel }}</a>
+      {% endfor %}
+    </div>
+
+    <div class="s3-cust-count">{{ total }} คน</div>
+
+    <div class="s3-cust-list">
+      {% for r in rows %}
+        <a class="cust-row" href="#"
+           {# v2 will route to /shop/customers/{r.id} — for now stays on the
+              listing so taps don't 404. #}>
+          <div class="cust-avatar">{{ r.initial }}</div>
+          <div class="cust-info">
+            <div class="cust-name">
+              {{ r.name }}
+              {% if r.tag == 'ready' %}<span class="cust-tag">🎁 ใกล้รับ</span>
+              {% elif r.tag == 'near' %}<span class="cust-tag">🎁 ใกล้รับ</span>
+              {% elif r.tag == 'lapsed' %}<span class="cust-tag soft">หายไป</span>
+              {% endif %}
+            </div>
+            <div class="cust-meta">{{ r.last_visit_str }} · {{ r.visits }} ครั้ง</div>
+          </div>
+          {% if r.just_claimed %}
+            <div class="cust-progress claimed">✓ รับแล้ว</div>
+          {% else %}
+            <div class="cust-progress{% if r.tag in ['near', 'ready'] %} accent{% endif %}">
+              <span class="cp-num">{{ r.active }}</span><span class="cp-of">/{{ r.threshold }}</span>
+            </div>
+          {% endif %}
+          <span class="cust-arrow">›</span>
+        </a>
+      {% else %}
+        <div style="padding:32px 12px; text-align:center; color:var(--ink-softer); font-family:'Prompt',sans-serif; font-size:13px;">
+          {% if q %}ไม่พบลูกค้าที่ตรงกับคำค้น{% else %}ยังไม่มีลูกค้า — รอสักครู่หลังเริ่มออกแต้ม{% endif %}
+        </div>
+      {% endfor %}
+    </div>
+
+    {% set nav_active = 'customers' %}
+    {% include "_partials/glass_nav.html" %}
+  </div>
+</body>
+</html>

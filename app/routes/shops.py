@@ -486,6 +486,172 @@ async def settings_page(
     )
 
 
+# ── S3.customers ────────────────────────────────────────────────────────────
+# Full-page customer list — searchable + filter chips. Lives at /shop/customers
+# (the "ลูกค้า" tab in the new 4-tab glass nav).
+
+_FILTER_ALL = "all"
+_FILTER_REGULAR = "regular"
+_FILTER_NEAR = "near"
+_FILTER_LAPSED = "lapsed"
+_VALID_FILTERS = {_FILTER_ALL, _FILTER_REGULAR, _FILTER_NEAR, _FILTER_LAPSED}
+
+# A customer counts as "ลูกค้าประจำ" once they have ≥ this many visits at the shop.
+_REGULAR_VISIT_THRESHOLD = 3
+# "ใกล้รับ" surfaces customers who are within this many stamps of the reward.
+_NEAR_GAP_MAX = 2
+# "หายไป" — last visit longer than this ago.
+_LAPSED_DAYS = 14
+
+
+def _humanize_visit(last_at, now):
+    """'มาวันนี้' / 'มาเมื่อวาน' / 'มา N วันก่อน' — shows recency at a glance."""
+    if last_at is None:
+        return "ยังไม่มีกิจกรรม"
+    delta_days = (now.date() - last_at.date()).days
+    if delta_days <= 0:
+        return "มาวันนี้"
+    if delta_days == 1:
+        return "มาเมื่อวาน"
+    return f"มา {delta_days} วันก่อน"
+
+
+@router.get("/customers", response_class=HTMLResponse)
+async def customers_page(
+    request: Request,
+    q: Optional[str] = None,
+    filter: str = _FILTER_ALL,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """S3.customers — full customer list with search + filter chips.
+
+    Aggregates per-customer stats (visit count, last visit, active points,
+    has-claimed-reward) in Python after pulling the raw points/redemptions —
+    keeps the SQL simple and fast enough for a single shop's roster, which
+    even at 10k customers stays under a few hundred KB.
+    """
+    if filter not in _VALID_FILTERS:
+        filter = _FILTER_ALL
+
+    # Pull every point (non-voided) at this shop for the per-customer rollup.
+    point_rows = (await db.exec(
+        select(Point.customer_id, Point.created_at, Point.redemption_id)
+        .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
+    )).all()
+
+    # Pull redemptions (non-voided) so we can mark customers who recently
+    # claimed a reward — those rows render with the green "✓ รับแล้ว" pill.
+    redemption_rows = (await db.exec(
+        select(Redemption.customer_id, Redemption.created_at)
+        .where(Redemption.shop_id == shop.id, Redemption.is_voided == False)  # noqa: E712
+    )).all()
+
+    from app.models import Customer
+    customers_by_id = {}
+    customer_ids = {p[0] for p in point_rows} | {r[0] for r in redemption_rows}
+    if customer_ids:
+        customer_rows = (await db.exec(
+            select(Customer).where(Customer.id.in_(customer_ids))
+        )).all()
+        customers_by_id = {c.id: c for c in customer_rows}
+
+    # Build aggregates: for each customer, count visits + earliest-stamp +
+    # latest stamp + active stamps (no redemption assigned yet).
+    aggs = {}
+    for cid, created_at, redemption_id in point_rows:
+        a = aggs.setdefault(cid, {"visits": 0, "active": 0, "last_at": None})
+        a["visits"] += 1
+        if redemption_id is None:
+            a["active"] += 1
+        if a["last_at"] is None or created_at > a["last_at"]:
+            a["last_at"] = created_at
+
+    # Track latest redemption time per customer — drives the "✓ รับแล้ว"
+    # pill (only show for redemptions in the last few days).
+    latest_redemption = {}
+    for cid, created_at in redemption_rows:
+        if cid not in latest_redemption or created_at > latest_redemption[cid]:
+            latest_redemption[cid] = created_at
+
+    now = utcnow()
+    threshold = shop.reward_threshold or 1
+    lapsed_cutoff = now - timedelta(days=_LAPSED_DAYS)
+    just_claimed_cutoff = now - timedelta(days=1)
+
+    # Active points cap at threshold for display (post-redemption resets):
+    # if customer just redeemed, their active_count returned to 0 and
+    # claimed status takes priority.
+    rows = []
+    for cid, agg in aggs.items():
+        cust = customers_by_id.get(cid)
+        if cust is None:
+            continue
+        last_redeem = latest_redemption.get(cid)
+        just_claimed = last_redeem is not None and last_redeem >= just_claimed_cutoff
+        active = agg["active"] if not just_claimed else 0
+
+        # Tag for the row — UI rendering only.
+        tag = None
+        if active >= threshold:
+            tag = "ready"
+        elif (threshold - active) <= _NEAR_GAP_MAX and not just_claimed:
+            tag = "near"
+        elif agg["last_at"] is not None and agg["last_at"] < lapsed_cutoff:
+            tag = "lapsed"
+
+        rows.append({
+            "id": cid,
+            "name": (cust.display_name or "ลูกค้า") if not cust.is_anonymous else "ลูกค้า",
+            "initial": ((cust.display_name or "ล")[0]).upper(),
+            "visits": agg["visits"],
+            "active": min(active, threshold),
+            "threshold": threshold,
+            "last_visit_str": _humanize_visit(agg["last_at"], now),
+            "last_at": agg["last_at"],
+            "tag": tag,
+            "just_claimed": just_claimed,
+        })
+
+    # Apply filter
+    if filter == _FILTER_REGULAR:
+        rows = [r for r in rows if r["visits"] >= _REGULAR_VISIT_THRESHOLD]
+    elif filter == _FILTER_NEAR:
+        rows = [r for r in rows if r["tag"] == "near" or r["tag"] == "ready"]
+    elif filter == _FILTER_LAPSED:
+        rows = [r for r in rows if r["tag"] == "lapsed"]
+
+    # Apply search (case-insensitive name substring)
+    if q:
+        needle = q.strip().lower()
+        rows = [r for r in rows if needle in r["name"].lower()]
+
+    # Sort: just-claimed first (delight), then near-ready, then by last_visit desc.
+    def sort_key(r):
+        priority = 0
+        if r["just_claimed"]:
+            priority = -3
+        elif r["tag"] == "ready":
+            priority = -2
+        elif r["tag"] == "near":
+            priority = -1
+        last_at_ts = r["last_at"].timestamp() if r["last_at"] else 0
+        return (priority, -last_at_ts)
+    rows.sort(key=sort_key)
+
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/customers.html",
+        context={
+            "shop": shop,
+            "rows": rows,
+            "total": len(rows),
+            "active_filter": filter,
+            "q": q or "",
+        },
+    )
+
+
 # ── S10.identity ────────────────────────────────────────────────────────────
 # Edit shop name + logo from settings — same logo gen as the onboarding step.
 
