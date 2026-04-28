@@ -6079,13 +6079,25 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s3-issue-feed .sap-table tr.feed-row { cursor: pointer; }
 
 /* Action buttons container — bottom of S3.issue page */
+/* Sticky-bottom action card — stays above .s3-glass-nav so the shop owner
+   can issue points without scrolling, even with a long ลูกค้าล่าสุด list.
+   Per memory: .td has overflow-x:hidden so position:sticky breaks; ship
+   position:fixed even though design uses margin-top:auto push. */
 .s3-issue-actions {
-  margin: 8px 20px 12px;
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 90px;
+  z-index: 5;
+  margin: 0 auto;
+  max-width: calc(100% - 40px);
   padding: 14px;
   background: var(--surface);
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 16px;
+  box-shadow: 0 8px 24px -10px rgba(17, 17, 17, 0.18);
 }
+.td.td-issue { padding-bottom: 230px; }
 .s3-issue-actions .sap-actions-h {
   margin-bottom: 10px;
   font-family: 'Prompt', sans-serif;
