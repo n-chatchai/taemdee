@@ -29,16 +29,23 @@ app = FastAPI(title="TaemDee — Digital Point Cards", lifespan=lifespan)
 
 
 @app.middleware("http")
-async def no_store_html_responses(request, call_next):
+async def revalidate_html_responses(request, call_next):
     """Force fresh HTML on every request — covers iOS Safari PWA tap-to-open
     where the standalone webview otherwise serves a stale cached page after
-    a deploy. Static assets (CSS/JS/images) keep their browser-cache because
-    they're already URL-busted via ?v=<git-sha> on every link tag.
+    a deploy.
+
+    Use `no-cache, must-revalidate` (not `no-store`): browsers MUST hit the
+    server before reusing the cached copy, but the page is still eligible
+    for the in-memory bfcache used by back-forward / iOS swipe-back gesture.
+    `no-store` would block bfcache too — making swipe-back a full reload,
+    which feels slow and breaks View Transitions on the way back.
+
+    Static assets (CSS/JS/images) keep their browser-cache because they're
+    already URL-busted via ?v=<git-sha> on every link tag.
     """
     response = await call_next(request)
     if response.headers.get("content-type", "").startswith("text/html"):
-        response.headers["Cache-Control"] = "no-store, must-revalidate"
-        response.headers["Pragma"] = "no-cache"
+        response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
 
 
