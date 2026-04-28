@@ -28,6 +28,20 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="TaemDee — Digital Point Cards", lifespan=lifespan)
 
 
+@app.middleware("http")
+async def no_store_html_responses(request, call_next):
+    """Force fresh HTML on every request — covers iOS Safari PWA tap-to-open
+    where the standalone webview otherwise serves a stale cached page after
+    a deploy. Static assets (CSS/JS/images) keep their browser-cache because
+    they're already URL-busted via ?v=<git-sha> on every link tag.
+    """
+    response = await call_next(request)
+    if response.headers.get("content-type", "").startswith("text/html"):
+        response.headers["Cache-Control"] = "no-store, must-revalidate"
+        response.headers["Pragma"] = "no-cache"
+    return response
+
+
 @app.exception_handler(SessionAuthError)
 async def session_auth_error_handler(request: Request, exc: SessionAuthError):
     """When a session is missing/invalid/points at a deleted shop:
