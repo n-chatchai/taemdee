@@ -1,0 +1,158 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>แต้มดีแนะนำ · {{ shop.name }} · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td td-tabbed">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="s3-top">
+      <div class="hi" style="font-weight:700;color:var(--ink);">แต้มดีแนะนำ ✦</div>
+      <div class="actions">
+        <a href="/shop/settings" class="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </a>
+      </div>
+    </div>
+
+    <div class="s3-ins-toggle">
+      <a class="ins-tg{% if view == 'suggestions' %} active{% endif %}"
+         href="/shop/insights?view=suggestions">คำแนะนำ</a>
+      <a class="ins-tg{% if view == 'history' %} active{% endif %}"
+         href="/shop/insights?view=history">ผลงาน</a>
+    </div>
+
+    {% if view == 'suggestions' %}
+      <div class="s13-intro" style="margin-bottom:14px;">
+        <div class="ask-th">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับก่อนส่งได้</div>
+      </div>
+
+      {% if suggestions %}
+        <div class="s13-list">
+          {% for s in suggestions %}
+            <a class="s13-card{% if loop.first %} primary{% endif %}" href="/shop/deereach/{{ s.kind }}">
+              {% if loop.first %}<div class="sc-tag">ใหม่ · แนะนำ</div>{% endif %}
+              <div class="sc-row">
+                <div class="sc-icon">
+                  {% if s.kind == 'win_back' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="9 13 12 10 15 13 21 7"/></svg>
+                  {% elif s.kind == 'almost_there' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L15 9 L22 9 L17 14 L19 22 L12 18 L5 22 L7 14 L2 9 L9 9 Z"/></svg>
+                  {% elif s.kind == 'unredeemed_reward' %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
+                  {% else %}
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+                  {% endif %}
+                </div>
+                <div class="sc-info">
+                  <div class="sc-name">{{ s.head }}</div>
+                  <div class="sc-meta">{{ s.body }}</div>
+                </div>
+                <div class="sc-cost">{{ s.cost_credit }} เครดิต</div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      {% else %}
+        <div style="padding:32px 22px; text-align:center; color:var(--ink-soft); font-family:'Prompt',sans-serif; font-size:13px;">
+          ยังไม่มีคำแนะนำ — ลูกค้าหายไปหรือใกล้รับรางวัลจะปรากฏที่นี่
+        </div>
+      {% endif %}
+
+      <button class="s13-create" type="button" disabled title="สร้างแคมเปญเอง — เร็วๆ นี้">
+        <span class="plus">+</span>
+        สร้างแคมเปญเอง
+        <span class="s13-create-hint">เร็วๆ นี้</span>
+      </button>
+
+    {% else %}
+      {# History view — funnel + active + done campaigns. #}
+      <div class="s3-ins-overview">
+        <div class="ins-ov-head">ภาพรวม 30 วัน</div>
+        <div class="ins-ov-funnel">
+          <div class="iov-cell">
+            <div class="iov-num">{{ funnel.sent }}</div>
+            <div class="iov-label">ส่ง</div>
+          </div>
+          <div class="iov-arrow">→</div>
+          <div class="iov-cell">
+            <div class="iov-num">{% if funnel.opened is not none %}{{ funnel.opened }}{% else %}—{% endif %}</div>
+            <div class="iov-label">เปิด</div>
+          </div>
+          <div class="iov-arrow">→</div>
+          <div class="iov-cell">
+            <div class="iov-num accent">{% if funnel.returned is not none %}{{ funnel.returned }}{% else %}—{% endif %}</div>
+            <div class="iov-label">กลับมา</div>
+          </div>
+        </div>
+        <div style="margin-top:8px; font-family:'Prompt',sans-serif; font-size:11px; color:var(--ink-softer); text-align:center; font-style:italic;">
+          เปิด/กลับมา จะวัดได้เมื่อ LINE Messaging API พร้อม
+        </div>
+      </div>
+
+      {% if active_campaigns %}
+        <div class="ph-section-h"><div class="label">กำลังดำเนินการ</div></div>
+        {% for c in active_campaigns %}
+          <a class="s3-camp active" href="/shop/deereach/sent?campaign_id={{ c.id }}">
+            <div class="camp-head">
+              <span class="camp-status">⏱ กำลังดำเนินการ</span>
+              <span class="camp-date">ส่ง {{ c.sent_at|bkk_hms }}</span>
+            </div>
+            <div class="camp-name">{{ c.name }}</div>
+            <div class="camp-stats">
+              <div class="cs-cell"><div class="cs-num">{{ c.audience_count }}</div><div class="cs-label">ส่ง</div></div>
+              <div class="cs-cell"><div class="cs-num">—</div><div class="cs-label">เปิด</div></div>
+              <div class="cs-cell"><div class="cs-num accent">—</div><div class="cs-label">กลับ</div></div>
+            </div>
+            <div class="camp-foot">
+              <span>ใช้ {{ c.credits_spent }} เครดิต</span>
+              <span class="camp-arrow">›</span>
+            </div>
+          </a>
+        {% endfor %}
+      {% endif %}
+
+      {% if done_campaigns %}
+        <div class="ph-section-h"><div class="label">เสร็จแล้ว</div></div>
+        {% for c in done_campaigns %}
+          <a class="s3-camp done" href="/shop/deereach/sent?campaign_id={{ c.id }}">
+            <div class="camp-head">
+              <span class="camp-status done">✓ เสร็จแล้ว</span>
+              <span class="camp-date">{{ c.sent_at|bkk_hms }}</span>
+            </div>
+            <div class="camp-name">{{ c.name }}</div>
+            <div class="camp-stats">
+              <div class="cs-cell"><div class="cs-num">{{ c.audience_count }}</div><div class="cs-label">ส่ง</div></div>
+              <div class="cs-cell"><div class="cs-num">—</div><div class="cs-label">เปิด</div></div>
+              <div class="cs-cell"><div class="cs-num accent">—</div><div class="cs-label">กลับ</div></div>
+            </div>
+            <div class="camp-foot">
+              <span>ใช้ {{ c.credits_spent }} เครดิต</span>
+              <span class="camp-arrow">›</span>
+            </div>
+          </a>
+        {% endfor %}
+      {% endif %}
+
+      {% if not active_campaigns and not done_campaigns %}
+        <div style="padding:32px 22px; text-align:center; color:var(--ink-soft); font-family:'Prompt',sans-serif; font-size:13px;">
+          ยังไม่ได้ส่งแคมเปญในช่วง 30 วัน · ส่งครั้งแรกที่ 'คำแนะนำ'
+        </div>
+      {% endif %}
+    {% endif %}
+
+    {% set nav_active = 'insights' %}
+    {% include "_partials/glass_nav.html" %}
+  </div>
+</body>
+</html>

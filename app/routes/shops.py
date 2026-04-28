@@ -486,6 +486,90 @@ async def settings_page(
     )
 
 
+# ── S3.insights ─────────────────────────────────────────────────────────────
+# Tabbed "แต้มดีแนะนำ" hub. The toggle on top swaps between:
+#   ?view=suggestions (default) — current 4 suggestion cards (S3.insights)
+#   ?view=history                — campaign analytics (S3.insights.history)
+# Same template renders both — keeps glass nav + header consistent.
+
+@router.get("/insights", response_class=HTMLResponse)
+async def insights_page(
+    request: Request,
+    view: str = "suggestions",
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    if view not in {"suggestions", "history"}:
+        view = "suggestions"
+
+    suggestions = []
+    funnel = {"sent": 0, "opened": None, "returned": None}
+    active_campaigns: list = []
+    done_campaigns: list = []
+
+    if view == "suggestions":
+        suggestions = await compute_suggestions(db, shop)
+    else:
+        # 30-day window for the funnel + the campaign list. Campaigns older
+        # than this slide off; the dashboard cares about recent performance.
+        from app.models import DeeReachCampaign
+        thirty_days_ago = utcnow() - timedelta(days=30)
+        rows = (await db.exec(
+            select(DeeReachCampaign)
+            .where(
+                DeeReachCampaign.shop_id == shop.id,
+                DeeReachCampaign.sent_at.is_not(None),
+                DeeReachCampaign.sent_at >= thirty_days_ago,
+            )
+            .order_by(DeeReachCampaign.sent_at.desc())
+        )).all()
+
+        # "Active" = sent within the last 7 days (still earning conversions);
+        # older within window = "done". 7d cutoff matches the C5 "ใหม่" window
+        # we use elsewhere — feels coherent.
+        seven_days_ago = utcnow() - timedelta(days=7)
+        kind_th = {
+            "win_back": "ชวนลูกค้าหายไปกลับมา",
+            "almost_there": "กระตุ้นคนใกล้รับ",
+            "unredeemed_reward": "เตือนรางวัลค้าง",
+            "new_customer": "ขอบคุณลูกค้าใหม่",
+        }
+        for r in rows:
+            row_dict = {
+                "id": str(r.id),
+                "kind": r.kind,
+                "name": kind_th.get(r.kind, r.kind),
+                "sent_at": r.sent_at,
+                "audience_count": r.audience_count,
+                "credits_spent": r.credits_spent,
+            }
+            if r.sent_at and r.sent_at >= seven_days_ago:
+                active_campaigns.append(row_dict)
+            else:
+                done_campaigns.append(row_dict)
+            funnel["sent"] += r.audience_count
+
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/insights.html",
+        context={
+            "shop": shop,
+            "view": view,
+            "suggestions": suggestions,
+            "funnel": funnel,
+            "active_campaigns": active_campaigns,
+            "done_campaigns": done_campaigns,
+        },
+    )
+
+
+# Legacy /shop/deereach links bounce to /shop/insights so old bookmarks
+# still land somewhere sensible.
+@router.get("/deereach-redirect")
+async def insights_legacy_redirect():
+    return RedirectResponse(url="/shop/insights", status_code=status.HTTP_307_TEMPORARY_REDIRECT)
+
+
 # ── S3.customers ────────────────────────────────────────────────────────────
 # Full-page customer list — searchable + filter chips. Lives at /shop/customers
 # (the "ลูกค้า" tab in the new 4-tab glass nav).
