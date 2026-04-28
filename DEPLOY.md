@@ -127,8 +127,11 @@ sudo nano /etc/sudoers.d/pace6
 
 Add the following line:
 ```text
-pace6 ALL=(root) NOPASSWD: /usr/bin/systemctl reload taemdee, /usr/bin/systemctl start taemdee, /usr/bin/systemctl stop taemdee, /usr/bin/systemctl status taemdee, /usr/bin/systemctl reload taemdee-worker, /usr/bin/systemctl start taemdee-worker, /usr/bin/systemctl stop taemdee-worker, /usr/bin/systemctl status taemdee-worker
+pace6 ALL=(root) NOPASSWD: /usr/bin/systemctl reload taemdee, /usr/bin/systemctl restart taemdee, /usr/bin/systemctl start taemdee, /usr/bin/systemctl stop taemdee, /usr/bin/systemctl status taemdee, /usr/bin/systemctl reload taemdee-worker, /usr/bin/systemctl restart taemdee-worker, /usr/bin/systemctl start taemdee-worker, /usr/bin/systemctl stop taemdee-worker, /usr/bin/systemctl status taemdee-worker
 ```
+
+> Note: the `restart` permission is what `scripts/deploy.sh` uses for the
+> worker (web service is still stop+start, see comment in the script).
 
 ---
 

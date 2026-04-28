@@ -19,6 +19,7 @@
 set -euo pipefail
 
 SERVICE_NAME="${SERVICE_NAME:-taemdee}"
+WORKER_SERVICE_NAME="${WORKER_SERVICE_NAME:-taemdee-worker}"
 SLACK_USERNAME="${SLACK_USERNAME:-taemdee-deploy}"
 UV_BIN="${UV_BIN:-$HOME/.local/bin/uv}"
 PROD_URL="${PROD_URL:-https://taemdee.com}"
@@ -89,6 +90,17 @@ sudo systemctl stop "${SERVICE_NAME}"
 
 PHASE="systemctl start ${SERVICE_NAME}"
 sudo systemctl start "${SERVICE_NAME}"
+
+# Restart the DeeReach RQ worker too — same reason: it loads
+# app/services/deereach.py + app/tasks/deereach.py at startup, so without
+# this restart it keeps running the previous deploy's code. Skip silently
+# when the unit is missing (older boxes that haven't installed it yet).
+if systemctl list-unit-files | grep -q "^${WORKER_SERVICE_NAME}\.service"; then
+  PHASE="systemctl restart ${WORKER_SERVICE_NAME}"
+  sudo systemctl restart "${WORKER_SERVICE_NAME}"
+else
+  echo "[deploy] ${WORKER_SERVICE_NAME}.service not installed — skipping worker restart"
+fi
 
 # ─── Verify the live process is now serving the new SHA ─────────────────
 # /version returns {"version": "<short-sha>"}. We poll briefly so the
