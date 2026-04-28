@@ -119,10 +119,7 @@ async def void_redemption(
     *,
     by_staff_id: Optional[UUID] = None,
 ) -> Redemption:
-    """Void a redemption. The attached stamps become available again.
-
-    The 60-second window check is enforced by the caller (route layer).
-    """
+    """Void a redemption. The attached stamps become available again."""
     redemption.is_voided = True
     redemption.voided_at = utcnow()
     redemption.voided_by_staff_id = by_staff_id

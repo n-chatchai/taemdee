@@ -1,4 +1,4 @@
-"""Staff-side issuance: shop_scan / phone_entry, and the 60-second voids."""
+"""Staff-side issuance: shop_scan / phone_entry, and stamp voids."""
 
 from typing import Optional
 from uuid import UUID
@@ -24,8 +24,6 @@ from app.services.issuance import IssuanceError, issue_point, void_point
 from app.services.redemption import active_point_count, void_redemption
 
 router = APIRouter()
-
-VOID_WINDOW_SECONDS = 60
 
 
 @router.get("/issue", response_class=HTMLResponse)
@@ -405,8 +403,7 @@ async def feed_detail(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบกิจกรรมที่ระบุ")
 
     customer = await db.get(Customer, item.customer_id)
-    age_seconds = int((utcnow() - item.created_at).total_seconds())
-    voidable = (age_seconds <= VOID_WINDOW_SECONDS) and not item.is_voided
+    voidable = not item.is_voided
 
     if kind == "point":
         method_th = {
@@ -448,7 +445,6 @@ async def feed_detail(
         "is_voided": item.is_voided,
         "voidable": voidable,
         "void_url": f"/shop/{'points' if kind == 'point' else 'redemptions'}/{item_id}/void",
-        "void_seconds_left": max(0, VOID_WINDOW_SECONDS - age_seconds) if voidable else 0,
     }
 
 
@@ -463,13 +459,6 @@ async def void_point_route(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Point not found")
     if point.shop_id != ctx.shop_id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Cross-shop access denied")
-
-    age_seconds = (utcnow() - point.created_at).total_seconds()
-    if age_seconds > VOID_WINDOW_SECONDS:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            f"Void window expired ({VOID_WINDOW_SECONDS}s)",
-        )
 
     await void_point(db, point, by_staff_id=ctx.staff_id)
     publish(ctx.shop_id, "void", f'<span data-row="row-{point.id}"></span>')
@@ -487,13 +476,6 @@ async def void_redemption_route(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Redemption not found")
     if redemption.shop_id != ctx.shop_id:
         raise HTTPException(status.HTTP_403_FORBIDDEN, "Cross-shop access denied")
-
-    age_seconds = (utcnow() - redemption.created_at).total_seconds()
-    if age_seconds > VOID_WINDOW_SECONDS:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            f"Void window expired ({VOID_WINDOW_SECONDS}s)",
-        )
 
     await void_redemption(db, redemption, by_staff_id=ctx.staff_id)
     publish(ctx.shop_id, "void", f'<span data-row="row-{redemption.id}"></span>')

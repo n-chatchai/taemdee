@@ -43,13 +43,11 @@
   (function () {
     const fdOverlay = document.getElementById('feed-detail-overlay');
     const fdSheet = document.getElementById('feed-detail-sheet');
-    let fdCountdownTimer = null;
     let fdCurrentRowId = null;
 
     window.closeFeedDetail = function () {
       fdOverlay.classList.remove('open');
       fdSheet.hidden = true;
-      if (fdCountdownTimer) { clearInterval(fdCountdownTimer); fdCountdownTimer = null; }
       fdCurrentRowId = null;
     };
 
@@ -88,14 +86,6 @@
           voidRow.hidden = false;
           voidBtn.disabled = false;
           voidLabel.textContent = d.is_point ? 'ยกเลิกการออกแต้มนี้' : 'ยกเลิกการรับรางวัลนี้';
-          let secs = d.void_seconds_left;
-          fdCountdownTimer = setInterval(() => {
-            secs -= 1;
-            if (secs <= 0) {
-              clearInterval(fdCountdownTimer); fdCountdownTimer = null;
-              voidBtn.disabled = true;
-            }
-          }, 1000);
           voidBtn.onclick = async () => {
             voidBtn.disabled = true;
             const vr = await fetch(d.void_url, { method: 'POST' });

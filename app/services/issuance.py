@@ -89,7 +89,7 @@ async def void_point(
     *,
     by_staff_id: Optional[UUID] = None,
 ) -> Point:
-    """Void a stamp. The 60-second window check is enforced by the caller (route layer)."""
+    """Void a stamp."""
     stamp.is_voided = True
     stamp.voided_at = utcnow()
     stamp.voided_by_staff_id = by_staff_id

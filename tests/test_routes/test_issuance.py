@@ -291,7 +291,7 @@ async def test_unauthenticated_issue_401(client):
     assert response.status_code == 401
 
 
-async def test_void_within_window(auth_client, db, shop, customer):
+async def test_void_recent_point(auth_client, db, shop, customer):
     issued = await auth_client.post(
         "/shop/issue", data={"method": "shop_scan", "customer_id": str(customer.id)}
     )
@@ -302,7 +302,9 @@ async def test_void_within_window(auth_client, db, shop, customer):
     assert response.json()["voided"] is True
 
 
-async def test_void_after_window_400(auth_client, db, shop, customer):
+async def test_void_old_point_still_allowed(auth_client, db, shop, customer):
+    """Voids no longer have a time-window limit — the shop can roll back any
+    stamp that hasn't already been voided. UI surfaces this on every feed row."""
     old = Point(
         shop_id=shop.id,
         customer_id=customer.id,
@@ -314,4 +316,5 @@ async def test_void_after_window_400(auth_client, db, shop, customer):
     await db.refresh(old)
 
     response = await auth_client.post(f"/shop/points/{old.id}/void")
-    assert response.status_code == 400
+    assert response.status_code == 200
+    assert response.json()["voided"] is True
