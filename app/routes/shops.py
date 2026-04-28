@@ -172,7 +172,7 @@ async def dashboard(
         )
     )).all()
     daily_counts = [0] * 7
-    for (created_at,) in point_rows:
+    for created_at in point_rows:
         bkk_date = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
         offset_days = (today_start_bkk.date() - bkk_date).days
         if 0 <= offset_days < 7:
