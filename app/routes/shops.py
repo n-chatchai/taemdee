@@ -607,13 +607,17 @@ async def insights_page(
         "new_customer": "ขอบคุณลูกค้าใหม่",
     }
     for r in rows:
+        # Per DeeReach v2: credits live in satang (1 credit = 100 satang).
+        # Use final_ if the campaign actually sent, else fall back to the
+        # reservation amount the engine locked when scheduling.
+        spent_satang = r.final_credits_satang or r.locked_credits_satang
         row_dict = {
             "id": str(r.id),
             "kind": r.kind,
             "name": kind_th.get(r.kind, r.kind),
             "sent_at": r.sent_at,
             "audience_count": r.audience_count,
-            "credits_spent": r.credits_spent,
+            "credits_spent": spent_satang // 100,
         }
         if r.sent_at and r.sent_at >= seven_days_ago:
             active_campaigns.append(row_dict)
