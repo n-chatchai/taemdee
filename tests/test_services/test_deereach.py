@@ -208,6 +208,93 @@ async def test_send_campaign_insufficient_credits_raises(db, shop):
         await send_campaign(db, shop, "unredeemed_reward")
 
 
+async def test_pick_channel_prefers_web_push_over_line(db, shop):
+    """Per PRD §10 waterfall — web_push (0.5 Cr) wins when subscribed,
+    even though line (1 Cr) is also reachable."""
+    from app.services.deereach import _pick_channel
+
+    c = Customer(
+        is_anonymous=False,
+        line_id="U_both",
+        web_push_endpoint="https://example.push/sub-abc",
+    )
+    assert _pick_channel(c) == "web_push"
+
+
+async def test_pick_channel_falls_back_to_line_without_web_push(db, shop):
+    from app.services.deereach import _pick_channel
+
+    c = Customer(is_anonymous=False, line_id="U_line_only")
+    assert _pick_channel(c) == "line"
+
+
+async def test_pick_channel_falls_back_to_inbox_for_anonymous(db, shop):
+    from app.services.deereach import _pick_channel
+
+    c = Customer(is_anonymous=True)
+    assert _pick_channel(c) == "inbox"
+
+
+async def test_compute_suggestions_excludes_recently_messaged(db, shop):
+    """Per PRD §10 anti-spam — a customer messaged within the last 14 days
+    must drop out of every suggestion's audience until the cooldown clears."""
+    from app.models import DeeReachCampaign, DeeReachMessage
+
+    forgot = await _customer(db, line_id="U_forgot")
+    for _ in range(10):
+        await _stamp(db, shop, forgot, days_ago=14)
+
+    # Without a prior message → unredeemed_reward should fire.
+    pre = await compute_suggestions(db, shop)
+    assert any(s.kind == "unredeemed_reward" for s in pre)
+
+    # Seed a recent message to this customer (3 days ago) — within the
+    # 14-day rate-limit window.
+    campaign = DeeReachCampaign(
+        shop_id=shop.id, kind="unredeemed_reward",
+        audience_count=1, status="completed",
+        sent_at=utcnow() - timedelta(days=3),
+    )
+    db.add(campaign)
+    await db.commit()
+    await db.refresh(campaign)
+    msg = DeeReachMessage(
+        campaign_id=campaign.id, customer_id=forgot.id,
+        channel="line", cost_satang=100, status="delivered",
+        created_at=utcnow() - timedelta(days=3),
+    )
+    db.add(msg)
+    await db.commit()
+
+    post = await compute_suggestions(db, shop)
+    assert all(s.kind != "unredeemed_reward" for s in post)
+
+
+async def test_send_campaign_writes_inbox_for_anonymous_customer(db, shop):
+    """Anonymous (no LINE id, no phone, no push) → inbox channel → DB write
+    in the inbox table when the dispatcher runs."""
+    from app.models import Inbox
+    from app.services.deereach import _pick_channel
+    from app.tasks.deereach import _send_inbox
+    from uuid import uuid4
+
+    anon = await _customer(db)
+    assert _pick_channel(anon) == "inbox"
+
+    fake_campaign_id = uuid4()
+    delivered = await _send_inbox(
+        db, anon.id, shop.id, fake_campaign_id, "ทดสอบกล่องข้อความ",
+    )
+    assert delivered is True
+    await db.commit()
+
+    rows = (await db.exec(select(Inbox).where(Inbox.customer_id == anon.id))).all()
+    assert len(rows) == 1
+    assert rows[0].body == "ทดสอบกล่องข้อความ"
+    assert rows[0].shop_id == shop.id
+    assert rows[0].read_at is None
+
+
 async def test_compute_suggestions_caps_at_max(db, shop):
     forgot = await _customer(db, line_id="U_forgot")
     for _ in range(10):

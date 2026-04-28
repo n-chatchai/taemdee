@@ -27,6 +27,10 @@ class Customer(SQLModel, table=True):
     # polite default "คุณลูกค้า" so we don't ask again).
     display_name: Optional[str] = Field(default=None)
     preferred_channel: Optional[str] = Field(default=None)
+    # Set to the customer's Web Push subscription endpoint URL when they
+    # accept push permission on a DeeCard PWA. NULL = not subscribed; the
+    # DeeReach waterfall then falls through to LINE/SMS/inbox.
+    web_push_endpoint: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="customer")

@@ -37,6 +37,7 @@ from app.core.config import settings
 from app.models.credit import CreditLog
 from app.models.customer import Customer
 from app.models.deereach import DeeReachCampaign, DeeReachMessage
+from app.models.inbox import Inbox
 from app.models.shop import Shop
 
 log = logging.getLogger(__name__)
@@ -81,18 +82,36 @@ def _send_sms(phone: Optional[str], message: str) -> bool:
     return True
 
 
-def _send_inbox(customer_id: UUID, message: str) -> bool:
-    """DeeCard in-app inbox — always succeeds (local DB write)."""
+async def _send_inbox(
+    db: AsyncSession,
+    customer_id: UUID,
+    shop_id: UUID,
+    campaign_id: UUID,
+    message: str,
+) -> bool:
+    """DeeCard in-app inbox — DB write only, always succeeds. Customer
+    sees the message next time they open their card; reads on their own
+    time via /my-cards inbox tab."""
+    db.add(Inbox(
+        customer_id=customer_id,
+        shop_id=shop_id,
+        campaign_id=campaign_id,
+        body=message,
+    ))
     log.info("inbox → customer=%s msg=%r", customer_id, message[:40])
     return True
 
 
-def _dispatch_channel(
+async def _dispatch_channel(
     channel: str,
     customer: Customer,
     message: str,
+    *,
+    db: AsyncSession,
+    shop_id: UUID,
+    campaign_id: UUID,
 ) -> bool:
-    """Route to the correct channel stub. Returns True = delivered."""
+    """Route to the correct channel handler. Returns True = delivered."""
     if channel == "web_push":
         return _send_web_push(customer.id, message)
     if channel == "line":
@@ -100,7 +119,7 @@ def _dispatch_channel(
     if channel == "sms":
         return _send_sms(customer.phone, message)
     if channel == "inbox":
-        return _send_inbox(customer.id, message)
+        return await _send_inbox(db, customer.id, shop_id, campaign_id, message)
     log.error("Unknown channel %r — treating as failed", channel)
     return False
 
@@ -176,7 +195,10 @@ async def _run(campaign_id: UUID) -> None:
             # Get the message text from the campaign record
             message_text = campaign.message_text or ""
 
-            success = _dispatch_channel(msg.channel, customer, message_text)
+            success = await _dispatch_channel(
+                msg.channel, customer, message_text,
+                db=db, shop_id=shop.id, campaign_id=campaign.id,
+            )
 
             if success:
                 msg.status = "delivered"

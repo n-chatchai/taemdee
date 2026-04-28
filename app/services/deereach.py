@@ -280,8 +280,16 @@ async def compute_suggestions(
     """
     out: List[Suggestion] = []
 
+    # Per PRD §10 anti-spam — exclude customers already messaged this shop
+    # in the last 14 days from every kind. Done up-front so each suggestion
+    # card already reflects the actual sendable audience.
+    rate_limited = await _recently_messaged_customer_ids(db, shop)
+
+    def _eligible(customers: List[Customer]) -> List[Customer]:
+        return [c for c in customers if c.id not in rate_limited]
+
     # 1. Unredeemed reward — highest urgency (customer earned it, just forgot)
-    unredeemed = await find_unredeemed_reward_customers(db, shop)
+    unredeemed = _eligible(await find_unredeemed_reward_customers(db, shop))
     if unredeemed:
         out.append(
             Suggestion(
@@ -295,7 +303,7 @@ async def compute_suggestions(
         )
 
     # 2. Almost-there — short nudge, often converts
-    almost = await find_almost_there_customers(db, shop)
+    almost = _eligible(await find_almost_there_customers(db, shop))
     if almost:
         out.append(
             Suggestion(
@@ -309,7 +317,7 @@ async def compute_suggestions(
         )
 
     # 3. Win-back — broader net, lapsed regulars
-    lapsed = await find_lapsed_customers(db, shop)
+    lapsed = _eligible(await find_lapsed_customers(db, shop))
     if lapsed:
         out.append(
             Suggestion(
@@ -323,7 +331,7 @@ async def compute_suggestions(
         )
 
     # 4. New customers — say thank-you to first-timers within the last K days
-    new_customers = await find_new_customers(db, shop)
+    new_customers = _eligible(await find_new_customers(db, shop))
     if new_customers:
         out.append(
             Suggestion(
@@ -361,28 +369,60 @@ async def render_message(kind: str, shop: Shop) -> str:
     return f"ทักทายจาก {shop.name}"
 
 
+# Per PRD §10 anti-spam: a single shop must not message the same customer
+# more than once every RATE_LIMIT_DAYS days, regardless of kind. Protects
+# customers from hammering and the platform from blocked LINE OAs.
+RATE_LIMIT_DAYS = 14
+
+
+async def _recently_messaged_customer_ids(
+    db: AsyncSession, shop: Shop, days: int = RATE_LIMIT_DAYS,
+) -> set[UUID]:
+    """Customer ids that already received a DeeReach msg from this shop
+    within the last `days` days. Excluded from new audiences."""
+    cutoff = utcnow() - timedelta(days=days)
+    rows = (await db.exec(
+        select(DeeReachMessage.customer_id)
+        .join(DeeReachCampaign, DeeReachCampaign.id == DeeReachMessage.campaign_id)
+        .where(
+            DeeReachCampaign.shop_id == shop.id,
+            DeeReachMessage.created_at >= cutoff,
+        )
+        .distinct()
+    )).all()
+    return set(rows)
+
+
 async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Customer]:
     if kind == "win_back":
-        return await find_lapsed_customers(db, shop)
-    if kind == "almost_there":
-        return await find_almost_there_customers(db, shop)
-    if kind == "unredeemed_reward":
-        return await find_unredeemed_reward_customers(db, shop)
-    if kind == "new_customer":
-        return await find_new_customers(db, shop)
-    raise DeeReachSendError(f"Unsupported kind: {kind}")
+        candidates = await find_lapsed_customers(db, shop)
+    elif kind == "almost_there":
+        candidates = await find_almost_there_customers(db, shop)
+    elif kind == "unredeemed_reward":
+        candidates = await find_unredeemed_reward_customers(db, shop)
+    elif kind == "new_customer":
+        candidates = await find_new_customers(db, shop)
+    else:
+        raise DeeReachSendError(f"Unsupported kind: {kind}")
+
+    # Apply platform rate limit — drop anyone messaged in the last 14d.
+    rate_limited = await _recently_messaged_customer_ids(db, shop)
+    return [c for c in candidates if c.id not in rate_limited]
 
 
 def _pick_channel(customer: Customer) -> str:
     """Waterfall: use customer's preferred channel, else pick cheapest available.
 
-    Waterfall order: line > sms > web_push > inbox.
-    `inbox` is always available (free, no external API needed).
+    Per PRD §10 the waterfall favours the cheapest reachable channel:
+    web_push (0.5 Cr) > line (1 Cr) > sms (3 Cr) > inbox (0 Cr fallback).
+    `inbox` is always available (DB write only — no external API call).
     """
     pref = customer.preferred_channel
     if pref in CHANNEL_COST_SATANG:
         return pref
-    # Waterfall fallback
+    # Waterfall fallback — cheapest first.
+    if customer.web_push_endpoint:
+        return "web_push"
     if customer.line_id:
         return "line"
     if customer.phone:
