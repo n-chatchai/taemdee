@@ -1,5 +1,5 @@
 import io
-from datetime import timedelta
+from datetime import timedelta, timezone
 from typing import Optional
 
 import segno
@@ -98,6 +98,51 @@ async def dashboard(
     week_ago = now - timedelta(days=7)
     two_weeks_ago = now - timedelta(days=14)
 
+    # Today / yesterday slices for the snapshot card. Day boundaries use
+    # Bangkok local time so a 23:55 stamp doesn't get filed under "yesterday"
+    # when the owner glances at the dashboard at 00:05.
+    from app.models.util import BKK
+    bkk_now = now.replace(tzinfo=timezone.utc).astimezone(BKK)
+    today_start_bkk = bkk_now.replace(hour=0, minute=0, second=0, microsecond=0)
+    today_start_utc = today_start_bkk.astimezone(timezone.utc).replace(tzinfo=None)
+    yesterday_start_utc = today_start_utc - timedelta(days=1)
+
+    customers_today = (await db.exec(
+        select(func.count(func.distinct(Point.customer_id)))
+        .where(
+            Point.shop_id == shop.id,
+            Point.created_at >= today_start_utc,
+            Point.is_voided == False,  # noqa: E712
+        )
+    )).one()
+    customers_yesterday = (await db.exec(
+        select(func.count(func.distinct(Point.customer_id)))
+        .where(
+            Point.shop_id == shop.id,
+            Point.created_at >= yesterday_start_utc,
+            Point.created_at < today_start_utc,
+            Point.is_voided == False,  # noqa: E712
+        )
+    )).one()
+    today_delta = customers_today - customers_yesterday
+
+    points_today = (await db.exec(
+        select(func.count()).select_from(Point)
+        .where(
+            Point.shop_id == shop.id,
+            Point.created_at >= today_start_utc,
+            Point.is_voided == False,  # noqa: E712
+        )
+    )).one()
+    redemptions_today = (await db.exec(
+        select(func.count()).select_from(Redemption)
+        .where(
+            Redemption.shop_id == shop.id,
+            Redemption.created_at >= today_start_utc,
+            Redemption.is_voided == False,  # noqa: E712
+        )
+    )).one()
+
     # Headline: distinct customers stamped this week (proxy for "came back")
     customers_this_week = (await db.exec(
         select(func.count(func.distinct(Point.customer_id)))
@@ -113,6 +158,44 @@ async def dashboard(
         )
     )).one()
     wow_delta = customers_this_week - customers_last_week
+
+    # 7-day point counts for the trend bars (today is rightmost). Pre-fetch
+    # all points in window then bucket by BKK day in Python — one query
+    # beats issuing seven `count(...) where day = N` queries.
+    week_start_utc = today_start_utc - timedelta(days=6)
+    point_rows = (await db.exec(
+        select(Point.created_at)
+        .where(
+            Point.shop_id == shop.id,
+            Point.created_at >= week_start_utc,
+            Point.is_voided == False,  # noqa: E712
+        )
+    )).all()
+    daily_counts = [0] * 7
+    for (created_at,) in point_rows:
+        bkk_date = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
+        offset_days = (today_start_bkk.date() - bkk_date).days
+        if 0 <= offset_days < 7:
+            daily_counts[6 - offset_days] += 1
+    max_daily = max(daily_counts) or 1
+    daily_pct = [int(round(100 * c / max_daily)) for c in daily_counts]
+    trend_total = sum(daily_counts)
+
+    # Week-over-week percentage for the trend header
+    prev_week_total = (await db.exec(
+        select(func.count()).select_from(Point)
+        .where(
+            Point.shop_id == shop.id,
+            Point.created_at >= two_weeks_ago,
+            Point.created_at < week_ago,
+            Point.is_voided == False,  # noqa: E712
+        )
+    )).one()
+    if prev_week_total:
+        wow_pct = int(round(100 * (trend_total - prev_week_total) / prev_week_total))
+    else:
+        wow_pct = None
+
     points_total = (await db.exec(
         select(func.count()).select_from(Point)
         .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
@@ -121,12 +204,12 @@ async def dashboard(
         select(func.count()).select_from(Redemption)
         .where(Redemption.shop_id == shop.id, Redemption.is_voided == False)  # noqa: E712
     )).one()
+
     branches_count = (await db.exec(
         select(func.count()).select_from(Branch).where(Branch.shop_id == shop.id)
     )).one()
     # The branch-pill only shows for multi-branch shops (>=2 branches), per
-    # PRD §6.I — single-branch shops see no branch UI anywhere. Label is the
-    # first branch's name; the dashboard template gates on branches_count.
+    # PRD §6.I — single-branch shops see no branch UI anywhere.
     branch_label = None
     if branches_count > 1:
         first_branch = (await db.exec(
@@ -136,34 +219,32 @@ async def dashboard(
 
     weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
 
-    # Live feed: most recent 8 points + redemptions, merged. Each entry
-    # carries the customer's display name so the dock can render
-    # "เพิ่งเกิด ★ สมศรี" instead of "#A12B" — the row is the unit the
-    # owner taps to void, so a recognisable name matters.
-    recent_points = (await db.exec(
-        select(Point).where(Point.shop_id == shop.id)
-        .order_by(Point.created_at.desc()).limit(8)
-    )).all()
-    recent_redemptions = (await db.exec(
-        select(Redemption).where(Redemption.shop_id == shop.id)
-        .order_by(Redemption.created_at.desc()).limit(4)
-    )).all()
-
-    customer_ids = {p.customer_id for p in recent_points} | {r.customer_id for r in recent_redemptions}
-    customers_by_id = {}
-    if customer_ids:
-        from app.models import Customer
-        rows = (await db.exec(select(Customer).where(Customer.id.in_(customer_ids)))).all()
-        customers_by_id = {c.id: (c.display_name or "ลูกค้า") for c in rows}
-
-    feed = sorted(
-        [("point", p, customers_by_id.get(p.customer_id, "ลูกค้า")) for p in recent_points]
-        + [("redemption", r, customers_by_id.get(r.customer_id, "ลูกค้า")) for r in recent_redemptions],
-        key=lambda x: x[1].created_at,
-        reverse=True,
-    )[:8]
-
+    # Build the "แต้มดีแนะนำ" attention cards from current state. Three slots:
+    # warn (low credits), opp (near-ready customers), ai (suggestion count).
     suggestions = await compute_suggestions(db, shop)
+    attn_cards = []
+    if shop.credit_balance < 100:
+        attn_cards.append({
+            "kind": "warn",
+            "head": f"เครดิตเหลือ {shop.credit_balance} · ใกล้หมด",
+            "sub": "เติมก่อนใช้ส่งโปรชวนกลับ",
+            "link": "/shop/topup",
+        })
+    near_ready = next((s for s in suggestions if s.kind == "almost_there"), None)
+    if near_ready:
+        attn_cards.append({
+            "kind": "opp",
+            "head": f"{near_ready.audience_count} ลูกค้าใกล้รับรางวัล",
+            "sub": near_ready.body,
+            "link": "/shop/customers?filter=near",
+        })
+    if suggestions:
+        attn_cards.append({
+            "kind": "ai",
+            "head": suggestions[0].head,
+            "sub": f"{len(suggestions)} แคมเปญที่ระบบแนะนำ · เพิ่มได้",
+            "link": "/shop/insights",
+        })
 
     from app.core.config import settings as app_settings
 
@@ -172,13 +253,19 @@ async def dashboard(
         name="shop/dashboard.html",
         context={
             "shop": shop,
+            "customers_today": customers_today,
+            "today_delta": today_delta,
+            "points_today": points_today,
+            "redemptions_today": redemptions_today,
             "customers_this_week": customers_this_week,
             "wow_delta": wow_delta,
+            "wow_pct": wow_pct,
+            "daily_pct": daily_pct,
+            "daily_counts": daily_counts,
             "points_total": points_total,
             "redemptions_total": redemptions_total,
-            "feed": feed,
             "feed_cap": app_settings.shop_customer_last_scan_display_number,
-            "suggestions": suggestions,
+            "attn_cards": attn_cards,
             "weekday_th": weekday_th,
             "branches_count": branches_count,
             "branch_label": branch_label,

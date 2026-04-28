@@ -10,13 +10,15 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
-  {# Markup mirrors design/taemdee-shop.html S3 (lines 6548-6658) verbatim;
-     only Jinja loops + 2-tap dock void JS are added on top. #}
-  <div class="td td-dashboard">
+  {# Markup follows design/taemdee-shop.html S3 — full-page hub with
+     snapshot + trend bars + attention cards + 4-tab glass nav.
+     The old dock+feed pattern moved to /shop/issue (S3.issue tab). #}
+  <div class="td td-tabbed">
+    <div class="topbar"><span></span><span></span></div>
 
     <div class="s3-top">
       <div class="hi">
-        สวัสดี{{ shop.name }}
+        สวัสดี{% if shop.name %} {{ shop.name }}{% endif %}
         <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
           <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
           <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
@@ -25,370 +27,100 @@
         <span class="day">{{ weekday_th }} · เริ่มต้นวันได้ดี</span>
       </div>
       <div class="actions">
-        {% if branches_count > 1 %}
+        {% if branches_count > 1 and branch_label %}
           <a href="/shop/branches" class="branch-pill" title="เลือกสาขา">{{ branch_label }}</a>
         {% endif %}
-        <a href="/shop/settings" class="avatar" title="ตั้งค่า">{{ shop.name[0]|upper }}</a>
+        <a href="/shop/settings" class="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+          </svg>
+        </a>
       </div>
     </div>
 
-    <div class="s3-hero">
-      <div class="hero-top">
-        <div class="label">✦ สัปดาห์นี้</div>
-        {% if wow_delta > 0 %}
-          <div class="delta">↑ +{{ wow_delta }}</div>
-        {% elif wow_delta < 0 %}
-          <div class="delta is-down">↓ {{ wow_delta }}</div>
+    {# Today's snapshot — distinct customers + delta vs yesterday + sub-stats. #}
+    <div class="s3-snapshot">
+      <div class="snap-label">ลูกค้าวันนี้</div>
+      <div class="snap-num-row">
+        <div class="snap-num">
+          <span class="num-big">{{ customers_today }}</span>
+          <span class="num-unit">คน</span>
+        </div>
+        {% if today_delta != 0 %}
+          <div class="snap-delta {% if today_delta > 0 %}up{% else %}down{% endif %}">
+            <span class="delta-arr">{% if today_delta > 0 %}↑{% else %}↓{% endif %}</span>
+            <span class="delta-num">{% if today_delta > 0 %}+{% endif %}{{ today_delta }}</span>
+            <span class="delta-from">จากเมื่อวาน</span>
+          </div>
         {% endif %}
       </div>
-      <div class="num">
-        <span class="accent">{{ customers_this_week }}</span>
-        <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      </div>
-      <div class="caption">ลูกค้ากลับมา</div>
-    </div>
-
-    <div class="s3-stats-pills">
-      <div class="sp">
-        <div class="sp-num">{{ points_total }}</div>
-        <div class="sp-label">แจก</div>
-      </div>
-      <div class="sp">
-        <div class="sp-num">{{ redemptions_total }}</div>
-        <div class="sp-label">แลก</div>
-      </div>
-      <div class="sp">
-        <div class="sp-num">{{ shop.credit_balance }}</div>
-        <div class="sp-label">เครดิต</div>
+      <div class="snap-sub">
+        ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
       </div>
     </div>
 
-    {% if suggestions %}
-      <div class="ph-section-h">
+    {# 7-day trend — simple CSS bars (heights computed server-side as %). #}
+    <div class="s3-trend">
+      <div class="trend-head">
+        <span class="trend-title">สัปดาห์นี้</span>
+        {% if wow_pct is not none %}
+          <span class="trend-pct {% if wow_pct < 0 %}is-down{% endif %}">
+            {% if wow_pct >= 0 %}↑ +{% else %}↓ {% endif %}{{ wow_pct|abs }}%
+          </span>
+        {% endif %}
+      </div>
+      <div class="trend-bars">
+        {% set day_labels = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'] %}
+        {% set today_idx = (loop_today_idx if loop_today_idx is defined else None) %}
+        {% for pct in daily_pct %}
+          {% set idx_label = (loop.index0 + (7 - daily_pct|length)) % 7 %}
+          <div class="tb">
+            <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%"></div>
+            <span class="tb-day">{{ day_labels[(loop.index0 - 6 + 7) % 7] }}</span>
+          </div>
+        {% endfor %}
+      </div>
+    </div>
+
+    {% if attn_cards %}
+      <div class="ph-section-h" style="margin-top:8px;">
         <div class="label">แต้มดีแนะนำ ✦</div>
       </div>
-      {% set top = suggestions[0] %}
-      {% set extra = suggestions|length - 1 %}
-      <a class="s3-reach" href="/shop/deereach">
-        <div class="reach-kicker">{{ suggestions|length }} แคมเปญ</div>
-        <div class="reach-head">
-          {{ top.head }}{% if extra > 0 %} · เพิ่มอีก {{ extra }} แคมเปญ{% endif %}
-        </div>
-        <div class="reach-body">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับแก้ก่อนส่งได้</div>
-        <div class="reach-cta">
-          <span>ดูคำแนะนำทั้งหมด</span>
-          <span class="reach-arrow">→</span>
-        </div>
-      </a>
+      {% for c in attn_cards %}
+        <a class="s3-attn {{ c.kind }}" href="{{ c.link }}">
+          <div class="attn-icon">
+            {% if c.kind == 'warn' %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+                <line x1="12" y1="9" x2="12" y2="13"/>
+                <line x1="12" y1="17" x2="12.01" y2="17"/>
+              </svg>
+            {% elif c.kind == 'opp' %}
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <polyline points="20 12 20 22 4 22 4 12"/>
+                <rect x="2" y="7" width="20" height="5"/>
+                <line x1="12" y1="22" x2="12" y2="7"/>
+                <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+                <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+              </svg>
+            {% else %}
+              <svg viewBox="0 0 24 24" fill="currentColor">
+                <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
+              </svg>
+            {% endif %}
+          </div>
+          <div class="attn-info">
+            <div class="attn-h">{{ c.head }}</div>
+            <div class="attn-s">{{ c.sub }}</div>
+          </div>
+          <span class="attn-arr">›</span>
+        </a>
+      {% endfor %}
     {% endif %}
 
-    {# Inline error banner — replaces alert(); auto-dismisses #}
-    <div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
-
-    {# S3.detail bottom sheet — opened by tapping a feed row in the dock.
-       Skeleton populated by JS via /shop/feed/{kind}/{id}. #}
-    <div id="feed-detail-overlay" class="issue-modal-overlay"
-         onclick="if (event.target === this) closeFeedDetail();"></div>
-    <div id="feed-detail-sheet" class="issue-modal-sheet" hidden>
-      <div class="issue-modal-handle"></div>
-      <div class="issue-modal-head">
-        <div class="title">รายละเอียดกิจกรรม</div>
-        <a href="#" class="x-btn" onclick="closeFeedDetail(); return false;">×</a>
-      </div>
-      <div class="detail-customer">
-        <div class="dc-avatar" id="fd-avatar">?</div>
-        <div class="dc-info">
-          <div class="dc-name" id="fd-name">—</div>
-          <div class="dc-meta" id="fd-meta">—</div>
-        </div>
-      </div>
-      <div class="detail-rows">
-        <div class="dr-row">
-          <span class="dr-label">กิจกรรม</span>
-          <span class="dr-value" id="fd-activity">—</span>
-        </div>
-        <div class="dr-row">
-          <span class="dr-label">เวลา</span>
-          <span class="dr-value" id="fd-time">—</span>
-        </div>
-        <div class="dr-row">
-          <span class="dr-label">วิธีออก</span>
-          <span class="dr-value" id="fd-method">—</span>
-        </div>
-        <div class="dr-row">
-          <span class="dr-label">ผู้ออก</span>
-          <span class="dr-value" id="fd-issuer">—</span>
-        </div>
-        <div class="dr-row" id="fd-progress-row">
-          <span class="dr-label">สะสมใหม่</span>
-          <span class="dr-value" id="fd-progress">—</span>
-        </div>
-      </div>
-      <div class="detail-void-row" id="fd-void-row" hidden>
-        <button class="detail-void-btn" id="fd-void-btn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M3 6h18"/>
-            <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
-            <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
-          </svg>
-          <span id="fd-void-label">ยกเลิกการออกแต้มนี้</span>
-        </button>
-      </div>
-    </div>
-
-    <div class="s3-spacer"></div>
-
-    <div class="s3-dock">
-      <div class="dock-handle"></div>
-      <div class="sap-feed-h">
-        <span>ลูกค้าล่าสุด</span>
-        {% if feed %}
-          <span class="sap-feed-hint-inline">แตะรายการเพื่อดูหรือยกเลิก</span>
-        {% else %}
-          <span class="sap-feed-hint-inline">ยังไม่มีกิจกรรมวันนี้</span>
-        {% endif %}
-      </div>
-      <div class="sap-feed">
-        <table class="sap-table" id="sap-table">
-          <tbody id="sap-tbody">
-            {% for kind, item, customer_name in feed[:feed_cap] %}
-              <tr class="feed-row{% if loop.first %} latest{% endif %}"
-                  id="row-{{ item.id }}"
-                  data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
-                <td class="t">{{ item.created_at|bkk_feed_time }}</td>
-                <td class="n">{{ customer_name }}</td>
-                <td class="a">
-                  {% if kind == 'point' %}
-                    <span class="icon-mini">+</span> <strong>1 แต้ม</strong>
-                  {% else %}
-                    <strong>รับรางวัล</strong>
-                  {% endif %}
-                </td>
-              </tr>
-            {% endfor %}
-          </tbody>
-        </table>
-      </div>
-
-      <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
-      <div class="sap-actions">
-        {% if shop.issue_method_shop_scan %}
-          <a class="sap-action" href="/shop/issue/scan">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            <span>สแกน</span>
-          </a>
-        {% endif %}
-        {% if shop.issue_method_phone_entry %}
-          <a class="sap-action" href="/shop/issue/phone">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="2"/>
-              <line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
-            <span>กรอกเบอร์</span>
-          </a>
-        {% endif %}
-        {% if shop.issue_method_grant %}
-          <a class="sap-action" href="/shop/issue/grant">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <span>ค้นชื่อ</span>
-          </a>
-        {% endif %}
-      </div>
-
-    </div>
-
-    <div class="s3-footer-brand">
-      <span class="fm-brand">
-        <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22">
-          <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-          <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-          <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
-        </svg>
-        <span class="brand">taemdee<span class="dot">.</span></span>
-      </span>
-      <a href="#install" class="fm-install" onclick="document.getElementById('install-sheet')?.classList.add('open'); return false;">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M12 5v14"/><path d="M5 12l7 7 7-7"/>
-        </svg> เพิ่มลงหน้าจอ
-      </a>
-    </div>
-
-    {% include "_partials/install_sheet.html" %}
+    {% set nav_active = 'home' %}
+    {% include "_partials/glass_nav.html" %}
   </div>
-
-  <script>
-    // Live SSE feed → dock table. New points/redemptions prepend; oldest
-    // beyond 3 falls off. Tapping a row opens the S3.detail bottom sheet
-    // (no more S6 toast popup — the design dropped it).
-    const feedBody = document.getElementById('sap-tbody');
-    const FEED_CAP = {{ feed_cap }};
-    const feedHint = document.querySelector('.sap-feed-hint');
-    const flash = document.getElementById('dash-flash');
-    const evt = new EventSource('/shop/events');
-
-    let flashTimer = null;
-    function showFlash(msg, kind) {
-      flash.textContent = msg;
-      flash.className = 'dash-flash ' + (kind === 'error' ? 'is-error' : 'is-ok');
-      flash.hidden = false;
-      clearTimeout(flashTimer);
-      flashTimer = setTimeout(() => { flash.hidden = true; }, 3000);
-    }
-
-    // ── Notification ding (Web Audio API — synthesized, no asset file) ───
-    // Browsers block autoplay until the user interacts with the page; the
-    // first click/touch unlocks the AudioContext.
-    let audioCtx = null;
-    function unlockAudio() {
-      if (!audioCtx) {
-        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
-        catch (_) { return; }
-      }
-      if (audioCtx.state === 'suspended') audioCtx.resume();
-    }
-    ['click', 'touchstart'].forEach(ev =>
-      document.addEventListener(ev, unlockAudio, { passive: true })
-    );
-
-    function playDing() {
-      if (!audioCtx || audioCtx.state !== 'running') return;
-      const t = audioCtx.currentTime;
-      const osc = audioCtx.createOscillator();
-      const gain = audioCtx.createGain();
-      osc.type = 'sine';
-      osc.frequency.setValueAtTime(880, t);          // A5
-      osc.frequency.setValueAtTime(660, t + 0.12);   // E5 — quick 2-tone chime
-      gain.gain.setValueAtTime(0.001, t);
-      gain.gain.exponentialRampToValueAtTime(0.28, t + 0.02);
-      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
-      osc.connect(gain).connect(audioCtx.destination);
-      osc.start(t);
-      osc.stop(t + 0.55);
-    }
-
-    evt.addEventListener('feed-row', (e) => {
-      if (feedHint) feedHint.textContent = 'แตะรายการเพื่อดูหรือยกเลิก';
-      feedBody.querySelector('.feed-row.latest')?.classList.remove('latest');
-      feedBody.insertAdjacentHTML('afterbegin', e.data);
-      const newRow = feedBody.firstElementChild;
-      if (newRow) {
-        newRow.classList.add('latest', 'just-arrived');
-        // Match the CSS animation duration; remove the class so a later
-        // re-trigger (insert another row) replays the animation.
-        setTimeout(() => newRow.classList.remove('just-arrived'), 2500);
-      }
-      while (feedBody.children.length > FEED_CAP) feedBody.lastElementChild?.remove();
-      playDing();
-    });
-
-    evt.addEventListener('void', (e) => {
-      const tmp = document.createElement('div');
-      tmp.innerHTML = e.data;
-      const rowId = tmp.firstElementChild?.dataset.row;
-      if (rowId) document.getElementById(rowId)?.classList.add('voided');
-    });
-
-    // ── S3.detail bottom sheet ───────────────────────────────────────────
-    const fdOverlay = document.getElementById('feed-detail-overlay');
-    const fdSheet = document.getElementById('feed-detail-sheet');
-    let fdCountdownTimer = null;
-    let fdCurrentRowId = null;
-
-    function closeFeedDetail() {
-      fdOverlay.classList.remove('open');
-      fdSheet.hidden = true;
-      if (fdCountdownTimer) { clearInterval(fdCountdownTimer); fdCountdownTimer = null; }
-      fdCurrentRowId = null;
-    }
-
-    async function openFeedDetail(rowEl) {
-      const url = rowEl.dataset.detailUrl;
-      if (!url) return;
-      fdCurrentRowId = rowEl.id;
-      try {
-        const r = await fetch(url);
-        if (!r.ok) {
-          const j = await r.json().catch(() => ({}));
-          showFlash(j.detail || (r.status + ' — โหลดข้อมูลไม่สำเร็จ'), 'error');
-          return;
-        }
-        const d = await r.json();
-        // Customer card
-        const initial = (d.customer_name || 'ล')[0];
-        document.getElementById('fd-avatar').textContent = initial;
-        document.getElementById('fd-name').textContent = d.customer_name;
-        document.getElementById('fd-meta').textContent = d.is_anonymous
-          ? 'ลูกค้า guest · ยังไม่ได้สมัคร'
-          : `${d.customer_phone} · ลูกค้าประจำ`;
-        // Activity row — orange "+" only on point issuance
-        const activityEl = document.getElementById('fd-activity');
-        activityEl.innerHTML = d.is_point
-          ? '<span class="dr-icon">+</span> <strong>1 แต้ม</strong>'
-          : '<strong>รับรางวัล</strong>';
-        document.getElementById('fd-time').textContent = d.time_full;
-        document.getElementById('fd-method').textContent = d.method_th;
-        document.getElementById('fd-issuer').textContent = d.issuer;
-        document.getElementById('fd-progress').textContent =
-          `${d.current_count} / ${d.threshold} แต้ม`;
-
-        const voidRow = document.getElementById('fd-void-row');
-        const voidBtn = document.getElementById('fd-void-btn');
-        const voidLabel = document.getElementById('fd-void-label');
-        if (d.voidable) {
-          voidRow.hidden = false;
-          voidBtn.disabled = false;
-          voidLabel.textContent = d.is_point ? 'ยกเลิกการออกแต้มนี้' : 'ยกเลิกการรับรางวัลนี้';
-          // Disable the button locally once the void window expires so the
-          // owner doesn't get a 400 from a stale sheet. Server enforces the
-          // same check authoritatively. Per the latest design we no longer
-          // show a visible countdown — quietly auto-disable when time is up.
-          let secs = d.void_seconds_left;
-          fdCountdownTimer = setInterval(() => {
-            secs -= 1;
-            if (secs <= 0) {
-              clearInterval(fdCountdownTimer); fdCountdownTimer = null;
-              voidBtn.disabled = true;
-            }
-          }, 1000);
-          voidBtn.onclick = async () => {
-            voidBtn.disabled = true;
-            const vr = await fetch(d.void_url, { method: 'POST' });
-            if (vr.ok) {
-              const row = document.getElementById(fdCurrentRowId);
-              row?.classList.add('voided');
-              closeFeedDetail();
-            } else {
-              const j = await vr.json().catch(() => ({}));
-              showFlash(j.detail || (vr.status + ' — ยกเลิกไม่สำเร็จ'), 'error');
-              voidBtn.disabled = false;
-            }
-          };
-        } else {
-          voidRow.hidden = true;
-        }
-
-        fdSheet.hidden = false;
-        fdOverlay.classList.add('open');
-      } catch (_) {
-        showFlash('โหลดข้อมูลไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต', 'error');
-      }
-    }
-
-    document.addEventListener('click', (e) => {
-      const row = e.target.closest('#sap-table .feed-row');
-      if (row && row.dataset.detailUrl) {
-        openFeedDetail(row);
-      }
-    });
-  </script>
 </body>
 </html>
