@@ -45,7 +45,7 @@ class Settings(BaseSettings):
     # identifying the sender (push services use it to contact you on abuse).
     web_push_vapid_public_key: Optional[str] = None
     web_push_vapid_private_key: Optional[str] = None
-    web_push_vapid_sub: str = "mailto:contact@taemdee.com"
+    web_push_vapid_sub: str = "mailto:push@taemdee.com"
 
 
 settings = Settings()
