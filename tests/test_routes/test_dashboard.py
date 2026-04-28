@@ -20,8 +20,10 @@ async def test_dashboard_renders_with_no_activity(auth_client, db, shop):
     response = await auth_client.get("/shop/dashboard")
     assert response.status_code == 200
     body = response.text
+    # Merged metrics card: title + period pills + 7 trend bars
     assert "ลูกค้าวันนี้" in body
-    assert "สัปดาห์นี้" in body
+    assert "s3-metrics" in body
+    assert ">วัน<" in body  # period pill
     # Glass nav present, home tab active
     assert "s3-glass-nav" in body
     assert 'href="/shop/customers"' in body

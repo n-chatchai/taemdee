@@ -21,56 +21,52 @@
     {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
     {% include "_partials/s3_top.html" %}
 
-    {# Time period pills — wires up in v2; today is the default + only
-       active period for now, but the chrome lands so the layout matches
-       design and v2 can flip them to functional without a redesign. #}
-    <div class="s3-time-pills">
-      <a class="tp active" href="/shop/dashboard">วันนี้</a>
-      <a class="tp" href="/shop/dashboard?period=week" aria-disabled="true" tabindex="-1">สัปดาห์</a>
-      <a class="tp" href="/shop/dashboard?period=month" aria-disabled="true" tabindex="-1">เดือน</a>
-    </div>
+    {# Merged metrics card per design rev — replaces the three separate
+       cards (time-pills, snapshot, trend) with one rounded surface that
+       holds the period tabs (underline style), big customer count + delta,
+       inline 7-day bars, and the sub-stats line. #}
+    <div class="s3-metrics">
+      <div class="met-head">
+        <span class="met-title">ลูกค้าวันนี้</span>
+        <span class="met-pills">
+          <a class="mp active" href="/shop/dashboard">วัน</a>
+          <a class="mp" href="/shop/dashboard?period=week" aria-disabled="true" tabindex="-1">สัปดาห์</a>
+          <a class="mp" href="/shop/dashboard?period=month" aria-disabled="true" tabindex="-1">เดือน</a>
+        </span>
+      </div>
 
-    {# Today's snapshot — distinct customers + delta vs yesterday + sub-stats. #}
-    <div class="s3-snapshot">
-      <div class="snap-label">ลูกค้าวันนี้</div>
-      <div class="snap-num-row">
-        <div class="snap-num">
+      <div class="met-num-row">
+        <div class="met-num">
           <span class="num-big">{{ customers_today }}</span>
           <span class="num-unit">คน</span>
         </div>
         {% if today_delta != 0 %}
-          <div class="snap-delta {% if today_delta > 0 %}up{% else %}down{% endif %}">
+          <div class="met-delta {% if today_delta > 0 %}up{% else %}down{% endif %}">
             <span class="delta-arr">{% if today_delta > 0 %}↑{% else %}↓{% endif %}</span>
             <span class="delta-num">{% if today_delta > 0 %}+{% endif %}{{ today_delta }}</span>
             <span class="delta-from">จากเมื่อวาน</span>
           </div>
         {% endif %}
       </div>
-      <div class="snap-sub">
-        ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
-      </div>
-    </div>
 
-    {# 7-day trend — simple CSS bars (heights computed server-side as %). #}
-    <div class="s3-trend">
-      <div class="trend-head">
-        <span class="trend-title">สัปดาห์นี้</span>
-        {% if wow_pct is not none %}
-          <span class="trend-pct {% if wow_pct < 0 %}is-down{% endif %}">
-            {% if wow_pct >= 0 %}↑ +{% else %}↓ {% endif %}{{ wow_pct|abs }}%
-          </span>
-        {% endif %}
+      <div class="met-trend">
+        <div class="trend-bars">
+          {% set day_labels = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'] %}
+          {% for pct in daily_pct %}
+            <div class="tb">
+              <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%"></div>
+              <span class="tb-day">{{ day_labels[(loop.index0 - 6 + 7) % 7] }}</span>
+            </div>
+          {% endfor %}
+        </div>
       </div>
-      <div class="trend-bars">
-        {% set day_labels = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'] %}
-        {% set today_idx = (loop_today_idx if loop_today_idx is defined else None) %}
-        {% for pct in daily_pct %}
-          {% set idx_label = (loop.index0 + (7 - daily_pct|length)) % 7 %}
-          <div class="tb">
-            <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%"></div>
-            <span class="tb-day">{{ day_labels[(loop.index0 - 6 + 7) % 7] }}</span>
-          </div>
-        {% endfor %}
+
+      <div class="met-sub">
+        ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
+        {% if wow_pct is not none %}
+          · สัปดาห์นี้
+          <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
+        {% endif %}
       </div>
     </div>
 

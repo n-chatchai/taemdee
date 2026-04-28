@@ -5569,8 +5569,156 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .td.td-tabbed { padding-bottom: 100px; }
 
 /* ==========================================================
-   S3 — Home dashboard: time pills + snapshot + trend + attn cards
+   S3 — Home dashboard: merged metrics card (time pills + hero + trend
+   + sub) per design rev — replaces 3 separate cards with one container.
    ========================================================== */
+.s3-metrics {
+  margin: 8px 20px 14px;
+  padding: 18px 20px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 18px;
+}
+.s3-metrics .met-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 10px;
+  margin-bottom: 14px;
+}
+.s3-metrics .met-title {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.s3-metrics .met-pills {
+  display: flex;
+  gap: 12px;
+}
+.s3-metrics .met-pills .mp {
+  padding: 2px 0;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  font-weight: 500;
+  color: var(--ink-softer);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+  position: relative;
+}
+.s3-metrics .met-pills .mp.active {
+  color: var(--ink);
+  font-weight: 700;
+}
+.s3-metrics .met-pills .mp.active::after {
+  content: '';
+  position: absolute;
+  bottom: -2px; left: 0; right: 0;
+  height: 2px;
+  background: var(--accent);
+  border-radius: 1px;
+}
+.s3-metrics .met-pills .mp[aria-disabled="true"] {
+  opacity: 0.5;
+  pointer-events: none;
+}
+.s3-metrics .met-num-row {
+  display: flex;
+  align-items: flex-end;
+  justify-content: space-between;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.s3-metrics .met-num {
+  display: flex;
+  align-items: baseline;
+  gap: 6px;
+}
+.s3-metrics .met-num .num-big {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.04em;
+}
+.s3-metrics .met-num .num-unit {
+  font-family: 'Prompt', sans-serif;
+  font-size: 16px;
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.s3-metrics .met-delta {
+  display: flex;
+  flex-direction: column;
+  align-items: flex-end;
+  line-height: 1.3;
+  padding-bottom: 4px;
+}
+.s3-metrics .met-delta .delta-arr,
+.s3-metrics .met-delta .delta-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+}
+.s3-metrics .met-delta .delta-arr { font-size: 16px; }
+.s3-metrics .met-delta .delta-num { font-size: 18px; }
+.s3-metrics .met-delta.up .delta-arr,
+.s3-metrics .met-delta.up .delta-num { color: #2D8050; }
+.s3-metrics .met-delta.down .delta-arr,
+.s3-metrics .met-delta.down .delta-num { color: var(--accent); }
+.s3-metrics .met-delta .delta-from {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-softer);
+  margin-top: 2px;
+}
+.s3-metrics .met-trend { margin-bottom: 14px; }
+.s3-metrics .met-trend .trend-bars {
+  display: grid;
+  grid-template-columns: repeat(7, 1fr);
+  gap: 6px;
+  align-items: end;
+  height: 64px;
+}
+.s3-metrics .met-trend .tb {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 4px;
+  height: 100%;
+  justify-content: flex-end;
+}
+.s3-metrics .met-trend .tb .tb-bar {
+  width: 100%;
+  background: linear-gradient(180deg, var(--accent) 0%, #FF8559 100%);
+  border-radius: 6px 6px 2px 2px;
+  min-height: 8px;
+}
+.s3-metrics .met-trend .tb:nth-last-child(-n+2) .tb-bar {
+  background: linear-gradient(180deg, var(--ink) 0%, #333 100%);
+}
+.s3-metrics .met-trend .tb .tb-day {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-softer);
+  line-height: 1;
+}
+.s3-metrics .met-sub {
+  padding-top: 12px;
+  border-top: 1px solid rgba(17, 17, 17, 0.08);
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.s3-metrics .met-sub strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Legacy s3-time-pills, s3-snapshot, s3-trend kept below for any caller
+   that still uses them (none in the current dashboard, but the styles
+   stay until we audit other pages). */
 .s3-time-pills {
   margin: 8px 20px 16px;
   padding: 4px;
@@ -5791,10 +5939,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
 }
 
-/* Settings cog (top-right) — bare icon, no chrome per design. */
+/* Settings cog (top-right) — bare icon, no chrome per design. Size
+   tightened 38→32 in the latest design rev so it doesn't crowd the
+   greeting line. */
 .s3-top .settings-btn {
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   background: transparent;
   color: var(--ink);
   border: none;
@@ -5805,17 +5955,16 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
   flex-shrink: 0;
 }
-.s3-top .settings-btn svg { width: 22px; height: 22px; }
+.s3-top .settings-btn svg { width: 18px; height: 18px; }
 .s3-top .settings-btn:active { transform: scale(0.92); }
 .s3-top .actions { gap: 4px; }
 
 /* Notification bell (next to cog) — same bare-icon chrome + accent dot
-   when there's something unread. Click target is the same 38×38 hit
-   area as the cog so they line up. */
+   when there's something unread. Same 32×32 footprint as the cog. */
 .s3-top .bell-btn {
   position: relative;
-  width: 38px;
-  height: 38px;
+  width: 32px;
+  height: 32px;
   background: transparent;
   color: var(--ink);
   border: none;
@@ -5826,7 +5975,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
   flex-shrink: 0;
 }
-.s3-top .bell-btn svg { width: 22px; height: 22px; }
+.s3-top .bell-btn svg { width: 18px; height: 18px; }
 .s3-top .bell-btn:active { transform: scale(0.92); }
 .s3-top .bell-btn .bell-badge {
   position: absolute;
