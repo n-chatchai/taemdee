@@ -5551,7 +5551,25 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 /* Tabbed layouts (customers / insights / etc.) reserve room at the bottom
    for the floating glass nav. */
-.td.td-tabbed { padding-bottom: 100px; }
+.td.td-tabbed {
+  padding-bottom: 100px;
+  /* Mobile UX: the design measurements feel cramped on small phones —
+     scale up 20% so the type, icons and chrome have more touch area.
+     `zoom` is non-standard but supported across WebKit + Chromium and
+     scales descendants (incl. position:fixed glass-nav) consistently. */
+  zoom: 1.2;
+}
+/* Firefox doesn't honour `zoom`. Fallback: synthesize the same scale via
+   CSS transforms on the body, with width compensation so layout doesn't
+   overflow horizontally. Safari/Chrome ignore the @supports branch. */
+@supports not (zoom: 1.2) {
+  .td.td-tabbed {
+    zoom: unset;
+    transform: scale(1.2);
+    transform-origin: top left;
+    width: calc(100% / 1.2);
+  }
+}
 
 /* ==========================================================
    S3 — Home dashboard: time pills + snapshot + trend + attn cards
