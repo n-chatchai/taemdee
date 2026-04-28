@@ -8297,6 +8297,25 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
   line-height: 1.6;
 }
+.s13d-message-edit {
+  width: 100%;
+  appearance: none;
+  -webkit-appearance: none;
+  resize: vertical;
+  min-height: 96px;
+  outline: none;
+}
+.s13d-message-edit:focus {
+  border-color: var(--accent);
+  box-shadow: 0 0 0 3px rgba(255, 94, 58, 0.15);
+}
+.s13d-msg-count {
+  margin: 6px 4px 0;
+  text-align: right;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-softer);
+}
 .s13d-preview {
   padding: 12px 14px;
   background: var(--mint);
@@ -8341,6 +8360,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-family: 'JetBrains Mono', monospace;
   font-size: 12px;
   letter-spacing: 0.04em;
+}
+.s13d-send[disabled] {
+  opacity: 0.5;
+  cursor: not-allowed;
 }
 
 /* S13.sent */

@@ -54,6 +54,46 @@ async def test_send_redirects_and_records(auth_client, db, shop):
     assert str(rows[0].id) in response.headers["location"]
 
 
+async def test_send_with_custom_message_persists_override(auth_client, db, shop):
+    """Owner ships a hand-edited body via the form's `message` field — it
+    becomes the campaign's message_text instead of the default template."""
+    await _seed_unredeemed(db, shop)
+    shop.credit_balance = 1000  # satang
+    db.add(shop)
+    await db.commit()
+
+    custom = "ขอบคุณที่อุดหนุนนะครับ — กลับมารับ Signature ฟรี วันนี้-อาทิตย์นี้!"
+    response = await auth_client.post(
+        "/shop/deereach/send",
+        data={"kind": "unredeemed_reward", "message": custom},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    rows = (await db.exec(
+        select(DeeReachCampaign).where(DeeReachCampaign.shop_id == shop.id)
+    )).all()
+    assert len(rows) == 1
+    assert rows[0].message_text == custom
+
+
+async def test_send_blank_message_400(auth_client, db, shop):
+    """Empty / whitespace-only message must reject — server treats it as a
+    user error and returns 400 with a Thai detail."""
+    await _seed_unredeemed(db, shop)
+    shop.credit_balance = 1000
+    db.add(shop)
+    await db.commit()
+
+    response = await auth_client.post(
+        "/shop/deereach/send",
+        data={"kind": "unredeemed_reward", "message": "   "},
+        follow_redirects=False,
+    )
+    assert response.status_code == 400
+    assert "ข้อความว่าง" in response.json()["detail"]
+
+
 async def test_send_unsupported_kind_400(auth_client, db, shop):
     response = await auth_client.post(
         "/shop/deereach/send", data={"kind": "telepathy"}, follow_redirects=False

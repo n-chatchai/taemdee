@@ -439,6 +439,8 @@ async def send_campaign(
     db: AsyncSession,
     shop: Shop,
     kind: str,
+    *,
+    message_override: Optional[str] = None,
 ) -> DeeReachCampaign:
     """Lock → Enqueue → Return.  Zero UI latency — actual delivery is async.
 
@@ -450,7 +452,14 @@ async def send_campaign(
       5. Commit everything atomically.
       6. Enqueue RQ job — worker reconciles and refunds failed messages.
 
-    Raises DeeReachSendError on empty audience or insufficient credits.
+    `message_override` lets the editor surface (S13.detail) ship custom
+    copy. When None we fall back to the per-kind template via
+    `render_message`. Empty/whitespace-only is rejected as
+    DeeReachSendError so a stray "ส่ง" tap with a blank textarea doesn't
+    burn credits on a blank message.
+
+    Raises DeeReachSendError on empty audience, insufficient credits, or
+    blank override.
     """
     audience = await _audience_for(db, shop, kind)
     if not audience:
@@ -464,7 +473,12 @@ async def send_campaign(
             f"เครดิตไม่พอ — ขาดอีก {shortfall_cr:.1f} เครดิต"
         )
 
-    message = await render_message(kind, shop)
+    if message_override is not None:
+        message = message_override.strip()
+        if not message:
+            raise DeeReachSendError("ข้อความว่าง — ใส่ข้อความก่อนส่ง")
+    else:
+        message = await render_message(kind, shop)
 
     # ------------------------------------------------------------------
     # Lock credits

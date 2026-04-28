@@ -11,7 +11,11 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td" x-data="{ flash: '', flashKind: 'is-error' }">
+  <div class="td" x-data="{
+        message: {{ message|tojson }},
+        flash: '',
+        flashKind: 'is-error',
+      }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
@@ -46,9 +50,15 @@
     <div class="s13d-section">
       <div class="s13d-h">
         <span class="s13d-title">ข้อความ</span>
-        <span class="s13d-edit" title="แก้ไขข้อความ — เร็วๆ นี้" style="opacity:0.5;">แก้</span>
+        <span class="s13d-edit" @click="message = {{ message|tojson }}"
+              title="คืนค่าข้อความเริ่มต้น">รีเซ็ต</span>
       </div>
-      <div class="s13d-message">{{ message }}</div>
+      <textarea class="s13d-message s13d-message-edit"
+                x-model="message"
+                rows="4"
+                maxlength="500"
+                placeholder="พิมพ์ข้อความที่อยากส่งให้ลูกค้า..."></textarea>
+      <div class="s13d-msg-count" x-text="message.length + ' / 500 ตัวอักษร'"></div>
     </div>
 
     <div class="s13d-section">
@@ -56,16 +66,17 @@
         <span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span>
       </div>
       <div class="s13d-preview">
-        <div class="prev-line">{{ message }}</div>
+        <div class="prev-line" x-text="message || 'ใส่ข้อความเพื่อดูตัวอย่าง'"></div>
       </div>
     </div>
 
     <form method="POST" action="/shop/deereach/send"
           @submit.prevent="
-            const fd = new FormData(); fd.append('kind', '{{ suggestion.kind }}');
+            const fd = new FormData();
+            fd.append('kind', '{{ suggestion.kind }}');
+            fd.append('message', message);
             const r = await fetch('/shop/deereach/send', { method: 'POST', body: fd, redirect: 'manual' });
             if (r.type === 'opaqueredirect' || r.ok) {
-              // FastAPI returns 303 → /shop/deereach/sent — follow it.
               window.location.href = r.url || ('/shop/deereach/sent?campaign_id=__redirect__');
             } else {
               const j = await r.json().catch(() => ({}));
@@ -73,7 +84,8 @@
             }
           ">
       <input type="hidden" name="kind" value="{{ suggestion.kind }}">
-      <button class="s13d-send" type="submit">
+      <button class="s13d-send" type="submit"
+              :disabled="!message.trim()">
         <span>ส่งให้ {{ audience_total }} คน</span>
         <span class="s13d-cost">{{ suggestion.cost_credit }} เครดิต</span>
       </button>

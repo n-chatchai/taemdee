@@ -208,6 +208,42 @@ async def test_send_campaign_insufficient_credits_raises(db, shop):
         await send_campaign(db, shop, "unredeemed_reward")
 
 
+async def test_send_campaign_uses_message_override(db, shop):
+    """Owner can edit the body in S13.detail and that text is what gets
+    saved on the campaign + sent to recipients."""
+    from app.models import DeeReachCampaign
+    from app.services.deereach import send_campaign
+
+    forgot = await _customer(db, line_id="U_forgot")
+    for _ in range(10):
+        await _stamp(db, shop, forgot, days_ago=14)
+
+    shop.credit_balance = 5000
+    db.add(shop)
+    await db.commit()
+
+    custom = "เปิดใหม่วันนี้ — ขอใส่กาแฟแก้วโปรดให้พี่ฟรี!"
+    campaign = await send_campaign(db, shop, "unredeemed_reward", message_override=custom)
+    assert campaign.message_text == custom
+
+
+async def test_send_campaign_blank_override_rejected(db, shop):
+    """Whitespace-only edit must not burn credits — service raises."""
+    from app.services.deereach import DeeReachSendError, send_campaign
+
+    forgot = await _customer(db, line_id="U_forgot")
+    for _ in range(10):
+        await _stamp(db, shop, forgot, days_ago=14)
+
+    shop.credit_balance = 5000
+    db.add(shop)
+    await db.commit()
+
+    import pytest
+    with pytest.raises(DeeReachSendError, match="ข้อความว่าง"):
+        await send_campaign(db, shop, "unredeemed_reward", message_override="   \n  ")
+
+
 async def test_pick_channel_prefers_web_push_over_line(db, shop):
     """Per PRD §10 waterfall — web_push (0.5 Cr) wins when subscribed,
     even though line (1 Cr) is also reachable."""

@@ -90,15 +90,18 @@ async def deereach_detail(
 @router.post("/send")
 async def send(
     kind: str = Form(...),
+    message: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(require_permission("can_deereach")),
     db: AsyncSession = Depends(get_session),
 ):
     """Fire the send pipeline. On success → S13.sent confirmation. On any
-    DeeReachSendError (no audience, insufficient credits, …) → 400 with
-    the informative Thai detail; the editor displays it as a flash."""
+    DeeReachSendError (no audience, insufficient credits, blank message, …)
+    → 400 with the informative Thai detail; the editor displays it as a
+    flash. `message` is optional — pass it from the editor when the owner
+    edited the body, omit to fall back to the per-kind default copy."""
     try:
-        campaign = await send_campaign(db, shop, kind)
+        campaign = await send_campaign(db, shop, kind, message_override=message)
     except DeeReachSendError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
     return RedirectResponse(
