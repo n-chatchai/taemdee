@@ -16,28 +16,10 @@
   <div class="td td-tabbed">
     <div class="topbar"><span></span><span></span></div>
 
-    <div class="s3-top">
-      <div class="hi">
-        สวัสดี{% if shop.name %} {{ shop.name }}{% endif %}
-        <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        <span class="day">{{ weekday_th }} · เริ่มต้นวันได้ดี</span>
-      </div>
-      <div class="actions">
-        {% if branches_count > 1 and branch_label %}
-          <a href="/shop/branches" class="branch-pill" title="เลือกสาขา">{{ branch_label }}</a>
-        {% endif %}
-        <a href="/shop/settings" class="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-          </svg>
-        </a>
-      </div>
-    </div>
+    {% set top_title = 'สวัสดี ' + shop.name if shop.name else 'สวัสดี' %}
+    {% set top_smile = True %}
+    {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
+    {% include "_partials/s3_top.html" %}
 
     {# Time period pills — wires up in v2; today is the default + only
        active period for now, but the chrome lands so the layout matches

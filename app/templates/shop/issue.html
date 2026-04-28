@@ -13,17 +13,10 @@
   <div class="td td-tabbed">
     <div class="topbar"><span></span><span></span></div>
 
-    <div class="s3-top">
-      <div class="hi" style="font-weight:700;color:var(--ink);">ออกแต้ม</div>
-      <div class="actions">
-        <a href="/shop/settings" class="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
-          </svg>
-        </a>
-      </div>
-    </div>
+    {% set top_title = 'ออกแต้ม' %}
+    {% set top_smile = False %}
+    {% set weekday_th = None %}{% set branch_label = None %}
+    {% include "_partials/s3_top.html" %}
 
     <div class="ph-section-h" style="margin-top:8px;">
       <div class="label">ลูกค้าล่าสุด</div>

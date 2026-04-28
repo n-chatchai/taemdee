@@ -1,0 +1,49 @@
+{# Shared S3.* page header — greeting line + bell/cog actions, plus an
+   optional day-caption row underneath with the weekday text and the
+   multi-branch pill.
+
+   Caller sets vars before include:
+     top_title    — required string, the headline ('สวัสดี<shop>' or 'ออกแต้ม')
+     top_smile    — boolean, true on dashboard so the smile SVG renders
+                    after the greeting; false on tab pages where the title
+                    is a bold page label
+     weekday_th   — string like 'วันศุกร์'; omit to hide the day row
+     branch_label — string; only renders when multi-branch
+     bell_unread  — truthy to show the pulsing badge on the bell icon
+#}
+<div class="s3-top">
+  <div class="hi"{% if not top_smile %} style="font-weight:700;color:var(--ink);"{% endif %}>
+    {{ top_title }}
+    {% if top_smile %}
+      <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    {% endif %}
+  </div>
+  <div class="actions">
+    <a class="bell-btn" href="#" title="แจ้งเตือน" aria-label="แจ้งเตือน">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      {% if bell_unread %}<span class="bell-badge"></span>{% endif %}
+    </a>
+    <a href="/shop/settings" class="settings-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/>
+      </svg>
+    </a>
+  </div>
+</div>
+
+{% if weekday_th or branch_label %}
+  <div class="s3-day-caption">
+    {% if weekday_th %}<span class="dc-text">{{ weekday_th }} · เริ่มต้นวันได้ดี</span>{% else %}<span></span>{% endif %}
+    {% if branch_label %}
+      <a class="branch-pill" href="/shop/branches" title="เลือกสาขา">{{ branch_label }}</a>
+    {% endif %}
+  </div>
+{% endif %}
