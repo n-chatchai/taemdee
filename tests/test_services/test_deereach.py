@@ -3,6 +3,8 @@ and dial the timestamps to land each customer in the right bucket."""
 
 from datetime import timedelta
 
+from sqlmodel import select
+
 from app.models import Customer, Point
 from app.models.util import utcnow
 from app.services.deereach import (
@@ -148,34 +150,38 @@ async def test_compute_suggestions_empty_when_no_eligible(db, shop):
 
 
 async def test_send_campaign_deducts_credits_and_records(db, shop):
-    """Send: charges credits, creates a Campaign row, logs a CreditLog entry."""
-    from app.models import CreditLog, DeeReachCampaign
+    """Lock: deducts satang from balance, creates a campaign in 'locked' state
+    with locked_credits_satang set, logs a CreditLog entry with reason
+    deereach_lock. Per v2 (Lock-Enqueue) the row sits at status='locked'
+    until the worker reconciles — final_credits_satang stays 0 here."""
+    from app.models import CreditLog, DeeReachCampaign  # noqa: F401
     from app.services.deereach import send_campaign
-    from sqlmodel import select
 
     forgot = await _customer(db, line_id="U_forgot")
     for _ in range(10):
         await _stamp(db, shop, forgot, days_ago=14)
 
-    shop.credit_balance = 50
+    # Balance is in satang now (1 credit = 100). 5000 satang = 50 credits.
+    shop.credit_balance = 5000
     db.add(shop)
     await db.commit()
 
     campaign = await send_campaign(db, shop, "unredeemed_reward")
     assert campaign.kind == "unredeemed_reward"
     assert campaign.audience_count == 1
-    assert campaign.credits_spent == 1
+    assert campaign.locked_credits_satang == 100  # 1 LINE recipient × 100 satang
+    assert campaign.final_credits_satang == 0    # worker hasn't reconciled yet
+    assert campaign.status == "locked"
     assert campaign.sent_at is not None
 
     await db.refresh(shop)
-    assert shop.credit_balance == 49
+    assert shop.credit_balance == 4900  # 5000 − 100
 
-    # CreditLog entry exists with the deduction
     log_rows = (await db.exec(
-        select(CreditLog).where(CreditLog.shop_id == shop.id, CreditLog.reason == "deereach_send")
+        select(CreditLog).where(CreditLog.shop_id == shop.id, CreditLog.reason == "deereach_lock")
     )).all()
     assert len(log_rows) == 1
-    assert log_rows[0].amount == -1
+    assert log_rows[0].amount == -100
 
 
 async def test_send_campaign_empty_audience_raises(db, shop):

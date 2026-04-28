@@ -29,7 +29,9 @@ async def _seed_unredeemed(db, shop):
 
 async def test_send_redirects_and_records(auth_client, db, shop):
     await _seed_unredeemed(db, shop)
-    shop.credit_balance = 10
+    # Per DeeReach v2: credit_balance is in satang (1 credit = 100 satang).
+    # 1 LINE recipient → 100 satang cost; give 1000 satang (= 10 credits).
+    shop.credit_balance = 1000
     db.add(shop)
     await db.commit()
 
@@ -60,7 +62,7 @@ async def test_send_unsupported_kind_400(auth_client, db, shop):
 
 
 async def test_send_no_audience_400(auth_client, shop, db):
-    shop.credit_balance = 10
+    shop.credit_balance = 1000  # satang
     db.add(shop)
     await db.commit()
     response = await auth_client.post(
