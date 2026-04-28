@@ -5066,6 +5066,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   display: none;
 }
 .issue-modal-overlay.open { display: block; }
+.issue-modal-sheet[hidden] { display: none !important; }
 .issue-modal-sheet {
   position: fixed;
   left: 0;
