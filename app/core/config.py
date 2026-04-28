@@ -9,6 +9,7 @@ class Settings(BaseSettings):
     )
 
     database_url: str
+    redis_url: str = "redis://localhost:6379"
 
     # JWT signing key. Must be long + random. Never commit a real value.
     jwt_secret: str

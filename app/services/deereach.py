@@ -4,11 +4,23 @@ This module owns the logic that decides what DeeReach campaign cards to show
 on the DeeBoard. The shop owner taps Send on a suggestion → that triggers
 `send_campaign`.
 
-Pricing (PRD §11): 1 Credit per LINE message, 3 Credit per SMS. v1 only
-counts customers reachable via LINE (line_id != NULL). SMS fallback in R6c.
+Unit convention:  1 Credit == 100 satang.
+Channel costs (satang):
+  line     → 100 satang  (1 Cr — primary channel for v1)
+  sms      → 300 satang  (3 Cr — fallback, R6c)
+  web_push →  50 satang  (0.5 Cr — PWA push, R6c)
+  inbox    →   0 satang  (free — DeeCard in-app)
 
-R6b: send is logged but not actually delivered to LINE — the LINE Messaging
-API integration lands in R6c once a real LINE Official Account is provisioned.
+Send flow (Lock → Enqueue → Return, zero UI latency):
+  1. Compute audience + estimate cost in satang.
+  2. Lock (deduct) credits from shop.credit_balance.
+  3. Create DeeReachCampaign (status=locked) + one DeeReachMessage per recipient.
+  4. Enqueue an RQ job (app.tasks.deereach.run_deereach_campaign).
+  5. Return the campaign immediately — dispatcher runs in background.
+  6. RQ task reconciles: refunds failed-message satang back to balance.
+
+R6b: LINE / SMS / web-push stubs live in app/tasks/deereach.py.
+R6c: replace stub bodies with real API calls there.
 """
 
 import logging
@@ -20,13 +32,25 @@ from uuid import UUID
 from sqlmodel import and_, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
+from app.core.redis_queue import task_queue
 from app.models import CreditLog, Customer, DeeReachCampaign, Redemption, Shop, Point
+from app.models.deereach import DeeReachMessage
 from app.models.util import utcnow
 
 log = logging.getLogger(__name__)
 
-CREDIT_PER_LINE = 1
-CREDIT_PER_SMS = 3
+# ---------------------------------------------------------------------------
+# Satang cost constants  (1 Credit == 100 satang)
+# ---------------------------------------------------------------------------
+SATANG_PER_CREDIT = 100
+
+# Per-channel cost in satang (waterfall order: line > sms > web_push > inbox)
+CHANNEL_COST_SATANG: dict[str, int] = {
+    "line": 100,       # 1 Cr
+    "sms": 300,        # 3 Cr
+    "web_push": 50,    # 0.5 Cr
+    "inbox": 0,        # free
+}
 
 # Win-back: customer's last stamp at this shop is between MIN and MAX days ago.
 # Design says "14+ วัน" — bump min to 14 and widen the upper bound to a year so
@@ -234,7 +258,14 @@ async def find_new_customers(
 
 
 def _line_cost(audience_count: int) -> int:
-    return audience_count * CREDIT_PER_LINE
+    """Estimate display cost in Credits for suggestion cards.
+
+    Uses LINE channel cost as the baseline (cheapest paid channel).
+    The actual per-recipient cost is determined at send time via _pick_channel.
+    Returns whole credits (rounded up) so the UI never shows a fraction.
+    """
+    satang = audience_count * CHANNEL_COST_SATANG["line"]
+    return -(-satang // SATANG_PER_CREDIT)  # ceiling division
 
 
 async def compute_suggestions(
@@ -308,9 +339,9 @@ async def compute_suggestions(
     return out[:max_suggestions]
 
 
-# ----------------------------------------------------------------------
-# Send (stub — R6b will wire LINE Messaging API)
-# ----------------------------------------------------------------------
+# ---------------------------------------------------------------------------
+# Send pipeline (Lock → Enqueue → Return)
+# ---------------------------------------------------------------------------
 
 
 class DeeReachSendError(Exception):
@@ -342,65 +373,118 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
     raise DeeReachSendError(f"Unsupported kind: {kind}")
 
 
+def _pick_channel(customer: Customer) -> str:
+    """Waterfall: use customer's preferred channel, else pick cheapest available.
+
+    Waterfall order: line > sms > web_push > inbox.
+    `inbox` is always available (free, no external API needed).
+    """
+    pref = customer.preferred_channel
+    if pref in CHANNEL_COST_SATANG:
+        return pref
+    # Waterfall fallback
+    if customer.line_id:
+        return "line"
+    if customer.phone:
+        return "sms"
+    return "inbox"
+
+
+def _estimate_cost_satang(audience: List[Customer]) -> int:
+    """Sum of per-recipient costs in satang (used for the Lock step)."""
+    return sum(CHANNEL_COST_SATANG[_pick_channel(c)] for c in audience)
+
+
 async def send_campaign(
     db: AsyncSession,
     shop: Shop,
     kind: str,
 ) -> DeeReachCampaign:
-    """Compute audience for `kind`, charge credits, record campaign + log entry.
+    """Lock → Enqueue → Return.  Zero UI latency — actual delivery is async.
 
-    R6b stub: messages are logged via stdout/journal — no LINE API call yet.
-    Replace `_dispatch` body in R6c with real Messaging API push.
+    Steps:
+      1. Compute audience + estimate cost in satang.
+      2. Guard: empty audience or insufficient credit_balance.
+      3. Lock credits: deduct from shop.credit_balance, write CreditLog.
+      4. Create DeeReachCampaign (status="locked") + DeeReachMessage per recipient.
+      5. Commit everything atomically.
+      6. Enqueue RQ job — worker reconciles and refunds failed messages.
 
     Raises DeeReachSendError on empty audience or insufficient credits.
-    Atomic: credit deduction + CreditLog + Campaign all commit together.
     """
     audience = await _audience_for(db, shop, kind)
     if not audience:
         raise DeeReachSendError("ไม่มีผู้รับที่เข้าเงื่อนไข")
 
-    cost = _line_cost(len(audience))
-    if cost > shop.credit_balance:
+    locked_satang = _estimate_cost_satang(audience)
+
+    if locked_satang > shop.credit_balance:
+        shortfall_cr = (locked_satang - shop.credit_balance) / SATANG_PER_CREDIT
         raise DeeReachSendError(
-            f"เครดิตไม่พอ — ต้องการ {cost}, มี {shop.credit_balance}"
+            f"เครดิตไม่พอ — ขาดอีก {shortfall_cr:.1f} เครดิต"
         )
 
     message = await render_message(kind, shop)
-    sent_at = utcnow()
 
-    # In R6b this is a stub — real LINE Messaging API push lives in R6c.
-    await _dispatch(audience, message)
-
-    campaign = DeeReachCampaign(
-        shop_id=shop.id,
-        kind=kind,
-        audience_count=len(audience),
-        credits_spent=cost,
-        message_text=message,
-        sent_at=sent_at,
-    )
-    db.add(campaign)
-
-    shop.credit_balance -= cost
+    # ------------------------------------------------------------------
+    # Lock credits
+    # ------------------------------------------------------------------
+    shop.credit_balance -= locked_satang
     db.add(shop)
 
     db.add(CreditLog(
         shop_id=shop.id,
-        amount=-cost,
-        reason="deereach_send",
+        amount=-locked_satang,  # negative = deduction (satang)
+        reason="deereach_lock",
+        # related_id filled after campaign insert below
     ))
+
+    # ------------------------------------------------------------------
+    # Create campaign record
+    # ------------------------------------------------------------------
+    campaign = DeeReachCampaign(
+        shop_id=shop.id,
+        kind=kind,
+        audience_count=len(audience),
+        status="locked",
+        locked_credits_satang=locked_satang,
+        final_credits_satang=0,
+        message_text=message,
+        sent_at=utcnow(),
+    )
+    db.add(campaign)
+
+    # Flush so campaign.id is available for foreign keys below
+    await db.flush()
+
+    # ------------------------------------------------------------------
+    # Create per-recipient DeeReachMessage rows
+    # ------------------------------------------------------------------
+    for customer in audience:
+        channel = _pick_channel(customer)
+        db.add(DeeReachMessage(
+            campaign_id=campaign.id,
+            customer_id=customer.id,
+            channel=channel,
+            cost_satang=CHANNEL_COST_SATANG[channel],
+            status="pending",
+        ))
 
     await db.commit()
     await db.refresh(campaign)
-    return campaign
 
-
-async def _dispatch(audience: List[Customer], message: str) -> None:
-    """R6b stub: log the recipients + message. R6c: real LINE Messaging API push."""
-    log.info(
-        "deereach send (STUB) recipients=%d msg=%r",
-        len(audience),
-        message,
+    # ------------------------------------------------------------------
+    # Enqueue background job — import here to avoid circular deps
+    # ------------------------------------------------------------------
+    task_queue.enqueue(
+        "app.tasks.deereach.run_deereach_campaign",
+        str(campaign.id),
+        job_timeout=300,       # 5 min max per campaign
+        result_ttl=3600,       # keep result 1 h for debugging
     )
-    for c in audience:
-        log.info("  → would push to LINE id=%s", c.line_id)
+
+    log.info(
+        "Campaign %s enqueued — kind=%s audience=%d locked=%d satang",
+        campaign.id, kind, len(audience), locked_satang,
+    )
+    return campaign

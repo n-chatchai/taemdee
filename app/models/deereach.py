@@ -24,7 +24,9 @@ class DeeReachCampaign(SQLModel, table=True):
     kind: str
 
     audience_count: int
-    credits_spent: int = Field(default=0)
+    status: str = Field(default="pending")  # pending, locked, completed
+    locked_credits_satang: int = Field(default=0)
+    final_credits_satang: int = Field(default=0)
 
     # Rendered message body sent to recipients (keeps a record for support).
     message_text: Optional[str] = Field(default=None)
@@ -33,4 +35,15 @@ class DeeReachCampaign(SQLModel, table=True):
     # we only persist Campaign records when actually sending.
     sent_at: Optional[datetime] = Field(default=None)
 
+    created_at: datetime = Field(default_factory=utcnow)
+
+
+class DeeReachMessage(SQLModel, table=True):
+    __tablename__ = "deereach_messages"
+    id: UUID = Field(default_factory=uuid4, primary_key=True)
+    campaign_id: UUID = Field(foreign_key="deereach_campaigns.id", index=True)
+    customer_id: UUID = Field(foreign_key="customers.id")
+    channel: str  # web_push, line, sms, inbox
+    cost_satang: int
+    status: str = Field(default="pending")  # pending, delivered, failed
     created_at: datetime = Field(default_factory=utcnow)

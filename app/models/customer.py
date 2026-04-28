@@ -7,6 +7,14 @@ from sqlmodel import Field, Relationship, SQLModel
 from app.models.util import utcnow
 
 
+class CustomerShopMute(SQLModel, table=True):
+    __tablename__ = "customer_shop_mutes"
+    customer_id: UUID = Field(foreign_key="customers.id", primary_key=True)
+    shop_id: UUID = Field(foreign_key="shops.id", primary_key=True)
+    preferred_channel: Optional[str] = Field(default=None)
+    created_at: datetime = Field(default_factory=utcnow)
+
+
 class Customer(SQLModel, table=True):
     __tablename__ = "customers"
 
@@ -18,6 +26,7 @@ class Customer(SQLModel, table=True):
     # the customer either provides a nickname or skips (skip stores the
     # polite default "คุณลูกค้า" so we don't ask again).
     display_name: Optional[str] = Field(default=None)
+    preferred_channel: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="customer")

@@ -49,8 +49,6 @@ class Shop(SQLModel, table=True):
     # Locked after the 2nd branch is added (per PRD §6.I).
     reward_mode: str = Field(default="shared")
 
-    # 4-digit PIN staff types on a customer's phone to confirm redemption. Null = unset.
-    shop_pin: Optional[str] = Field(default=None)
 
     theme_name: str = Field(default="taemdee")
     logo_url: Optional[str] = Field(default=None)

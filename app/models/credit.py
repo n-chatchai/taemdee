@@ -11,7 +11,7 @@ class TopupSlip(SQLModel, table=True):
     __tablename__ = "topup_slips"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shops.id")
-    amount: int
+    amount: int  # Stored in Satang (1/100 THB)
     slip_image_url: str
     slip_hash: str = Field(unique=True)  # Prevent double usage of same slip
     status: str = Field(default="pending")  # pending, verified, rejected
@@ -25,7 +25,7 @@ class CreditLog(SQLModel, table=True):
     __tablename__ = "credit_logs"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shops.id")
-    amount: int  # Positive for topup, negative for deduction
+    amount: int  # Stored in Satang (1/100 THB/Credit). Positive for topup, negative for deduction.
     reason: str  # "deereach_send", "topup", "correction"
     related_id: Optional[UUID] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)
