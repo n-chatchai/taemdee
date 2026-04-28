@@ -14,17 +14,42 @@
     <div class="topbar"><span></span><span></span></div>
 
     {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
+    {# History view renders its own day-caption (back-nav variant) below,
+       so we suppress the partial's default greeting day-caption there. #}
+    {% if view == 'history' %}{% set weekday_th = None %}{% endif %}
     {% include "_partials/s3_top.html" %}
 
-    <div class="s3-ins-toggle">
-      <a class="ins-tg{% if view == 'suggestions' %} active{% endif %}"
-         href="/shop/insights?view=suggestions">คำแนะนำ</a>
-      <a class="ins-tg{% if view == 'history' %} active{% endif %}"
-         href="/shop/insights?view=history">ผลงาน</a>
-    </div>
+    {% if view == 'history' %}
+      <div class="s3-day-caption">
+        <a class="dc-back" href="/shop/insights">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+          <span>ผลงานแคมเปญ</span>
+        </a>
+        {% if branch_label %}
+          <a class="branch-pill" href="/shop/branches" title="เลือกสาขา">{{ branch_label }}</a>
+        {% endif %}
+      </div>
+    {% endif %}
 
     {% if view == 'suggestions' %}
-      <div class="s13-intro" style="margin-bottom:14px;">
+      <a class="s3-ins-brief" href="/shop/insights?view=history">
+        <div class="brief-head">
+          <span class="brief-label">ภาพรวม 30 วัน</span>
+          <span class="brief-link">ดูทั้งหมด →</span>
+        </div>
+        <div class="brief-stats">
+          <span><strong>{{ funnel.sent }}</strong> ส่ง</span>
+          <span class="brief-sep">·</span>
+          <span><strong>{% if funnel.opened is not none %}{{ funnel.opened }}{% else %}—{% endif %}</strong> เปิด</span>
+          <span class="brief-sep">·</span>
+          <span class="accent"><strong>{% if funnel.returned is not none %}{{ funnel.returned }}{% else %}—{% endif %}</strong> กลับ</span>
+        </div>
+      </a>
+
+      <div class="ph-section-h" style="margin-top:18px;">
+        <div class="label">แต้มดีแนะนำ ✦</div>
+      </div>
+      <div class="s13-intro" style="margin-bottom:14px;margin-top:0;padding-top:0;">
         <div class="ask-th">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับก่อนส่งได้</div>
       </div>
 
@@ -90,6 +115,7 @@
           เปิด/กลับมา จะวัดได้เมื่อ LINE Messaging API พร้อม
         </div>
       </div>
+
 
       {% if active_campaigns %}
         <div class="ph-section-h"><div class="label">กำลังดำเนินการ</div></div>

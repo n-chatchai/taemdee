@@ -1,5 +1,7 @@
-"""S3.insights — tabbed 'แต้มดีแนะนำ' hub at /shop/insights with
-?view=suggestions (default) | history toggle.
+"""S3.insights — 'แต้มดีแนะนำ' hub at /shop/insights. Default view shows
+the brief 30-day metrics card on top + suggestion cards below; the brief
+card links to ?view=history (full performance page with funnel + campaign
+list).
 """
 from datetime import timedelta
 
@@ -7,14 +9,16 @@ from app.models import Customer, DeeReachCampaign, Point
 from app.models.util import utcnow
 
 
-async def test_insights_default_view_renders_toggle_and_glass_nav(auth_client):
+async def test_insights_default_view_renders_brief_card_and_glass_nav(auth_client):
     response = await auth_client.get("/shop/insights")
     assert response.status_code == 200
     body = response.text
-    # Toggle pills present, suggestions tab active by default
-    assert ">คำแนะนำ<" in body
-    assert ">ผลงาน<" in body
-    assert 'href="/shop/insights?view=suggestions"' in body
+    # Brief 30-day metrics card with link to history view
+    assert "s3-ins-brief" in body
+    assert "ภาพรวม 30 วัน" in body
+    assert 'href="/shop/insights?view=history"' in body
+    # Section header for the suggestion list
+    assert "แต้มดีแนะนำ" in body
     # Glass nav at the bottom — insights tab highlighted
     assert "s3-glass-nav" in body
     assert 'href="/shop/customers"' in body

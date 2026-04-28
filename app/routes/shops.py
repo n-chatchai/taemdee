@@ -554,10 +554,10 @@ async def settings_page(
 
 
 # ── S3.insights ─────────────────────────────────────────────────────────────
-# Tabbed "แต้มดีแนะนำ" hub. The toggle on top swaps between:
-#   ?view=suggestions (default) — current 4 suggestion cards (S3.insights)
-#   ?view=history                — campaign analytics (S3.insights.history)
-# Same template renders both — keeps glass nav + header consistent.
+# "แต้มดีแนะนำ" hub. Default view is the suggestion list with a brief
+# 30-day metrics card on top that links to ?view=history (S3.insights.history),
+# the full performance page with funnel + campaign list. Same template
+# renders both — keeps the glass nav + header consistent.
 
 @router.get("/insights", response_class=HTMLResponse)
 async def insights_page(
@@ -574,47 +574,47 @@ async def insights_page(
     active_campaigns: list = []
     done_campaigns: list = []
 
+    # 30-day campaign rollup — needed by both views (brief card on
+    # suggestions, full funnel + campaign list on history).
+    from app.models import DeeReachCampaign
+    thirty_days_ago = utcnow() - timedelta(days=30)
+    rows = (await db.exec(
+        select(DeeReachCampaign)
+        .where(
+            DeeReachCampaign.shop_id == shop.id,
+            DeeReachCampaign.sent_at.is_not(None),
+            DeeReachCampaign.sent_at >= thirty_days_ago,
+        )
+        .order_by(DeeReachCampaign.sent_at.desc())
+    )).all()
+
+    # "Active" = sent within the last 7 days (still earning conversions);
+    # older within window = "done". 7d cutoff matches the C5 "ใหม่" window
+    # we use elsewhere — feels coherent.
+    seven_days_ago = utcnow() - timedelta(days=7)
+    kind_th = {
+        "win_back": "ชวนลูกค้าหายไปกลับมา",
+        "almost_there": "กระตุ้นคนใกล้รับ",
+        "unredeemed_reward": "เตือนรางวัลค้าง",
+        "new_customer": "ขอบคุณลูกค้าใหม่",
+    }
+    for r in rows:
+        row_dict = {
+            "id": str(r.id),
+            "kind": r.kind,
+            "name": kind_th.get(r.kind, r.kind),
+            "sent_at": r.sent_at,
+            "audience_count": r.audience_count,
+            "credits_spent": r.credits_spent,
+        }
+        if r.sent_at and r.sent_at >= seven_days_ago:
+            active_campaigns.append(row_dict)
+        else:
+            done_campaigns.append(row_dict)
+        funnel["sent"] += r.audience_count
+
     if view == "suggestions":
         suggestions = await compute_suggestions(db, shop)
-    else:
-        # 30-day window for the funnel + the campaign list. Campaigns older
-        # than this slide off; the dashboard cares about recent performance.
-        from app.models import DeeReachCampaign
-        thirty_days_ago = utcnow() - timedelta(days=30)
-        rows = (await db.exec(
-            select(DeeReachCampaign)
-            .where(
-                DeeReachCampaign.shop_id == shop.id,
-                DeeReachCampaign.sent_at.is_not(None),
-                DeeReachCampaign.sent_at >= thirty_days_ago,
-            )
-            .order_by(DeeReachCampaign.sent_at.desc())
-        )).all()
-
-        # "Active" = sent within the last 7 days (still earning conversions);
-        # older within window = "done". 7d cutoff matches the C5 "ใหม่" window
-        # we use elsewhere — feels coherent.
-        seven_days_ago = utcnow() - timedelta(days=7)
-        kind_th = {
-            "win_back": "ชวนลูกค้าหายไปกลับมา",
-            "almost_there": "กระตุ้นคนใกล้รับ",
-            "unredeemed_reward": "เตือนรางวัลค้าง",
-            "new_customer": "ขอบคุณลูกค้าใหม่",
-        }
-        for r in rows:
-            row_dict = {
-                "id": str(r.id),
-                "kind": r.kind,
-                "name": kind_th.get(r.kind, r.kind),
-                "sent_at": r.sent_at,
-                "audience_count": r.audience_count,
-                "credits_spent": r.credits_spent,
-            }
-            if r.sent_at and r.sent_at >= seven_days_ago:
-                active_campaigns.append(row_dict)
-            else:
-                done_campaigns.append(row_dict)
-            funnel["sent"] += r.audience_count
 
     s3_top = await s3_top_context(db, shop)
     return templates.TemplateResponse(

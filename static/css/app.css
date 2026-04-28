@@ -6036,6 +6036,23 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   background: var(--accent);
   border-radius: 50%;
 }
+/* Back nav inside s3-day-caption (used on insights/history). */
+.s3-day-caption .dc-back {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13.5px;
+  font-weight: 700;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+}
+.s3-day-caption .dc-back svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ink);
+}
 
 /* ==========================================================
    S3.issue — full-page ออกแต้ม hub: feed + 3 action buttons
@@ -6141,35 +6158,66 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 
 /* ==========================================================
-   S3.insights — Toggle pills (คำแนะนำ | ผลงาน) + funnel + camp cards
+   S3.insights — Brief 30-day metrics card (suggestions view) +
+   funnel/campaign cards (history view)
    ========================================================== */
-.s3-ins-toggle {
-  margin: 0 20px 18px;
-  padding: 4px;
+.s3-ins-brief {
+  display: block;
+  margin: 0 20px 16px;
+  padding: 14px 16px;
   background: var(--surface);
   border: 1px solid rgba(17, 17, 17, 0.12);
   border-radius: 14px;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 4px;
+  text-decoration: none;
+  cursor: pointer;
 }
-.s3-ins-toggle .ins-tg {
-  padding: 9px 0;
-  text-align: center;
-  border-radius: 10px;
+.s3-ins-brief .brief-head {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-bottom: 8px;
+}
+.s3-ins-brief .brief-label {
   font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
+  font-size: 12px;
   font-weight: 500;
   color: var(--ink-soft);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.15s ease;
 }
-.s3-ins-toggle .ins-tg.active {
-  background: var(--ink);
-  color: var(--bg);
+.s3-ins-brief .brief-link {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent);
+}
+.s3-ins-brief .brief-stats {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: baseline;
+  gap: 4px;
+}
+.s3-ins-brief .brief-stats strong {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.s3-ins-brief .brief-stats em {
+  font-family: 'Host Grotesk', sans-serif;
   font-weight: 700;
+  font-size: 11px;
+  color: var(--ink-softer);
+  font-style: normal;
 }
+.s3-ins-brief .brief-stats .accent strong { color: var(--accent); }
+.s3-ins-brief .brief-stats .brief-sep {
+  color: var(--ink-softer);
+  margin: 0 2px;
+}
+.s3-ins-brief:active { transform: scale(0.99); }
 
 .s3-ins-overview {
   margin: 0 20px 18px;
