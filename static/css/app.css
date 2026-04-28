@@ -4869,6 +4869,114 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s2-upload svg { width: 14px; height: 14px; }
 
 /* ==========================================================
+   S9 — settings/themes live preview frame.
+   The preview is .s2-theme-preview with a t-{theme} modifier, so the
+   four theme variants share one element but flip colors via class.
+   ========================================================== */
+.s9-preview-frame .s9-pf-label {
+  margin: 0 18px 6px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-softer);
+}
+.s2-theme-preview {
+  margin: 14px 18px 0;
+  border-radius: 22px;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  box-shadow: none;
+  overflow: hidden;
+  position: relative;
+  transition: background 0.2s;
+}
+.s2-theme-preview .preview-shop {
+  padding: 16px 18px 6px;
+  text-align: center;
+  border-bottom: 1px dashed currentColor;
+  border-bottom-color: rgba(255, 255, 255, 0.15);
+}
+.s2-theme-preview .preview-shop-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  letter-spacing: -0.02em;
+  line-height: 1;
+}
+.s2-theme-preview .preview-shop-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 9.5px;
+  margin-top: 2px;
+  opacity: 0.6;
+}
+.s2-theme-preview .preview-num {
+  text-align: center;
+  padding: 12px 0 4px;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 64px;
+  letter-spacing: -0.045em;
+  line-height: 1;
+}
+.s2-theme-preview .preview-meta {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: 10.5px;
+  margin-bottom: 10px;
+  opacity: 0.7;
+}
+.s2-theme-preview .preview-stamps {
+  padding: 0 22px 12px;
+  display: grid;
+  grid-template-columns: repeat(10, 1fr);
+  gap: 4px;
+}
+.s2-theme-preview .preview-stamps .ps {
+  aspect-ratio: 1;
+  border-radius: 50%;
+  background: rgba(0, 0, 0, 0.1);
+}
+.s2-theme-preview .preview-reward {
+  margin: 0 18px 14px;
+  padding: 8px 12px;
+  border-radius: 999px;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+  border: 1px dashed;
+}
+.s2-theme-preview.t-taemdee { background: #F6F1E5; color: #111; }
+.s2-theme-preview.t-taemdee .preview-num { color: #FF5E3A; }
+.s2-theme-preview.t-taemdee .preview-stamps .ps { background: rgba(17, 17, 17, 0.1); }
+.s2-theme-preview.t-taemdee .preview-stamps .ps.on { background: #FF5E3A; }
+.s2-theme-preview.t-taemdee .preview-stamps .ps.butter { background: #FFD952; }
+.s2-theme-preview.t-taemdee .preview-reward { border-color: #FF5E3A; color: #FF5E3A; }
+
+.s2-theme-preview.t-mono { background: #FFFFFF; color: #111; }
+.s2-theme-preview.t-mono .preview-num { color: #111; }
+.s2-theme-preview.t-mono .preview-stamps .ps { background: rgba(0, 0, 0, 0.08); }
+.s2-theme-preview.t-mono .preview-stamps .ps.on { background: #111; }
+.s2-theme-preview.t-mono .preview-stamps .ps.butter { background: #111; }
+.s2-theme-preview.t-mono .preview-reward { border-color: #111; color: #111; }
+
+.s2-theme-preview.t-night { background: #141414; color: #F6F1E5; }
+.s2-theme-preview.t-night .preview-num { color: #FFD952; }
+.s2-theme-preview.t-night .preview-stamps .ps { background: rgba(255, 255, 255, 0.12); }
+.s2-theme-preview.t-night .preview-stamps .ps.on { background: #FFD952; }
+.s2-theme-preview.t-night .preview-stamps .ps.butter { background: #FF5E3A; }
+.s2-theme-preview.t-night .preview-reward { border-color: #FFD952; color: #FFD952; }
+
+.s2-theme-preview.t-pastel { background: #FFEEE4; color: #5C2A1A; }
+.s2-theme-preview.t-pastel .preview-num { color: #E87A6A; }
+.s2-theme-preview.t-pastel .preview-stamps .ps { background: rgba(232, 122, 106, 0.18); }
+.s2-theme-preview.t-pastel .preview-stamps .ps.on { background: #E87A6A; }
+.s2-theme-preview.t-pastel .preview-stamps .ps.butter { background: #F4B583; }
+.s2-theme-preview.t-pastel .preview-reward { border-color: #E87A6A; color: #E87A6A; }
+
+/* ==========================================================
    S2.3 — Theme picker swatch row (lifted from the design's
    .s2-theme-swatches; the older .s2-themes / .s2-theme grid is
    gone, the new .s2-c1-preview owns the live preview)
