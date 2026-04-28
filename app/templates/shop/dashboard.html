@@ -39,6 +39,15 @@
       </div>
     </div>
 
+    {# Time period pills — wires up in v2; today is the default + only
+       active period for now, but the chrome lands so the layout matches
+       design and v2 can flip them to functional without a redesign. #}
+    <div class="s3-time-pills">
+      <a class="tp active" href="/shop/dashboard">วันนี้</a>
+      <a class="tp" href="/shop/dashboard?period=week" aria-disabled="true" tabindex="-1">สัปดาห์</a>
+      <a class="tp" href="/shop/dashboard?period=month" aria-disabled="true" tabindex="-1">เดือน</a>
+    </div>
+
     {# Today's snapshot — distinct customers + delta vs yesterday + sub-stats. #}
     <div class="s3-snapshot">
       <div class="snap-label">ลูกค้าวันนี้</div>

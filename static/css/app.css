@@ -5554,8 +5554,39 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .td.td-tabbed { padding-bottom: 100px; }
 
 /* ==========================================================
-   S3 — Home dashboard: snapshot + trend bars + attention cards
+   S3 — Home dashboard: time pills + snapshot + trend + attn cards
    ========================================================== */
+.s3-time-pills {
+  margin: 8px 20px 16px;
+  padding: 4px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 14px;
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 4px;
+}
+.s3-time-pills .tp {
+  padding: 8px 0;
+  text-align: center;
+  border-radius: 10px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  font-weight: 500;
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-decoration: none;
+  transition: all 0.15s ease;
+}
+.s3-time-pills .tp[aria-disabled="true"] {
+  opacity: 0.55;
+  pointer-events: none;
+}
+.s3-time-pills .tp.active {
+  background: var(--ink);
+  color: var(--bg);
+  font-weight: 700;
+}
 .s3-snapshot {
   margin: 0 20px 14px;
   padding: 18px 20px;
