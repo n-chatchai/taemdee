@@ -107,62 +107,77 @@ async def dashboard(
     today_start_utc = today_start_bkk.astimezone(timezone.utc).replace(tzinfo=None)
     yesterday_start_utc = today_start_utc - timedelta(days=1)
 
-    customers_today = (await db.exec(
-        select(func.count(func.distinct(Point.customer_id)))
-        .where(
-            Point.shop_id == shop.id,
-            Point.created_at >= today_start_utc,
-            Point.is_voided == False,  # noqa: E712
-        )
-    )).one()
-    customers_yesterday = (await db.exec(
-        select(func.count(func.distinct(Point.customer_id)))
-        .where(
-            Point.shop_id == shop.id,
-            Point.created_at >= yesterday_start_utc,
-            Point.created_at < today_start_utc,
-            Point.is_voided == False,  # noqa: E712
-        )
-    )).one()
-    today_delta = customers_today - customers_yesterday
-
-    points_today = (await db.exec(
-        select(func.count()).select_from(Point)
-        .where(
-            Point.shop_id == shop.id,
-            Point.created_at >= today_start_utc,
-            Point.is_voided == False,  # noqa: E712
-        )
-    )).one()
-    redemptions_today = (await db.exec(
-        select(func.count()).select_from(Redemption)
-        .where(
-            Redemption.shop_id == shop.id,
-            Redemption.created_at >= today_start_utc,
-            Redemption.is_voided == False,  # noqa: E712
-        )
-    )).one()
-
-    # Headline: distinct customers stamped this week (proxy for "came back")
-    customers_this_week = (await db.exec(
-        select(func.count(func.distinct(Point.customer_id)))
-        .where(Point.shop_id == shop.id, Point.created_at >= week_ago, Point.is_voided == False)  # noqa: E712
-    )).one()
-    customers_last_week = (await db.exec(
-        select(func.count(func.distinct(Point.customer_id)))
-        .where(
-            Point.shop_id == shop.id,
-            Point.created_at >= two_weeks_ago,
-            Point.created_at < week_ago,
-            Point.is_voided == False,  # noqa: E712
-        )
-    )).one()
-    wow_delta = customers_this_week - customers_last_week
-
-    # 7-day point counts for the trend bars (today is rightmost). Pre-fetch
-    # all points in window then bucket by BKK day in Python — one query
-    # beats issuing seven `count(...) where day = N` queries.
     week_start_utc = today_start_utc - timedelta(days=6)
+
+    # ── ONE SQL roundtrip for every Point-derived stat. Aggregate counters
+    # use FILTER (Postgres + SQLite ≥ 3.30) so we collect 8 numbers in a
+    # single scan of the points table instead of 8 sequential queries. The
+    # 7-day created_at list still needs a separate fetch for the bucketed
+    # trend bars (group-by + array_agg would also work but adds DB-specific
+    # SQL — keep it portable).
+    point_stats = (await db.exec(
+        select(
+            func.count(func.distinct(Point.customer_id)).filter(
+                Point.created_at >= today_start_utc
+            ).label("customers_today"),
+            func.count(func.distinct(Point.customer_id)).filter(
+                Point.created_at >= yesterday_start_utc,
+                Point.created_at < today_start_utc,
+            ).label("customers_yesterday"),
+            func.count(func.distinct(Point.customer_id)).filter(
+                Point.created_at >= week_ago
+            ).label("customers_this_week"),
+            func.count(func.distinct(Point.customer_id)).filter(
+                Point.created_at >= two_weeks_ago,
+                Point.created_at < week_ago,
+            ).label("customers_last_week"),
+            func.count().filter(
+                Point.created_at >= today_start_utc
+            ).label("points_today"),
+            func.count().filter(
+                Point.created_at >= week_ago
+            ).label("points_this_week"),
+            func.count().filter(
+                Point.created_at >= two_weeks_ago,
+                Point.created_at < week_ago,
+            ).label("points_last_week"),
+            func.count().label("points_total"),
+        )
+        .select_from(Point)
+        .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
+    )).one()
+    customers_today = point_stats[0]
+    customers_yesterday = point_stats[1]
+    customers_this_week = point_stats[2]
+    customers_last_week = point_stats[3]
+    points_today = point_stats[4]
+    trend_total = point_stats[5]
+    prev_week_total = point_stats[6]
+    points_total = point_stats[7]
+    today_delta = customers_today - customers_yesterday
+    wow_delta = customers_this_week - customers_last_week
+    wow_pct = (
+        int(round(100 * (trend_total - prev_week_total) / prev_week_total))
+        if prev_week_total else None
+    )
+
+    # ── ONE SQL roundtrip for the Redemption side: today + total in a
+    # single scan. Same FILTER pattern as the points aggregate above.
+    redemption_stats = (await db.exec(
+        select(
+            func.count().filter(
+                Redemption.created_at >= today_start_utc
+            ).label("redemptions_today"),
+            func.count().label("redemptions_total"),
+        )
+        .select_from(Redemption)
+        .where(Redemption.shop_id == shop.id, Redemption.is_voided == False)  # noqa: E712
+    )).one()
+    redemptions_today = redemption_stats[0]
+    redemptions_total = redemption_stats[1]
+
+    # 7-day bucket — still its own query because we need each created_at
+    # to bin into a BKK calendar day.
     point_rows = (await db.exec(
         select(Point.created_at)
         .where(
@@ -179,43 +194,25 @@ async def dashboard(
             daily_counts[6 - offset_days] += 1
     max_daily = max(daily_counts) or 1
     daily_pct = [int(round(100 * c / max_daily)) for c in daily_counts]
-    trend_total = sum(daily_counts)
 
-    # Week-over-week percentage for the trend header
-    prev_week_total = (await db.exec(
-        select(func.count()).select_from(Point)
-        .where(
-            Point.shop_id == shop.id,
-            Point.created_at >= two_weeks_ago,
-            Point.created_at < week_ago,
-            Point.is_voided == False,  # noqa: E712
+    # Branches count + first branch name in a single roundtrip via window
+    # function. Most shops have 1 branch — `branch_label` only shows on
+    # the day-caption row when count > 1.
+    branch_row = (await db.exec(
+        select(
+            func.count().over().label("total"),
+            Branch.name,
         )
-    )).one()
-    if prev_week_total:
-        wow_pct = int(round(100 * (trend_total - prev_week_total) / prev_week_total))
+        .where(Branch.shop_id == shop.id)
+        .order_by(Branch.created_at)
+        .limit(1)
+    )).first()
+    if branch_row is None:
+        branches_count = 0
+        branch_label = None
     else:
-        wow_pct = None
-
-    points_total = (await db.exec(
-        select(func.count()).select_from(Point)
-        .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
-    )).one()
-    redemptions_total = (await db.exec(
-        select(func.count()).select_from(Redemption)
-        .where(Redemption.shop_id == shop.id, Redemption.is_voided == False)  # noqa: E712
-    )).one()
-
-    branches_count = (await db.exec(
-        select(func.count()).select_from(Branch).where(Branch.shop_id == shop.id)
-    )).one()
-    # The branch-pill only shows for multi-branch shops (>=2 branches), per
-    # PRD §6.I — single-branch shops see no branch UI anywhere.
-    branch_label = None
-    if branches_count > 1:
-        first_branch = (await db.exec(
-            select(Branch).where(Branch.shop_id == shop.id).order_by(Branch.created_at)
-        )).first()
-        branch_label = first_branch.name if first_branch else None
+        branches_count = branch_row[0]
+        branch_label = branch_row[1] if branches_count > 1 else None
 
     weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
 
