@@ -255,10 +255,7 @@
     position: relative;
   }
   .phone::before {
-    content: ''; position: absolute; top: 16px; left: 50%;
-    transform: translateX(-50%);
-    width: 84px; height: 22px; background: #000;
-    border-radius: 11px; z-index: 10;
+    display: none;
   }
   .phone-screen {
     width: 100%; height: 100%;
@@ -802,63 +799,71 @@
     100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
   }
 
-  /* S3 — Home — Time period pills */
-  .s3-time-pills {
-    margin: 8px 20px 16px;
-    padding: 4px;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.12);
-    border-radius: 14px;
-    display: grid;
-    grid-template-columns: 1fr 1fr 1fr;
-    gap: 4px;
-  }
-  .s3-time-pills .tp {
-    padding: 8px 0;
-    text-align: center;
-    border-radius: 10px;
-    font-family: 'Prompt', sans-serif;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--ink-soft);
-    cursor: pointer;
-    text-decoration: none;
-    transition: all 0.15s ease;
-  }
-  .s3-time-pills .tp.active {
-    background: var(--ink);
-    color: var(--bg);
-    font-weight: 700;
-  }
-
-  /* S3 — Home — Today snapshot card */
-  .s3-snapshot {
-    margin: 0 20px 14px;
-    padding: 18px 20px;
+  /* S3 — Home — Merged metrics card (time pills + hero number + trend chart + sub) */
+  .s3-metrics {
+    margin: 8px 20px 14px;
+    padding: 18px 20px 16px;
     background: var(--surface);
     border: 1px solid rgba(17,17,17,0.12);
     border-radius: 18px;
   }
-  .s3-snapshot .snap-label {
+
+  /* Header: title + time pills */
+  .s3-metrics .met-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 10px;
+    margin-bottom: 14px;
+  }
+  .s3-metrics .met-title {
     font-family: 'Prompt', sans-serif;
     font-size: 13px;
     font-weight: 500;
     color: var(--ink-soft);
-    margin-bottom: 8px;
   }
-  .s3-snapshot .snap-num-row {
+  .s3-metrics .met-pills, .met-pills.issue-feed-pills {
+    display: flex;
+    gap: 12px;
+  }
+  .s3-metrics .met-pills .mp, .met-pills.issue-feed-pills .mp {
+    padding: 2px 0;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-softer);
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+    position: relative;
+  }
+  .s3-metrics .met-pills .mp.active, .met-pills.issue-feed-pills .mp.active {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .s3-metrics .met-pills .mp.active::after, .met-pills.issue-feed-pills .mp.active::after {
+    content: '';
+    position: absolute;
+    bottom: -2px; left: 0; right: 0;
+    height: 2px;
+    background: var(--accent);
+    border-radius: 1px;
+  }
+
+  /* Hero number row */
+  .s3-metrics .met-num-row {
     display: flex;
     align-items: flex-end;
     justify-content: space-between;
     gap: 12px;
-    margin-bottom: 12px;
+    margin-bottom: 16px;
   }
-  .s3-snapshot .snap-num {
+  .s3-metrics .met-num {
     display: flex;
     align-items: baseline;
     gap: 6px;
   }
-  .s3-snapshot .snap-num .num-big {
+  .s3-metrics .met-num .num-big {
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
     font-size: 56px;
@@ -866,91 +871,56 @@
     color: var(--ink);
     letter-spacing: -0.04em;
   }
-  .s3-snapshot .snap-num .num-unit {
+  .s3-metrics .met-num .num-unit {
     font-family: 'Prompt', sans-serif;
     font-size: 16px;
     font-weight: 500;
     color: var(--ink-soft);
   }
-  .s3-snapshot .snap-delta {
+  .s3-metrics .met-delta {
     display: flex;
     flex-direction: column;
     align-items: flex-end;
     line-height: 1.3;
     padding-bottom: 4px;
   }
-  .s3-snapshot .snap-delta .delta-arr {
+  .s3-metrics .met-delta .delta-arr {
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 700;
     font-size: 16px;
-    color: var(--mint-ink);
   }
-  .s3-snapshot .snap-delta .delta-num {
+  .s3-metrics .met-delta .delta-num {
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 700;
     font-size: 18px;
-    color: var(--mint-ink);
   }
-  .s3-snapshot .snap-delta.up .delta-arr,
-  .s3-snapshot .snap-delta.up .delta-num {
+  .s3-metrics .met-delta.up .delta-arr,
+  .s3-metrics .met-delta.up .delta-num {
     color: #2D8050;
   }
-  .s3-snapshot .snap-delta.down .delta-arr,
-  .s3-snapshot .snap-delta.down .delta-num {
+  .s3-metrics .met-delta.down .delta-arr,
+  .s3-metrics .met-delta.down .delta-num {
     color: var(--accent);
   }
-  .s3-snapshot .snap-delta .delta-from {
+  .s3-metrics .met-delta .delta-from {
     font-family: 'Prompt', sans-serif;
     font-size: 11px;
     color: var(--ink-softer);
     margin-top: 2px;
   }
-  .s3-snapshot .snap-sub {
-    padding-top: 12px;
-    border-top: 1px solid rgba(17,17,17,0.08);
-    font-family: 'Prompt', sans-serif;
-    font-size: 13px;
-    color: var(--ink-soft);
-  }
-  .s3-snapshot .snap-sub strong {
-    color: var(--ink);
-    font-weight: 700;
-  }
 
-  /* S3 — Home — Trend bar chart */
-  .s3-trend {
-    margin: 0 20px 14px;
-    padding: 16px 18px 12px;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.12);
-    border-radius: 18px;
-  }
-  .s3-trend .trend-head {
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
+  /* Trend chart inside */
+  .s3-metrics .met-trend {
     margin-bottom: 14px;
   }
-  .s3-trend .trend-title {
-    font-family: 'Prompt', sans-serif;
-    font-size: 13px;
-    font-weight: 600;
-    color: var(--ink);
-  }
-  .s3-trend .trend-pct {
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700;
-    font-size: 14px;
-    color: #2D8050;
-  }
-  .s3-trend .trend-bars {
+  .s3-metrics .met-trend .trend-bars {
     display: grid;
     grid-template-columns: repeat(7, 1fr);
     gap: 6px;
     align-items: end;
-    height: 80px;
+    height: 64px;
   }
-  .s3-trend .tb {
+  .s3-metrics .met-trend .tb {
     display: flex;
     flex-direction: column;
     align-items: center;
@@ -958,22 +928,35 @@
     height: 100%;
     justify-content: flex-end;
   }
-  .s3-trend .tb .tb-bar {
+  .s3-metrics .met-trend .tb .tb-bar {
     width: 100%;
     background: linear-gradient(180deg, var(--accent) 0%, #FF8559 100%);
     border-radius: 6px 6px 2px 2px;
     min-height: 8px;
-    transition: opacity 0.2s ease;
   }
-  .s3-trend .tb:nth-last-child(-n+2) .tb-bar {
+  .s3-metrics .met-trend .tb:nth-last-child(-n+2) .tb-bar {
     background: linear-gradient(180deg, var(--ink) 0%, #333 100%);
   }
-  .s3-trend .tb .tb-day {
+  .s3-metrics .met-trend .tb .tb-day {
     font-family: 'Prompt', sans-serif;
     font-size: 10.5px;
     color: var(--ink-softer);
     line-height: 1;
   }
+
+  /* Sub-metrics line */
+  .s3-metrics .met-sub {
+    padding-top: 12px;
+    border-top: 1px solid rgba(17,17,17,0.08);
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .s3-metrics .met-sub strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+
 
   /* S3 — Home — Attention cards */
   .s3-attn {
@@ -4074,24 +4057,85 @@
     text-align: center;
     margin-bottom: 12px;
   }
-  .s2-qr-card .s2-qr-svg {
+  .s2-qr-card .s2-qr-svg-wrap {
+    position: relative;
     width: 100%;
     max-width: 160px;
     aspect-ratio: 1;
     margin: 0 auto 10px;
+  }
+  .s2-qr-card .s2-qr-svg {
+    width: 100%;
+    height: 100%;
     display: block;
   }
+  .s2-qr-card .s2-qr-center {
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 36px; height: 36px;
+    background: var(--accent);
+    color: #FFF;
+    border-radius: 10px;
+    border: 2px solid #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: -0.02em;
+  }
+  .s2-qr-card .s2-qr-center .dot { color: var(--butter); }
   .s2-qr-card .s2-qr-shop {
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 13px;
     color: var(--ink);
     margin-bottom: 2px;
   }
-  .s2-qr-card .s2-qr-url {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 10px;
-    letter-spacing: 0.04em;
-    color: var(--ink-softer);
+  .s2-qr-card .s2-qr-trust {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 9.5px;
+    color: var(--ink);
+    text-align: center;
+    white-space: nowrap;
+    margin-top: 6px;
+  }
+  .s2-qr-card .s2-qr-trust .ts-sep {
+    color: var(--accent);
+    font-size: 8px;
+    margin: 0 4px;
+    vertical-align: 1px;
+  }
+  .s2-qr-card .s2-shop-head {
+    text-align: center;
+    margin-bottom: 12px;
+  }
+  .s2-qr-card .s2-shop-head .shop-logo-mark {
+    display: inline-block;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 4px;
+  }
+  .s2-qr-card .s2-shop-head .shop-logo-mark .dot {
+    color: var(--accent);
+  }
+  .s2-qr-card .s2-shop-head .shop-sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500;
+    font-size: 11px;
+    color: var(--ink-soft);
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .s2-qr-card .s2-shop-head .shop-sub .dotsep {
+    width: 3px; height: 3px;
+    background: var(--accent);
+    border-radius: 50%;
   }
   .s2-qr-download {
     width: 100%;
@@ -4284,11 +4328,118 @@
     font-size: 13px;
     color: var(--ink-soft);
     font-style: italic;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .s3-day-caption .dc-text .smile-inline {
+    width: 16px; height: 9px;
+    color: var(--accent);
+    font-style: normal;
+  }
+
+  /* Back nav inside s3-day-caption (used in history page) */
+  .s3-day-caption .dc-back {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    font-weight: 700;
+    color: var(--ink);
+    cursor: pointer;
+    text-decoration: none;
+  }
+  .s3-day-caption .dc-back svg {
+    width: 16px; height: 16px;
+    color: var(--ink);
+  }
+
+  /* S3.insights — Brief metrics card (links to full history) */
+  .s3-ins-brief {
+    display: block;
+    margin: 0 20px 16px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 14px;
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .s3-ins-brief .brief-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+  }
+  .s3-ins-brief .brief-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .s3-ins-brief .brief-link {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--accent);
+  }
+  .s3-ins-brief .brief-stats {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    display: flex;
+    flex-wrap: wrap;
+    align-items: baseline;
+    gap: 4px;
+  }
+  .s3-ins-brief .brief-stats strong {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+  }
+  .s3-ins-brief .brief-stats em {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    color: var(--ink-softer);
+    font-style: normal;
+  }
+  .s3-ins-brief .brief-stats .accent strong {
+    color: var(--accent);
+  }
+  .s3-ins-brief .brief-stats .brief-sep {
+    color: var(--ink-softer);
+    margin: 0 2px;
+  }
+  .s3-ins-brief:active {
+    transform: scale(0.99);
   }
   .s3-top .hi {
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 19px;
     letter-spacing: -0.02em;
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+  }
+  .s3-top .hi .td-brand {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .s3-top .hi .td-brand .dot {
+    color: var(--accent);
+  }
+  .s3-top .hi .hi-greet {
+    color: var(--ink-soft);
+    font-weight: 500;
+    font-size: 15px;
   }
   .s3-top .hi .smile-inline {
     display: inline-block; width: 16px; height: 9px;
@@ -4304,12 +4455,13 @@
   .s3-top .actions { display: flex; align-items: center; gap: 4px; }
   .s3-top .branch-pill, .s3-day-caption .branch-pill {
     display: flex; align-items: center; gap: 6px;
-    background: var(--surface);
+    background: transparent;
     border: 1px solid rgba(17,17,17,0.18);
     border-radius: 999px;
-    padding: 6px 12px 6px 8px;
+    padding: 5px 12px 5px 8px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 11px;
+    font-weight: 600; font-size: 11.5px;
+    color: var(--ink-soft);
     box-shadow: none;
   }
   .s3-top .branch-pill::before, .s3-day-caption .branch-pill::before {
@@ -4327,7 +4479,7 @@
     font-family: 'Prompt', sans-serif;
   }
   .s3-top .settings-btn {
-    width: 38px; height: 38px;
+    width: 32px; height: 32px;
     background: transparent;
     color: var(--ink);
     border: none;
@@ -4337,16 +4489,47 @@
     flex-shrink: 0;
   }
   .s3-top .settings-btn svg {
-    width: 22px; height: 22px;
+    width: 18px; height: 18px;
   }
   .s3-top .settings-btn:active {
+    transform: scale(0.92);
+  }
+
+  /* Font size toggle — top bar */
+  .s3-top .font-size-btn {
+    width: 38px; height: 38px;
+    background: transparent;
+    color: var(--ink);
+    border: none;
+    display: flex; align-items: baseline; justify-content: center;
+    gap: 2px;
+    padding-bottom: 8px;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+    font-family: 'Prompt', sans-serif;
+    line-height: 1;
+  }
+  .s3-top .font-size-btn .fs-icon-small {
+    font-size: 30px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .s3-top .font-size-btn .fs-icon-large {
+    font-size: 17px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    line-height: 1;
+  }
+  .s3-top .font-size-btn:active {
     transform: scale(0.92);
   }
 
   /* Notification bell — same style as settings */
   .s3-top .bell-btn {
     position: relative;
-    width: 38px; height: 38px;
+    width: 32px; height: 32px;
     background: transparent;
     color: var(--ink);
     border: none;
@@ -4356,7 +4539,7 @@
     flex-shrink: 0;
   }
   .s3-top .bell-btn svg {
-    width: 22px; height: 22px;
+    width: 18px; height: 18px;
   }
   .s3-top .bell-btn:active {
     transform: scale(0.92);
@@ -5213,16 +5396,33 @@
     color: var(--ink-soft);
     margin-bottom: 4px;
   }
-  .s8-print .stamp-headline {
+  .s8-print .s8-shop-head {
     text-align: center;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 24px;
-    letter-spacing: -0.025em;
-    line-height: 1.15;
     margin-bottom: 18px;
   }
-  .s8-print .stamp-headline em {
-    font-style: italic; font-weight: 700; color: var(--accent);
+  .s8-print .s8-shop-head .shop-logo-mark {
+    display: inline-block;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 32px;
+    letter-spacing: -0.04em;
+    color: var(--ink);
+    line-height: 1;
+    margin-bottom: 6px;
+  }
+  .s8-print .s8-shop-head .shop-logo-mark .dot {
+    color: var(--accent);
+  }
+  .s8-print .s8-shop-head .shop-sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500; font-size: 13px;
+    color: var(--ink-soft);
+    display: inline-flex; align-items: center; gap: 6px;
+  }
+  .s8-print .s8-shop-head .shop-sub .dotsep {
+    width: 3px; height: 3px;
+    background: var(--accent);
+    border-radius: 50%;
   }
   .s8-qr-wrap {
     display: flex; justify-content: center;
@@ -5268,6 +5468,25 @@
     display: inline-block;
     width: 100%;
   }
+  .s8-print .trust-strip {
+    margin: 12px auto 0;
+    padding: 0;
+    background: transparent;
+    border: none;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 9.5px;
+    color: var(--ink);
+    text-align: center;
+    white-space: nowrap;
+    letter-spacing: 0;
+  }
+  .s8-print .trust-strip .ts-sep {
+    color: var(--accent);
+    font-size: 8px;
+    margin: 0 4px;
+    vertical-align: 1px;
+  }
   .s8-print .reward-strip {
     background: var(--butter);
     border: 1px solid rgba(17,17,17,0.18);
@@ -5294,7 +5513,7 @@
   }
   .s8-print .brand-foot {
     text-align: center;
-    border-top: 1px dashed var(--line);
+    border-top: none;
     padding-top: 10px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 11px;
@@ -5565,6 +5784,53 @@
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 12px;
   }
+  /* S10 — Font size selector (3 options) */
+  .s10-fs-selector {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 10px;
+  }
+  .s10-fs-selector .fs-opt {
+    padding: 14px 8px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    text-decoration: none;
+    transition: all 0.15s ease;
+  }
+  .s10-fs-selector .fs-opt .fs-letter {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .s10-fs-selector .fs-opt .fs-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .s10-fs-selector .fs-opt.active {
+    background: var(--ink);
+    border-color: var(--ink);
+  }
+  .s10-fs-selector .fs-opt.active .fs-letter {
+    color: var(--butter);
+  }
+  .s10-fs-selector .fs-opt.active .fs-label {
+    color: var(--bg);
+    font-weight: 700;
+  }
+  .s10-fs-selector .fs-opt:active {
+    transform: scale(0.97);
+  }
+
   .s10-logout {
     margin: 24px 20px 20px;
     padding: 12px 14px;
@@ -5940,10 +6206,13 @@
     cursor: pointer;
   }
   .s3-camp.active {
-    border-left: 3px solid var(--accent);
+    border-left: 1px solid rgba(17,17,17,0.12);
   }
   .s3-camp.done {
     opacity: 0.92;
+  }
+  .s3-camp:last-of-type {
+    margin-bottom: 40px;
   }
   .s3-camp .camp-head {
     display: flex;
@@ -6143,7 +6412,7 @@
     background: var(--accent); color: #FFF; border-color: var(--accent);
   }
   .s13-create {
-    margin: 14px 18px 0;
+    margin: 14px 18px 100px;
     width: calc(100% - 36px);
     padding: 12px;
     background: transparent;
@@ -7000,45 +7269,83 @@
 
             <div class="s2-qr-block">
               <div class="s2-qr-card">
-                <svg class="s2-qr-svg" viewBox="0 0 80 80" xmlns="http://www.w3.org/2000/svg">
-                  <rect width="80" height="80" fill="#FDFAF2"/>
-                  <rect x="6" y="6" width="20" height="20" rx="2" fill="#111"/>
-                  <rect x="11" y="11" width="10" height="10" rx="1" fill="#FDFAF2"/>
-                  <rect x="13" y="13" width="6" height="6" fill="#111"/>
-                  <rect x="54" y="6" width="20" height="20" rx="2" fill="#111"/>
-                  <rect x="59" y="11" width="10" height="10" rx="1" fill="#FDFAF2"/>
-                  <rect x="61" y="13" width="6" height="6" fill="#111"/>
-                  <rect x="6" y="54" width="20" height="20" rx="2" fill="#111"/>
-                  <rect x="11" y="59" width="10" height="10" rx="1" fill="#FDFAF2"/>
-                  <rect x="13" y="61" width="6" height="6" fill="#111"/>
-                  <g fill="#111">
-                    <rect x="32" y="6" width="4" height="4"/><rect x="40" y="6" width="4" height="4"/>
-                    <rect x="32" y="14" width="4" height="4"/><rect x="44" y="14" width="4" height="4"/>
-                    <rect x="36" y="22" width="4" height="4"/>
-                    <rect x="6" y="32" width="4" height="4"/><rect x="14" y="32" width="4" height="4"/>
-                    <rect x="22" y="32" width="4" height="4"/><rect x="32" y="32" width="4" height="4"/>
-                    <rect x="40" y="32" width="4" height="4"/><rect x="48" y="32" width="4" height="4"/>
-                    <rect x="56" y="32" width="4" height="4"/><rect x="64" y="32" width="4" height="4"/>
-                    <rect x="72" y="32" width="4" height="4"/>
-                    <rect x="10" y="40" width="4" height="4"/><rect x="18" y="40" width="4" height="4"/>
-                    <rect x="28" y="40" width="4" height="4"/><rect x="36" y="40" width="4" height="4"/>
-                    <rect x="44" y="40" width="4" height="4"/><rect x="52" y="40" width="4" height="4"/>
-                    <rect x="60" y="40" width="4" height="4"/><rect x="68" y="40" width="4" height="4"/>
-                    <rect x="6" y="48" width="4" height="4"/><rect x="22" y="48" width="4" height="4"/>
-                    <rect x="32" y="48" width="4" height="4"/><rect x="40" y="48" width="4" height="4"/>
-                    <rect x="56" y="48" width="4" height="4"/><rect x="64" y="48" width="4" height="4"/>
-                    <rect x="72" y="48" width="4" height="4"/>
-                    <rect x="32" y="56" width="4" height="4"/><rect x="40" y="56" width="4" height="4"/>
-                    <rect x="48" y="56" width="4" height="4"/>
-                    <rect x="32" y="64" width="4" height="4"/><rect x="44" y="64" width="4" height="4"/>
-                    <rect x="56" y="64" width="4" height="4"/><rect x="64" y="64" width="4" height="4"/>
-                    <rect x="72" y="64" width="4" height="4"/>
-                    <rect x="36" y="72" width="4" height="4"/><rect x="48" y="72" width="4" height="4"/>
-                    <rect x="60" y="72" width="4" height="4"/><rect x="68" y="72" width="4" height="4"/>
-                  </g>
-                </svg>
-                <div class="s2-qr-shop">ร้านกาแฟลุงหมี</div>
-                <div class="s2-qr-url">taemdee.co/mhee</div>
+                <div class="s2-shop-head">
+                  <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+                  <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+                </div>
+                <div class="s2-qr-svg-wrap">
+                <svg class="s2-qr-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                    <rect x="0" y="0" width="100" height="100" fill="#fff"/>
+                    <g fill="#111">
+                      <rect x="6" y="6" width="22" height="22" rx="2"/>
+                      <rect x="72" y="6" width="22" height="22" rx="2"/>
+                      <rect x="6" y="72" width="22" height="22" rx="2"/>
+                    </g>
+                    <g fill="#fff">
+                      <rect x="11" y="11" width="12" height="12" rx="1"/>
+                      <rect x="77" y="11" width="12" height="12" rx="1"/>
+                      <rect x="11" y="77" width="12" height="12" rx="1"/>
+                    </g>
+                    <g fill="#111">
+                      <rect x="14" y="14" width="6" height="6" rx="1"/>
+                      <rect x="80" y="14" width="6" height="6" rx="1"/>
+                      <rect x="14" y="80" width="6" height="6" rx="1"/>
+                      <rect x="34" y="6" width="4" height="4"/>
+                      <rect x="42" y="6" width="4" height="4"/>
+                      <rect x="50" y="6" width="4" height="4"/>
+                      <rect x="62" y="6" width="4" height="4"/>
+                      <rect x="34" y="14" width="4" height="4"/>
+                      <rect x="46" y="14" width="4" height="4"/>
+                      <rect x="58" y="14" width="4" height="4"/>
+                      <rect x="38" y="22" width="4" height="4"/>
+                      <rect x="46" y="22" width="4" height="4"/>
+                      <rect x="62" y="22" width="4" height="4"/>
+                      <rect x="6" y="34" width="4" height="4"/>
+                      <rect x="14" y="34" width="4" height="4"/>
+                      <rect x="22" y="34" width="4" height="4"/>
+                      <rect x="34" y="34" width="4" height="4"/>
+                      <rect x="50" y="34" width="4" height="4"/>
+                      <rect x="62" y="34" width="4" height="4"/>
+                      <rect x="78" y="34" width="4" height="4"/>
+                      <rect x="86" y="34" width="4" height="4"/>
+                      <rect x="14" y="42" width="4" height="4"/>
+                      <rect x="26" y="42" width="4" height="4"/>
+                      <rect x="34" y="42" width="4" height="4"/>
+                      <rect x="46" y="42" width="4" height="4"/>
+                      <rect x="58" y="42" width="4" height="4"/>
+                      <rect x="70" y="42" width="4" height="4"/>
+                      <rect x="82" y="42" width="4" height="4"/>
+                      <rect x="6" y="50" width="4" height="4"/>
+                      <rect x="22" y="50" width="4" height="4"/>
+                      <rect x="38" y="50" width="4" height="4"/>
+                      <rect x="58" y="50" width="4" height="4"/>
+                      <rect x="74" y="50" width="4" height="4"/>
+                      <rect x="86" y="50" width="4" height="4"/>
+                      <rect x="14" y="58" width="4" height="4"/>
+                      <rect x="22" y="58" width="4" height="4"/>
+                      <rect x="34" y="58" width="4" height="4"/>
+                      <rect x="50" y="58" width="4" height="4"/>
+                      <rect x="66" y="58" width="4" height="4"/>
+                      <rect x="78" y="58" width="4" height="4"/>
+                      <rect x="34" y="66" width="4" height="4"/>
+                      <rect x="46" y="66" width="4" height="4"/>
+                      <rect x="62" y="66" width="4" height="4"/>
+                      <rect x="34" y="74" width="4" height="4"/>
+                      <rect x="42" y="74" width="4" height="4"/>
+                      <rect x="58" y="74" width="4" height="4"/>
+                      <rect x="74" y="74" width="4" height="4"/>
+                      <rect x="34" y="82" width="4" height="4"/>
+                      <rect x="50" y="82" width="4" height="4"/>
+                      <rect x="62" y="82" width="4" height="4"/>
+                      <rect x="74" y="82" width="4" height="4"/>
+                      <rect x="86" y="82" width="4" height="4"/>
+                    </g>
+                  </svg>
+                  <div class="s2-qr-center">m<span class="dot">.</span></div>
+                </div>
+                <div class="s2-qr-trust">
+                  ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
+                </div>
               </div>
 
               <button class="s2-qr-download">
@@ -7094,8 +7401,7 @@
 
             <div class="s3-top">
               <div class="hi">
-                สวัสดี
-                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7115,47 +7421,49 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
-            <div class="s3-time-pills">
-              <a class="tp active">วันนี้</a>
-              <a class="tp">สัปดาห์</a>
-              <a class="tp">เดือน</a>
-            </div>
+            <div class="s3-metrics">
+              <div class="met-head">
+                <span class="met-title">ลูกค้า</span>
+                <div class="met-pills">
+                  <a class="mp active">วันนี้</a>
+                  <a class="mp">สัปดาห์</a>
+                  <a class="mp">เดือน</a>
+                </div>
+              </div>
 
-            <div class="s3-snapshot">
-              <div class="snap-label">ลูกค้าวันนี้</div>
-              <div class="snap-num-row">
-                <div class="snap-num">
+              <div class="met-num-row">
+                <div class="met-num">
                   <span class="num-big">12</span>
                   <span class="num-unit">คน</span>
                 </div>
-                <div class="snap-delta up">
+                <div class="met-delta up">
                   <span class="delta-arr">↑</span>
                   <span class="delta-num">+2</span>
                   <span class="delta-from">จากเมื่อวาน</span>
                 </div>
               </div>
-              <div class="snap-sub">
-                ออกแต้ม <strong>18 ครั้ง</strong> · แลก <strong>1 รางวัล</strong>
-              </div>
-            </div>
 
-            <div class="s3-trend">
-              <div class="trend-head">
-                <span class="trend-title">สัปดาห์นี้</span>
-                <span class="trend-pct">↑ +35%</span>
+              <div class="met-trend">
+                <div class="trend-bars">
+                  <div class="tb"><div class="tb-bar" style="height:25%"></div><span class="tb-day">จ.</span></div>
+                  <div class="tb"><div class="tb-bar" style="height:45%"></div><span class="tb-day">อ.</span></div>
+                  <div class="tb"><div class="tb-bar" style="height:60%"></div><span class="tb-day">พ.</span></div>
+                  <div class="tb"><div class="tb-bar" style="height:30%"></div><span class="tb-day">พฤ.</span></div>
+                  <div class="tb"><div class="tb-bar" style="height:78%"></div><span class="tb-day">ศ.</span></div>
+                  <div class="tb"><div class="tb-bar" style="height:95%"></div><span class="tb-day">ส.</span></div>
+                  <div class="tb"><div class="tb-bar" style="height:88%"></div><span class="tb-day">อา.</span></div>
+                </div>
               </div>
-              <div class="trend-bars">
-                <div class="tb"><div class="tb-bar" style="height:25%"></div><span class="tb-day">จ.</span></div>
-                <div class="tb"><div class="tb-bar" style="height:45%"></div><span class="tb-day">อ.</span></div>
-                <div class="tb"><div class="tb-bar" style="height:60%"></div><span class="tb-day">พ.</span></div>
-                <div class="tb"><div class="tb-bar" style="height:30%"></div><span class="tb-day">พฤ.</span></div>
-                <div class="tb"><div class="tb-bar" style="height:78%"></div><span class="tb-day">ศ.</span></div>
-                <div class="tb"><div class="tb-bar" style="height:95%"></div><span class="tb-day">ส.</span></div>
-                <div class="tb"><div class="tb-bar" style="height:88%"></div><span class="tb-day">อา.</span></div>
+
+              <div class="met-sub">
+                ออกแต้ม <strong>18 ครั้ง</strong> · แลก <strong>1 รางวัล</strong>
               </div>
             </div>
 
@@ -7264,8 +7572,8 @@
           <div class="td">
 
             <div class="s3-top">
-              <div class="hi" style="font-weight:700;color:var(--ink);">
-                ออกแต้ม
+              <div class="hi">
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7285,13 +7593,20 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
             <div class="ph-section-h" style="margin-top:8px;">
               <div class="label">ลูกค้าล่าสุด</div>
-              <span class="sap-feed-hint-inline" style="color:var(--ink-softer);font-size:11px;font-style:italic;">แตะรายการเพื่อดูหรือยกเลิก</span>
+              <div class="met-pills issue-feed-pills">
+                <a class="mp active">ทั้งหมด</a>
+                <a class="mp">สแกน</a>
+                <a class="mp">แลก</a>
+              </div>
             </div>
 
             <div class="s3-issue-feed">
@@ -7409,9 +7724,7 @@
 
             <div class="s3-top">
               <div class="hi">
-                สวัสดี
-                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์</span>
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7431,7 +7744,10 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
@@ -7480,9 +7796,7 @@
 
             <div class="s3-top">
               <div class="hi">
-                สวัสดี
-                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์</span>
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7502,7 +7816,10 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
@@ -7556,9 +7873,7 @@
 
             <div class="s3-top">
               <div class="hi">
-                สวัสดี
-                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์</span>
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7578,7 +7893,10 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
@@ -7654,9 +7972,7 @@
 
             <div class="s3-top">
               <div class="hi">
-                สวัสดี
-                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์</span>
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7676,7 +7992,10 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
@@ -7756,8 +8075,8 @@
           <div class="td">
 
             <div class="s3-top">
-              <div class="hi" style="font-weight:700;color:var(--ink);">
-                ลูกค้า
+              <div class="hi">
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7777,7 +8096,10 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
@@ -7920,15 +8242,15 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S3.insights</span>แนะนำ</div>
         <h3>แต้มดีแนะนำ ✦</h3>
-        <p>tab "แนะนำ" — overview funnel (ส่ง→เปิด→กลับ 30 วัน), แคมเปญที่กำลังดำเนินการ, แคมเปญเสร็จแล้ว (มี ROI + ทำซ้ำได้), และ list คำแนะนำใหม่ + สร้างเอง</p>
+        <p>tab "แนะนำ" — list ของ template campaigns พร้อมจำนวนลูกค้าที่ระบบเลือก + ปุ่มสร้างเอง · brief metrics card ล่างสุด ที่ link ไปหน้า full performance</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
 
             <div class="s3-top">
-              <div class="hi" style="font-weight:700;color:var(--ink);">
-                แต้มดีแนะนำ ✦
+              <div class="hi">
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -7948,16 +8270,31 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <span class="dc-text">
+                สวัสดีวันศุกร์ · เริ่มต้นวันได้ดี
+                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
+              </span>
               <div class="branch-pill">นิมมาน</div>
             </div>
 
-            <div class="s3-ins-toggle">
-              <a class="ins-tg active">คำแนะนำ</a>
-              <a class="ins-tg">ผลงาน</a>
-            </div>
+            <a class="s3-ins-brief" href="#">
+              <div class="brief-head">
+                <span class="brief-label">ภาพรวม 30 วัน</span>
+                <span class="brief-link">ดูทั้งหมด →</span>
+              </div>
+              <div class="brief-stats">
+                <span><strong>145</strong> ส่ง</span>
+                <span class="brief-sep">·</span>
+                <span><strong>67</strong> เปิด <em>(46%)</em></span>
+                <span class="brief-sep">·</span>
+                <span class="accent"><strong>23</strong> กลับ <em>(16%)</em></span>
+              </div>
+            </a>
 
-            <div class="s13-intro" style="margin-bottom:14px;">
+            <div class="ph-section-h" style="margin-top:18px;">
+              <div class="label">แต้มดีแนะนำ ✦</div>
+            </div>
+            <div class="s13-intro" style="margin-bottom:14px;margin-top:0;padding-top:0;">
               <div class="ask-th">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับก่อนส่งได้</div>
             </div>
 
@@ -8069,15 +8406,15 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S3.insights.history</span>ผลงาน</div>
         <h3>ผลงานแคมเปญที่ส่งไป</h3>
-        <p>toggle "ผลงาน" — overview funnel 30 วัน, แคมเปญที่กำลังดำเนินการ, แคมเปญเสร็จแล้ว (ROI + ทำซ้ำได้)</p>
+        <p>เปิดเมื่อกด brief metrics card จาก S3.insights — back nav (←) ที่ top, full performance: overview funnel, แคมเปญที่กำลังดำเนินการ, แคมเปญเสร็จแล้ว (ROI + ทำซ้ำได้)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
 
             <div class="s3-top">
-              <div class="hi" style="font-weight:700;color:var(--ink);">
-                แต้มดีแนะนำ ✦
+              <div class="hi">
+                <span class="td-brand">taemdee<span class="dot">.</span></span>
               </div>
               <div class="actions">
                 <a class="bell-btn" title="แจ้งเตือน">
@@ -8097,13 +8434,11 @@
             </div>
 
             <div class="s3-day-caption">
-              <span class="dc-text">วันศุกร์ · เริ่มต้นวันได้ดี</span>
+              <a class="dc-back">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
+                <span>ผลงานแคมเปญ</span>
+              </a>
               <div class="branch-pill">นิมมาน</div>
-            </div>
-
-            <div class="s3-ins-toggle">
-              <a class="ins-tg">คำแนะนำ</a>
-              <a class="ins-tg active">ผลงาน</a>
             </div>
 
             <div class="s3-ins-overview">
@@ -8191,45 +8526,6 @@
                 <span class="camp-arrow">›</span>
               </div>
             </a>
-
-            <div class="s3-glass-nav">
-              <a class="gn-tab">
-                <span class="gn-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M3 9l9-7 9 7v11a2 2 0 01-2 2H5a2 2 0 01-2-2z"/>
-                    <polyline points="9 22 9 12 15 12 15 22"/>
-                  </svg>
-                </span>
-                <span class="gn-label">หน้าแรก</span>
-              </a>
-              <a class="gn-tab">
-                <span class="gn-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
-                  </svg>
-                </span>
-                <span class="gn-label">ออกแต้ม</span>
-              </a>
-              <a class="gn-tab">
-                <span class="gn-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M17 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/>
-                    <circle cx="9" cy="7" r="4"/>
-                    <path d="M23 21v-2a4 4 0 00-3-3.87"/>
-                    <path d="M16 3.13a4 4 0 010 7.75"/>
-                  </svg>
-                </span>
-                <span class="gn-label">ลูกค้า</span>
-              </a>
-              <a class="gn-tab active">
-                <span class="gn-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
-                  </svg>
-                </span>
-                <span class="gn-label">แนะนำ</span>
-              </a>
-            </div>
           </div>
         </div>
       </div>
@@ -8537,6 +8833,37 @@
                   <div class="row-meta">412 เครดิต · เติมอัตโนมัติปิด</div>
                 </div>
                 <span class="pill">ออนไลน์</span>
+              </div>
+            </div>
+
+            <div class="s10-section">
+              <div class="label">ทั่วไป</div>
+              <div class="s10-row">
+                <div class="row-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="4 7 4 4 20 4 20 7"/>
+                    <line x1="9" y1="20" x2="15" y2="20"/>
+                    <line x1="12" y1="4" x2="12" y2="20"/>
+                  </svg>
+                </div>
+                <div class="row-info">
+                  <div class="row-name">ขนาดตัวอักษร</div>
+                  <div class="row-meta">ปรับให้อ่านสบายตา</div>
+                </div>
+              </div>
+              <div class="s10-fs-selector">
+                <a class="fs-opt">
+                  <span class="fs-letter" style="font-size:14px;">ก</span>
+                  <span class="fs-label">เล็ก</span>
+                </a>
+                <a class="fs-opt active">
+                  <span class="fs-letter" style="font-size:18px;">ก</span>
+                  <span class="fs-label">มาตรฐาน</span>
+                </a>
+                <a class="fs-opt">
+                  <span class="fs-letter" style="font-size:24px;">ก</span>
+                  <span class="fs-label">ใหญ่</span>
+                </a>
               </div>
             </div>
 
@@ -9074,23 +9401,17 @@
             </div>
 
             <div class="s8-actions">
-              <div class="pill primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="6 9 6 2 18 2 18 9"/><path d="M6 18H4a2 2 0 01-2-2v-5a2 2 0 012-2h16a2 2 0 012 2v5a2 2 0 01-2 2h-2"/><rect x="6" y="14" width="12" height="8"/></svg>
-                พิมพ์
-              </div>
               <div class="pill">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="7 10 12 15 17 10"/><line x1="12" y1="15" x2="12" y2="3"/></svg>
                 บันทึก
               </div>
-              <div class="pill">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
-                แชร์
-              </div>
             </div>
 
             <div class="s8-print">
-              <div class="stamp-here">— สแกนตรงนี้ —</div>
-              <div class="stamp-headline"><em>สแกนเลย</em><br>เก็บแต้มกับเรา</div>
+              <div class="s8-shop-head">
+                <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+                <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+              </div>
 
               <div class="s8-qr-wrap">
                 <div class="s8-qr">
@@ -9165,22 +9486,16 @@
                 </div>
               </div>
 
-              <div class="reward-strip">
-                <div class="ll">★ รางวัล ★</div>
-                <div class="vv">10 แต้ม <span class="stars">·</span> กาแฟ Signature ฟรี</div>
+              <div class="trust-strip">
+                ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
               </div>
 
               <div class="brand-foot">
-                <span>powered by taemdee<span class="dot">.</span></span>
+                <span>taemdee<span class="dot">.</span></span>
                 <svg class="smile" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="url">taemdee.app/mhee</span>
               </div>
             </div>
 
-            <div class="s8-tip">
-              <div class="b">i</div>
-              <div>พิมพ์ขนาด A6 ติดที่เคาน์เตอร์ ใกล้จุดรับเงิน</div>
-            </div>
           </div>
         </div>
       </div>
