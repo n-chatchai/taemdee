@@ -40,9 +40,15 @@
         <div class="brief-stats">
           <span><strong>{{ funnel.sent }}</strong> ส่ง</span>
           <span class="brief-sep">·</span>
-          <span><strong>{% if funnel.opened is not none %}{{ funnel.opened }}{% else %}—{% endif %}</strong> เปิด</span>
+          <span>
+            <strong>{% if funnel.opened is not none %}{{ funnel.opened }}{% else %}—{% endif %}</strong> เปิด
+            {% if funnel.opened_pct is not none %}<em>({{ funnel.opened_pct }}%)</em>{% endif %}
+          </span>
           <span class="brief-sep">·</span>
-          <span class="accent"><strong>{% if funnel.returned is not none %}{{ funnel.returned }}{% else %}—{% endif %}</strong> กลับ</span>
+          <span class="accent">
+            <strong>{% if funnel.returned is not none %}{{ funnel.returned }}{% else %}—{% endif %}</strong> กลับ
+            {% if funnel.returned_pct is not none %}<em>({{ funnel.returned_pct }}%)</em>{% endif %}
+          </span>
         </div>
       </a>
 
@@ -104,11 +110,13 @@
           <div class="iov-cell">
             <div class="iov-num">{% if funnel.opened is not none %}{{ funnel.opened }}{% else %}—{% endif %}</div>
             <div class="iov-label">เปิด</div>
+            {% if funnel.opened_pct is not none %}<div class="iov-pct">{{ funnel.opened_pct }}%</div>{% endif %}
           </div>
           <div class="iov-arrow">→</div>
           <div class="iov-cell">
             <div class="iov-num accent">{% if funnel.returned is not none %}{{ funnel.returned }}{% else %}—{% endif %}</div>
             <div class="iov-label">กลับมา</div>
+            {% if funnel.returned_pct is not none %}<div class="iov-pct">{{ funnel.returned_pct }}%</div>{% endif %}
           </div>
         </div>
         <div style="margin-top:8px; font-family:'Prompt',sans-serif; font-size:11px; color:var(--ink-softer); text-align:center; font-style:italic;">
@@ -153,8 +161,12 @@
               <div class="cs-cell"><div class="cs-num">—</div><div class="cs-label">เปิด</div></div>
               <div class="cs-cell"><div class="cs-num accent">—</div><div class="cs-label">กลับ</div></div>
             </div>
-            <div class="camp-foot">
+            <div class="camp-roi">
+              <span class="roi-label">ROI</span>
               <span>ใช้ {{ c.credits_spent }} เครดิต</span>
+            </div>
+            <div class="camp-foot">
+              <span class="camp-cta">ทำซ้ำแคมเปญนี้</span>
               <span class="camp-arrow">›</span>
             </div>
           </a>

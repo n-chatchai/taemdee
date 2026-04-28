@@ -570,7 +570,15 @@ async def insights_page(
         view = "suggestions"
 
     suggestions = []
-    funnel = {"sent": 0, "opened": None, "returned": None}
+    # opened/returned + their pcts stay None until the LINE Messaging API
+    # tracking ships — template renders '—' / hides the percent badge.
+    funnel = {
+        "sent": 0,
+        "opened": None,
+        "returned": None,
+        "opened_pct": None,
+        "returned_pct": None,
+    }
     active_campaigns: list = []
     done_campaigns: list = []
 
