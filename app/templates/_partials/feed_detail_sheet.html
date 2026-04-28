@@ -10,21 +10,26 @@
     <div class="title">รายละเอียดกิจกรรม</div>
     <a href="#" class="x-btn" onclick="closeFeedDetail(); return false;">×</a>
   </div>
-  <div class="detail-customer">
-    <div class="dc-avatar" id="fd-avatar">?</div>
-    <div class="dc-info">
-      <div class="dc-name" id="fd-name">—</div>
-      <div class="dc-meta" id="fd-meta">—</div>
+  {# Scroll-area: detail customer + rows. Pinned chrome (handle/head/void)
+     stays outside so the void button is always reachable even when the
+     viewport is tight (small phone, keyboard up, iOS dynamic toolbar). #}
+  <div class="issue-modal-body">
+    <div class="detail-customer">
+      <div class="dc-avatar" id="fd-avatar">?</div>
+      <div class="dc-info">
+        <div class="dc-name" id="fd-name">—</div>
+        <div class="dc-meta" id="fd-meta">—</div>
+      </div>
     </div>
-  </div>
-  <div class="detail-rows">
-    <div class="dr-row"><span class="dr-label">กิจกรรม</span><span class="dr-value" id="fd-activity">—</span></div>
-    <div class="dr-row"><span class="dr-label">เวลา</span><span class="dr-value" id="fd-time">—</span></div>
-    <div class="dr-row"><span class="dr-label">วิธีออก</span><span class="dr-value" id="fd-method">—</span></div>
-    <div class="dr-row"><span class="dr-label">ผู้ออก</span><span class="dr-value" id="fd-issuer">—</span></div>
-    <div class="dr-row" id="fd-progress-row">
-      <span class="dr-label">สะสมใหม่</span>
-      <span class="dr-value" id="fd-progress">—</span>
+    <div class="detail-rows">
+      <div class="dr-row"><span class="dr-label">กิจกรรม</span><span class="dr-value" id="fd-activity">—</span></div>
+      <div class="dr-row"><span class="dr-label">เวลา</span><span class="dr-value" id="fd-time">—</span></div>
+      <div class="dr-row"><span class="dr-label">วิธีออก</span><span class="dr-value" id="fd-method">—</span></div>
+      <div class="dr-row"><span class="dr-label">ผู้ออก</span><span class="dr-value" id="fd-issuer">—</span></div>
+      <div class="dr-row" id="fd-progress-row">
+        <span class="dr-label">สะสมใหม่</span>
+        <span class="dr-value" id="fd-progress">—</span>
+      </div>
     </div>
   </div>
   <div class="detail-void-row" id="fd-void-row" hidden>

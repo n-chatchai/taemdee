@@ -35,7 +35,7 @@ class Settings(BaseSettings):
     # passes this into the dashboard template and the SSE handler trims old
     # rows past this cap as new events arrive. Default 3 matches the original
     # design; bump to 5/10 if a busy shop wants more history at a glance.
-    shop_customer_last_scan_display_number: int = 3
+    shop_customer_last_scan_display_number: int = 10
 
 
 settings = Settings()
