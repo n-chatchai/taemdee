@@ -13,7 +13,7 @@
   <div class="td td-tabbed">
     <div class="topbar"><span></span><span></span></div>
 
-    {% set weekday_th = None %}{% set branch_label = None %}
+    {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
     {% include "_partials/s3_top.html" %}
 
     <div class="s3-ins-toggle">

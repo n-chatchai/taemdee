@@ -5592,11 +5592,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 500;
   color: var(--ink-soft);
 }
-.s3-metrics .met-pills {
+.s3-metrics .met-pills, .met-pills.issue-feed-pills {
   display: flex;
   gap: 12px;
 }
-.s3-metrics .met-pills .mp {
+.s3-metrics .met-pills .mp, .met-pills.issue-feed-pills .mp {
   padding: 2px 0;
   font-family: 'Prompt', sans-serif;
   font-size: 12px;
@@ -5607,11 +5607,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   transition: all 0.15s ease;
   position: relative;
 }
-.s3-metrics .met-pills .mp.active {
+.s3-metrics .met-pills .mp.active, .met-pills.issue-feed-pills .mp.active {
   color: var(--ink);
   font-weight: 700;
 }
-.s3-metrics .met-pills .mp.active::after {
+.s3-metrics .met-pills .mp.active::after, .met-pills.issue-feed-pills .mp.active::after {
   content: '';
   position: absolute;
   bottom: -2px; left: 0; right: 0;
@@ -5619,7 +5619,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   background: var(--accent);
   border-radius: 1px;
 }
-.s3-metrics .met-pills .mp[aria-disabled="true"] {
+.s3-metrics .met-pills .mp[aria-disabled="true"], .met-pills.issue-feed-pills .mp[aria-disabled="true"] {
   opacity: 0.5;
   pointer-events: none;
 }

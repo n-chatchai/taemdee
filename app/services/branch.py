@@ -6,6 +6,7 @@ Reward mode rules (per PRD §6.I):
 - Once set, the mode is locked — switching requires data migration (v2).
 """
 
+from datetime import datetime
 from typing import List, Optional
 from uuid import UUID
 
@@ -13,6 +14,45 @@ from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import Branch, Shop
+from app.models.util import utcnow
+
+_WEEKDAYS_TH = (
+    "วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี",
+    "วันศุกร์", "วันเสาร์", "วันอาทิตย์",
+)
+
+
+async def s3_top_context(
+    db: AsyncSession,
+    shop: Shop,
+    now: Optional[datetime] = None,
+) -> dict:
+    """Common context for the S3.* shared topbar partial — weekday string
+    + branch count + active branch label (only when multi-branch). Used by
+    every full-page S3 route (dashboard / issue / customers / insights) so
+    the day-caption row + branch pill render consistently."""
+    if now is None:
+        now = utcnow()
+    branch_row = (await db.exec(
+        select(
+            func.count().over().label("total"),
+            Branch.name,
+        )
+        .where(Branch.shop_id == shop.id)
+        .order_by(Branch.created_at)
+        .limit(1)
+    )).first()
+    if branch_row is None:
+        branches_count = 0
+        branch_label = None
+    else:
+        branches_count = branch_row[0]
+        branch_label = branch_row[1] if branches_count > 1 else None
+    return {
+        "weekday_th": _WEEKDAYS_TH[now.weekday()],
+        "branches_count": branches_count,
+        "branch_label": branch_label,
+    }
 
 VALID_REWARD_MODES = {"shared", "separate"}
 

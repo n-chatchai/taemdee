@@ -18,6 +18,7 @@ from app.core.auth import (
 from app.core.database import get_session
 from app.models import Customer, Redemption, Shop, Point, StaffMember
 from app.models.util import bkk_feed_time, bkk_hms, utcnow
+from app.services.branch import s3_top_context
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point, void_point
 from app.services.redemption import active_point_count, void_redemption
@@ -62,6 +63,7 @@ async def issue_page(
         reverse=True,
     )[:feed_cap]
 
+    s3_top = await s3_top_context(db, shop)
     return templates.TemplateResponse(
         request=request,
         name="shop/issue.html",
@@ -69,6 +71,7 @@ async def issue_page(
             "shop": shop,
             "feed": feed,
             "feed_cap": feed_cap,
+            **s3_top,
         },
     )
 

@@ -11,10 +11,11 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import get_current_shop
 from app.core.database import get_session
-from app.models import Branch, Redemption, Shop, Point
+from app.models import Redemption, Shop, Point
 from app.models.util import utcnow
 from app.routes.auth import _set_session_cookie
 from app.services.auth import issue_session_token
+from app.services.branch import s3_top_context
 from app.services.deereach import compute_suggestions
 from app.services.events import stream as event_stream
 from app.services.logo_gen import VALID_STYLE_IDS, generate_logos, render_style
@@ -198,23 +199,7 @@ async def dashboard(
     # Branches count + first branch name in a single roundtrip via window
     # function. Most shops have 1 branch — `branch_label` only shows on
     # the day-caption row when count > 1.
-    branch_row = (await db.exec(
-        select(
-            func.count().over().label("total"),
-            Branch.name,
-        )
-        .where(Branch.shop_id == shop.id)
-        .order_by(Branch.created_at)
-        .limit(1)
-    )).first()
-    if branch_row is None:
-        branches_count = 0
-        branch_label = None
-    else:
-        branches_count = branch_row[0]
-        branch_label = branch_row[1] if branches_count > 1 else None
-
-    weekday_th = ("วันจันทร์", "วันอังคาร", "วันพุธ", "วันพฤหัสบดี", "วันศุกร์", "วันเสาร์", "วันอาทิตย์")[now.weekday()]
+    s3_top = await s3_top_context(db, shop, now=now)
 
     # Build the "แต้มดีแนะนำ" attention cards from current state. Three slots:
     # warn (low credits), opp (near-ready customers), ai (suggestion count).
@@ -263,9 +248,7 @@ async def dashboard(
             "redemptions_total": redemptions_total,
             "feed_cap": app_settings.shop_customer_last_scan_display_number,
             "attn_cards": attn_cards,
-            "weekday_th": weekday_th,
-            "branches_count": branches_count,
-            "branch_label": branch_label,
+            **s3_top,
         },
     )
 
@@ -633,6 +616,7 @@ async def insights_page(
                 done_campaigns.append(row_dict)
             funnel["sent"] += r.audience_count
 
+    s3_top = await s3_top_context(db, shop)
     return templates.TemplateResponse(
         request=request,
         name="shop/insights.html",
@@ -643,6 +627,7 @@ async def insights_page(
             "funnel": funnel,
             "active_campaigns": active_campaigns,
             "done_campaigns": done_campaigns,
+            **s3_top,
         },
     )
 
@@ -807,6 +792,7 @@ async def customers_page(
         return (priority, -last_at_ts)
     rows.sort(key=sort_key)
 
+    s3_top = await s3_top_context(db, shop, now=now)
     return templates.TemplateResponse(
         request=request,
         name="shop/customers.html",
@@ -816,6 +802,7 @@ async def customers_page(
             "total": len(rows),
             "active_filter": filter,
             "q": q or "",
+            **s3_top,
         },
     )
 
