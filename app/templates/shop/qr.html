@@ -46,42 +46,44 @@
       </button>
     </div>
 
+    {# Print card per S8 design: shop-head (logo + name · location) on top,
+       QR with accent center badge, trust strip, brand foot. The print
+       stylesheet hides .topbar / .app-bar / .s8-actions so only this
+       card lands on paper. #}
+    {% set logo = shop_logo(shop) %}
+    {% set center_initial = (shop.name or 'm')[0]|lower %}
     <div class="s8-print">
-      <div class="stamp-here">— สแกนตรงนี้ —</div>
-      <div class="stamp-headline"><em>สแกนเลย</em><br>เก็บแต้มกับเรา</div>
+      <div class="s8-shop-head">
+        <div class="shop-logo-mark">
+          {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+          {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
+        </div>
+        <div class="shop-sub">
+          <span>{{ shop.name }}</span>
+          {% if branch %}<span class="dotsep"></span><span>{{ branch.name }}</span>
+          {% elif shop.location %}<span class="dotsep"></span><span>{{ shop.location }}</span>{% endif %}
+        </div>
+      </div>
 
       <div class="s8-qr-wrap">
         <div class="s8-qr">
           {{ qr_svg|safe }}
+          <div class="center">{{ center_initial }}<span class="dot">.</span></div>
         </div>
       </div>
 
-      {# Reward strip — prominent, shows photo emoji if reward_image is set #}
-      <div class="reward-strip">
-        <div class="ll">★ รางวัล ★</div>
-        <div class="vv">
-          {% if shop.reward_image == 'gift_box' %}🎁{% elif shop.reward_image == 'card' %}💳{% elif shop.reward_image == 'star' %}⭐{% else %}☕{% endif %}
-          <strong>{{ shop.reward_threshold }} แต้ม</strong>
-          <span class="stars">·</span>
-          {{ shop.reward_description }}
-        </div>
+      <div class="trust-strip">
+        ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
       </div>
 
-      {# Brand footer — logo + name only, no URL #}
       <div class="brand-foot">
-        <svg class="smile-stamp" viewBox="0 0 100 100" width="18" height="18">
-          <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-          <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-          <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
-        </svg>
         <span>taemdee<span class="dot">.</span></span>
+        <svg class="smile" viewBox="0 0 20 12" fill="none">
+          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+        </svg>
       </div>
-    </div>
-
-    <div class="s8-tip">
-      <div class="b">i</div>
-      <div>พิมพ์ขนาด A6 ติดที่เคาน์เตอร์ ใกล้จุดรับเงิน</div>
     </div>
 
     {% include "_partials/footer_mark.html" %}
