@@ -5776,21 +5776,22 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
 }
 
-/* Settings cog button (top-right) */
+/* Settings cog (top-right) — bare icon, no chrome per design. */
 .s3-top .settings-btn {
-  width: 36px;
-  height: 36px;
+  width: 38px;
+  height: 38px;
+  background: transparent;
+  color: var(--ink);
+  border: none;
   display: flex;
   align-items: center;
   justify-content: center;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 12px;
-  color: var(--ink);
   cursor: pointer;
   text-decoration: none;
+  flex-shrink: 0;
 }
-.s3-top .settings-btn svg { width: 18px; height: 18px; }
+.s3-top .settings-btn svg { width: 22px; height: 22px; }
+.s3-top .settings-btn:active { transform: scale(0.92); }
 
 /* ==========================================================
    S3.issue — full-page ออกแต้ม hub: feed + 3 action buttons
