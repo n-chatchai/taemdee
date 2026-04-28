@@ -13,6 +13,21 @@ html, body {
   background: #F6F1E5;
 }
 
+/* Cross-document View Transitions — browser fades between same-origin
+   navigations automatically (no JS / no SPA needed). Falls back to a
+   regular page load on browsers that don't support it (Firefox, Safari
+   < 18.2, Chrome < 126). */
+@view-transition { navigation: auto; }
+
+/* Keep the glass nav visually stable across tab navigations — naming the
+   element pairs it across the old/new pages so the browser morphs in
+   place instead of cross-fading. duration: 0 means no flicker on the nav
+   bar; only the page content above fades. */
+.s3-glass-nav { view-transition-name: bottom-nav; }
+::view-transition-group(bottom-nav) { animation-duration: 0s; }
+::view-transition-old(root),
+::view-transition-new(root) { animation-duration: 220ms; }
+
 body {
   font-family: 'Prompt', system-ui, sans-serif;
   color: #111;
