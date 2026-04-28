@@ -1,0 +1,128 @@
+{# S3.detail bottom sheet — opened by tapping a feed row.
+   Skeleton populated by JS via /shop/feed/{kind}/{id}.
+   Include on pages that render the feed table (/shop/issue mainly). #}
+<div id="dash-flash" class="dash-flash" role="status" aria-live="polite" hidden></div>
+<div id="feed-detail-overlay" class="issue-modal-overlay"
+     onclick="if (event.target === this) closeFeedDetail();"></div>
+<div id="feed-detail-sheet" class="issue-modal-sheet" hidden>
+  <div class="issue-modal-handle"></div>
+  <div class="issue-modal-head">
+    <div class="title">รายละเอียดกิจกรรม</div>
+    <a href="#" class="x-btn" onclick="closeFeedDetail(); return false;">×</a>
+  </div>
+  <div class="detail-customer">
+    <div class="dc-avatar" id="fd-avatar">?</div>
+    <div class="dc-info">
+      <div class="dc-name" id="fd-name">—</div>
+      <div class="dc-meta" id="fd-meta">—</div>
+    </div>
+  </div>
+  <div class="detail-rows">
+    <div class="dr-row"><span class="dr-label">กิจกรรม</span><span class="dr-value" id="fd-activity">—</span></div>
+    <div class="dr-row"><span class="dr-label">เวลา</span><span class="dr-value" id="fd-time">—</span></div>
+    <div class="dr-row"><span class="dr-label">วิธีออก</span><span class="dr-value" id="fd-method">—</span></div>
+    <div class="dr-row"><span class="dr-label">ผู้ออก</span><span class="dr-value" id="fd-issuer">—</span></div>
+    <div class="dr-row" id="fd-progress-row">
+      <span class="dr-label">สะสมใหม่</span>
+      <span class="dr-value" id="fd-progress">—</span>
+    </div>
+  </div>
+  <div class="detail-void-row" id="fd-void-row" hidden>
+    <button class="detail-void-btn" id="fd-void-btn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M3 6h18"/>
+        <path d="M19 6v14a2 2 0 01-2 2H7a2 2 0 01-2-2V6"/>
+        <path d="M8 6V4a2 2 0 012-2h4a2 2 0 012 2v2"/>
+      </svg>
+      <span id="fd-void-label">ยกเลิกการออกแต้มนี้</span>
+    </button>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const fdOverlay = document.getElementById('feed-detail-overlay');
+    const fdSheet = document.getElementById('feed-detail-sheet');
+    let fdCountdownTimer = null;
+    let fdCurrentRowId = null;
+
+    window.closeFeedDetail = function () {
+      fdOverlay.classList.remove('open');
+      fdSheet.hidden = true;
+      if (fdCountdownTimer) { clearInterval(fdCountdownTimer); fdCountdownTimer = null; }
+      fdCurrentRowId = null;
+    };
+
+    async function openFeedDetail(rowEl) {
+      const url = rowEl.dataset.detailUrl;
+      if (!url) return;
+      fdCurrentRowId = rowEl.id;
+      try {
+        const r = await fetch(url);
+        if (!r.ok) {
+          const j = await r.json().catch(() => ({}));
+          (window._tdShowFlash || alert)(j.detail || (r.status + ' — โหลดข้อมูลไม่สำเร็จ'), 'error');
+          return;
+        }
+        const d = await r.json();
+        const initial = (d.customer_name || 'ล')[0];
+        document.getElementById('fd-avatar').textContent = initial;
+        document.getElementById('fd-name').textContent = d.customer_name;
+        document.getElementById('fd-meta').textContent = d.is_anonymous
+          ? 'ลูกค้า guest · ยังไม่ได้สมัคร'
+          : `${d.customer_phone} · ลูกค้าประจำ`;
+        const activityEl = document.getElementById('fd-activity');
+        activityEl.innerHTML = d.is_point
+          ? '<span class="dr-icon">+</span> <strong>1 แต้ม</strong>'
+          : '<strong>รับรางวัล</strong>';
+        document.getElementById('fd-time').textContent = d.time_full;
+        document.getElementById('fd-method').textContent = d.method_th;
+        document.getElementById('fd-issuer').textContent = d.issuer;
+        document.getElementById('fd-progress').textContent =
+          `${d.current_count} / ${d.threshold} แต้ม`;
+
+        const voidRow = document.getElementById('fd-void-row');
+        const voidBtn = document.getElementById('fd-void-btn');
+        const voidLabel = document.getElementById('fd-void-label');
+        if (d.voidable) {
+          voidRow.hidden = false;
+          voidBtn.disabled = false;
+          voidLabel.textContent = d.is_point ? 'ยกเลิกการออกแต้มนี้' : 'ยกเลิกการรับรางวัลนี้';
+          let secs = d.void_seconds_left;
+          fdCountdownTimer = setInterval(() => {
+            secs -= 1;
+            if (secs <= 0) {
+              clearInterval(fdCountdownTimer); fdCountdownTimer = null;
+              voidBtn.disabled = true;
+            }
+          }, 1000);
+          voidBtn.onclick = async () => {
+            voidBtn.disabled = true;
+            const vr = await fetch(d.void_url, { method: 'POST' });
+            if (vr.ok) {
+              const row = document.getElementById(fdCurrentRowId);
+              row?.classList.add('voided');
+              window.closeFeedDetail();
+            } else {
+              const j = await vr.json().catch(() => ({}));
+              (window._tdShowFlash || alert)(j.detail || (vr.status + ' — ยกเลิกไม่สำเร็จ'), 'error');
+              voidBtn.disabled = false;
+            }
+          };
+        } else {
+          voidRow.hidden = true;
+        }
+
+        fdSheet.hidden = false;
+        fdOverlay.classList.add('open');
+      } catch (_) {
+        (window._tdShowFlash || alert)('โหลดข้อมูลไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต', 'error');
+      }
+    }
+
+    document.addEventListener('click', (e) => {
+      const row = e.target.closest('.feed-row[data-detail-url]');
+      if (row) openFeedDetail(row);
+    });
+  })();
+</script>

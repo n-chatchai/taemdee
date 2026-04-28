@@ -1,0 +1,107 @@
+{# SSE listener — included on every S3.* tab page. Subscribes to
+   /shop/events and dispatches feed-row events to:
+
+   - the live feed table (#sap-tbody) if it's on the current page
+     (only /shop/issue has it), animating the new row + playing a ding
+   - the bottom-nav badge (.gn-badge under the ออกแต้ม tab) when the
+     current page doesn't have a feed table — so the owner notices a
+     new scan landed even while they're on dashboard/customers/insights
+
+   Also handles void events to dim out cancelled rows. #}
+<script>
+  (function () {
+    const evt = new EventSource('/shop/events');
+    const flash = document.getElementById('dash-flash');
+    const feedBody = document.getElementById('sap-tbody');
+    const FEED_CAP = parseInt('{{ feed_cap or 5 }}', 10) || 5;
+    const issueTabBadge = document.querySelector('.s3-glass-nav .gn-tab[href="/shop/issue"] .gn-icon .gn-badge');
+    const issueTabIcon = document.querySelector('.s3-glass-nav .gn-tab[href="/shop/issue"] .gn-icon');
+    const onIssuePage = !!feedBody;
+
+    let flashTimer = null;
+    function showFlash(msg, kind) {
+      if (!flash) return;
+      flash.textContent = msg;
+      flash.className = 'dash-flash ' + (kind === 'error' ? 'is-error' : 'is-ok');
+      flash.hidden = false;
+      clearTimeout(flashTimer);
+      flashTimer = setTimeout(() => { flash.hidden = true; }, 3000);
+    }
+
+    // Web Audio ding — synthesised so we don't ship an asset file. Browsers
+    // block autoplay until the user gestures, so we unlock on the first
+    // click/touch and then fire freely on every feed-row event.
+    let audioCtx = null;
+    function unlockAudio() {
+      if (!audioCtx) {
+        try { audioCtx = new (window.AudioContext || window.webkitAudioContext)(); }
+        catch (_) { return; }
+      }
+      if (audioCtx.state === 'suspended') audioCtx.resume();
+    }
+    ['click', 'touchstart'].forEach(ev =>
+      document.addEventListener(ev, unlockAudio, { passive: true })
+    );
+    function playDing() {
+      if (!audioCtx || audioCtx.state !== 'running') return;
+      const t = audioCtx.currentTime;
+      const osc = audioCtx.createOscillator();
+      const gain = audioCtx.createGain();
+      osc.type = 'sine';
+      osc.frequency.setValueAtTime(880, t);
+      osc.frequency.setValueAtTime(660, t + 0.12);
+      gain.gain.setValueAtTime(0.001, t);
+      gain.gain.exponentialRampToValueAtTime(0.28, t + 0.02);
+      gain.gain.exponentialRampToValueAtTime(0.001, t + 0.5);
+      osc.connect(gain).connect(audioCtx.destination);
+      osc.start(t);
+      osc.stop(t + 0.55);
+    }
+
+    function showIssueTabBadge() {
+      // The badge element is rendered conditionally by glass_nav.html when
+      // nav_issue_badge is true; here we add it dynamically so off-tab pages
+      // can still indicate activity without re-rendering server-side.
+      if (!issueTabIcon) return;
+      if (issueTabIcon.querySelector('.gn-badge')) return;
+      const dot = document.createElement('span');
+      dot.className = 'gn-badge';
+      issueTabIcon.appendChild(dot);
+    }
+
+    evt.addEventListener('feed-row', (e) => {
+      if (onIssuePage) {
+        feedBody.querySelector('.feed-row.latest')?.classList.remove('latest');
+        feedBody.insertAdjacentHTML('afterbegin', e.data);
+        const newRow = feedBody.firstElementChild;
+        if (newRow) {
+          newRow.classList.add('latest', 'just-arrived');
+          setTimeout(() => newRow.classList.remove('just-arrived'), 2500);
+        }
+        while (feedBody.children.length > FEED_CAP) feedBody.lastElementChild?.remove();
+        playDing();
+      } else {
+        // Off-tab — flag the ออกแต้ม nav tab so the owner notices.
+        showIssueTabBadge();
+        playDing();
+      }
+    });
+
+    evt.addEventListener('void', (e) => {
+      const tmp = document.createElement('div');
+      tmp.innerHTML = e.data;
+      const rowId = tmp.firstElementChild?.dataset.row;
+      if (rowId) document.getElementById(rowId)?.classList.add('voided');
+    });
+
+    // Tapping the ออกแต้ม tab clears the badge — visiting the page is the
+    // implicit "I've seen the new activity" signal.
+    document.querySelectorAll('.s3-glass-nav .gn-tab[href="/shop/issue"]')
+      .forEach(t => t.addEventListener('click', () => {
+        t.querySelector('.gn-badge')?.remove();
+      }));
+
+    // Expose the flash helper to the detail sheet partial.
+    window._tdShowFlash = showFlash;
+  })();
+</script>

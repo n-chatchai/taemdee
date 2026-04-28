@@ -6190,15 +6190,19 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   0%, 18% { color: #fff; }
   100%    { color: var(--accent); }
 }
-.s3-dock .sap-table tr.feed-row.just-arrived td {
-  animation: feed-row-arrive-bg 2.5s ease-out;
-}
 .s3-dock .sap-table tr.feed-row.just-arrived td,
-.s3-dock .sap-table tr.feed-row.just-arrived td * {
+.s3-issue-feed .sap-table tr.feed-row.just-arrived td {
+  animation: feed-row-arrive-bg 2.5s ease-out, feed-row-arrive-fg 2.5s ease-out;
+}
+.s3-dock .sap-table tr.feed-row.just-arrived td *,
+.s3-issue-feed .sap-table tr.feed-row.just-arrived td * {
   animation: feed-row-arrive-fg 2.5s ease-out;
 }
-.s3-dock .sap-table tr.feed-row.just-arrived td {
-  animation: feed-row-arrive-bg 2.5s ease-out, feed-row-arrive-fg 2.5s ease-out;
+/* Voided rows fade out — same dim treatment used on the dock once the
+   60-sec window button gets pressed. */
+.s3-issue-feed .sap-table tr.feed-row.voided td {
+  opacity: 0.4;
+  text-decoration: line-through;
 }
 /* Armed state — first tap on a row primes it, the column flips to a
    confirming "ยกเลิก?" cell that shows tapping again will fire the void.
