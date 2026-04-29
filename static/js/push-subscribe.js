@@ -68,11 +68,37 @@
     await fetch('/push/unsubscribe', { method: 'POST' });
   }
 
-  async function isSubscribed() {
+  async function getStatus() {
+    try {
+      const r = await fetch('/push/status');
+      return r.ok ? r.json() : null;
+    } catch (_) { return null; }
+  }
+
+  // True when (1) browser has a live pushManager subscription AND
+  // (2) the server has the matching endpoint saved. If only one side
+  // is on, we re-sync up so the next campaign actually delivers.
+  async function isSubscribedAndSynced() {
     const reg = await navigator.serviceWorker.getRegistration();
     if (!reg) return false;
     const sub = await reg.pushManager.getSubscription();
-    return !!sub;
+    if (!sub) return false;
+
+    const status = await getStatus();
+    if (!status) return false;
+
+    if (!status.has_endpoint || !sub.endpoint.startsWith(status.endpoint_prefix)) {
+      // Browser has a sub but server is empty / stale — re-upload so
+      // they line up. Without this the badge looks ON but DeeReach
+      // ships through LINE (or fails) because audience routing reads
+      // shop.web_push_endpoint, not the browser-side state.
+      const fd = new FormData();
+      fd.set('endpoint', sub.endpoint);
+      fd.set('p256dh', arrayBufferToBase64Url(sub.getKey('p256dh')));
+      fd.set('auth', arrayBufferToBase64Url(sub.getKey('auth')));
+      try { await fetch('/push/subscribe', { method: 'POST', body: fd }); } catch (_) {}
+    }
+    return true;
   }
 
   // Wire the toggle button when the page declares one with [data-push-toggle].
@@ -80,12 +106,11 @@
   document.addEventListener('DOMContentLoaded', async () => {
     const btn = document.querySelector('[data-push-toggle]');
     if (!btn) return;
-    let configured = true;
-    try { await getPublicKey(); } catch (_) { configured = false; }
-    if (!configured) { btn.style.display = 'none'; return; }
+    const status = await getStatus();
+    if (!status || !status.vapid_configured) { btn.style.display = 'none'; return; }
 
     async function paint() {
-      const on = await isSubscribed();
+      const on = await isSubscribedAndSynced();
       btn.dataset.state = on ? 'on' : 'off';
       btn.textContent = on
         ? (btn.dataset.onLabel || 'แจ้งเตือนเปิดอยู่')

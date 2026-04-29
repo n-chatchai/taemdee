@@ -666,6 +666,28 @@ async def push_vapid_public():
     return JSONResponse({"public_key": app_settings.web_push_vapid_public_key})
 
 
+@router.get("/push/status")
+async def push_status(
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Diagnostic — frontend uses this to keep the toggle button honest.
+    Returns whether VAPID is configured on the server, the (truncated)
+    endpoint we have stored for this customer, and the prefix the browser
+    can compare against its own pushManager subscription. If the browser
+    reports a subscription but `endpoint_prefix` doesn't match (e.g.
+    customer cleared site data and re-subscribed), the JS re-uploads."""
+    from app.core.config import settings as app_settings
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    return JSONResponse({
+        "vapid_configured": bool(app_settings.web_push_vapid_public_key),
+        "has_endpoint": bool(customer.web_push_endpoint),
+        # Send the first 60 chars only — enough for the JS to spot a
+        # mismatch without leaking the full endpoint URL in client logs.
+        "endpoint_prefix": (customer.web_push_endpoint or "")[:60],
+    })
+
+
 @router.post("/push/subscribe")
 async def push_subscribe(
     endpoint: str = Form(...),

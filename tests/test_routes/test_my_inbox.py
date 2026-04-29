@@ -94,6 +94,39 @@ async def test_push_subscribe_persists_keys_on_customer(client, db):
     )
 
 
+async def test_push_status_reports_vapid_and_endpoint(client, db, monkeypatch):
+    """Diagnostic endpoint: vapid_configured True iff env+DB has the public
+    key, has_endpoint reflects the customer's saved subscription state,
+    endpoint_prefix is the first 60 chars of whatever's stored."""
+    from app.core.config import settings
+
+    monkeypatch.setattr(settings, "web_push_vapid_public_key", "BPubKey")
+
+    # Empty customer first → flags False / empty.
+    r0 = await client.get("/push/status")
+    assert r0.status_code == 200
+    j0 = r0.json()
+    assert j0["vapid_configured"] is True
+    assert j0["has_endpoint"] is False
+    assert j0["endpoint_prefix"] == ""
+
+    # Subscribe with the same client (cookie carried over) → reflected.
+    sub = await client.post(
+        "/push/subscribe",
+        data={
+            "endpoint": "https://fcm.googleapis.com/wp/abc123/" + "x" * 80,
+            "p256dh": "p", "auth": "a",
+        },
+    )
+    assert sub.status_code == 200
+
+    r1 = await client.get("/push/status")
+    j1 = r1.json()
+    assert j1["has_endpoint"] is True
+    assert j1["endpoint_prefix"].startswith("https://fcm.googleapis.com/wp/abc123/")
+    assert len(j1["endpoint_prefix"]) <= 60
+
+
 async def test_push_unsubscribe_clears_keys(client, db):
     # First subscribe, then unsubscribe — same cookie/customer.
     sub = await client.post(
