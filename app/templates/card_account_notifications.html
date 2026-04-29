@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>การแจ้งเตือน · TaemDee แต้มดี</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/card/account" class="x" aria-label="ย้อนกลับ">←</a>
+      <div class="title-mid">การแจ้งเตือน</div>
+      <div class="placeholder"></div>
+    </div>
+
+    {# Channel preference: 'auto' (preferred_channel = None — waterfall
+       picks the cheapest reachable) or 'inbox' (pin to in-app inbox).
+       Forms POST → /card/account/notifications, server flips. #}
+    {% set channel = preferred_channel or 'auto' %}
+    <div class="s10-section">
+      <div class="label">ช่องทางที่ใช้รับ</div>
+      <div class="notif-radio-list">
+        <form method="POST" action="/card/account/notifications" style="margin:0;">
+          <input type="hidden" name="channel" value="auto">
+          <button type="submit" class="notif-radio{% if channel == 'auto' %} selected{% endif %}"
+                  style="width:100%; appearance:none; -webkit-appearance:none; background:transparent; border:none; text-align:left; cursor:pointer;">
+            <span class="nr-circle"></span>
+            <div class="nr-text">
+              <div class="nr-name">อัตโนมัติ <span class="nr-badge">แนะนำ</span></div>
+              <div class="nr-desc">ระบบเลือกช่องที่ดีที่สุดให้พี่ — เร็ว ประหยัด</div>
+            </div>
+          </button>
+        </form>
+        <form method="POST" action="/card/account/notifications" style="margin:0;">
+          <input type="hidden" name="channel" value="inbox">
+          <button type="submit" class="notif-radio{% if channel == 'inbox' %} selected{% endif %}"
+                  style="width:100%; appearance:none; -webkit-appearance:none; background:transparent; border:none; text-align:left; cursor:pointer;">
+            <span class="nr-circle"></span>
+            <div class="nr-text">
+              <div class="nr-name">ในแอปเท่านั้น</div>
+              <div class="nr-desc">ไม่เด้ง · ดูในกล่องเอง</div>
+            </div>
+          </button>
+        </form>
+      </div>
+    </div>
+
+    {# Muted shops: customer opted out of DeeReach for these. Tap "เปิดเสียง"
+       to delete the CustomerShopMute row → DeeReach can reach them again. #}
+    <div class="s10-section">
+      <div class="label">ร้านที่ปิดเสียง · {{ muted|length }}</div>
+      {% if muted %}
+        {% for m in muted %}
+          {% set logo = shop_logo(m.shop) %}
+          <div class="notif-mute-row">
+            <div class="nm-logo">
+              {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+              {% else %}{{ m.shop.name[0]|upper }}{% endif %}
+            </div>
+            <div class="nm-name">{{ m.shop.name }}</div>
+            <form method="POST" action="/card/account/mute/{{ m.shop.id }}/unmute" style="margin:0;">
+              <button type="submit" class="nm-unmute"
+                      style="appearance:none; -webkit-appearance:none; background:transparent; border:none; cursor:pointer; font-family:inherit; font-size:inherit; color:inherit; padding:4px 8px;">
+                เปิดเสียง
+              </button>
+            </form>
+          </div>
+        {% endfor %}
+      {% else %}
+        <div style="padding:18px 14px; text-align:center; font-family:'Prompt',sans-serif; font-style:italic; font-size:12px; color:var(--ink-soft);">
+          ยังไม่มีร้านที่ปิดเสียง
+        </div>
+      {% endif %}
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

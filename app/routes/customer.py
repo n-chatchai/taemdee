@@ -108,6 +108,84 @@ async def account_menu(
     )
 
 
+@router.get("/card/account/notifications", response_class=HTMLResponse)
+async def card_account_notifications(
+    request: Request,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """C6.notifications — channel preference + per-shop mute list. Anchors
+    only to the C6 'การแจ้งเตือน' row. preferred_channel=None means
+    waterfall (the default 'auto'); 'inbox' means deliver to in-app
+    inbox only (skip push/LINE/SMS). Muted shops live in
+    CustomerShopMute joined to Shop for the unmute list."""
+    from app.models import CustomerShopMute
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    rows = (await db.exec(
+        select(CustomerShopMute, Shop)
+        .join(Shop, Shop.id == CustomerShopMute.shop_id)
+        .where(CustomerShopMute.customer_id == customer.id)
+        .order_by(CustomerShopMute.created_at.desc())
+    )).all()
+    muted = [{"shop": shop} for _mute, shop in rows]
+
+    response = templates.TemplateResponse(
+        request=request,
+        name="card_account_notifications.html",
+        context={
+            "customer": customer,
+            "preferred_channel": customer.preferred_channel,
+            "muted": muted,
+        },
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
+@router.post("/card/account/notifications")
+async def card_account_notifications_post(
+    channel: str = Form("auto"),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Save the channel preference. 'auto' clears preferred_channel
+    (waterfall picks); 'inbox' pins to in-app delivery."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    customer.preferred_channel = None if channel == "auto" else channel
+    db.add(customer)
+    await db.commit()
+    return RedirectResponse(
+        url="/card/account/notifications",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.post("/card/account/mute/{shop_id}/unmute")
+async def card_account_unmute(
+    shop_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Remove the customer's mute on a specific shop — re-allows DeeReach
+    from that shop. Idempotent: missing row is a 303 anyway."""
+    from app.models import CustomerShopMute
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    row = (await db.exec(
+        select(CustomerShopMute).where(
+            CustomerShopMute.customer_id == customer.id,
+            CustomerShopMute.shop_id == shop_id,
+        )
+    )).first()
+    if row is not None:
+        await db.delete(row)
+        await db.commit()
+    return RedirectResponse(
+        url="/card/account/notifications",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
 @router.post("/card/account/logout")
 async def customer_logout():
     """Clear the customer cookie and bounce to home."""

@@ -139,6 +139,76 @@ async def test_push_status_reports_vapid_and_endpoint(client, db):
     assert len(j1["endpoint_prefix"]) <= 60
 
 
+async def test_notifications_page_renders_with_muted_shops(client, db, shop):
+    """C6.notifications lists every shop the customer has muted; the
+    template links each to the unmute POST."""
+    from app.models import Customer, CustomerShopMute
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    db.add(CustomerShopMute(customer_id=c.id, shop_id=shop.id))
+    await db.commit()
+
+    _set_customer_cookie(client, c.id)
+
+    r = await client.get("/card/account/notifications")
+    assert r.status_code == 200
+    body = r.text
+    assert "การแจ้งเตือน" in body
+    assert shop.name in body
+    assert f"/card/account/mute/{shop.id}/unmute" in body
+
+
+async def test_notifications_unmute_deletes_row(client, db, shop):
+    from app.models import Customer, CustomerShopMute
+    from sqlmodel import select as _select
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    db.add(CustomerShopMute(customer_id=c.id, shop_id=shop.id))
+    await db.commit()
+
+    _set_customer_cookie(client, c.id)
+
+    r = await client.post(f"/card/account/mute/{shop.id}/unmute", follow_redirects=False)
+    assert r.status_code == 303
+    assert r.headers["location"] == "/card/account/notifications"
+
+    rows = (await db.exec(
+        _select(CustomerShopMute).where(
+            CustomerShopMute.customer_id == c.id, CustomerShopMute.shop_id == shop.id
+        )
+    )).all()
+    assert rows == []
+
+
+async def test_notifications_channel_save_clears_for_auto(client, db):
+    from app.models import Customer
+
+    _set_customer_cookie(client, "fake")  # no-op; route ignores invalid token
+    # Subscribe creates anonymous customer + cookie. Use that path so the
+    # customer exists for the channel POST.
+    sub = await client.post(
+        "/push/subscribe",
+        data={"endpoint": "https://x", "p256dh": "p", "auth": "a"},
+    )
+    assert sub.status_code == 200
+
+    r1 = await client.post("/card/account/notifications", data={"channel": "inbox"}, follow_redirects=False)
+    assert r1.status_code == 303
+    db.expire_all()
+    rows = (await db.exec(select(Customer))).all()
+    assert any(c.preferred_channel == "inbox" for c in rows)
+
+    r2 = await client.post("/card/account/notifications", data={"channel": "auto"}, follow_redirects=False)
+    assert r2.status_code == 303
+    db.expire_all()
+    rows = (await db.exec(select(Customer))).all()
+    assert all(c.preferred_channel is None for c in rows)
+
+
 async def test_push_unsubscribe_clears_keys(client, db):
     # First subscribe, then unsubscribe — same cookie/customer.
     sub = await client.post(
