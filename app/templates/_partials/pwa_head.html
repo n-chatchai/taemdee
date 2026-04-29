@@ -12,8 +12,11 @@
 <link rel="icon" type="image/png" sizes="32x32" href="/static/taemdee-icons/taemdee-icon-32.png?v={{ asset_version }}">
 <link rel="icon" type="image/png" sizes="192x192" href="/static/taemdee-icons/taemdee-icon-192.png?v={{ asset_version }}">
 <link rel="icon" type="image/png" sizes="512x512" href="/static/taemdee-icons/taemdee-icon-512.png?v={{ asset_version }}">
-<link rel="apple-touch-icon" sizes="192x192" href="/static/taemdee-icons/taemdee-icon-192.png?v={{ asset_version }}">
-<link rel="apple-touch-icon" sizes="512x512" href="/static/taemdee-icons/taemdee-icon-512.png?v={{ asset_version }}">
+{# apple-touch-icon must be a full-bleed PNG (no transparent corners) or
+   iOS Safari draws a black "this-will-be-the-icon-shape" outline on the
+   Add-to-Home-Screen sheet. The maskable icon is full-orange with safe-
+   zone face, which is what iOS wants — iOS applies its own corner mask. #}
+<link rel="apple-touch-icon" sizes="512x512" href="/static/taemdee-icons/taemdee-icon-maskable-512.png?v={{ asset_version }}">
 {# Hide the "เพิ่มลงหน้าจอ" footer link when the page is opened from an already-
    installed PWA. CSS media query covers modern browsers; the JS line handles
    older iOS Safari which uses the non-standard navigator.standalone instead. #}
