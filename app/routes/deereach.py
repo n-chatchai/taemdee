@@ -12,9 +12,11 @@ from app.core.database import get_session
 from app.core.templates import templates
 from app.models import DeeReachCampaign, Shop
 from app.services.deereach import (
+    CHANNEL_COST_SATANG,
     DeeReachSendError,
     Suggestion,
     _audience_for,
+    _pick_channel,
     compute_suggestions,
     render_message,
     send_campaign,
@@ -74,6 +76,12 @@ async def deereach_detail(
 
     audience = await _audience_for(db, shop, kind)
     message = await render_message(kind, shop)
+    # Per-customer satang cost so the editor can sum the live total (live
+    # selection × per-row channel cost) and disable ส่ง when the running
+    # total exceeds shop.credit_balance.
+    audience_cost = {
+        str(c.id): CHANNEL_COST_SATANG[_pick_channel(c)] for c in audience[:200]
+    }
     # Pass the full audience so the editor's checkboxes cover everyone —
     # the deselect UI can't work on a truncated list. Capped at 200 as a
     # sanity bound; campaigns with >200 recipients don't fit the per-row
@@ -87,6 +95,8 @@ async def deereach_detail(
             "audience": audience[:200],
             "audience_total": len(audience),
             "message": message,
+            "audience_cost": audience_cost,
+            "credit_balance_satang": shop.credit_balance,
         },
     )
 

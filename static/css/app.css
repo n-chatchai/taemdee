@@ -8369,6 +8369,38 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   opacity: 0.5;
   cursor: not-allowed;
 }
+.s13d-shortfall {
+  margin: 14px 20px 0;
+  padding: 12px 14px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(255, 94, 58, 0.32);
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  gap: 6px;
+}
+.s13d-shortfall strong {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  color: var(--accent);
+  letter-spacing: -0.02em;
+}
+.s13d-shortfall .s13d-shortfall-cta {
+  margin-left: auto;
+  background: var(--ink);
+  color: var(--butter);
+  padding: 5px 12px;
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  text-decoration: none;
+}
 
 /* S13.sent */
 .s13s-stage {
