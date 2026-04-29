@@ -8224,6 +8224,44 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 14px;
   padding: 4px 8px;
 }
+.s13d-toolbar {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  margin-bottom: 8px;
+}
+.s13d-search {
+  flex: 1;
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 12px;
+  background: var(--bg);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink);
+  outline: none;
+}
+.s13d-search:focus {
+  border-color: var(--accent);
+}
+.s13d-search::placeholder { color: var(--ink-softer); }
+.s13d-select-all {
+  appearance: none;
+  -webkit-appearance: none;
+  padding: 8px 14px;
+  background: var(--ink);
+  color: var(--butter);
+  border: none;
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+
 .customer-row {
   display: flex;
   align-items: center;

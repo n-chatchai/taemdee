@@ -19,12 +19,14 @@
       const defaultMessage = {{ message|tojson }};
       const costPerCustomer = {{ audience_cost|tojson }};
       const balanceSatang = {{ credit_balance_satang|int }};
+      const audienceIds = [
+        {% for c in audience %}{{ c.id|string|tojson }}{% if not loop.last %},{% endif %}
+        {% endfor %}
+      ];
       return {
         message: defaultMessage,
-        selected: {
-          {% for c in audience %}{{ c.id|string|tojson }}: true{% if not loop.last %},{% endif %}
-          {% endfor %}
-        },
+        selected: Object.fromEntries(audienceIds.map((id) => [id, true])),
+        searchQuery: '',
         flash: '',
         flashKind: 'is-error',
         balanceSatang,
@@ -53,6 +55,26 @@
         canAfford() {
           return this.costSatang() <= this.balanceSatang;
         },
+        // Toggle every audience id between on and off — basis is the
+        // "is anyone currently selected?" check, so the button reads
+        // "ปลดทั้งหมด" when ≥1 is on and "เลือกทั้งหมด" when all are off.
+        allOn() {
+          return this.countSelected() === audienceIds.length;
+        },
+        toggleAll() {
+          const target = !this.allOn();
+          for (const id of audienceIds) this.selected[id] = target;
+        },
+        // Substring match on display name OR phone — used by the row's
+        // x-show so search hides non-matching rows but keeps their
+        // selected state (untick a row, search, untick another, clear
+        // search → both stay unchecked).
+        matchesSearch(name, phone) {
+          if (!this.searchQuery) return true;
+          const q = this.searchQuery.toLowerCase();
+          return (name || '').toLowerCase().includes(q)
+              || (phone || '').toLowerCase().includes(q);
+        },
         resetMessage() {
           this.message = defaultMessage;
         },
@@ -72,11 +94,22 @@
       <div class="s13d-h">
         <span class="s13d-title">ลูกค้าที่เลือก</span>
         <span class="s13d-count"
-              x-text="Object.values(selected).filter(Boolean).length + ' / {{ audience_total }}'"></span>
+              x-text="countSelected() + ' / {{ audience_total }}'"></span>
       </div>
+
+      <div class="s13d-toolbar">
+        <input type="search" class="s13d-search"
+               x-model="searchQuery"
+               placeholder="ค้นชื่อหรือเบอร์...">
+        <button type="button" class="s13d-select-all"
+                @click="toggleAll()"
+                x-text="allOn() ? 'ปลดทั้งหมด' : 'เลือกทั้งหมด'"></button>
+      </div>
+
       <div class="s13d-customers">
         {% for c in audience %}
           <div class="customer-row"
+               x-show="matchesSearch({{ (c.display_name or '')|tojson }}, {{ (c.phone or '')|tojson }})"
                :class="{ off: !selected['{{ c.id }}'] }"
                @click="selected['{{ c.id }}'] = !selected['{{ c.id }}']">
             <div class="cr-check"
