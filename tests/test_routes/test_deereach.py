@@ -94,6 +94,20 @@ async def test_send_blank_message_400(auth_client, db, shop):
     assert "ข้อความว่าง" in response.json()["detail"]
 
 
+async def test_deereach_detail_renders_with_empty_audience(auth_client, db, shop):
+    """Auto kind w/ no eligible audience (graduated or rate-limited) used
+    to 404 'ไม่มีแคมเปญแนะนำชนิดนี้' — now opens the editor in an empty
+    state with 0 / 0 recipients so the owner sees what's happening."""
+    r = await auth_client.get("/shop/deereach/unredeemed_reward")
+    assert r.status_code == 200
+    assert "ไม่มีคนค้างรับรางวัล" in r.text
+
+
+async def test_deereach_unknown_kind_404(auth_client):
+    r = await auth_client.get("/shop/deereach/telepathy")
+    assert r.status_code == 404
+
+
 async def test_deereach_manual_detail_renders(auth_client, db, shop):
     """The 'สร้างแคมเปญเอง' editor opens on /shop/deereach/manual even when
     no auto-suggestion fires; audience = every reachable customer of the

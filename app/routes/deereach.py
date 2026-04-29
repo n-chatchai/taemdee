@@ -59,6 +59,20 @@ async def deereach_sent_page(
     )
 
 
+# Static labels for the editor's app-bar / heading when compute_suggestions
+# doesn't fire one (audience already messaged within 14d, customers
+# graduated out of the eligibility window, manual kind, etc.). The editor
+# still loads — 'no eligible recipients' is a less-frustrating outcome
+# than 'ไม่มีแคมเปญแนะนำชนิดนี้' 404.
+KIND_FALLBACK_LABELS: dict[str, tuple[str, str, str]] = {
+    "win_back": ("ชวนกลับ", "ชวนคนที่หายไปกลับมา", "ไม่มีลูกค้าหายไปเข้าเงื่อนไขขณะนี้"),
+    "almost_there": ("ใกล้ครบ", "ส่งกำลังใจคนใกล้ครบ", "ไม่มีลูกค้าใกล้รับรางวัลขณะนี้"),
+    "unredeemed_reward": ("รับรางวัลซะที", "เตือนคนที่ยังไม่รับรางวัล", "ไม่มีคนค้างรับรางวัลขณะนี้"),
+    "new_customer": ("ขอบคุณลูกค้าใหม่", "ขอบคุณคนที่มาครั้งแรก", "ไม่มีลูกค้าใหม่ในช่วง 7 วันที่ผ่านมา"),
+    "manual": ("แคมเปญของคุณเอง", "สร้างแคมเปญเอง", "เลือกลูกค้า + พิมพ์ข้อความเอง"),
+}
+
+
 @router.get("/{kind}", response_class=HTMLResponse)
 async def deereach_detail(
     request: Request,
@@ -67,26 +81,29 @@ async def deereach_detail(
     db: AsyncSession = Depends(get_session),
 ):
     """S13.detail — preview audience + default message before sending.
-    Loads the kind-specific suggestion when available, or falls back to
-    a synthetic 'manual' suggestion for the 'สร้างแคมเปญเอง' editor where
-    the owner picks recipients + writes their own copy from scratch."""
-    if kind == "manual":
-        # Manual campaign: every reachable customer is a candidate, owner
-        # writes their own copy. compute_suggestions doesn't generate one
-        # for this kind so we fabricate the chrome the editor expects.
-        suggestion = Suggestion(
-            kind="manual",
-            label="แคมเปญของคุณเอง",
-            head="สร้างแคมเปญเอง",
-            body="เลือกลูกค้า + พิมพ์ข้อความเอง",
-            audience_count=0,
-            cost_credit=0,
-        )
-    else:
+    Loads the live suggestion (has dynamic counts) when compute_suggestions
+    fires for this kind, else falls back to a static-label Suggestion
+    blob so the editor still opens with an empty 'no recipients' state
+    instead of a 404 — happens when the eligible audience just got rate-
+    limited or graduated out of the kind's window between the dashboard
+    render and the tap."""
+    if kind not in KIND_FALLBACK_LABELS:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่รู้จักชนิดแคมเปญ")
+
+    # Manual is always a fallback (no live suggestion). For auto kinds,
+    # try the live one first so the head/body lines reflect current
+    # audience size; fall back to the static label otherwise.
+    suggestion: Optional[Suggestion] = None
+    if kind != "manual":
         suggestions = await compute_suggestions(db, shop)
         suggestion = next((s for s in suggestions if s.kind == kind), None)
-        if not suggestion:
-            raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่มีแคมเปญแนะนำชนิดนี้สำหรับร้านคุณตอนนี้")
+
+    if suggestion is None:
+        label, head, body = KIND_FALLBACK_LABELS[kind]
+        suggestion = Suggestion(
+            kind=kind, label=label, head=head, body=body,
+            audience_count=0, cost_credit=0,
+        )
 
     audience = await _audience_for(db, shop, kind)
     message = await render_message(kind, shop)

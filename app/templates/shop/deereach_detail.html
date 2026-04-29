@@ -151,7 +151,9 @@
             </div>
           </div>
         {% endfor %}
-        {% if audience_total > audience|length %}
+        {% if audience_total == 0 %}
+          <div class="s13d-empty">{{ suggestion.body }}</div>
+        {% elif audience_total > audience|length %}
           <div class="customer-more">+ อีก {{ audience_total - audience|length }} คน · ส่งเลย / แก้ใน v2</div>
         {% endif %}
       </div>

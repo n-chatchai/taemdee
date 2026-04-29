@@ -8424,6 +8424,18 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: line-through;
   opacity: 0.5;
 }
+.s13d-empty {
+  margin: 16px 4px;
+  padding: 22px 14px;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-size: 13px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px dashed rgba(17, 17, 17, 0.18);
+  border-radius: 12px;
+}
 .customer-more {
   text-align: center;
   padding: 10px 6px 6px;
