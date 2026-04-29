@@ -16,8 +16,9 @@
      characters without breaking the surrounding x-data="..." attribute. #}
   <script>
     function deereachEditorState() {
+      const defaultMessage = {{ message|tojson }};
       return {
-        message: {{ message|tojson }},
+        message: defaultMessage,
         selected: {
           {% for c in audience %}{{ c.id|string|tojson }}: true{% if not loop.last %},{% endif %}
           {% endfor %}
@@ -26,6 +27,9 @@
         flashKind: 'is-error',
         countSelected() {
           return Object.values(this.selected).filter(Boolean).length;
+        },
+        resetMessage() {
+          this.message = defaultMessage;
         },
       };
     }
@@ -69,7 +73,7 @@
     <div class="s13d-section">
       <div class="s13d-h">
         <span class="s13d-title">ข้อความ</span>
-        <span class="s13d-edit" @click="message = {{ message|tojson }}"
+        <span class="s13d-edit" @click="resetMessage()"
               title="คืนค่าข้อความเริ่มต้น">รีเซ็ต</span>
       </div>
       <textarea class="s13d-message s13d-message-edit"
