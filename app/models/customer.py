@@ -38,6 +38,12 @@ class Customer(SQLModel, table=True):
     # they can re-claim their points on a new device. 12 unambiguous chars in
     # 3 groups of 4 (e.g. "K7M-XQ4P-2H9R"). Stored uppercase, hyphen-included.
     recovery_code: Optional[str] = Field(default=None, unique=True, index=True)
+
+    # C6 accessibility — "ขนาดตัวอักษร" picker. Values: "sm" | "md" | "lg".
+    # NULL = "md" (default, no zoom). Drives a `.ts-{value}` class on
+    # <html> via the pwa_head bootstrap script (also persisted in
+    # localStorage for instant first-paint without a round-trip).
+    text_size: Optional[str] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="customer")

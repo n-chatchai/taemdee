@@ -146,6 +146,7 @@ async def account_menu(
             "ready_count": ready_count,
             "redemption_count": redemption_count,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "text_size": customer.text_size or "md",
         },
     )
 
@@ -252,6 +253,25 @@ async def card_account_unmute(
         url="/card/account/notifications",
         status_code=status.HTTP_303_SEE_OTHER,
     )
+
+
+@router.post("/card/account/text-size")
+async def card_account_text_size(
+    size: str = Form(...),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Save the C6 'ขนาดตัวอักษร' choice. 'md' (default) clears the column;
+    'sm' and 'lg' persist. Returns 204 — caller is the inline JS on
+    /card/account which mirrors the choice into localStorage for the next
+    page-load's first-paint zoom."""
+    if size not in ("sm", "md", "lg"):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "ขนาดไม่ถูกต้อง")
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    customer.text_size = None if size == "md" else size
+    db.add(customer)
+    await db.commit()
+    return JSONResponse(status_code=204, content=None)
 
 
 @router.post("/card/account/logout")

@@ -405,6 +405,64 @@ async def test_c5_clears_push_prompt_cooldown_for_re_ask(client, db, shop):
     assert 'id="push-prompt"' in body
 
 
+async def test_account_renders_text_size_picker_with_active_state(client, db, shop):
+    """C6 — ขนาดตัวอักษร picker renders with the saved size marked active."""
+    from app.models import Customer
+    c = Customer(is_anonymous=False, display_name="พี่สมศรี", phone="0844444444",
+                 text_size="lg")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get("/card/account")).text
+    assert "ขนาดตัวอักษร" in body
+    # The lg button is active, others are not
+    assert 'class="fs-opt lg active"' in body
+    assert 'class="fs-opt sm"' in body and 'class="fs-opt md"' in body
+    # Server→localStorage reconcile script is present
+    assert "td_text_size" in body
+
+
+async def test_text_size_post_persists_and_normalises_md_to_null(client, db, shop):
+    from app.models import Customer
+    c = Customer(is_anonymous=False, display_name="พี่สมศรี", phone="0833333333")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    # Save lg
+    r = await client.post("/card/account/text-size", data={"size": "lg"})
+    assert r.status_code == 204
+    await db.refresh(c)
+    assert c.text_size == "lg"
+
+    # Switch to md → server clears the column (md is the default, no need to store)
+    r = await client.post("/card/account/text-size", data={"size": "md"})
+    assert r.status_code == 204
+    await db.refresh(c)
+    assert c.text_size is None
+
+    # Garbage size rejected
+    r = await client.post("/card/account/text-size", data={"size": "huge"})
+    assert r.status_code == 400
+
+
+async def test_text_size_bootstrap_script_in_pwa_head(client, shop):
+    """The pwa_head bootstrap (sets ts-* on <html> from localStorage) must
+    ship on every customer page for instant first-paint zoom."""
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert "td_text_size" in body
+    assert "classList.add('ts-'" in body
+
+
 async def test_card_unknown_shop_renders_friendly_page(client):
     bogus = uuid4()
     response = await client.get(f"/card/{bogus}")

@@ -11,6 +11,19 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
+  {# Server→localStorage reconcile for the text-size picker. Lets a fresh
+     device pick up the cross-device-saved value the next time the user
+     opens any customer page (the pwa_head bootstrap reads localStorage). #}
+  <script>(function(){try{
+    var s = '{{ text_size }}';
+    if (s === 'sm' || s === 'lg') {
+      localStorage.setItem('td_text_size', s);
+      document.documentElement.classList.add('ts-' + s);
+    } else {
+      localStorage.removeItem('td_text_size');
+      document.documentElement.classList.remove('ts-sm','ts-lg');
+    }
+  }catch(_){}}())</script>
   <div class="td has-c-dock" x-data="{ armed: false }">
     <div class="topbar"><span></span><span></span></div>
 
@@ -65,6 +78,24 @@
 
     <div class="s10-section">
       <div class="label">ตั้งค่า</div>
+
+      {# C6 ขนาดตัวอักษร — sm/md/lg picker. Server saves customer.text_size,
+         JS mirrors choice into localStorage so the next page-load applies
+         the zoom on first paint via the bootstrap script in pwa_head. #}
+      <div class="s10-fontsize" data-text-size-current="{{ text_size }}">
+        <div class="fs-head">
+          <div class="fs-icon">Aa</div>
+          <div class="fs-info">
+            <div class="fs-name">ขนาดตัวอักษร</div>
+            <div class="fs-meta">ปรับให้อ่านสบายตา</div>
+          </div>
+        </div>
+        <div class="fs-options">
+          <button type="button" class="fs-opt sm{% if text_size == 'sm' %} active{% endif %}" data-text-size="sm">เล็ก</button>
+          <button type="button" class="fs-opt md{% if text_size == 'md' %} active{% endif %}" data-text-size="md">กลาง</button>
+          <button type="button" class="fs-opt lg{% if text_size == 'lg' %} active{% endif %}" data-text-size="lg">ใหญ่</button>
+        </div>
+      </div>
 
       <a href="/card/account/notifications" class="s10-row">
         <div class="row-icon mint">
@@ -123,5 +154,36 @@
     {% set nav_active = 'settings' %}
     {% include "_partials/c_dock.html" %}
   </div>
+
+  <script>
+    // C6 ขนาดตัวอักษร — wire the picker. Server is source of truth, but we
+    // also mirror to localStorage so the next page-load applies the zoom on
+    // first paint via the bootstrap script in pwa_head.
+    (function () {
+      const block = document.querySelector('.s10-fontsize');
+      if (!block) return;
+      const opts = block.querySelectorAll('[data-text-size]');
+      opts.forEach((btn) => {
+        btn.addEventListener('click', async () => {
+          const size = btn.dataset.textSize;
+          opts.forEach((b) => b.classList.toggle('active', b === btn));
+          // Apply to <html> immediately for instant feedback on this page
+          const html = document.documentElement;
+          html.classList.remove('ts-sm', 'ts-md', 'ts-lg');
+          html.classList.add('ts-' + size);
+          // Mirror to localStorage so future first-paints don't flash the
+          // default size before the server-rendered class kicks in
+          try {
+            if (size === 'md') localStorage.removeItem('td_text_size');
+            else localStorage.setItem('td_text_size', size);
+          } catch (_) {}
+          // Persist server-side (cross-device)
+          const fd = new FormData();
+          fd.set('size', size);
+          try { await fetch('/card/account/text-size', { method: 'POST', body: fd }); } catch (_) {}
+        });
+      });
+    })();
+  </script>
 </body>
 </html>
