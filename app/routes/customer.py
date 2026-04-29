@@ -136,15 +136,25 @@ async def account_menu(
         .where(Redemption.customer_id == customer.id)
     )).one()
 
+    from app.models.util import BKK
+    from datetime import datetime, timezone
+    weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[
+        datetime.now(timezone.utc).astimezone(BKK).weekday()
+    ]
+
     return templates.TemplateResponse(
         request=request,
         name="card_account.html",
         context={
             "customer": customer,
             "masked_phone": _mask_phone(customer.phone),
+            # cards_count / ready_count are unused by the new C6 layout (the
+            # dock cards tab covers it) — kept in the context for now so older
+            # callers/snapshots don't crash. Safe to drop in a follow-up.
             "cards_count": cards_count,
             "ready_count": ready_count,
             "redemption_count": redemption_count,
+            "weekday_th": weekday_th,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
             "text_size": customer.text_size or "md",
         },

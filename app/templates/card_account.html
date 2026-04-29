@@ -27,10 +27,23 @@
   <div class="td has-c-dock" x-data="{ armed: false }">
     <div class="topbar"><span></span><span></span></div>
 
-    <div class="app-bar">
-      <a href="/my-cards" class="x" aria-label="ย้อนกลับ">←</a>
-      <div class="title-mid">บัญชีของพี่</div>
-      <div class="placeholder"></div>
+    <div class="page-head">
+      <div class="ph-text">
+        <h1>
+          {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีครับพี่{{ customer.display_name }}{% else %}สวัสดีครับ{% endif %}
+        </h1>
+        <div class="ph-sub">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</div>
+      </div>
+      <div class="ph-actions">
+        <a href="/my-id" class="ph-icon-btn" title="โชว์ QR ของพี่" aria-label="โชว์ QR">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </a>
+      </div>
     </div>
 
     {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
@@ -44,25 +57,11 @@
       </div>
     </div>
 
+    {# "บัตรของพี่" row dropped per design — the dock's บัตร tab is the
+       primary path back. Keep "ของฉัน" as a single-row section for the
+       only thing not reachable from elsewhere (รางวัลที่รับแล้ว). #}
     <div class="s10-section">
       <div class="label">ของฉัน</div>
-
-      <a href="/my-cards" class="s10-row">
-        <div class="row-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-        </div>
-        <div class="row-info">
-          <div class="row-name">บัตรของพี่</div>
-          <div class="row-meta">
-            {{ cards_count }} บัตร{% if ready_count > 0 %} · ใกล้ครบ {{ ready_count }} ใบ{% endif %}
-          </div>
-        </div>
-        {% if ready_count > 0 %}
-          <span class="pill butter">พร้อม {{ ready_count }}</span>
-        {% else %}
-          <div class="arrow-r">›</div>
-        {% endif %}
-      </a>
 
       <div class="s10-row">
         <div class="row-icon butter">
@@ -70,7 +69,6 @@
         </div>
         <div class="row-info">
           <div class="row-name">รางวัลที่รับแล้ว</div>
-          <div class="row-meta">{{ redemption_count }} ครั้ง</div>
         </div>
         <div class="arrow-r">›</div>
       </div>
@@ -87,7 +85,6 @@
           <div class="fs-icon">Aa</div>
           <div class="fs-info">
             <div class="fs-name">ขนาดตัวอักษร</div>
-            <div class="fs-meta">ปรับให้อ่านสบายตา</div>
           </div>
         </div>
         <div class="fs-options">
@@ -103,7 +100,6 @@
         </div>
         <div class="row-info">
           <div class="row-name">การแจ้งเตือน</div>
-          <div class="row-meta">ช่องทาง · ร้านที่ปิดเสียง</div>
         </div>
         <div class="arrow-r">›</div>
       </a>
@@ -114,7 +110,6 @@
         </div>
         <div class="row-info">
           <div class="row-name">ความเป็นส่วนตัว</div>
-          <div class="row-meta">ข้อมูลที่ร้านเห็น · จัดการ</div>
         </div>
         <div class="arrow-r">›</div>
       </div>
@@ -125,7 +120,6 @@
         </div>
         <div class="row-info">
           <div class="row-name">ช่วยเหลือ</div>
-          <div class="row-meta">FAQ · ติดต่อทีมงาน</div>
         </div>
         <div class="arrow-r">›</div>
       </div>
@@ -146,7 +140,7 @@
     </form>
 
     <div class="c6-version">
-      <span class="brand">taemdee<span class="dot">.</span></span> · เวอร์ชัน 1.0
+      <span class="brand">taemdee<span class="dot">.</span></span> · เวอร์ชัน 1.0.2
     </div>
 
     {% include "_partials/footer_mark.html" %}
