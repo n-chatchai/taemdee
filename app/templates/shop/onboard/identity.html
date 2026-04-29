@@ -13,7 +13,31 @@
 </head>
 <body>
   <form method="POST" action="/shop/onboard/identity" class="td"
-        x-data="{ choice: '{{ picked_id or options[0].id }}', customText: '{{ custom_text }}' }">
+        x-data="{
+          choice: '{{ picked_id or options[0].id }}',
+          customText: '{{ custom_text }}',
+          isUploading: false,
+          customLogoUrl: '{{ shop.logo_url if shop.logo_url.startswith('url:') else '' }}',
+          async handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.isUploading = true;
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+              const res = await fetch('/shop/upload/logo', { method: 'POST', body: formData });
+              const data = await res.json();
+              if (data.url) {
+                this.customLogoUrl = 'url:' + data.url;
+                this.choice = 'url:' + data.url;
+              }
+            } catch (err) {
+              console.error('Upload failed', err);
+            } finally {
+              this.isUploading = false;
+            }
+          }
+        }">
 
     <div class="topbar"><span></span><span></span></div>
 
@@ -76,14 +100,32 @@
 
     {% include "_partials/logo_picker.html" %}
 
-    <div class="s2-upload" title="อัปโหลดเอง — เร็วๆ นี้" aria-disabled="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      ใช้โลโก้ของฉันเอง
+    <div class="s2-upload" @click="$refs.logoFileInput.click()" :class="{ uploading: isUploading }">
+      <input type="file" x-ref="logoFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
+      <template x-if="!isUploading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </template>
+      <template x-if="isUploading">
+        <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
+        </svg>
+      </template>
+      <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้โลโก้ของฉันเอง'"></span>
     </div>
+
+    <template x-if="customLogoUrl">
+      <div class="s2-logos" style="margin-top: 10px; grid-template-columns: repeat(1, 1fr);">
+        <button type="button" class="s2-logo"
+                :class="{ selected: choice === customLogoUrl }"
+                @click="choice = customLogoUrl">
+          <img :src="customLogoUrl.replace('url:', '')" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
+        </button>
+      </div>
+    </template>
 
     <input type="hidden" name="logo_choice" :value="choice">
     <input type="hidden" name="custom_text" :value="customText">

@@ -39,13 +39,17 @@ ASSET_VERSION = _compute_asset_version()
 
 
 def shop_logo(shop) -> Optional[dict]:
-    """Render the typography style the shop owner picked in S2.2.
-
-    Returns a dict {css_class, text, show_dot} ready for templates, or None
-    if the shop hasn't picked one — callers should fall back to a plain
-    name + dot rendering in that case.
+    """Render the typography style or custom image the shop owner picked.
+    
+    Format: 'text:style_id:custom_text' or 'url:https://...'
     """
-    if not shop or not shop.logo_url or not shop.logo_url.startswith("text:"):
+    if not shop or not shop.logo_url:
+        return None
+        
+    if shop.logo_url.startswith("url:"):
+        return {"is_image": True, "url": shop.logo_url[4:]}
+        
+    if not shop.logo_url.startswith("text:"):
         return None
     
     parts = shop.logo_url.split(":", 2)
@@ -58,6 +62,7 @@ def shop_logo(shop) -> Optional[dict]:
     if len(parts) == 3 and parts[2].strip():
         rendered["text"] = parts[2].strip()
         
+    rendered["is_image"] = False
     return rendered
 
 

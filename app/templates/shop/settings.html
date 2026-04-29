@@ -21,10 +21,21 @@
 
     {% set logo = shop_logo(shop) %}
     <div class="s10-shop-card">
-      <div class="logo">{{ shop.name[0]|upper }}<span style="color:var(--butter);">.</span></div>
+      <div class="logo">
+        {% if logo and logo.is_image %}
+          <img src="{{ logo.url }}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">
+        {% else %}
+          {{ shop.name[0]|upper }}<span style="color:var(--butter);">.</span>
+        {% endif %}
+      </div>
       <div class="info">
         <div class="name">
-          {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+          {% if logo %}
+            {% if logo.is_image %}
+              <span style="font-weight:700; font-family:'Host Grotesk';">{{ shop.name }}</span>
+            {% else %}
+              <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+            {% endif %}
           {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
         </div>
         <div class="meta">{{ shop.name }} · {{ shop.location or 'ร้านค้า' }}</div>

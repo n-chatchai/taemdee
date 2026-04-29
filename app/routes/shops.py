@@ -3,7 +3,7 @@ from datetime import timedelta, timezone
 from typing import Optional
 
 import segno
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status
+from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status, UploadFile, File
 from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
 from app.core.templates import templates
 from sqlmodel import func, select
@@ -25,6 +25,7 @@ from app.services.referrals import (
     create_referral_code,
     find_referral_by_code,
 )
+from app.services.storage import upload_to_r2
 
 router = APIRouter()
 
@@ -382,7 +383,9 @@ async def onboard_identity_post(
     db: AsyncSession = Depends(get_session),
 ):
     shop.name = name.strip() or shop.name
-    if logo_choice in VALID_STYLE_IDS:
+    if logo_choice and logo_choice.startswith("url:"):
+        shop.logo_url = logo_choice
+    elif logo_choice in VALID_STYLE_IDS:
         safe_custom_text = (custom_text or "").strip().replace(":", "-")
         if safe_custom_text:
             shop.logo_url = f"text:{logo_choice}:{safe_custom_text}"
@@ -421,7 +424,7 @@ async def onboard_reward_post(
     db: AsyncSession = Depends(get_session),
 ):
     shop.reward_description = reward_description.strip() or shop.reward_description
-    if reward_image in VALID_REWARD_IMAGES:
+    if reward_image:
         shop.reward_image = reward_image
     # Allow the canonical pills (5/10/20) plus any custom value 1–99.
     if 1 <= reward_threshold <= 99:
@@ -456,7 +459,7 @@ async def reward_edit_post(
     db: AsyncSession = Depends(get_session),
 ):
     shop.reward_description = reward_description.strip() or shop.reward_description
-    if reward_image in VALID_REWARD_IMAGES:
+    if reward_image:
         shop.reward_image = reward_image
     if 1 <= reward_threshold <= 99:
         shop.reward_threshold = reward_threshold
@@ -957,7 +960,9 @@ async def settings_identity_post(
     db: AsyncSession = Depends(get_session),
 ):
     shop.name = name.strip() or shop.name
-    if logo_choice in VALID_STYLE_IDS:
+    if logo_choice and logo_choice.startswith("url:"):
+        shop.logo_url = logo_choice
+    elif logo_choice in VALID_STYLE_IDS:
         safe_custom_text = (custom_text or "").strip().replace(":", "-")
         if safe_custom_text:
             shop.logo_url = f"text:{logo_choice}:{safe_custom_text}"
@@ -1103,3 +1108,52 @@ async def shop_qr_png(
         media_type="image/png",
         headers={"Content-Disposition": f'attachment; filename="taemdee-qr-{safe_name}.png"'},
     )
+
+@router.post("/upload/logo")
+async def upload_logo(
+    file: UploadFile = File(...),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Uploads a custom shop logo to R2."""
+    content = await file.read()
+    url = await upload_to_r2(
+        content,
+        file.filename,
+        file.content_type,
+        folder=f"shops/{shop.id}/logos",
+        is_image=True
+    )
+    if not url:
+        raise HTTPException(status_code=500, detail="Upload failed")
+    
+    shop.logo_url = f"url:{url}"
+    db.add(shop)
+    await db.commit()
+    
+    return {"url": url}
+
+
+@router.post("/upload/reward")
+async def upload_reward_image(
+    file: UploadFile = File(...),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Uploads a custom reward image to R2."""
+    content = await file.read()
+    url = await upload_to_r2(
+        content,
+        file.filename,
+        file.content_type,
+        folder=f"shops/{shop.id}/rewards",
+        is_image=True
+    )
+    if not url:
+        raise HTTPException(status_code=500, detail="Upload failed")
+    
+    shop.reward_image = url
+    db.add(shop)
+    await db.commit()
+    
+    return {"url": url}

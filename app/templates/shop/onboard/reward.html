@@ -17,7 +17,28 @@
         x-data="{
           rewardImage: '{{ picked_image }}',
           goal: {{ shop.reward_threshold }},
-          customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }}
+          customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }},
+          isUploading: false,
+          customRewardUrl: '{{ shop.reward_image if shop.reward_image.startswith('http') else '' }}',
+          async handleFileUpload(e) {
+            const file = e.target.files[0];
+            if (!file) return;
+            this.isUploading = true;
+            const formData = new FormData();
+            formData.append('file', file);
+            try {
+              const res = await fetch('/shop/upload/reward', { method: 'POST', body: formData });
+              const data = await res.json();
+              if (data.url) {
+                this.customRewardUrl = data.url;
+                this.rewardImage = data.url;
+              }
+            } catch (err) {
+              console.error('Upload failed', err);
+            } finally {
+              this.isUploading = false;
+            }
+          }
         }">
 
     <div class="topbar"><span></span><span></span></div>
@@ -64,14 +85,32 @@
       เลือกรูปที่ใช่ หรือ <em>อัปโหลดของคุณเอง</em>
     </div>
 
-    <div class="s2-upload" title="อัปโหลดเอง — เร็วๆ นี้" aria-disabled="true">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      ใช้รูปของฉันเอง
+    <div class="s2-upload" @click="$refs.rewardFileInput.click()" :class="{ uploading: isUploading }">
+      <input type="file" x-ref="rewardFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
+      <template x-if="!isUploading">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+      </template>
+      <template x-if="isUploading">
+        <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+          <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
+        </svg>
+      </template>
+      <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้รูปของฉันเอง'"></span>
     </div>
+
+    <template x-if="customRewardUrl">
+      <div class="s2-rewards" style="margin-top: 10px;">
+        <button type="button" class="s2-reward"
+                :class="{ selected: rewardImage === customRewardUrl }"
+                @click="rewardImage = customRewardUrl">
+          <img :src="customRewardUrl" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
+        </button>
+      </div>
+    </template>
 
     <div class="s2-field">
       <div class="label">เก็บกี่แต้มถึงได้รางวัล</div>

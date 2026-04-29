@@ -3,7 +3,9 @@
    verbatim (gift_box / card / star / coffee_cup). Caller wraps in whatever
    container they need (.s2-reward, .reward-strip, etc.). #}
 {% set img_id = img_id|default('coffee_cup') %}
-{% if img_id == 'gift_box' %}
+{% if img_id.startswith('http') %}
+  <img src="{{ img_id }}" class="reward-svg" style="object-fit: cover; width: 100%; height: 100%; display: block;">
+{% elif img_id == 'gift_box' %}
   <svg class="reward-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
     <rect width="100" height="100" fill="#FFE6DF"/>
     <rect x="22" y="38" width="56" height="44" rx="3" fill="#FDFAF2" stroke="#111" stroke-width="2.5"/>

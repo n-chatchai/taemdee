@@ -44,11 +44,12 @@ class Settings(BaseSettings):
     # shop-facing — converted to satang internally when applied.
     credit_welcome_amount: int = 50
 
-    # Web Push (VAPID) keys live exclusively in the app_secrets table.
-    # The worker generates them on first boot (services/web_push.py); the
-    # web process reads via load_vapid_keys + get_vapid_public_key. The
-    # `sub` field (operator contact for push-service abuse mail) is a
-    # constant in services/web_push.py since it's not a secret.
+    # Cloudflare R2 Storage
+    r2_account_id: Optional[str] = None
+    r2_access_key_id: Optional[str] = None
+    r2_secret_access_key: Optional[str] = None
+    r2_bucket_name: Optional[str] = "taemdee-assets"
+    r2_public_domain: Optional[str] = None  # e.g., https://pub-xxx.r2.dev or custom domain
 
 
 settings = Settings()
