@@ -26,14 +26,25 @@
         </svg>
       </div>
 
+      {# v2 schema: credits_spent → locked_credits_satang. While the campaign
+         is still 'locked' (worker hasn't reconciled), `final_credits_satang`
+         is 0 and we show the locked amount as the upper-bound charge.
+         After 'completed' the final figure reflects only delivered messages. #}
+      {% set spent_satang = campaign.final_credits_satang or campaign.locked_credits_satang %}
       <div class="s13s-title">ส่ง<em>เรียบร้อย!</em></div>
-      <div class="s13s-sub">ส่งให้ {{ campaign.audience_count }} คน · ใช้ {{ campaign.credits_spent }} เครดิต</div>
+      <div class="s13s-sub">ส่งให้ {{ campaign.audience_count }} คน · ใช้ {{ spent_satang // 100 }} เครดิต</div>
 
       <div class="s13s-card">
         <div class="s13s-row">
           <span class="s13s-label">เครดิตคงเหลือ</span>
-          <span class="s13s-val">{{ shop.credit_balance }}</span>
+          <span class="s13s-val">{{ shop.credit_balance // 100 }}</span>
         </div>
+        {% if campaign.status == 'locked' %}
+          <div class="s13s-row" style="font-size:11px;color:var(--ink-soft);font-style:italic;">
+            ระบบกำลังทยอยส่งให้ลูกค้า — ข้อความจะถึงภายในไม่กี่นาที.
+            ถ้ามีรายการส่งไม่สำเร็จ เครดิตจะคืนอัตโนมัติ.
+          </div>
+        {% endif %}
       </div>
     </div>
 
