@@ -15,7 +15,7 @@ from app.core.auth import (
     set_customer_cookie,
 )
 from app.core.database import get_session
-from app.models import Branch, Inbox, Redemption, Shop, Point
+from app.models import Branch, Customer, Inbox, Redemption, Shop, Point
 from app.models.util import bkk_feed_time, utcnow
 from app.services.auth import verify_otp
 from app.services.events import feed_row_html, publish
@@ -26,6 +26,36 @@ from app.services.redemption import RedemptionError, active_point_count, redeem
 from app.services.soft_wall import claim_by_phone
 
 router = APIRouter()
+
+
+@router.get("/customer/login", response_class=HTMLResponse)
+async def customer_login_page(request: Request):
+    """Standalone customer login page based on the shop's S1 design."""
+    return templates.TemplateResponse(
+        request=request,
+        name="customer_login.html",
+        context={},
+    )
+
+
+@router.post("/customer/login")
+async def customer_dev_login(
+    phone: str = Form(...),
+    db: AsyncSession = Depends(get_session),
+):
+    """DEV shortcut for customer login (matches the shop's dev_login behavior)."""
+    # Find or create by phone
+    result = await db.exec(select(Customer).where(Customer.phone == phone))
+    customer = result.first()
+    if not customer:
+        customer = Customer(phone=phone, display_name="คุณลูกค้า")
+        db.add(customer)
+        await db.commit()
+        await db.refresh(customer)
+
+    response = RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+    set_customer_cookie(response, customer.id)
+    return response
 
 
 # Literal /card/* paths — must be registered BEFORE /card/{shop_id} so FastAPI
