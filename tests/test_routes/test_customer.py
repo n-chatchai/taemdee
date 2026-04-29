@@ -258,3 +258,79 @@ async def test_account_logout_clears_cookie(client, db, shop):
     follow = await client.get("/card/account", follow_redirects=False)
     assert follow.status_code == 303
     assert follow.headers["location"] == "/card/save"
+
+
+# ---------------------------------------------------------------------------
+# C2.4 recovery code + /recover lookup
+# ---------------------------------------------------------------------------
+
+
+async def test_onboard_recovery_renders_and_persists_code(client, db, shop):
+    """C2.4 — first GET issues a code on the customer row; second GET shows
+    the SAME code (idempotent generator)."""
+    from app.models import Customer
+
+    r1 = await client.get(f"/onboard/{shop.id}/recovery")
+    assert r1.status_code == 200
+    body = r1.text
+    assert "รหัสกู้คืน" in body or "ไม่สะดวกสมัคร" in body
+
+    customer = (await db.exec(select(Customer))).first()
+    assert customer.recovery_code is not None
+    code = customer.recovery_code
+    assert len(code) == 14 and code.count("-") == 2  # XXXX-XXXX-XXXX
+
+    r2 = await client.get(f"/onboard/{shop.id}/recovery")
+    assert code in r2.text
+
+
+async def test_onboard_skip_link_targets_recovery(client, shop):
+    """C2.3 'ขอบคุณแต่ยังก่อน' must point to /onboard/{shop}/recovery so
+    the customer is offered a recovery code before they leave."""
+    r = await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    assert r.status_code == 200
+    assert f"/onboard/{shop.id}/recovery" in r.text
+
+
+async def test_recover_swaps_cookie_to_owner_of_code(client, db, shop):
+    from app.core.auth import CUSTOMER_COOKIE_NAME, decode_customer_token
+    from app.models import Customer
+
+    # Seed: customer A gets a recovery code by visiting the onboarding step.
+    await client.get(f"/onboard/{shop.id}/recovery")
+    a = (await db.exec(select(Customer))).first()
+    code = a.recovery_code
+
+    # Drop A's cookie — simulate "device lost / cleared cookies".
+    client.cookies.clear()
+
+    # POST /recover with the code → 303 to /my-cards + Set-Cookie pointing
+    # back at customer A.
+    r = await client.post("/recover", data={"code": code}, follow_redirects=False)
+    assert r.status_code == 303
+    assert r.headers["location"] == "/my-cards"
+
+    set_cookie = r.headers.get("set-cookie", "")
+    assert CUSTOMER_COOKIE_NAME in set_cookie
+    token = client.cookies.get(CUSTOMER_COOKIE_NAME)
+    assert decode_customer_token(token) == a.id
+
+
+async def test_recover_normalizes_lowercase_no_hyphens(client, db, shop):
+    """User can paste 'k7mxq4p2h9rs' (lowercase, no hyphens) and we still
+    look up the canonical form."""
+    from app.models import Customer
+
+    await client.get(f"/onboard/{shop.id}/recovery")
+    a = (await db.exec(select(Customer))).first()
+    raw = a.recovery_code.replace("-", "").lower()
+
+    client.cookies.clear()
+    r = await client.post("/recover", data={"code": raw}, follow_redirects=False)
+    assert r.status_code == 303
+
+
+async def test_recover_unknown_code_returns_400_with_error(client):
+    r = await client.post("/recover", data={"code": "ZZZZ-ZZZZ-ZZZZ"}, follow_redirects=False)
+    assert r.status_code == 400
+    assert "ไม่พบรหัส" in r.text

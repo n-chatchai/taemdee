@@ -34,6 +34,10 @@ class Customer(SQLModel, table=True):
     web_push_endpoint: Optional[str] = Field(default=None)
     web_push_p256dh: Optional[str] = Field(default=None)
     web_push_auth: Optional[str] = Field(default=None)
+    # C2.4 recovery code — issued when an anonymous customer skips signup so
+    # they can re-claim their points on a new device. 12 unambiguous chars in
+    # 3 groups of 4 (e.g. "K7M-XQ4P-2H9R"). Stored uppercase, hyphen-included.
+    recovery_code: Optional[str] = Field(default=None, unique=True, index=True)
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="customer")

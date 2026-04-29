@@ -21,6 +21,7 @@ from app.services.auth import verify_otp
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point
 from app.services.pdpa import delete_customer_account
+from app.services.recovery import ensure_recovery_code, find_by_code
 from app.services.redemption import RedemptionError, active_point_count, redeem
 from app.services.soft_wall import claim_by_phone
 
@@ -365,6 +366,60 @@ async def onboard(
     # the saved nickname on a phantom row that the next request can't find.
     if was_created:
         set_customer_cookie(response, customer.id)
+    return response
+
+
+@router.get("/onboard/{shop_id}/recovery", response_class=HTMLResponse)
+async def onboard_recovery(
+    request: Request,
+    shop_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """C2.4 — recovery code shown after a customer skips signup at C2.3. The
+    code is generated on demand (and cached on the row) so the same customer
+    sees the same code if they revisit. Continue button → /card/{shop_id}."""
+    shop = await db.get(Shop, shop_id)
+    if not shop:
+        return RedirectResponse(url=f"/card/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    code = await ensure_recovery_code(db, customer)
+    response = templates.TemplateResponse(
+        request=request,
+        name="onboard_recovery.html",
+        context={"shop": shop, "customer": customer, "recovery_code": code},
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
+@router.get("/recover", response_class=HTMLResponse)
+async def recover_form(request: Request):
+    """Standalone recovery entry page — paste a recovery code, get the
+    customer cookie swapped to that account. Linked from /card/save and the
+    onboarding skip path."""
+    return templates.TemplateResponse(
+        request=request, name="recover.html", context={"error": None}
+    )
+
+
+@router.post("/recover", response_class=HTMLResponse)
+async def recover_submit(
+    request: Request,
+    code: str = Form(""),
+    db: AsyncSession = Depends(get_session),
+):
+    customer = await find_by_code(db, code)
+    if customer is None:
+        return templates.TemplateResponse(
+            request=request,
+            name="recover.html",
+            context={"error": "ไม่พบรหัสนี้ — ลองตรวจสอบอีกครั้งนะครับ"},
+            status_code=400,
+        )
+    response = RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+    set_customer_cookie(response, customer.id)
     return response
 
 
