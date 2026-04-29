@@ -1,0 +1,74 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{{ shop.name }} · ทำความรู้จัก · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  {% set logo = shop_logo(shop) %}
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+
+    <div class="app-bar">
+      <a href="/card/{{ shop.id }}" class="x" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
+      <div class="title-mid">ทำความรู้จัก</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="c9-cover">
+      <div class="cover-mark">
+        {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+        {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
+      </div>
+      <div class="cover-meta">
+        <span>{{ age_label }}</span>
+        {% if shop.location %}
+          <span class="cover-dot">·</span>
+          <span>{{ shop.location }}</span>
+        {% endif %}
+      </div>
+    </div>
+
+    {% if shop.thanks_message %}
+      <div class="c9-thanks">
+        <div class="c9-thanks-avatar">
+          <svg viewBox="0 0 100 100">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+            <circle cx="36" cy="42" r="6" fill="#fff"/>
+            <circle cx="64" cy="42" r="6" fill="#fff"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          </svg>
+        </div>
+        <div class="c9-thanks-text">
+          <div class="c9-thanks-h">
+            {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}ขอบคุณคุณ{{ customer.display_name }}นะครับ ✦{% else %}ขอบคุณนะครับ ✦{% endif %}
+          </div>
+          <div class="c9-thanks-s">{{ shop.thanks_message }}</div>
+        </div>
+      </div>
+    {% endif %}
+
+    {% if shop.story_text %}
+      <div class="c9-section">
+        <div class="c9-section-h">เรื่องราวของร้าน</div>
+        <div class="c9-story">{{ shop.story_text }}</div>
+      </div>
+    {% else %}
+      <div class="c9-section">
+        <div class="c9-story" style="text-align:center; font-style:italic; color:var(--ink-softer);">
+          ทางร้านยังไม่ได้ฝากเรื่องราวเอาไว้ — แวะไปเก็บแต้มเรื่อยๆ ก่อนนะครับ
+        </div>
+      </div>
+    {% endif %}
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

@@ -231,6 +231,54 @@ async def test_my_cards_no_dot_when_message_already_read(client, db, shop):
     assert "c7-card-unread" not in body
 
 
+async def test_shop_story_renders_thanks_and_story_when_set(client, db, shop):
+    """C9 — when both fields are populated, the page surfaces them with
+    proper section markup."""
+    shop.thanks_message = "ดีใจที่กลับมาทุกครั้ง"
+    shop.story_text = "เริ่มจากความหลงใหลในกาแฟดอยช้าง — เริ่มเปิดที่บ้านก่อนย้ายมานิมมาน"
+    db.add(shop)
+    await db.commit()
+
+    r = await client.get(f"/shop/{shop.id}/story")
+    assert r.status_code == 200
+    body = r.text
+    assert "ดีใจที่กลับมาทุกครั้ง" in body
+    assert "ความหลงใหลในกาแฟดอยช้าง" in body
+    assert "c9-cover" in body
+    assert "เรื่องราวของร้าน" in body
+
+
+async def test_shop_story_falls_back_to_placeholder_when_empty(client, shop):
+    """Empty story_text → placeholder copy; thanks block omitted entirely."""
+    r = await client.get(f"/shop/{shop.id}/story")
+    assert r.status_code == 200
+    body = r.text
+    # Placeholder shows
+    assert "ทางร้านยังไม่ได้ฝากเรื่องราว" in body
+    # Thanks block hidden when thanks_message is unset
+    assert "c9-thanks" not in body
+
+
+async def test_shop_story_age_label_renders_เพิ่งเปิด_for_new_shop(client, shop):
+    """A shop fixture is brand new — `เปิดมา N ปี` is meaningless, render
+    'เพิ่งเปิด' instead so the cover meta isn't empty/awkward."""
+    body = (await client.get(f"/shop/{shop.id}/story")).text
+    assert "เพิ่งเปิด" in body
+
+
+async def test_shop_story_unknown_shop_404s(client):
+    bogus = uuid4()
+    r = await client.get(f"/shop/{bogus}/story")
+    assert r.status_code == 404
+
+
+async def test_card_shop_head_links_to_story(client, shop):
+    """C1 daily card — wordmark/shop-head is now a link to /shop/{id}/story
+    so customers can tap to learn about the shop (per design)."""
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert f'href="/shop/{shop.id}/story"' in body
+
+
 async def test_card_unknown_shop_renders_friendly_page(client):
     bogus = uuid4()
     response = await client.get(f"/card/{bogus}")

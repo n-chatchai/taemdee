@@ -22,7 +22,7 @@
        their identity QR via the camera/QR row in /my-cards. #}
     <a href="/my-cards" class="c1-avatar" title="ดูบัตรทั้งหมด" aria-label="บัตรทั้งหมด">{{ (customer.display_name or 'ล')[0] }}</a>
 
-    <div class="shop-head">
+    <a class="shop-head" href="/shop/{{ shop.id }}/story" style="display:block; text-decoration:none; color:inherit;">
       <div class="shop-logo-mark">
         {% if logo %}
           {% if logo.is_image %}
@@ -37,7 +37,7 @@
         {% set sub_extra = branch.name if branch else shop.location %}
         {% if sub_extra %} <span class="dotsep"></span> {{ sub_extra }}{% endif %}
       </div>
-    </div>
+    </a>
 
     {% if customer.display_name and customer.display_name != 'คุณลูกค้า' and not is_full %}
       <div class="c1-greet-bubble">

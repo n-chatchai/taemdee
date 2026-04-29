@@ -70,6 +70,13 @@ class Shop(SQLModel, table=True):
         sa_column=Column(JSON().with_variant(JSONB, "postgresql"), nullable=True),
     )
 
+    # C9 Shop Story — emotional layer the customer sees from /card/{id}.
+    # `thanks_message` is a short personal note ("ดีใจที่กลับมาทุกครั้ง · ทางร้านฝากบอก");
+    # `story_text` is the longer "เรื่องราวของร้าน" paragraph. Both
+    # nullable — the page hides the corresponding section when empty.
+    thanks_message: Optional[str] = Field(default=None)
+    story_text: Optional[str] = Field(default=None)
+
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="shop")

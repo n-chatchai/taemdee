@@ -419,6 +419,46 @@ async def onboard_recovery(
     return response
 
 
+@router.get("/shop/{shop_id}/story", response_class=HTMLResponse)
+async def shop_story(
+    request: Request,
+    shop_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """C9 — emotional shop story page. Reachable from the C1 daily card
+    wordmark or directly. Renders thanks_message + story_text + 'opened
+    N years ago' meta. Menu items + reviews are deferred until those
+    models exist."""
+    shop = await db.get(Shop, shop_id)
+    if not shop:
+        return templates.TemplateResponse(
+            request=request,
+            name="shop_not_found.html",
+            context={"shop_id": shop_id},
+            status_code=status.HTTP_404_NOT_FOUND,
+        )
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    # "เปิดมา N ปี" — derived from shop.created_at. Anything <1 year says
+    # "เพิ่งเปิด"; >=1 year shows the integer year count.
+    from datetime import datetime, timezone
+    age_days = (datetime.now(timezone.utc) - shop.created_at.replace(tzinfo=timezone.utc)).days
+    years = age_days // 365
+    age_label = "เพิ่งเปิด" if years < 1 else f"เปิดมา {years} ปี"
+    response = templates.TemplateResponse(
+        request=request,
+        name="c9_story.html",
+        context={
+            "shop": shop,
+            "customer": customer,
+            "age_label": age_label,
+        },
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
 @router.get("/recover", response_class=HTMLResponse)
 async def recover_form(request: Request):
     """Standalone recovery entry page — paste a recovery code, get the
