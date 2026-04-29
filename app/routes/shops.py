@@ -627,6 +627,7 @@ async def insights_page(
         "almost_there": "กระตุ้นคนใกล้รับ",
         "unredeemed_reward": "เตือนรางวัลค้าง",
         "new_customer": "ขอบคุณลูกค้าใหม่",
+        "manual": "แคมเปญของคุณเอง",
     }
     for r in rows:
         # Per DeeReach v2: credits live in satang (1 credit = 100 satang).
