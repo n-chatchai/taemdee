@@ -3469,7 +3469,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c7-card.featured .progress .num { color: var(--ink); }
 .c7-card.featured .progress .num .of { color: var(--ink); opacity: 0.6; }
 .c7-card .progress .bar {
-  height: 4px;
+  height: 6px;
   width: 50px;
   background: var(--line);
   border-radius: 999px;

@@ -16,16 +16,10 @@
 
     <div class="page-head">
       <div class="ph-text">
-        <h1>สวัสดี{% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}พี่{{ customer.display_name }}{% else %}พี่{% endif %}</h1>
+        <h1>สวัสดีครับ{% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}พี่{{ customer.display_name }}{% else %}พี่{% endif %}</h1>
         <div class="ph-sub">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</div>
       </div>
       <div class="ph-actions">
-        <a href="/scan-shop" class="ph-icon-btn" title="สแกน QR ของร้าน" aria-label="สแกน QR ของร้าน">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-            <circle cx="12" cy="13" r="4"/>
-          </svg>
-        </a>
         <a href="/my-id" class="ph-icon-btn" title="โชว์ QR ที่ร้าน" aria-label="โชว์ QR">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -37,42 +31,46 @@
       </div>
     </div>
 
-    {% if cards %}
-      <div class="c7-stats">
-        <div class="ss-row">
-          <div class="ss-big">{{ total_stamps }}</div>
-          <div class="ss-meta">
-            <div class="label">แต้มที่ผมเก็บให้พี่</div>
-            <div class="total">จาก {{ cards|length }} ร้าน</div>
+    <div class="c7-stats">
+      <div class="ss-row">
+        <div class="ss-big">{{ total_stamps|default(0) }}</div>
+        <div class="ss-meta">
+          <div class="label">แต้มที่ผมเก็บให้พี่</div>
+          <div class="total">จาก {{ cards|length }} ร้าน</div>
+        </div>
+      </div>
+      {% if closest_card %}
+        {% set logo = shop_logo(closest_card.shop) %}
+        <a class="ss-bottom" href="/card/{{ closest_card.shop.id }}">
+          <div class="ssb-logo">
+            {% if logo %}
+              {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+              {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+              {% endif %}
+            {% else %}{{ closest_card.shop.name[0]|upper }}{% endif %}
           </div>
+          <div class="ssb-text">
+            <span class="ssb-shop">{{ closest_card.shop.name }}</span> ·
+            อีก <strong>{{ closest }} ครั้ง</strong> ได้{{ closest_card.shop.reward_description }}
+          </div>
+        </a>
+      {% else %}
+        <div class="ss-bottom">
+          <div class="ssb-text" style="opacity:0.6;">ยังไม่มีแต้มที่ใกล้ครบครับ</div>
         </div>
-        {% if closest_card %}
-          {% set logo = shop_logo(closest_card.shop) %}
-          <a class="ss-bottom" href="/card/{{ closest_card.shop.id }}">
-            <div class="ssb-logo">
-              {% if logo %}
-                {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
-                {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-                {% endif %}
-              {% else %}{{ closest_card.shop.name[0]|upper }}{% endif %}
-            </div>
-            <div class="ss-bottom-text">
-              <span class="ssb-shop">{{ closest_card.shop.name }}</span> ·
-              อีก <strong>{{ closest }} ครั้ง</strong> ได้{{ closest_card.shop.reward_description }}
-            </div>
-          </a>
-        {% endif %}
-      </div>
+      {% endif %}
+    </div>
 
-      <div class="c7-list-head">
-        <div class="label">
-          <svg class="star" viewBox="0 0 16 16" fill="currentColor">
-            <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
-          </svg>
-          ร้านที่พี่เก็บแต้มอยู่
-        </div>
+    <div class="c7-list-head">
+      <div class="label">
+        <svg class="star" viewBox="0 0 16 16" fill="currentColor">
+          <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
+        </svg>
+        ร้านที่พี่เก็บแต้มอยู่
       </div>
+    </div>
 
+    {% if cards %}
       {% for c in cards %}
         {% set ready = c.point_count >= c.shop.reward_threshold %}
         {% set logo = shop_logo(c.shop) %}
