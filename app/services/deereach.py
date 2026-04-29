@@ -441,6 +441,7 @@ async def send_campaign(
     kind: str,
     *,
     message_override: Optional[str] = None,
+    selected_customer_ids: Optional[set] = None,
 ) -> DeeReachCampaign:
     """Lock → Enqueue → Return.  Zero UI latency — actual delivery is async.
 
@@ -458,12 +459,24 @@ async def send_campaign(
     DeeReachSendError so a stray "ส่ง" tap with a blank textarea doesn't
     burn credits on a blank message.
 
-    Raises DeeReachSendError on empty audience, insufficient credits, or
-    blank override.
+    `selected_customer_ids` lets the editor narrow the audience by
+    deselecting specific customers. The kind-based eligibility query
+    still runs server-side and stays the source of truth — we just
+    intersect with the requested set so the client cannot opt anyone
+    *into* a campaign they weren't already eligible for. None means
+    "send to everyone the audience query returned".
+
+    Raises DeeReachSendError on empty audience, empty selection,
+    insufficient credits, or blank override.
     """
     audience = await _audience_for(db, shop, kind)
     if not audience:
         raise DeeReachSendError("ไม่มีผู้รับที่เข้าเงื่อนไข")
+
+    if selected_customer_ids is not None:
+        audience = [c for c in audience if c.id in selected_customer_ids]
+        if not audience:
+            raise DeeReachSendError("ไม่ได้เลือกผู้รับ — แตะเลือกอย่างน้อย 1 คน")
 
     locked_satang = _estimate_cost_satang(audience)
 

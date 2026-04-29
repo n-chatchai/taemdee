@@ -11,11 +11,17 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
+  {# Audience list seeded into Alpine state so the owner can deselect rows
+     before sending. `selected` maps customer_id → bool; default true for
+     every row in `audience`. The send form filters to checked ids. #}
+  {% set audience_ids = audience|map(attribute='id')|map('string')|list %}
   <div class="td" x-data="{
         message: {{ message|tojson }},
+        selected: {{ dict.fromkeys(audience_ids, True)|tojson }},
         flash: '',
         flashKind: 'is-error',
-      }">
+      }"
+      x-init="$watch('selected', () => {})">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
@@ -27,13 +33,17 @@
     <div class="s13d-section">
       <div class="s13d-h">
         <span class="s13d-title">ลูกค้าที่เลือก</span>
-        <span class="s13d-count">{{ audience_total }} / {{ audience_total }}</span>
+        <span class="s13d-count"
+              x-text="Object.values(selected).filter(Boolean).length + ' / {{ audience_total }}'"></span>
       </div>
-      {# v1: read-only audience preview. Per-customer deselect ships in v2. #}
       <div class="s13d-customers">
         {% for c in audience %}
-          <div class="customer-row">
-            <div class="cr-check on">✓</div>
+          <div class="customer-row"
+               :class="{ off: !selected['{{ c.id }}'] }"
+               @click="selected['{{ c.id }}'] = !selected['{{ c.id }}']">
+            <div class="cr-check"
+                 :class="{ on: selected['{{ c.id }}'] }"
+                 x-text="selected['{{ c.id }}'] ? '✓' : '○'"></div>
             <div class="cr-avatar">{{ (c.display_name[0] if c.display_name else '?')|upper }}</div>
             <div class="cr-info">
               <div class="cr-name">{{ c.display_name or 'ลูกค้า' }}</div>
@@ -42,7 +52,7 @@
           </div>
         {% endfor %}
         {% if audience_total > audience|length %}
-          <div class="customer-more">+ อีก {{ audience_total - audience|length }} คน · แตะดูทั้งหมด</div>
+          <div class="customer-more">+ อีก {{ audience_total - audience|length }} คน · ส่งเลย / แก้ใน v2</div>
         {% endif %}
       </div>
     </div>
@@ -75,6 +85,9 @@
             const fd = new FormData();
             fd.append('kind', '{{ suggestion.kind }}');
             fd.append('message', message);
+            for (const [cid, on] of Object.entries(selected)) {
+              if (on) fd.append('customer_ids', cid);
+            }
             const r = await fetch('/shop/deereach/send', { method: 'POST', body: fd, redirect: 'manual' });
             if (r.type === 'opaqueredirect' || r.ok) {
               window.location.href = r.url || ('/shop/deereach/sent?campaign_id=__redirect__');
@@ -85,9 +98,10 @@
           ">
       <input type="hidden" name="kind" value="{{ suggestion.kind }}">
       <button class="s13d-send" type="submit"
-              :disabled="!message.trim()">
-        <span>ส่งให้ {{ audience_total }} คน</span>
-        <span class="s13d-cost">{{ suggestion.cost_credit }} เครดิต</span>
+              :disabled="!message.trim() || Object.values(selected).filter(Boolean).length === 0">
+        <span x-text="'ส่งให้ ' + Object.values(selected).filter(Boolean).length + ' คน'"></span>
+        <span class="s13d-cost"
+              x-text="Object.values(selected).filter(Boolean).length + ' เครดิต'"></span>
       </button>
     </form>
 

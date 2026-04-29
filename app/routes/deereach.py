@@ -1,6 +1,6 @@
 """DeeReach — S13 list / detail editor / sent confirmation + send action."""
 
-from typing import Optional
+from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
@@ -74,13 +74,17 @@ async def deereach_detail(
 
     audience = await _audience_for(db, shop, kind)
     message = await render_message(kind, shop)
+    # Pass the full audience so the editor's checkboxes cover everyone —
+    # the deselect UI can't work on a truncated list. Capped at 200 as a
+    # sanity bound; campaigns with >200 recipients don't fit the per-row
+    # UX anyway and would want a v2 segment-builder.
     return templates.TemplateResponse(
         request=request,
         name="shop/deereach_detail.html",
         context={
             "shop": shop,
             "suggestion": suggestion,
-            "audience": audience[:50],  # preview cap
+            "audience": audience[:200],
             "audience_total": len(audience),
             "message": message,
         },
@@ -91,17 +95,39 @@ async def deereach_detail(
 async def send(
     kind: str = Form(...),
     message: Optional[str] = Form(None),
+    customer_ids: Optional[List[str]] = Form(None),
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(require_permission("can_deereach")),
     db: AsyncSession = Depends(get_session),
 ):
     """Fire the send pipeline. On success → S13.sent confirmation. On any
-    DeeReachSendError (no audience, insufficient credits, blank message, …)
-    → 400 with the informative Thai detail; the editor displays it as a
-    flash. `message` is optional — pass it from the editor when the owner
-    edited the body, omit to fall back to the per-kind default copy."""
+    DeeReachSendError (no audience, blank message, no recipients selected,
+    insufficient credits, …) → 400 with the informative Thai detail; the
+    editor displays it as a flash.
+
+    Optional form fields:
+      - `message`: hand-edited body. Omit to use the per-kind default.
+      - `customer_ids[]`: subset of the kind's eligible audience. Omit
+        to send to everyone the audience query returns. Empty list (no
+        checkboxes ticked) is treated the same as "no recipients" by
+        the service.
+    """
+    selected_set: Optional[set[UUID]] = None
+    if customer_ids is not None:
+        selected_set = set()
+        for cid in customer_ids:
+            try:
+                selected_set.add(UUID(cid))
+            except ValueError:
+                # Ignore malformed ids; service-side check still rejects an
+                # empty selection so the user gets the right Thai detail.
+                continue
     try:
-        campaign = await send_campaign(db, shop, kind, message_override=message)
+        campaign = await send_campaign(
+            db, shop, kind,
+            message_override=message,
+            selected_customer_ids=selected_set,
+        )
     except DeeReachSendError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
     return RedirectResponse(

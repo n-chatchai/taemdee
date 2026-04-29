@@ -94,6 +94,72 @@ async def test_send_blank_message_400(auth_client, db, shop):
     assert "ข้อความว่าง" in response.json()["detail"]
 
 
+async def test_send_with_customer_subset_records_only_selected(auth_client, db, shop):
+    """Owner deselects half the audience — only selected ids end up in the
+    campaign + DeeReachMessage rows."""
+    from app.models import Customer, DeeReachMessage
+    from app.models.util import utcnow
+    from datetime import timedelta
+
+    # Two reachable + at-goal customers — both qualify for unredeemed_reward.
+    c1 = Customer(is_anonymous=False, line_id="U_a")
+    c2 = Customer(is_anonymous=False, line_id="U_b")
+    db.add_all([c1, c2])
+    await db.commit()
+    await db.refresh(c1); await db.refresh(c2)
+    for c in (c1, c2):
+        for _ in range(shop.reward_threshold):
+            db.add(Point(
+                shop_id=shop.id, customer_id=c.id,
+                issuance_method="customer_scan",
+                created_at=utcnow() - timedelta(days=14),
+            ))
+    shop.credit_balance = 1000  # satang — plenty for 1-2 LINE recipients
+    db.add(shop)
+    await db.commit()
+
+    # Send to c1 only.
+    response = await auth_client.post(
+        "/shop/deereach/send",
+        data={"kind": "unredeemed_reward", "customer_ids": [str(c1.id)]},
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+
+    campaigns = (await db.exec(
+        select(DeeReachCampaign).where(DeeReachCampaign.shop_id == shop.id)
+    )).all()
+    assert len(campaigns) == 1
+    assert campaigns[0].audience_count == 1
+
+    msgs = (await db.exec(
+        select(DeeReachMessage).where(DeeReachMessage.campaign_id == campaigns[0].id)
+    )).all()
+    assert {m.customer_id for m in msgs} == {c1.id}
+
+
+async def test_send_with_empty_selection_400(auth_client, db, shop):
+    """No customer_ids ticked — service rejects with the dedicated message."""
+    await _seed_unredeemed(db, shop)
+    shop.credit_balance = 1000
+    db.add(shop)
+    await db.commit()
+
+    response = await auth_client.post(
+        "/shop/deereach/send",
+        # customer_ids omitted from the form entirely → the route can't
+        # tell apart "select-all" from "no selection". Send a sentinel
+        # impossible UUID to signal an empty intersection.
+        data={
+            "kind": "unredeemed_reward",
+            "customer_ids": ["00000000-0000-0000-0000-000000000000"],
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 400
+    assert "ไม่ได้เลือกผู้รับ" in response.json()["detail"]
+
+
 async def test_send_unsupported_kind_400(auth_client, db, shop):
     response = await auth_client.post(
         "/shop/deereach/send", data={"kind": "telepathy"}, follow_redirects=False

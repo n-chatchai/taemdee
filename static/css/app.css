@@ -8228,8 +8228,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   gap: 10px;
   padding: 8px 6px;
   border-bottom: 1px solid var(--line);
+  cursor: pointer;
+  transition: opacity 0.15s ease;
 }
 .customer-row:last-of-type { border-bottom: none; }
+.customer-row.off { opacity: 0.45; }
+.customer-row.off .cr-name { text-decoration: line-through; }
 .customer-row .cr-check {
   width: 20px;
   height: 20px;
