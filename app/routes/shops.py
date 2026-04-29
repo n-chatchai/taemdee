@@ -339,6 +339,7 @@ async def onboard_identity_get(
             "next_gen": gen + 1,
             "picked_id": picked_id,
             "custom_text": custom_text or "",
+            "logos_partial_url": "/shop/onboard/identity/logos_partial",
         },
     )
 
@@ -346,10 +347,11 @@ async def onboard_identity_get(
 async def onboard_identity_logos_partial(
     request: Request,
     name: str,
+    gen: int = 0,
     shop: Shop = Depends(get_current_shop),
 ):
     """HTMX endpoint to re-generate logos on the fly as the user types the shop name."""
-    options = generate_logos(name, seed=0)
+    options = generate_logos(name, seed=gen)
     
     # We only show generated options here. If they had a saved pick, 
     # it gets overwritten if they change the name and pick a new one.
@@ -364,7 +366,8 @@ async def onboard_identity_logos_partial(
             "saved_pick": None,
             "picked_id": options[0]["id"] if options else None,
             "custom_text": "",
-            "next_gen": 1,
+            "next_gen": gen + 1,
+            "logos_partial_url": "/shop/onboard/identity/logos_partial",
         },
     )
 
@@ -917,6 +920,7 @@ async def settings_identity_get(
             "next_gen": gen + 1,
             "picked_id": picked_id,
             "custom_text": custom_text or "",
+            "logos_partial_url": "/shop/settings/identity/logos_partial",
         },
     )
 
@@ -924,10 +928,11 @@ async def settings_identity_get(
 async def settings_identity_logos_partial(
     request: Request,
     name: str,
+    gen: int = 0,
     shop: Shop = Depends(get_current_shop),
 ):
     """HTMX endpoint to re-generate logos on the fly."""
-    options = generate_logos(name, seed=0)
+    options = generate_logos(name, seed=gen)
     return templates.TemplateResponse(
         request=request,
         name="_partials/logo_picker.html",
@@ -937,8 +942,8 @@ async def settings_identity_logos_partial(
             "options": options,
             "saved_pick": None,
             "picked_id": options[0]["id"] if options else None,
-            "custom_text": "",
-            "next_gen": 1,
+            "next_gen": gen + 1,
+            "logos_partial_url": "/shop/settings/identity/logos_partial",
         },
     )
 

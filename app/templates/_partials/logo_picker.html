@@ -27,6 +27,10 @@
 
   <div class="s2-helper">
     AI สร้างจากชื่อ <em>"{{ shop_name or shop.name }}"</em> · แตะที่เลือกเพื่อแก้ข้อความ<br>
-    <a href="?gen={{ next_gen }}" class="reroll">↻ สร้างใหม่อีก 3 แบบ</a>
+    <a href="#" class="reroll"
+       hx-get="{{ logos_partial_url }}?gen={{ next_gen }}"
+       hx-include="[name='name']"
+       hx-target="#logo-picker-container"
+       hx-swap="outerHTML">↻ สร้างใหม่อีก 3 แบบ</a>
   </div>
 </div>
