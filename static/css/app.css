@@ -8381,21 +8381,23 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    <em>N</em> is the per-message Cr cost, monospace. */
 .customer-row .cr-channels {
   display: flex;
-  flex-wrap: wrap;
   gap: 4px;
   margin-top: 4px;
 }
 .customer-row .cr-channels .ch-badge {
+  flex: 1 1 0;
   display: inline-flex;
   align-items: center;
+  justify-content: center;
   gap: 4px;
-  padding: 2px 7px;
+  padding: 2px 6px;
   border-radius: 999px;
   font-family: 'Prompt', sans-serif;
   font-size: 10px;
   font-weight: 600;
   line-height: 1.4;
   border: 1px solid transparent;
+  white-space: nowrap;
 }
 .customer-row .cr-channels .ch-badge em {
   font-family: 'Host Grotesk', sans-serif;
