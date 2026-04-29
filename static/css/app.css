@@ -2934,82 +2934,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    C7 — My Cards (logged-in customer's home)
    ========================================================== */
 
-.c7-greet {
-  padding: 48px 20px 12px;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-  position: sticky;
-  top: 0;
-  background: var(--bg);
-  z-index: 5;
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-}
-.c7-greet .hi {
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.025em;
-}
-.c7-greet .hi .smile-inline {
-  display: inline-block;
-  width: 16px;
-  height: 9px;
-  color: var(--accent);
-  margin-left: 4px;
-  vertical-align: 1px;
-}
-.c7-greet .hi .day {
-  display: block;
-  font-style: italic;
-  font-weight: 400;
-  font-size: 14px;
-  color: var(--ink-soft);
-  margin-top: 1px;
-}
-.c7-greet .c7-actions {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-}
-/* C7 top-right icon buttons — left=camera (open in-app QR scanner for shop
-   QRs), right=QR (show /my-id for shops to scan). Both share the same dark
-   pill chrome — flat per the latest design drop (no accent drop-shadow). */
-.c7-greet .c7-icon-btn {
-  position: relative;
-  width: 38px;
-  height: 38px;
-  background: var(--ink);
-  color: var(--butter);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-  cursor: pointer;
-  text-decoration: none;
-}
-.c7-greet .c7-icon-btn svg { width: 18px; height: 18px; }
-.c7-greet .c7-icon-btn .c7-icon-badge {
-  position: absolute;
-  top: -4px;
-  right: -4px;
-  min-width: 18px;
-  height: 18px;
-  padding: 0 5px;
-  background: var(--accent);
-  color: #fff;
-  border: 1.5px solid var(--bg);
-  border-radius: 999px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 10px;
-  letter-spacing: -0.02em;
-  line-height: 1;
-}
+/* Page head is now a standardized system component above */
 
 /* Customer inbox list — DeeReach messages that landed in the inbox channel.
    Card-style rows; unread rows get a soft accent stripe + bolder text. */
@@ -3363,24 +3288,26 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c7-stats .ss-meta {
   text-align: right;
+  font-family: 'Prompt', sans-serif;
   line-height: 1.3;
 }
 .c7-stats .ss-meta .label {
   font-style: italic;
-  font-size: 14px;
+  font-size: 13.5px;
   color: var(--ink-softer);
   margin-bottom: 2px;
 }
 .c7-stats .ss-meta .total {
-  font-size: 15px;
+  font-size: 14px;
   font-weight: 600;
   letter-spacing: -0.005em;
 }
 .c7-stats .ss-bottom {
   margin-top: 14px;
   padding-top: 14px;
-  border-top: 1px dashed rgba(255, 255, 255, 0.2);
-  font-size: 14px;
+  border-top: 1px solid rgba(255, 255, 255, 0.12);
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
   color: var(--bg);
   display: flex;
   align-items: center;
@@ -3389,21 +3316,23 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c7-stats .ss-bottom strong { color: var(--accent); font-weight: 700; }
 .c7-stats .ss-bottom .ssb-logo {
-  width: 36px;
-  height: 36px;
-  background: var(--bg);
-  color: var(--ink);
-  border-radius: 12px;
+  width: 26px;
+  height: 26px;
+  background: rgba(255,255,255,0.1);
+  color: #fff;
+  border-radius: 7px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
-  font-size: 16px;
-  font-weight: 700;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  letter-spacing: -0.025em;
 }
-.c7-stats .ss-bottom .ssb-logo .dot { color: var(--accent); }
-.c7-stats .ss-bottom .ssb-text { line-height: 1.35; }
-.c7-stats .ss-bottom .ssb-shop { font-weight: 700; }
+.c7-stats .ss-bottom .ssb-logo .dot { color: var(--butter); }
+.c7-stats .ss-bottom .ssb-text { flex: 1; min-width: 0; line-height: 1.4; }
+.c7-stats .ss-bottom .ssb-shop { color: #fff; font-weight: 600; }
 
 .c7-list-head {
   padding: 22px 20px 8px;
@@ -3412,9 +3341,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
 }
 .c7-list-head .label {
+  font-family: 'Prompt', sans-serif;
   font-style: italic;
   font-weight: 500;
-  font-size: 16px;
+  font-size: 14px;
   color: var(--ink);
   display: inline-flex;
   align-items: center;
@@ -3426,6 +3356,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--accent);
 }
 .c7-list-head .sort {
+  font-family: 'Prompt', sans-serif;
   font-size: 12px;
   font-weight: 500;
   color: var(--ink-soft);
@@ -7193,9 +7124,58 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
     inset 0 1px 0 rgba(255, 255, 255, 0.1),
     0 2px 8px -2px rgba(17, 17, 17, 0.3);
 }
-.s3-glass-nav .gn-tab.active .gn-icon svg {
-  fill: rgba(255, 217, 82, 0.15);
-}
+.s3-glass-nav .gn-tab.active .gn-icon svg   @keyframes c-gn-badge-pulse {
+    0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
+    70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
+    100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
+  }
+
+  /* ───────── Page head · top-level system page header (Inbox, C7) ───────── */
+  .page-head {
+    padding: 14px 22px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .page-head .ph-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .page-head h1 {
+    font-family: 'Prompt', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.25;
+    margin: 0;
+  }
+  .page-head .ph-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+  .page-head .ph-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .page-head .ph-icon-btn {
+    width: 38px;
+    height: 38px;
+    background: rgba(17,17,17,0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .page-head .ph-icon-btn svg { width: 18px; height: 18px; }
+  .page-head .ph-icon-btn.active { background: var(--ink); color: #fff; }
 .s3-glass-nav .gn-tab:active {
   transform: scale(0.96);
 }

@@ -14,24 +14,19 @@
   <div class="td has-c-dock">
     <div class="topbar"><span></span><span></span></div>
 
-    <div class="c7-greet">
-      <div class="hi">
-        สวัสดี{% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}พี่{{ customer.display_name }}{% else %}พี่{% endif %}
-        <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        <span class="day">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</span>
+    <div class="page-head">
+      <div class="ph-text">
+        <h1>สวัสดี{% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}พี่{{ customer.display_name }}{% else %}พี่{% endif %}</h1>
+        <div class="ph-sub">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</div>
       </div>
-      <div class="c7-actions">
-        <a href="/scan-shop" class="c7-icon-btn" title="สแกน QR ของร้าน" aria-label="สแกน QR ของร้าน">
+      <div class="ph-actions">
+        <a href="/scan-shop" class="ph-icon-btn" title="สแกน QR ของร้าน" aria-label="สแกน QR ของร้าน">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
             <circle cx="12" cy="13" r="4"/>
           </svg>
         </a>
-        <a href="/my-id" class="c7-icon-btn" title="โชว์ QR ที่ร้าน" aria-label="โชว์ QR">
+        <a href="/my-id" class="ph-icon-btn" title="โชว์ QR ที่ร้าน" aria-label="โชว์ QR">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
             <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -39,19 +34,6 @@
             <rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </a>
-        <a href="/my-inbox" class="c7-icon-btn" title="กล่องข้อความ" aria-label="กล่องข้อความ">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M22 12h-6l-2 3h-4l-2-3H2"/>
-            <path d="M5.45 5.11L2 12v6a2 2 0 002 2h16a2 2 0 002-2v-6l-3.45-6.89A2 2 0 0016.76 4H7.24a2 2 0 00-1.79 1.11z"/>
-          </svg>
-          {% if inbox_unread %}<span class="c7-icon-badge">{{ inbox_unread if inbox_unread < 10 else '9+' }}</span>{% endif %}
-        </a>
-        {# Claimed customers see their initial → /card/account. Guests skip
-           the avatar — the camera + QR buttons above are their only chrome. #}
-        {% if not is_guest %}
-          {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
-          <a href="/card/account" class="avatar" title="บัญชีของพี่">{{ initial }}</a>
-        {% endif %}
       </div>
     </div>
 
@@ -68,10 +50,13 @@
           {% set logo = shop_logo(closest_card.shop) %}
           <a class="ss-bottom" href="/card/{{ closest_card.shop.id }}">
             <div class="ssb-logo">
-              {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+              {% if logo %}
+                {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+                {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+                {% endif %}
               {% else %}{{ closest_card.shop.name[0]|upper }}{% endif %}
             </div>
-            <div class="ssb-text">
+            <div class="ss-bottom-text">
               <span class="ssb-shop">{{ closest_card.shop.name }}</span> ·
               อีก <strong>{{ closest }} ครั้ง</strong> ได้{{ closest_card.shop.reward_description }}
             </div>
@@ -90,14 +75,22 @@
 
       {% for c in cards %}
         {% set ready = c.point_count >= c.shop.reward_threshold %}
+        {% set logo = shop_logo(c.shop) %}
         <a href="/card/{{ c.shop.id }}" class="c7-card {% if ready %}featured{% endif %}">
           {% if ready %}
             <div class="ready-tag"><span class="dot"></span>ครบแล้ว!</div>
           {% endif %}
           {% if c.unread %}<span class="c7-card-unread" aria-label="ข้อความใหม่"></span>{% endif %}
-          <div class="logo">{{ c.shop.name[0]|upper }}</div>
+          
+          <div class="logo">
+            {% if logo %}
+              {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+              {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+              {% endif %}
+            {% else %}{{ c.shop.name[0]|upper }}{% endif %}
+          </div>
+
           <div class="info">
-            {% set logo = shop_logo(c.shop) %}
             <div class="name">
               {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
               {% else %}{{ c.shop.name }}<span class="dot">.</span>{% endif %}
