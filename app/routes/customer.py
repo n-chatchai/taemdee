@@ -563,9 +563,18 @@ async def my_cards(
     cards.sort(key=lambda c: c["ratio"], reverse=True)
 
     total_stamps = sum(c["point_count"] for c in cards)
-    closest = max(
-        ((c["shop"].reward_threshold - c["point_count"]) for c in cards if c["point_count"] < c["shop"].reward_threshold),
+    # Closest = the card with the smallest gap-to-reward (was max = farthest,
+    # which read backwards in the C7 stats line). Pass the whole card
+    # entry through so the template can render the shop logo + reward
+    # description alongside the gap count.
+    closest_card = min(
+        (c for c in cards if c["point_count"] < c["shop"].reward_threshold),
+        key=lambda c: c["shop"].reward_threshold - c["point_count"],
         default=None,
+    )
+    closest = (
+        closest_card["shop"].reward_threshold - closest_card["point_count"]
+        if closest_card else None
     )
 
     from app.models.util import BKK
@@ -590,6 +599,7 @@ async def my_cards(
             "cards": cards,
             "total_stamps": total_stamps,
             "closest": closest,
+            "closest_card": closest_card,
             "weekday_th": weekday_th,
             "inbox_unread": inbox_unread,
         },

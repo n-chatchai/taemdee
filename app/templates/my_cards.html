@@ -64,10 +64,18 @@
             <div class="total">จาก {{ cards|length }} ร้าน</div>
           </div>
         </div>
-        {% if closest is not none %}
-        <div class="ss-bottom">
-          อีก <strong>{{ closest }} ครั้ง</strong> ได้รางวัลแล้วครับพี่ ✦
-        </div>
+        {% if closest_card %}
+          {% set logo = shop_logo(closest_card.shop) %}
+          <a class="ss-bottom" href="/card/{{ closest_card.shop.id }}">
+            <div class="ssb-logo">
+              {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+              {% else %}{{ closest_card.shop.name[0]|upper }}{% endif %}
+            </div>
+            <div class="ssb-text">
+              <span class="ssb-shop">{{ closest_card.shop.name }}</span> ·
+              อีก <strong>{{ closest }} ครั้ง</strong> ได้{{ closest_card.shop.reward_description }}
+            </div>
+          </a>
         {% endif %}
       </div>
 

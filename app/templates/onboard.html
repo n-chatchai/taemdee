@@ -56,19 +56,20 @@
         </div>
       </div>
 
-      <div class="ob-greet">
-        สวัสดีครับ ผม<span class="ob-name">น้องแต้ม</span><br>
-        เป็นผู้ช่วยของ<strong>{{ shop.name }}</strong> ✦<br>
-        ผมจะช่วยเก็บแต้มให้นะครับ
+      <div class="ob-bubble">
+        สวัสดีครับ ผมชื่อ<span class="ob-name">น้องแต้ม</span><br>
+        <strong>{{ shop.name }}</strong><br>
+        ให้ผมมาดูแลแต้มของพี่ครับ
       </div>
 
-      <div class="ob-q">ผมเรียกพี่ว่าอะไรดีครับ?</div>
+      <div class="ob-q">ให้ผมเรียกพี่ว่าอะไรดีครับ?</div>
       <div class="ob-input-wrap">
         <input type="text" class="ob-input"
                placeholder="ลูกค้า (ค่าเริ่มต้น)" maxlength="40"
                x-model="name" autocomplete="given-name" autofocus
                @keydown.enter.prevent="submitName()" />
       </div>
+      <div class="ob-skip-hint">ข้ามได้ — ผมจะเรียกว่า "ลูกค้า"</div>
       <div x-show="error" x-cloak style="color:var(--accent); font-size:13px; margin-top:8px;" x-text="error"></div>
     </div>
     <div class="ob-bottom" x-show="step === 1" x-transition>

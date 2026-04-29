@@ -8,9 +8,10 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {% include "_partials/pwa_head.html" %}
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td">
+  <div class="td" x-data="{ armed: false }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
@@ -101,6 +102,16 @@
 
     <form action="/card/account/logout" method="POST" style="margin:0;">
       <button type="submit" class="s10-logout">ออกจากระบบ</button>
+    </form>
+
+    {# PDPA delete — two-tap arm/confirm pattern (no browser alert/confirm
+       per memory). First tap flips Alpine state, second tap submits. #}
+    <form action="/card/account/delete" method="POST" style="margin:0;"
+          @submit.prevent="armed ? $el.submit() : (armed = true)">
+      <button type="submit" class="c6-delete-account" :class="{ armed }">
+        <span x-show="!armed">ลบบัญชี · แต้มและข้อมูลทั้งหมดจะถูกลบ</span>
+        <span x-show="armed" x-cloak>แตะอีกครั้งเพื่อยืนยันลบบัญชี</span>
+      </button>
     </form>
 
     <div class="c6-version">
