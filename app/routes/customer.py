@@ -28,6 +28,16 @@ from app.services.soft_wall import claim_by_phone
 router = APIRouter()
 
 
+async def _inbox_unread_count(db: AsyncSession, customer_id: uuid.UUID) -> int:
+    """Total unread Inbox rows for this customer — used to drive the
+    `ข้อความ` tab badge on the customer dock. Cheap single-row count."""
+    return (await db.exec(
+        select(func.count())
+        .select_from(Inbox)
+        .where(Inbox.customer_id == customer_id, Inbox.read_at.is_(None))
+    )).one()
+
+
 @router.get("/customer/login", response_class=HTMLResponse)
 async def customer_login_page(request: Request):
     """Standalone customer login page based on the shop's S1 design."""
@@ -135,6 +145,7 @@ async def account_menu(
             "cards_count": cards_count,
             "ready_count": ready_count,
             "redemption_count": redemption_count,
+            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
         },
     )
 
@@ -167,6 +178,7 @@ async def card_account_notifications(
             "customer": customer,
             "preferred_channel": customer.preferred_channel,
             "muted": muted,
+            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
         },
     )
     if was_created:
@@ -278,6 +290,7 @@ async def my_id(
             "customer": customer,
             "qr_svg": qr_svg,
             "identity_url": identity_url,
+            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
         },
     )
     if was_created:
@@ -372,6 +385,7 @@ async def view_card(
             # contextual "this is your first one here" note, not a substitute
             # for the confetti moment every stamp deserves.
             "just_stamped": bool(stamped),
+            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
         },
     )
     if was_created:
@@ -482,6 +496,7 @@ async def shop_story(
             "shop": shop,
             "customer": customer,
             "age_label": age_label,
+            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
         },
     )
     if was_created:
@@ -658,10 +673,15 @@ async def reward_claimed(
             "ไม่พบรายการรับรางวัลนี้ — อาจถูกยกเลิกหรือลิงก์เก่าไปแล้ว",
         )
 
+    customer, _ = await find_or_create_customer(customer_cookie, db)
     return templates.TemplateResponse(
         request=request,
         name="card_claimed.html",
-        context={"shop": shop, "redemption": redemption},
+        context={
+            "shop": shop,
+            "redemption": redemption,
+            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+        },
     )
 
 
@@ -928,6 +948,7 @@ async def my_inbox(
             "items": items,
             "weekday_th": weekday_th,
             "unread_count": unread_count,
+            "nav_inbox_badge": unread_count > 0,
         },
     )
     if was_created:
@@ -993,6 +1014,9 @@ async def my_inbox_detail(
             "shop": shop,
             "row": row,
             "is_muted": is_muted,
+            # Note: this row was just flipped to read above, so the count
+            # already excludes it. Badge reflects the next unread, if any.
+            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
         },
     )
 

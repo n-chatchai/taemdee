@@ -282,6 +282,36 @@ async def test_card_shop_head_links_to_story(client, shop):
     assert f'href="/story/{shop.id}"' in body
 
 
+async def test_dock_inbox_badge_lights_up_on_every_dock_page_when_unread(client, db, shop):
+    """The ข้อความ tab on the customer dock must show the gn-badge dot on
+    every page that mounts the dock — not only on /my-cards. Customer
+    needs to see "you have a message" no matter where in the app they are."""
+    from app.models import Customer, Inbox
+    customer = Customer(is_anonymous=False, display_name="พี่สมศรี", phone="0855555555")
+    db.add(customer)
+    await db.commit()
+    await db.refresh(customer)
+    db.add(Inbox(customer_id=customer.id, shop_id=shop.id, body="ข้อความใหม่"))
+    await db.commit()
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(customer.id))
+
+    # Each of these pages mounts c_dock — badge should appear on every one
+    for url in [
+        "/my-cards",
+        f"/card/{shop.id}",
+        "/my-inbox",
+        f"/story/{shop.id}",
+        "/card/account",
+        "/card/account/notifications",
+        "/my-id",
+    ]:
+        body = (await client.get(url)).text
+        assert "gn-badge" in body, f"missing dock badge on {url}"
+
+
 async def test_customer_dock_renders_on_main_pages(client, shop):
     """Customer 4-tab dock (c-glass-nav) is mounted on every main customer
     page per design. Onboarding screens (C2/C3) don't have it."""
