@@ -100,6 +100,19 @@ async def test_my_inbox_detail_hides_mute_link_when_already_muted(client, db, sh
     assert "ปิดเสียงร้านนี้แล้ว" in body
 
 
+async def test_my_inbox_includes_push_prompt_partial(client):
+    """Push.prompt partial is mounted on customer pages that include
+    footer_mark — JS gates the show, but the markup must exist server-side
+    so it can un-hide on first PWA open."""
+    body = (await client.get("/my-inbox")).text
+    assert 'id="push-prompt"' in body
+    # Must start hidden (server-side default), JS un-hides only when
+    # PWA + permission default + cooldown clear.
+    assert 'display:none' in body or 'display: none' in body
+    # Asset reference for the JS that does the gating.
+    assert "/static/js/push-prompt.js" in body
+
+
 async def test_my_inbox_list_rows_link_to_detail(client, db, shop):
     """Each row in the list is now an <a> linking to /my-inbox/{id}."""
     customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
