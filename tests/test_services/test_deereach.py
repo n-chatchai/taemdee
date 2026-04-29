@@ -208,6 +208,48 @@ async def test_send_campaign_insufficient_credits_raises(db, shop):
         await send_campaign(db, shop, "unredeemed_reward")
 
 
+async def test_manual_audience_bypasses_rate_limit(db, shop):
+    """Auto-fired kinds drop customers in the 14-day cooldown; manual
+    (owner-composed) campaigns do not — the owner is making an explicit
+    human decision per recipient via the S13.detail editor."""
+    from datetime import timedelta
+    from app.models import DeeReachCampaign, DeeReachMessage
+    from app.services.deereach import _audience_for, find_all_reachable_customers
+
+    forgot = await _customer(db, line_id="U_forgot")
+    for _ in range(10):
+        await _stamp(db, shop, forgot, days_ago=14)
+
+    # Seed a recent message so unredeemed_reward would suppress this one.
+    campaign = DeeReachCampaign(
+        shop_id=shop.id, kind="unredeemed_reward",
+        audience_count=1, status="completed",
+        sent_at=utcnow() - timedelta(days=3),
+    )
+    db.add(campaign)
+    await db.commit()
+    await db.refresh(campaign)
+    db.add(DeeReachMessage(
+        campaign_id=campaign.id, customer_id=forgot.id,
+        channel="line", cost_satang=100, status="delivered",
+        created_at=utcnow() - timedelta(days=3),
+    ))
+    await db.commit()
+
+    # Auto kind respects the cooldown.
+    auto_audience = await _audience_for(db, shop, "unredeemed_reward")
+    assert forgot.id not in {c.id for c in auto_audience}
+
+    # Manual kind does not.
+    manual_audience = await _audience_for(db, shop, "manual")
+    assert forgot.id in {c.id for c in manual_audience}
+
+    # find_all_reachable_customers itself doesn't filter — _audience_for
+    # is the layer where the policy lives.
+    raw = await find_all_reachable_customers(db, shop)
+    assert forgot.id in {c.id for c in raw}
+
+
 async def test_send_campaign_uses_message_override(db, shop):
     """Owner can edit the body in S13.detail and that text is what gets
     saved on the campaign + sent to recipients."""

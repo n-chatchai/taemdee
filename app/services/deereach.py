@@ -433,7 +433,11 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
     elif kind == "new_customer":
         candidates = await find_new_customers(db, shop)
     elif kind == "manual":
-        candidates = await find_all_reachable_customers(db, shop)
+        # Manual campaigns are owner-composed (explicit human intent +
+        # per-recipient toggle in the editor) so they bypass the
+        # 14-day platform rate-limit. Auto-fired suggestion kinds keep
+        # the limit so the system itself can't spam a customer.
+        return await find_all_reachable_customers(db, shop)
     else:
         raise DeeReachSendError(f"Unsupported kind: {kind}")
 
