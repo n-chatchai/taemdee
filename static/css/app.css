@@ -9027,3 +9027,24 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c7-card.featured .c7-card-unread {
   border-color: var(--butter);
 }
+
+/* Inbox row · per-shop mute link. Sits to the right of the time row,
+   small italic to avoid competing with the message body. */
+.inbox-row .ib-mute {
+  display: inline-block;
+  margin-left: 10px;
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-size: 11px;
+  color: var(--ink-softer);
+  text-decoration: underline;
+  text-decoration-thickness: 1px;
+  text-underline-offset: 2px;
+  cursor: pointer;
+}
+.inbox-row .ib-mute:hover { color: var(--ink-soft); }
+.inbox-row .ib-mute.muted-done {
+  color: var(--mint-ink);
+  text-decoration: none;
+  cursor: default;
+}

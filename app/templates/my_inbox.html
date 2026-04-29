@@ -45,6 +45,11 @@
             </div>
             <div class="ib-body">{{ it.row.body }}</div>
             <div class="ib-time">{{ it.row.created_at|bkk_feed_time }}</div>
+            {% if it.shop and not it.muted %}
+              <a class="ib-mute" href="#"
+                 data-mute-shop="{{ it.shop.id }}"
+                 onclick="window.muteShopFromInbox(event, this)">ปิดเสียงร้านนี้</a>
+            {% endif %}
           </div>
         {% endfor %}
       </div>
@@ -64,6 +69,27 @@
       if (!id || !rowEl.classList.contains('unread')) return;
       rowEl.classList.remove('unread');
       try { await fetch(`/my-inbox/${id}/read`, { method: 'POST' }); } catch (_) {}
+    };
+
+    window.muteShopFromInbox = async function(ev, linkEl) {
+      ev.preventDefault();
+      ev.stopPropagation();
+      const shopId = linkEl.dataset.muteShop;
+      if (!shopId) return;
+      // Hide every "ปิดเสียงร้านนี้" link for this same shop in the list,
+      // then swap them to a passive confirmation. Persists nothing if the
+      // server call fails — the customer can retry.
+      const links = document.querySelectorAll(`a[data-mute-shop="${shopId}"]`);
+      try {
+        const r = await fetch(`/card/account/mute/${shopId}/mute`, { method: 'POST' });
+        if (!r.ok) throw new Error('mute failed: ' + r.status);
+        links.forEach((l) => {
+          l.textContent = '✓ ปิดเสียงแล้ว';
+          l.classList.add('muted-done');
+          l.removeAttribute('href');
+          l.onclick = null;
+        });
+      } catch (_) { /* leave the link in place so user can retry */ }
     };
   </script>
   <script src="/static/js/push-subscribe.js?v={{ asset_version }}"></script>

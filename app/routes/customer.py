@@ -162,6 +162,31 @@ async def card_account_notifications_post(
     )
 
 
+@router.post("/card/account/mute/{shop_id}/mute")
+async def card_account_mute(
+    shop_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Mute DeeReach from a specific shop — wired from the inbox row's
+    'ปิดเสียงร้านนี้' link so customers can opt out of a chatty shop
+    without going through the notifications page. Idempotent: a re-mute
+    does nothing. Returns 204 so the JS handler can fade the row in
+    place without a navigation."""
+    from app.models import CustomerShopMute
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    existing = (await db.exec(
+        select(CustomerShopMute).where(
+            CustomerShopMute.customer_id == customer.id,
+            CustomerShopMute.shop_id == shop_id,
+        )
+    )).first()
+    if existing is None:
+        db.add(CustomerShopMute(customer_id=customer.id, shop_id=shop_id))
+        await db.commit()
+    return JSONResponse(status_code=204, content=None)
+
+
 @router.post("/card/account/mute/{shop_id}/unmute")
 async def card_account_unmute(
     shop_id: uuid.UUID,
@@ -799,7 +824,21 @@ async def my_inbox(
         shop_rows = (await db.exec(select(Shop).where(Shop.id.in_(shop_ids)))).all()
         shops_by_id = {s.id: s for s in shop_rows}
 
-    items = [{"row": r, "shop": shops_by_id.get(r.shop_id)} for r in rows]
+    # Existing mutes — used to hide the per-row "ปิดเสียง" link for shops
+    # the customer has already opted out of (the link would be a no-op).
+    from app.models import CustomerShopMute
+    muted_shop_ids = set((await db.exec(
+        select(CustomerShopMute.shop_id).where(CustomerShopMute.customer_id == customer.id)
+    )).all())
+
+    items = [
+        {
+            "row": r,
+            "shop": shops_by_id.get(r.shop_id),
+            "muted": r.shop_id in muted_shop_ids,
+        }
+        for r in rows
+    ]
     response = templates.TemplateResponse(
         request=request,
         name="my_inbox.html",

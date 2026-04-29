@@ -209,6 +209,58 @@ async def test_notifications_channel_save_clears_for_auto(client, db):
     assert all(c.preferred_channel is None for c in rows)
 
 
+async def test_my_inbox_renders_mute_link_only_for_unmuted_shops(client, db, shop):
+    """Inbox row carries a per-shop mute link; muted shops omit the link
+    so the customer doesn't see a no-op action."""
+    from app.models import CustomerShopMute, Shop as ShopModel
+    customer, [_row] = await _make_customer_with_inbox(db, shop, count=1)
+    other_shop = ShopModel(name="Other", reward_threshold=10)
+    db.add(other_shop)
+    await db.commit()
+    await db.refresh(other_shop)
+    db.add(Inbox(customer_id=customer.id, shop_id=other_shop.id, body="from other"))
+    db.add(CustomerShopMute(customer_id=customer.id, shop_id=other_shop.id))
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get("/my-inbox")).text
+
+    # Active shop → mute link present, exact data-mute-shop attribute.
+    assert f'data-mute-shop="{shop.id}"' in body
+    # Already-muted shop → no mute link rendered for that row.
+    assert f'data-mute-shop="{other_shop.id}"' not in body
+
+
+async def test_mute_endpoint_creates_row_and_is_idempotent(client, db, shop):
+    from app.models import Customer, CustomerShopMute
+    customer = Customer(is_anonymous=True)
+    db.add(customer)
+    await db.commit()
+    await db.refresh(customer)
+    _set_customer_cookie(client, customer.id)
+
+    r = await client.post(f"/card/account/mute/{shop.id}/mute")
+    assert r.status_code == 204
+    rows = (await db.exec(
+        select(CustomerShopMute).where(
+            CustomerShopMute.customer_id == customer.id,
+            CustomerShopMute.shop_id == shop.id,
+        )
+    )).all()
+    assert len(rows) == 1
+
+    # Re-mute → still 204, row count unchanged.
+    r2 = await client.post(f"/card/account/mute/{shop.id}/mute")
+    assert r2.status_code == 204
+    rows = (await db.exec(
+        select(CustomerShopMute).where(
+            CustomerShopMute.customer_id == customer.id,
+            CustomerShopMute.shop_id == shop.id,
+        )
+    )).all()
+    assert len(rows) == 1
+
+
 async def test_push_unsubscribe_clears_keys(client, db):
     # First subscribe, then unsubscribe — same cookie/customer.
     sub = await client.post(
