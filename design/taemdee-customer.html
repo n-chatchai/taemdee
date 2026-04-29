@@ -11,9 +11,9 @@
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="แต้มดี">
 <meta name="mobile-web-app-capable" content="yes">
-<link rel="apple-touch-icon" href="taemdee-icons/taemdee-icon-192.png">
-<link rel="apple-touch-icon" sizes="192x192" href="taemdee-icons/taemdee-icon-192.png">
-<link rel="apple-touch-icon" sizes="512x512" href="taemdee-icons/taemdee-icon-512.png">
+<link rel="apple-touch-icon" href="taemdee-icons/taemdee-apple-touch-icon-180.png">
+<link rel="apple-touch-icon" sizes="180x180" href="taemdee-icons/taemdee-apple-touch-icon-180.png">
+<link rel="apple-touch-icon-precomposed" href="taemdee-icons/taemdee-apple-touch-icon-180.png">
 <link rel="manifest" href="manifest.json">
 <link rel="preconnect" href="https://fonts.googleapis.com">
 <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
@@ -5795,6 +5795,69 @@
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 12px;
   }
+
+  /* Font-size picker (C6 settings) */
+  .s10-fontsize {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 14px;
+    padding: 14px 14px 12px;
+    margin-bottom: 8px;
+  }
+  .s10-fontsize .fs-head {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 12px;
+  }
+  .s10-fontsize .fs-icon {
+    width: 36px; height: 36px;
+    background: var(--accent-soft); color: var(--accent);
+    border-radius: 10px;
+    border: 1px solid rgba(17,17,17,0.18);
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    letter-spacing: -0.04em;
+  }
+  .s10-fontsize .fs-info { line-height: 1.2; }
+  .s10-fontsize .fs-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 14px;
+    letter-spacing: -0.01em;
+    margin-bottom: 1px;
+  }
+  .s10-fontsize .fs-meta {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic; font-weight: 400;
+    font-size: 12.5px; color: var(--ink-soft);
+  }
+  .s10-fontsize .fs-options {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 6px;
+  }
+  .s10-fontsize .fs-opt {
+    background: var(--bg);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 10px;
+    padding: 10px 8px;
+    cursor: pointer;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    color: var(--ink);
+    transition: none;
+  }
+  .s10-fontsize .fs-opt.sm { font-size: 12px; font-weight: 500; }
+  .s10-fontsize .fs-opt.md { font-size: 14px; font-weight: 600; }
+  .s10-fontsize .fs-opt.lg { font-size: 16px; font-weight: 600; }
+  .s10-fontsize .fs-opt.active {
+    border: 2px solid var(--accent);
+    padding: 9px 7px;
+    font-weight: 700;
+  }
   .s10-logout {
     margin: 24px 20px 12px;
     padding: 12px 14px;
@@ -7727,23 +7790,11 @@
               <div class="label">ของฉัน</div>
 
               <div class="s10-row">
-                <div class="row-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="5" width="18" height="14" rx="2"/><line x1="3" y1="10" x2="21" y2="10"/></svg>
-                </div>
-                <div class="row-info">
-                  <div class="row-name">บัตรของพี่</div>
-                  <div class="row-meta">6 บัตร · ที่ลุงหมี ครบแล้ว</div>
-                </div>
-                <span class="pill butter">พร้อม 1</span>
-              </div>
-
-              <div class="s10-row">
                 <div class="row-icon butter">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
                 </div>
                 <div class="row-info">
                   <div class="row-name">รางวัลที่รับแล้ว</div>
-                  <div class="row-meta">12 ครั้ง · ประหยัดไป ~฿720</div>
                 </div>
                 <div class="arrow-r">›</div>
               </div>
@@ -7752,15 +7803,27 @@
             <div class="s10-section">
               <div class="label">ตั้งค่า</div>
 
+              <div class="s10-fontsize">
+                <div class="fs-head">
+                  <div class="fs-icon">Aa</div>
+                  <div class="fs-info">
+                    <div class="fs-name">ขนาดตัวอักษร</div>
+                  </div>
+                </div>
+                <div class="fs-options">
+                  <button class="fs-opt sm">เล็ก</button>
+                  <button class="fs-opt md active">กลาง</button>
+                  <button class="fs-opt lg">ใหญ่</button>
+                </div>
+              </div>
+
               <div class="s10-row">
                 <div class="row-icon mint">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
                 </div>
                 <div class="row-info">
                   <div class="row-name">การแจ้งเตือน</div>
-                  <div class="row-meta">ช่องทาง · ร้านที่ปิดเสียง</div>
                 </div>
-                <span class="pill butter">เปิด</span>
                 <div class="arrow-r">›</div>
               </div>
 
@@ -7770,7 +7833,6 @@
                 </div>
                 <div class="row-info">
                   <div class="row-name">ความเป็นส่วนตัว</div>
-                  <div class="row-meta">ข้อมูลที่ร้านเห็น · จัดการ</div>
                 </div>
                 <div class="arrow-r">›</div>
               </div>
@@ -7781,7 +7843,6 @@
                 </div>
                 <div class="row-info">
                   <div class="row-name">ช่วยเหลือ</div>
-                  <div class="row-meta">FAQ · ติดต่อทีมงาน</div>
                 </div>
                 <div class="arrow-r">›</div>
               </div>
