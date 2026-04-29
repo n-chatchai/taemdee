@@ -255,10 +255,7 @@
     position: relative;
   }
   .phone::before {
-    content: ''; position: absolute; top: 16px; left: 50%;
-    transform: translateX(-50%);
-    width: 84px; height: 22px; background: #000;
-    border-radius: 11px; z-index: 10;
+    display: none;
   }
   .phone-screen {
     width: 100%; height: 100%;
@@ -319,36 +316,59 @@
   /* ========================================================== */
   /* SHARED COMPONENTS                                           */
   /* ========================================================== */
+  /* ───────── Unified app bar · ←back · title · right action/placeholder ───────── */
   .app-bar {
-    padding: 48px 20px 12px;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
     position: sticky;
     top: 0;
     background: var(--bg);
     z-index: 5;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    flex-shrink: 0;
   }
-  .app-bar .x {
-    width: 34px; height: 34px;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.18);
+  .app-bar .x,
+  .app-bar .more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(17,17,17,0.05);
+    border: none;
     border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: none;
-    cursor: pointer; font-size: 16px;
+    cursor: pointer;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .app-bar .x svg {
+    width: 16px;
+    height: 16px;
+  }
+  .app-bar .more svg {
+    width: 18px;
+    height: 18px;
   }
   .app-bar .title-mid {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 15.5px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .app-bar .placeholder {
+    width: 36px;
+    height: 36px;
   }
   .app-bar .right-action {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px; font-weight: 500;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--ink-soft);
     cursor: pointer;
   }
-  .app-bar .placeholder { width: 34px; }
 
   .page-title {
     padding: 22px 20px 0;
@@ -375,34 +395,6 @@
     text-align: center;
     position: relative;
   }
-
-  /* C1 avatar (top-right) — entry to C7 My Cards home for logged-in users */
-  .c1-avatar {
-    position: absolute;
-    top: 18px; right: 18px;
-    z-index: 5;
-    width: 36px; height: 36px;
-    background: var(--accent); color: #FFF;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
-    box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
-    cursor: pointer;
-  }
-  .c1-myqr {
-    position: absolute;
-    top: 18px; right: 18px;
-    z-index: 5;
-    width: 36px; height: 36px;
-    background: var(--ink); color: var(--butter);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: none;
-  }
-  .c1-myqr svg { width: 18px; height: 18px; }
 
   /* Back button — top-left corner of mockup */
   .c1-back {
@@ -547,25 +539,19 @@
       radial-gradient(ellipse 70% 50% at 50% 90%, rgba(255, 217, 82, 0.12), transparent 60%);
   }
 
-  .ob-shop-head {
+  /* .shop-head.hero — larger version for onboarding first impression */
+  .shop-head.hero {
     padding: 50px 20px 0;
-    text-align: center;
     flex-shrink: 0;
   }
-  .ob-shop-mark {
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800;
+  .shop-head.hero .shop-logo-mark {
     font-size: 44px;
     letter-spacing: -0.035em;
-    color: var(--ink);
-    line-height: 1;
+    margin-bottom: 8px;
   }
-  .ob-shop-mark .dot { color: var(--accent); }
-  .ob-shop-sub {
-    font-family: 'Prompt', sans-serif;
+  .shop-head.hero .shop-sub {
     font-size: 16px;
     color: var(--ink-soft);
-    margin-top: 8px;
     letter-spacing: 0.01em;
   }
   .ob-step-dots {
@@ -593,6 +579,7 @@
   }
   .ob-canvas {
     flex: 1;
+    min-height: 0;
     display: flex;
     flex-direction: column;
     justify-content: center;
@@ -697,6 +684,1076 @@
     text-align: center;
     box-shadow: none;
   }
+  .ob-input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 3px var(--accent-soft);
+  }
+
+  /* C2.x / C3 / C8 — Simplified bottom mark (no install link, just brand) */
+  .ob-footer-mark {
+    position: relative;
+    padding: 14px 20px 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    flex-shrink: 0;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.025em;
+    color: var(--ink);
+    line-height: 1;
+  }
+  .ob-footer-mark .smile-stamp {
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
+    display: block;
+  }
+  .ob-footer-mark .dot { color: var(--accent); }
+
+  /* ───────── Customer dock · liquid glass nav ───────── */
+  .c-glass-nav {
+    position: sticky;
+    bottom: 12px;
+    z-index: 5;
+    margin: auto 16px 14px;
+    padding: 6px;
+    border-radius: 22px;
+    background: linear-gradient(
+      135deg,
+      rgba(255, 250, 240, 0.7) 0%,
+      rgba(255, 240, 220, 0.6) 50%,
+      rgba(255, 250, 240, 0.7) 100%
+    );
+    backdrop-filter: blur(16px) saturate(180%);
+    -webkit-backdrop-filter: blur(16px) saturate(180%);
+    border: 1px solid rgba(255, 255, 255, 0.5);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.6),
+      inset 0 -1px 0 rgba(17, 17, 17, 0.05),
+      0 8px 24px -8px rgba(17, 17, 17, 0.18),
+      0 2px 8px -2px rgba(17, 17, 17, 0.08);
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 4px;
+    flex-shrink: 0;
+  }
+  .c-glass-nav .gn-tab {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    gap: 3px;
+    padding: 8px 4px;
+    border-radius: 16px;
+    cursor: pointer;
+    text-decoration: none;
+    color: var(--ink-soft);
+    transition: all 0.15s ease;
+  }
+  .c-glass-nav .gn-tab .gn-icon {
+    width: 22px;
+    height: 22px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .c-glass-nav .gn-tab .gn-icon svg {
+    width: 100%;
+    height: 100%;
+    stroke-width: 2;
+  }
+  .c-glass-nav .gn-tab .gn-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    font-weight: 500;
+    letter-spacing: 0;
+    line-height: 1;
+  }
+  .c-glass-nav .gn-tab.active {
+    background: linear-gradient(
+      135deg,
+      rgba(17, 17, 17, 0.92) 0%,
+      rgba(17, 17, 17, 1) 100%
+    );
+    color: var(--butter);
+    box-shadow:
+      inset 0 1px 0 rgba(255, 255, 255, 0.1),
+      0 2px 8px -2px rgba(17, 17, 17, 0.3);
+  }
+  .c-glass-nav .gn-tab.active .gn-icon svg {
+    fill: rgba(255, 217, 82, 0.15);
+  }
+  .c-glass-nav .gn-tab:active {
+    transform: scale(0.96);
+  }
+  .c-glass-nav .gn-badge {
+    position: absolute;
+    top: -2px; right: -4px;
+    width: 8px; height: 8px;
+    border-radius: 50%;
+    background: var(--accent);
+    box-shadow: 0 0 0 2px var(--bg);
+    animation: c-gn-badge-pulse 1.6s ease-out infinite;
+  }
+  @keyframes c-gn-badge-pulse {
+    0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
+    70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
+    100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
+  }
+
+  /* ───────── Page head · top-level system page header (Inbox, C7) ───────── */
+  .page-head {
+    padding: 14px 22px 14px;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-shrink: 0;
+  }
+  .page-head .ph-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .page-head h1 {
+    font-family: 'Prompt', sans-serif;
+    font-size: 22px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.25;
+    margin: 0;
+  }
+  .page-head .ph-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+  }
+  .page-head .ph-actions {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+  }
+  .page-head .ph-icon-btn {
+    width: 38px;
+    height: 38px;
+    background: rgba(17,17,17,0.05);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .page-head .ph-icon-btn svg {
+    width: 18px;
+    height: 18px;
+  }
+
+  .inbox-filters {
+    padding: 0 22px 14px;
+    display: flex;
+    gap: 6px;
+    overflow-x: auto;
+    scrollbar-width: none;
+    flex-shrink: 0;
+  }
+  .inbox-filters::-webkit-scrollbar { display: none; }
+  .inbox-filter-pill {
+    padding: 6px 12px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.12);
+    white-space: nowrap;
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+  .inbox-filter-pill.active {
+    background: var(--ink);
+    color: var(--surface);
+    border-color: var(--ink);
+    font-weight: 500;
+  }
+
+  .inbox-list {
+    padding: 0 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    flex: 1;
+  }
+
+  .inbox-card {
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 12px;
+    display: flex;
+    gap: 11px;
+    position: relative;
+    box-shadow: 0 1px 2px rgba(17,17,17,0.04);
+    cursor: pointer;
+    transition: transform 0.12s ease;
+  }
+  .inbox-card:active {
+    transform: scale(0.99);
+  }
+  .inbox-card.read {
+    background: rgba(253,250,242,0.55);
+    box-shadow: none;
+  }
+  .inbox-card.read .ic-body { opacity: 0.7; }
+
+  .inbox-card .ic-unread-dot {
+    position: absolute;
+    top: 14px;
+    left: 4px;
+    width: 6px;
+    height: 6px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+
+  .inbox-card .ic-logo {
+    width: 38px;
+    height: 38px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #fff;
+    letter-spacing: -0.025em;
+  }
+  .inbox-card .ic-logo .dot { color: var(--accent); }
+  .inbox-card .ic-logo.lg-mhee { background: #111; }
+  .inbox-card .ic-logo.lg-massage { background: linear-gradient(135deg, #FFD952, #FF5E3A); }
+  .inbox-card .ic-logo.lg-massage .dot { color: #FFE6DF; }
+  .inbox-card .ic-logo.lg-orchid { background: #4A6B5E; }
+  .inbox-card .ic-logo.lg-orchid .dot { color: var(--butter); }
+  .inbox-card .ic-logo.lg-noodle { background: #B45B2C; }
+  .inbox-card .ic-logo.lg-noodle .dot { color: var(--butter); }
+
+  .inbox-card .ic-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .inbox-card .ic-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .inbox-card .ic-shop {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .inbox-card.read .ic-shop {
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+  .inbox-card .ic-time {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-softer);
+    flex-shrink: 0;
+  }
+  .inbox-card .ic-preview {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.45;
+    margin-top: 2px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    line-clamp: 1;
+    -webkit-box-orient: vertical;
+  }
+  .inbox-card.read .ic-preview { color: var(--ink-soft); }
+
+  .inbox-card .ic-offer {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--butter-soft);
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    font-weight: 500;
+    color: var(--ink);
+    margin-top: 6px;
+  }
+  .inbox-card .ic-offer svg {
+    width: 11px;
+    height: 11px;
+    flex-shrink: 0;
+  }
+
+  /* Inbox empty state */
+  .inbox-empty {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 40px 30px;
+    text-align: center;
+  }
+  .inbox-empty .ie-avatar {
+    width: 64px;
+    height: 64px;
+    margin-bottom: 18px;
+  }
+  .inbox-empty .ie-avatar svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .inbox-empty .ie-msg {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+  }
+  .inbox-empty .ie-msg strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ───────── Inbox detail · 1 message view ───────── */
+  .inbox-detail-hero {
+    padding: 4px 22px 16px;
+    display: flex;
+    gap: 12px;
+    align-items: center;
+    flex-shrink: 0;
+  }
+  .inbox-detail-hero .idh-logo {
+    width: 48px;
+    height: 48px;
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 17px;
+    color: #fff;
+    letter-spacing: -0.025em;
+    background: var(--ink);
+  }
+  .inbox-detail-hero .idh-logo .dot { color: var(--accent); }
+  .inbox-detail-hero .idh-logo.lg-massage {
+    background: linear-gradient(135deg, #FFD952, #FF5E3A);
+  }
+  .inbox-detail-hero .idh-logo.lg-massage .dot { color: #FFE6DF; }
+  .inbox-detail-hero .idh-text { flex: 1; min-width: 0; }
+  .inbox-detail-hero .idh-shop {
+    font-family: 'Prompt', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .inbox-detail-hero .idh-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+
+  .inbox-detail-image {
+    margin: 0 14px 14px;
+    height: 130px;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+    flex-shrink: 0;
+  }
+  .inbox-detail-image::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 50%);
+  }
+  .inbox-detail-image .idi-emoji {
+    font-size: 36px;
+    position: relative;
+    z-index: 1;
+    color: rgba(255,255,255,0.85);
+  }
+
+  .inbox-detail-body {
+    padding: 0 22px 16px;
+    flex-shrink: 0;
+  }
+  .inbox-detail-body h1 {
+    font-family: 'Prompt', sans-serif;
+    font-size: 19px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.35;
+    margin: 0 0 10px;
+  }
+  .inbox-detail-body p {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    line-height: 1.65;
+    margin: 0;
+  }
+
+  .inbox-detail-offer {
+    margin: 0 14px 14px;
+    padding: 14px;
+    background: var(--surface);
+    border: 1.5px dashed var(--accent);
+    border-radius: 16px;
+    flex-shrink: 0;
+  }
+  .inbox-detail-offer .ido-row {
+    display: flex;
+    gap: 11px;
+    align-items: center;
+    margin-bottom: 12px;
+  }
+  .inbox-detail-offer .ido-icon {
+    width: 38px;
+    height: 38px;
+    background: var(--accent);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .inbox-detail-offer .ido-icon svg {
+    width: 18px;
+    height: 18px;
+    color: #fff;
+  }
+  .inbox-detail-offer .ido-text { flex: 1; }
+  .inbox-detail-offer .ido-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-softer);
+    font-weight: 500;
+    letter-spacing: 0.04em;
+  }
+  .inbox-detail-offer .ido-name {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-top: 2px;
+  }
+  .inbox-detail-offer .ido-condition {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .inbox-detail-offer .ido-claim {
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    padding: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+
+  .inbox-detail-cta {
+    padding: 0 22px 8px;
+    flex-shrink: 0;
+  }
+  .inbox-detail-cta .idc-primary {
+    appearance: none; -webkit-appearance: none;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    width: 100%;
+    background: var(--ink);
+    color: var(--surface);
+    border: none;
+    border-radius: 99px;
+    padding: 13px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+  }
+  .inbox-detail-cta .idc-secondary {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    font-weight: 500;
+    text-decoration: underline;
+    text-decoration-color: rgba(17,17,17,0.25);
+    text-underline-offset: 4px;
+    cursor: pointer;
+  }
+  .inbox-detail-cta .idc-secondary svg {
+    width: 13px;
+    height: 13px;
+  }
+
+  .inbox-detail-mute {
+    text-align: center;
+    padding: 4px 22px 4px;
+    flex-shrink: 0;
+  }
+  .inbox-detail-mute a {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-softer);
+    text-decoration: underline;
+    text-decoration-color: rgba(163,157,146,0.4);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  /* ───────── Voucher activated · full screen with QR ───────── */
+  .voucher-screen {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 14px 22px 22px;
+    text-align: center;
+  }
+  .voucher-screen .vs-shop {
+    display: inline-flex;
+    align-items: center;
+    gap: 8px;
+    padding: 5px 14px 5px 5px;
+    background: var(--surface);
+    border-radius: 99px;
+    border: 1px solid rgba(17,17,17,0.08);
+    margin-bottom: 22px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+  }
+  .voucher-screen .vs-shop .vss-logo {
+    width: 22px;
+    height: 22px;
+    background: var(--ink);
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 11px;
+    color: #fff;
+    letter-spacing: -0.025em;
+    flex-shrink: 0;
+  }
+  .voucher-screen .vs-shop .vss-logo .dot { color: var(--accent); }
+  .voucher-screen .vs-headline {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-bottom: 6px;
+  }
+  .voucher-screen .vs-offer {
+    font-family: 'Prompt', sans-serif;
+    font-size: 28px;
+    font-weight: 700;
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 24px;
+  }
+  .voucher-screen .vs-qr-frame {
+    width: 200px;
+    height: 200px;
+    background: var(--surface);
+    border-radius: 20px;
+    padding: 14px;
+    box-sizing: border-box;
+    margin: 0 auto 14px;
+    box-shadow: 0 4px 24px -8px rgba(17,17,17,0.18);
+    position: relative;
+  }
+  .voucher-screen .vs-qr-pattern {
+    width: 100%;
+    height: 100%;
+    background-image:
+      repeating-linear-gradient(0deg, var(--ink) 0px, var(--ink) 4px, transparent 4px, transparent 11px),
+      repeating-linear-gradient(90deg, var(--ink) 0px, var(--ink) 4px, transparent 4px, transparent 11px);
+    background-size: 22px 22px;
+    border-radius: 6px;
+  }
+  .voucher-screen .vs-qr-frame::before,
+  .voucher-screen .vs-qr-frame::after {
+    content: '';
+    position: absolute;
+    width: 24px;
+    height: 24px;
+    background: var(--surface);
+    z-index: 1;
+  }
+  .voucher-screen .vs-qr-frame::before {
+    top: 14px; left: 14px;
+    border-right: 4px solid var(--surface);
+    border-bottom: 4px solid var(--surface);
+    background: linear-gradient(135deg, var(--ink) 60%, transparent 60%);
+  }
+  .voucher-screen .vs-qr-frame::after {
+    bottom: 14px; right: 14px;
+    background: linear-gradient(315deg, var(--ink) 60%, transparent 60%);
+  }
+  .voucher-screen .vs-instruction {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+  }
+  .voucher-screen .vs-countdown {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    padding: 7px 14px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    margin-bottom: 14px;
+  }
+  .voucher-screen .vs-countdown svg {
+    width: 12px;
+    height: 12px;
+  }
+  .voucher-screen .vs-condition {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-softer);
+    line-height: 1.5;
+    max-width: 220px;
+  }
+
+  /* ───────── C6.notifications · notification preferences ───────── */
+  .notif-radio-list {
+    display: flex;
+    flex-direction: column;
+    padding: 4px;
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(17,17,17,0.04);
+  }
+  .notif-radio {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 11px 12px;
+    border-radius: 11px;
+    cursor: pointer;
+  }
+  .notif-radio.selected {
+    background: var(--accent-soft);
+  }
+  .notif-radio .nr-circle {
+    width: 18px;
+    height: 18px;
+    border: 2px solid rgba(17,17,17,0.25);
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+  }
+  .notif-radio.selected .nr-circle {
+    border-color: var(--accent);
+  }
+  .notif-radio.selected .nr-circle::after {
+    content: '';
+    width: 9px;
+    height: 9px;
+    background: var(--accent);
+    border-radius: 50%;
+  }
+  .notif-radio .nr-text {
+    flex: 1;
+    min-width: 0;
+  }
+  .notif-radio .nr-name {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    font-weight: 500;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    line-height: 1.3;
+  }
+  .notif-radio.selected .nr-name { font-weight: 600; }
+  .notif-radio .nr-badge {
+    font-family: 'Prompt', sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    background: var(--accent);
+    color: #fff;
+    padding: 2px 6px;
+    border-radius: 99px;
+    letter-spacing: 0;
+  }
+  .notif-radio .nr-desc {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    line-height: 1.45;
+  }
+
+  /* Muted shop row */
+  .notif-mute-row {
+    display: flex;
+    align-items: center;
+    gap: 11px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border-radius: 14px;
+    box-shadow: 0 1px 2px rgba(17,17,17,0.04);
+  }
+  .notif-mute-row .nm-logo {
+    width: 32px;
+    height: 32px;
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 12px;
+    color: #fff;
+    letter-spacing: -0.025em;
+    flex-shrink: 0;
+  }
+  .notif-mute-row .nm-logo.lg-noodle { background: #B45B2C; }
+  .notif-mute-row .nm-logo .dot { color: var(--butter); }
+  .notif-mute-row .nm-name {
+    flex: 1;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .notif-mute-row .nm-unmute {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--accent);
+    font-weight: 500;
+    text-decoration: underline;
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  /* ───────── Push prompt · bottom sheet overlay ───────── */
+  .pp-page-fade {
+    opacity: 0.32;
+    filter: saturate(0.65);
+    pointer-events: none;
+  }
+  .pp-overlay {
+    position: absolute;
+    inset: 0;
+    z-index: 100;
+    display: flex;
+    flex-direction: column;
+    justify-content: flex-end;
+    pointer-events: none;
+  }
+  .pp-backdrop {
+    position: absolute;
+    inset: 0;
+    background: rgba(17,17,17,0.4);
+    backdrop-filter: blur(2px);
+    -webkit-backdrop-filter: blur(2px);
+    z-index: 1;
+    pointer-events: auto;
+  }
+  .pp-sheet {
+    position: relative;
+    z-index: 2;
+    background: var(--bg);
+    border-radius: 24px 24px 0 0;
+    padding: 12px 22px 28px;
+    box-shadow: 0 -4px 30px -8px rgba(17,17,17,0.3);
+    pointer-events: auto;
+  }
+  .pp-handle {
+    width: 36px;
+    height: 4px;
+    background: rgba(17,17,17,0.18);
+    border-radius: 999px;
+    margin: 0 auto 16px;
+  }
+  .pp-avatar {
+    position: relative;
+    width: 64px;
+    height: 64px;
+    margin: 0 auto 14px;
+  }
+  .pp-avatar::before {
+    content: '';
+    position: absolute;
+    top: 50%; left: 50%;
+    transform: translate(-50%, -50%);
+    width: 110px; height: 110px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 65%);
+    opacity: 0.5;
+    border-radius: 50%;
+    z-index: 0;
+  }
+  .pp-avatar svg {
+    position: relative;
+    z-index: 1;
+    width: 100%;
+    height: 100%;
+    display: block;
+  }
+  .pp-headline {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.4;
+    margin-bottom: 6px;
+  }
+  .pp-sub {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 16px;
+  }
+  .pp-bullet-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+    margin-bottom: 18px;
+  }
+  .pp-bullet {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    padding: 9px 12px;
+    background: var(--surface);
+    border-radius: 11px;
+  }
+  .pp-bullet .pb-icon {
+    width: 24px;
+    height: 24px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .pp-bullet .pb-icon.accent { background: var(--accent-soft); color: var(--accent); }
+  .pp-bullet .pb-icon.butter { background: var(--butter-soft); color: var(--ink); }
+  .pp-bullet .pb-icon svg { width: 12px; height: 12px; }
+  .pp-bullet span {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+  .pp-primary {
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
+    background: var(--ink);
+    color: var(--surface);
+    border: none;
+    border-radius: 99px;
+    padding: 13px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    margin-bottom: 6px;
+  }
+  .pp-secondary {
+    display: block;
+    text-align: center;
+    padding: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-decoration-color: rgba(17,17,17,0.25);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+
+  /* C2.1 — Speech bubble for greeting (surface, borderless, distinguished by tail) */
+  .ob-bubble {
+    position: relative;
+    background: var(--surface);
+    border: none;
+    border-radius: 16px;
+    padding: 12px 16px;
+    margin: 0 0 24px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 15.5px;
+    line-height: 1.6;
+    color: var(--ink-soft);
+    text-align: center;
+  }
+  .ob-bubble::before {
+    content: '';
+    position: absolute;
+    top: -5px;
+    left: 50%;
+    transform: translateX(-50%) rotate(45deg);
+    width: 11px; height: 11px;
+    background: var(--surface);
+    border: none;
+  }
+  .ob-bubble .ob-name {
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .ob-bubble strong { font-weight: 700; color: var(--ink); }
+
+  /* C2.1 — Skip hint below input */
+  .ob-skip-hint {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-softer);
+    margin-top: 10px;
+    font-style: italic;
+  }
+
+  /* C2.4 — Recovery code (post-skip path) */
+  .ob-recovery-avatar {
+    width: 50px;
+    height: 50px;
+    margin: 0 auto 14px;
+    position: relative;
+    flex-shrink: 0;
+  }
+  .ob-recovery-avatar::before {
+    content: '';
+    position: absolute;
+    inset: -10px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
+    opacity: 0.4;
+    pointer-events: none;
+    z-index: 0;
+  }
+  .ob-recovery-avatar svg {
+    width: 100%;
+    height: 100%;
+    display: block;
+    position: relative;
+    z-index: 1;
+  }
+
+  .ob-recovery-h {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 16px;
+    font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .ob-recovery-s {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink-soft);
+    line-height: 1.55;
+    margin-bottom: 22px;
+    padding: 0 6px;
+  }
+
+  .ob-recovery-card {
+    background: var(--surface);
+    border: 1.5px dashed var(--accent);
+    border-radius: 14px;
+    padding: 14px 12px;
+    text-align: center;
+    margin-bottom: 10px;
+  }
+  .ob-recovery-code {
+    font-family: 'JetBrains Mono', ui-monospace, monospace;
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--ink);
+    letter-spacing: 0.04em;
+  }
+
+  .ob-recovery-copy {
+    appearance: none; -webkit-appearance: none;
+    background: var(--butter-soft);
+    color: var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 99px;
+    padding: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    font-weight: 600;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    margin-bottom: 14px;
+    cursor: pointer;
+    width: 100%;
+  }
+  .ob-recovery-copy svg {
+    width: 14px;
+    height: 14px;
+  }
+
+  .ob-recovery-hint {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-softer);
+    font-style: italic;
+    margin-bottom: 6px;
+  }
 
   /* C2.2 stamp + reward */
   .ob-thanks-line {
@@ -759,23 +1816,6 @@
     font-weight: 700;
     color: var(--ink);
   }
-  .ob-stamps {
-    display: grid;
-    grid-template-columns: repeat(10, 1fr);
-    gap: 6px;
-    margin: 0 auto 18px;
-    max-width: 240px;
-  }
-  .ob-stamp {
-    aspect-ratio: 1;
-    border-radius: 50%;
-    border: 1.5px dashed var(--ink-softer);
-  }
-  .ob-stamp.on {
-    background: var(--ink);
-    border-color: var(--ink);
-  }
-
   /* Reward card (used in C2.2) */
   .ob-reward-card {
     padding: 12px 14px;
@@ -805,7 +1845,19 @@
     font-weight: 700;
   }
   .ob-rc-icon {
-    font-size: 32px;
+    width: 38px;
+    height: 38px;
+    background: var(--accent);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .ob-rc-icon svg {
+    width: 22px;
+    height: 22px;
+    color: #fff;
   }
 
   /* C2.3 save warning */
@@ -856,7 +1908,8 @@
 
   /* Onboarding bottom action area */
   .ob-bottom {
-    padding: 0 22px 32px;
+    margin-top: auto;
+    padding: 0 22px 12px;
     display: flex;
     align-items: center;
     justify-content: space-between;
@@ -1052,95 +2105,50 @@
 
   /* Reward pill */
   .reward-pill {
-    margin: 20px 20px 0;
+    margin: 24px 20px 0;
     background: var(--surface);
-    border-radius: 18px;
-    padding: 14px 16px;
-    display: flex; align-items: center; gap: 12px;
+    border-radius: 20px;
+    padding: 18px 18px;
+    display: flex; align-items: center; gap: 14px;
     border: 1px solid rgba(17,17,17,0.18);
     box-shadow: none;
     position: relative;
   }
   .reward-pill .badge-tilted {
     position: absolute;
-    top: -10px; right: 12px;
+    top: -11px; right: 14px;
     transform: rotate(6deg);
     background: var(--butter); color: var(--ink);
-    padding: 3px 10px;
+    padding: 4px 11px;
     border-radius: 999px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 9px;
+    font-weight: 700; font-size: 11px;
     letter-spacing: 0.04em;
     border: 1px solid rgba(17,17,17,0.18);
   }
   .reward-pill .gift {
-    width: 34px; height: 34px;
-    background: var(--accent-soft); color: var(--accent);
-    border-radius: 10px;
+    width: 48px; height: 48px;
+    background: var(--accent); color: #fff;
+    border-radius: 13px;
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .reward-pill .gift svg { width: 16px; height: 16px; }
-  .reward-pill .rtxt { flex: 1; line-height: 1.3; }
+  .reward-pill .gift svg { width: 22px; height: 22px; }
+  .reward-pill .rtxt { flex: 1; line-height: 1.3; min-width: 0; }
   .reward-pill .rlabel {
-    font-family: 'JetBrains Mono', monospace;
-    font-size: 9px; letter-spacing: 0.14em;
-    text-transform: uppercase; color: var(--ink-softer);
-    margin-bottom: 2px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 3px;
+    letter-spacing: 0.02em;
+    font-weight: 500;
   }
   .reward-pill .rname {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px; font-weight: 600;
+    font-size: 15px; font-weight: 600;
+    color: var(--ink);
     letter-spacing: -0.01em;
-  }
-
-  .footer-mark {
-    padding: 18px 18px 20px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    margin-top: auto;
-    position: sticky;
-    bottom: 0;
-    background: var(--bg);
-    border-top: 1px solid rgba(17,17,17,0.12);
-    z-index: 5;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-  .footer-mark .fm-brand {
-    display: flex; align-items: center; gap: 8px;
-    flex-shrink: 0;
-  }
-  .footer-mark .smile-stamp {
-    flex-shrink: 0;
-  }
-  .footer-mark .brand {
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800;
-    font-size: 16px;
-    letter-spacing: -0.025em;
-    color: var(--ink);
-    line-height: 1;
-  }
-  .footer-mark .brand .dot { color: var(--accent); }
-
-  .footer-mark .fm-install {
-    display: flex; align-items: center; gap: 5px;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 11.5px;
-    color: var(--ink);
-    text-decoration: underline;
-    text-decoration-color: rgba(17,17,17,0.25);
-    text-underline-offset: 3px;
-    cursor: pointer;
-    flex-shrink: 0;
-  }
-  .footer-mark .fm-install svg {
-    width: 12px; height: 12px;
-    color: var(--accent);
-    flex-shrink: 0;
+    line-height: 1.35;
   }
 
   /* Section heads inside phones */
@@ -1231,7 +2239,7 @@
     cursor: pointer; z-index: 3;
   }
   .c3 .sheet {
-    margin: 76px 14px 0;
+    margin: 18px 14px auto;
     background: var(--surface);
     border-radius: 24px;
     padding: 22px 20px 20px;
@@ -1408,6 +2416,146 @@
     cursor: pointer;
   }
 
+  /* DeeReach consent toggle · used in C3 (phone signup) + C3.line (LINE confirm) */
+  .consent-toggle {
+    margin-top: 16px;
+    margin-bottom: 14px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    cursor: pointer;
+    user-select: none;
+  }
+  .consent-toggle .ct-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .consent-toggle .ct-title {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .consent-toggle .ct-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 3px;
+    line-height: 1.5;
+  }
+  .consent-toggle .ct-switch {
+    flex-shrink: 0;
+    width: 40px;
+    height: 24px;
+    background: var(--accent);
+    border-radius: 99px;
+    display: flex;
+    align-items: center;
+    padding: 0 3px;
+    justify-content: flex-end;
+    transition: background 0.15s ease, justify-content 0.15s ease;
+  }
+  .consent-toggle .ct-switch .ct-dot {
+    width: 18px;
+    height: 18px;
+    background: #fff;
+    border-radius: 50%;
+    box-shadow: 0 1px 2px rgba(17,17,17,0.18);
+  }
+  .consent-toggle.off .ct-switch {
+    background: rgba(17,17,17,0.18);
+    justify-content: flex-start;
+  }
+
+  /* Soft plea — appears below toggle when off */
+  .consent-plea {
+    display: none;
+    margin-top: -6px;
+    margin-bottom: 14px;
+    padding: 12px 14px;
+    background: var(--butter-soft);
+    border-radius: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.55;
+  }
+  .consent-toggle.off + .consent-plea {
+    display: block;
+  }
+
+  /* C3.line — LINE account display card */
+  .line-account {
+    margin-top: 14px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .line-account .la-avatar {
+    width: 40px;
+    height: 40px;
+    background: #06C755;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    color: #fff;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+  }
+  .line-account .la-avatar svg {
+    width: 20px;
+    height: 20px;
+  }
+  .line-account .la-info { flex: 1; min-width: 0; }
+  .line-account .la-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-softer);
+    margin-bottom: 2px;
+  }
+  .line-account .la-name {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+
+  /* LINE-themed primary button (for C3.line) */
+  .btn-line {
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
+    background: #06C755;
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    padding: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+  }
+  .btn-line .arr {
+    font-size: 14px;
+    font-weight: 800;
+  }
+
   /* ========================================================== */
   /* Install pill + sheet (persistent install affordance)        */
   /* Used in: C1, C2, C5, C7 (customer) + S3 (shop)              */
@@ -1442,75 +2590,189 @@
     text-align: center;
     margin-bottom: 14px;
   }
-  .install-sheet .sheet-pitch .stamp-big {
-    display: inline-block;
-    margin-bottom: 8px;
-    filter: drop-shadow(2px 2px 0 var(--ink));
+
+  /* Home screen mock-up · TaemDee icon spotlit */
+  .install-sheet .home-mock {
+    background: linear-gradient(180deg, #F7B65A 0%, #FF8E4F 100%);
+    border-radius: 16px;
+    padding: 16px 14px 14px;
+    margin: 0 -2px 14px;
+    position: relative;
+    overflow: hidden;
   }
-  .install-sheet .sheet-pitch .pitch-h {
+  .install-sheet .home-mock .icon-row {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+    align-items: end;
+  }
+  .install-sheet .home-mock .app-icon {
+    text-align: center;
+  }
+  .install-sheet .home-mock .app-icon.dim {
+    opacity: 0.5;
+  }
+  .install-sheet .home-mock .app-icon .tile {
+    aspect-ratio: 1;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .install-sheet .home-mock .app-icon .tile.t1 {
+    background: linear-gradient(135deg, #34D058, #28A745);
+  }
+  .install-sheet .home-mock .app-icon .tile.t2 {
+    background: linear-gradient(135deg, #6B6660, #3A3633);
+  }
+  .install-sheet .home-mock .app-icon .tile.t4 {
+    background: #fff;
+    color: #E91E63;
+  }
+  .install-sheet .home-mock .app-icon .tile svg {
+    width: 56%;
+  }
+  .install-sheet .home-mock .app-icon .label {
+    font-size: 9px;
+    color: #fff;
+    margin-top: 4px;
+    font-weight: 500;
+    text-shadow: 0 1px 3px rgba(0,0,0,0.18);
+  }
+  /* Spotlight: TaemDee icon */
+  .install-sheet .home-mock .app-icon.spotlight {
+    transform: scale(1.18);
+    z-index: 2;
+    position: relative;
+  }
+  .install-sheet .home-mock .app-icon.spotlight::before {
+    content: '';
+    position: absolute;
+    inset: -12px -8px 8px -8px;
+    background: radial-gradient(circle, rgba(255,217,82,0.55) 0%, transparent 65%);
+    border-radius: 50%;
+    z-index: -1;
+    animation: spot-pulse 2.4s ease-in-out infinite;
+  }
+  @keyframes spot-pulse {
+    0%, 100% { opacity: 0.6; transform: scale(1); }
+    50% { opacity: 0.9; transform: scale(1.08); }
+  }
+  .install-sheet .home-mock .app-icon.spotlight .tile {
+    background: var(--accent);
+    box-shadow: 0 8px 22px -6px rgba(0,0,0,0.45);
+    border: 2px solid var(--butter);
+  }
+  .install-sheet .home-mock .app-icon.spotlight .tile svg {
+    width: 64%;
+  }
+  .install-sheet .home-mock .app-icon.spotlight .label {
+    color: #fff;
+    font-weight: 700;
+  }
+
+  .install-sheet .pitch-h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 17px;
-    letter-spacing: -0.02em;
-    line-height: 1.2;
-    margin-bottom: 4px;
+    font-weight: 800; font-size: 22px;
+    letter-spacing: -0.025em;
+    line-height: 1.15;
+    margin-bottom: 6px;
+    text-align: center;
   }
-  .install-sheet .sheet-pitch .pitch-h em {
+  .install-sheet .pitch-h em {
     font-style: italic; color: var(--accent);
   }
-  .install-sheet .sheet-pitch .pitch-s {
+  .install-sheet .pitch-s {
     font-family: 'Prompt', sans-serif;
-    font-size: 11.5px; color: var(--ink-soft);
-    line-height: 1.4;
-  }
-  .install-sheet .platforms {
-    display: flex; flex-direction: column; gap: 8px;
+    font-size: 12.5px; color: var(--ink-soft);
+    line-height: 1.5;
+    text-align: center;
     margin-bottom: 14px;
   }
-  .install-sheet .plat-tile {
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.18);
-    border-radius: 12px;
-    padding: 10px 12px;
-  }
-  .install-sheet .plat-h {
-    font-family: 'JetBrains Mono', monospace;
-    font-weight: 700; font-size: 9.5px;
-    letter-spacing: 0.1em;
-    color: var(--ink);
-    text-transform: uppercase;
-    margin-bottom: 7px;
-    padding-bottom: 6px;
-    border-bottom: 1px dashed rgba(17,17,17,0.15);
-  }
-  .install-sheet .plat-step {
-    display: flex; align-items: center; gap: 8px;
-    margin-bottom: 5px;
+
+  .install-sheet .sheet-cta {
+    width: 100%;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    padding: 13px;
+    border-radius: 99px;
     font-family: 'Prompt', sans-serif;
-    font-size: 11.5px;
-    color: var(--ink);
+    font-weight: 700; font-size: 14px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
   }
-  .install-sheet .plat-step:last-child { margin-bottom: 0; }
-  .install-sheet .plat-step .step-ico {
-    width: 22px; height: 22px;
-    background: var(--bg);
-    border: 1px solid rgba(17,17,17,0.18);
-    border-radius: 6px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    color: var(--ink);
-  }
-  .install-sheet .plat-step .step-ico svg {
-    width: 11px; height: 11px;
+  .install-sheet .sheet-cta .arr {
+    font-weight: 800; font-size: 14px;
   }
   .install-sheet .sheet-close {
     width: 100%;
-    background: transparent; color: var(--ink);
-    border: 1px solid rgba(17,17,17,0.18);
-    padding: 10px;
-    border-radius: 12px;
+    background: transparent; color: var(--ink-soft);
+    border: none;
+    padding: 8px;
+    margin-top: 4px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
+    font-weight: 500; font-size: 12px;
     cursor: pointer;
+  }
+
+  /* iOS Variant — 2 step rows + dark CTA */
+  .install-sheet .ios-steps {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-bottom: 4px;
+  }
+  .install-sheet .ios-steps .ios-step {
+    background: rgba(17,17,17,0.04);
+    padding: 10px 12px;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .install-sheet .ios-steps .ios-step .ios-num {
+    width: 24px;
+    height: 24px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    flex-shrink: 0;
+  }
+  .install-sheet .ios-steps .ios-step .ios-step-text {
+    flex: 1;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .install-sheet .ios-steps .ios-step .ios-step-text strong {
+    font-weight: 700;
+  }
+  .install-sheet .ios-steps .ios-step .ios-step-icon {
+    width: 18px;
+    height: 18px;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .install-sheet .ios-steps .ios-step .ios-step-icon svg {
+    width: 100%;
+    height: 100%;
+  }
+
+  /* iOS variant CTA: dark instead of orange */
+  .install-sheet .sheet-cta.cta-dark {
+    background: var(--ink);
+    color: var(--bg);
   }
 
   /* ========================================================== */
@@ -1609,23 +2871,55 @@
     font-style: italic;
   }
 
-  /* C4 — Redeem gate (guest must signup before redeem) */
+  /* C4 — Redeem gate (guest can redeem; signup is optional) */
   .c4 .redeem-gate {
     margin: 18px 20px 0;
-    padding: 14px;
-    background: var(--surface);
-    border: 1px dashed rgba(17,17,17,0.3);
-    border-radius: 18px;
+    padding: 0;
+    background: transparent;
+    border: none;
     display: flex;
     flex-direction: column;
-    gap: 8px;
+    align-items: center;
+    gap: 12px;
   }
-  .c4 .redeem-gate .gate-msg {
-    text-align: center;
+  .c4 .redeem-cta {
+    appearance: none; -webkit-appearance: none;
+    width: 100%;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 999px;
+    padding: 18px 22px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
-    color: var(--ink);
-    margin-bottom: 4px;
+    font-weight: 700; font-size: 17.5px;
+    display: flex; align-items: center; justify-content: center;
+    gap: 10px;
+    cursor: pointer;
+  }
+  .c4 .redeem-cta .redeem-arrow {
+    width: 24px; height: 24px;
+    background: var(--accent);
+    color: #FFF;
+    border-radius: 50%;
+    display: inline-flex; align-items: center; justify-content: center;
+    font-size: 14px;
+  }
+  .c4 .redeem-cta:active {
+    transform: scale(0.98);
+  }
+  .c4 .redeem-soft-link {
+    display: inline-flex; align-items: center; gap: 6px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    text-decoration: underline;
+    text-decoration-color: rgba(17,17,17,0.2);
+    text-underline-offset: 3px;
+    cursor: pointer;
+  }
+  .c4 .redeem-soft-link .rsl-spark {
+    color: var(--accent);
+    font-size: 12px;
   }
   .c4 .redeem-gate .counter-note {
     padding: 0;
@@ -1639,32 +2933,42 @@
   /* C5 — Reward claimed                                         */
   /* ========================================================== */
   .c5 .claimed-hero {
-    padding: 24px 22px 16px;
+    padding: 32px 22px 22px;
     text-align: center;
     position: relative;
   }
   .c5 .claimed-hero::before {
     content: '';
     position: absolute;
-    top: 12px; left: 50%;
+    top: 0; left: 50%;
+    transform: translateX(-50%);
+    width: 280px; height: 280px;
+    background: radial-gradient(circle, var(--butter) 0%, transparent 55%);
+    opacity: 0.65; border-radius: 50%;
+    z-index: 0;
+  }
+  .c5 .claimed-hero::after {
+    content: '';
+    position: absolute;
+    top: 30px; left: 50%;
     transform: translateX(-50%);
     width: 200px; height: 200px;
-    background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
-    opacity: 0.55; border-radius: 50%;
+    background: radial-gradient(circle, var(--accent-soft) 0%, transparent 60%);
+    opacity: 0.6; border-radius: 50%;
     z-index: 0;
   }
   .c5 .claimed-hero > * { position: relative; z-index: 1; }
   .c5 .claimed-mark {
-    width: 68px; height: 68px;
-    margin: 0 auto 14px;
+    width: 84px; height: 84px;
+    margin: 0 auto 20px;
     border-radius: 50%;
     background: var(--accent); color: #fff;
     border: 1px solid rgba(17,17,17,0.18);
-    box-shadow: 0 8px 20px -6px rgba(255,94,58,0.5), 3px 3px 0 var(--ink);
+    box-shadow: 0 10px 26px -6px rgba(255,94,58,0.5), 4px 4px 0 var(--ink);
     display: flex; align-items: center; justify-content: center;
     position: relative;
   }
-  .c5 .claimed-mark svg { width: 32px; height: 32px; }
+  .c5 .claimed-mark svg { width: 40px; height: 40px; }
   .c5 .claimed-mark::before {
     content: '';
     position: absolute;
@@ -1687,16 +2991,28 @@
   .c5 .claimed-hero .confetti.c2 { top: 18px; right: 20%; width: 10px; height: 10px; animation-delay: 0.5s; color: var(--accent); stroke: none; }
   .c5 .claimed-hero .confetti.c3 { top: 60px; right: 14%; width: 10px; height: 10px; animation-delay: 1.2s; }
   .c5 .claimed-hero .confetti.c4 { top: 66px; left: 12%; width: 8px; height: 8px; animation-delay: 1.6s; color: var(--accent); stroke: none; }
+  .c5 .claimed-hero .confetti.c5 { top: 88px; left: 24%; width: 11px; height: 11px; animation-delay: 0.9s; color: var(--accent); stroke: none; }
+  .c5 .claimed-hero .confetti.c6 { top: 95px; right: 22%; width: 12px; height: 12px; animation-delay: 1.4s; }
   .c5 .claimed-title {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700;
-    font-size: 28px;
-    letter-spacing: -0.025em;
+    font-weight: 800;
+    font-size: 36px;
+    letter-spacing: -0.03em;
     line-height: 1.1;
-    margin-bottom: 12px;
+    margin-bottom: 0;
   }
   .c5 .claimed-title em {
-    font-style: italic; font-weight: 700; color: var(--accent);
+    font-style: italic; font-weight: 800; color: var(--accent);
+  }
+  .c5 .claimed-sub {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500;
+    font-size: 13px;
+    color: var(--ink-soft);
+    margin-top: 10px;
+    text-align: center;
+    position: relative;
+    z-index: 1;
   }
   .c5 
   .c5 
@@ -1705,8 +3021,8 @@
     50% { transform: scale(1.3); box-shadow: 0 0 0 6px rgba(255,94,58,0); }
   }
   .c5 .voucher {
-    margin: 0 22px;
-    padding: 16px 18px;
+    margin: 8px 22px 0;
+    padding: 22px 18px;
     background: var(--butter);
     border: 1px solid rgba(17,17,17,0.18);
     border-radius: 14px;
@@ -1795,9 +3111,10 @@
   .c5 .voucher .v-title {
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 17px;
+    font-size: 22px;
     letter-spacing: -0.015em;
-    text-align: center; margin-bottom: 6px;
+    text-align: center; margin-bottom: 10px;
+    line-height: 1.25;
     position: relative;
   }
   .c5 .voucher .v-id {
@@ -1808,44 +3125,44 @@
     position: relative;
   }
   .c5 .reset {
-    margin: 24px 20px 0;
-    padding-top: 18px;
+    margin: 28px 20px 0;
+    padding-top: 22px;
     border-top: 1.5px dashed rgba(17,17,17,0.2);
     text-align: center;
   }
   .c5 .reset .kicker {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 11px; color: var(--ink-soft);
-    margin-bottom: 10px;
-    display: inline-flex; align-items: center; gap: 4px;
+    font-size: 13px; color: var(--ink-soft);
+    margin-bottom: 14px;
+    display: inline-flex; align-items: center; gap: 6px;
   }
   .c5 .reset .kicker .arrow-down {
-    display: inline-flex; width: 12px; height: 12px;
+    display: inline-flex; width: 14px; height: 14px;
   }
   .c5 .reset .mini-card {
     background: var(--surface);
-    border-radius: 12px;
-    padding: 12px 12px 14px;
+    border-radius: 16px;
+    padding: 18px 16px 20px;
     border: 1px solid rgba(17,17,17,0.18);
     box-shadow: none;
   }
   .c5 .reset .mini-num {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 24px;
+    font-weight: 700; font-size: 32px;
     color: var(--accent);
     text-align: center;
     letter-spacing: -0.03em;
-    margin-bottom: 6px; line-height: 1;
+    margin-bottom: 10px; line-height: 1;
   }
   .c5 .reset .mini-num .of {
-    color: var(--ink-softer); font-weight: 400; font-size: 14px;
+    color: var(--ink-softer); font-weight: 400; font-size: 16px;
   }
   .c5 .reset .mini-stamps {
-    display: grid; grid-template-columns: repeat(10, 1fr); gap: 3px;
+    display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px;
   }
   .c5 .reset .mini-stamps .mini-stamp {
-    height: 14px; border-radius: 4px;
+    height: 18px; border-radius: 5px;
     background: var(--line);
   }
   .c5 .farewell {
@@ -2096,73 +3413,6 @@
   /* ========================================================== */
   /* C7 — My Cards                                               */
   /* ========================================================== */
-  .c7-greet {
-    padding: 48px 20px 12px;
-    display: flex; justify-content: space-between; align-items: center;
-    position: sticky;
-    top: 0;
-    background: var(--bg);
-    z-index: 5;
-    backdrop-filter: blur(8px);
-    -webkit-backdrop-filter: blur(8px);
-  }
-  .c7-greet .hi {
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 22px;
-    letter-spacing: -0.025em;
-  }
-  .c7-greet .hi .smile-inline {
-    display: inline-block; width: 16px; height: 9px;
-    color: var(--accent); margin-left: 4px; vertical-align: 1px;
-  }
-  .c7-greet .hi .day {
-    display: block;
-    font-family: 'Prompt', sans-serif;
-    font-style: italic; font-weight: 400;
-    font-size: 12px; color: var(--ink-soft);
-    margin-top: 1px;
-  }
-  .c7-greet .avatar {
-    width: 38px; height: 38px;
-    background: var(--accent); color: #FFF;
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
-    box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
-    cursor: pointer;
-  }
-  .c7-myqr {
-    width: 38px; height: 38px;
-    background: var(--ink); color: var(--butter);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    flex-shrink: 0;
-    cursor: pointer;
-    text-decoration: none;
-    box-shadow: none;
-  }
-  .c7-myqr svg { width: 18px; height: 18px; }
-
-  /* C7 actions — camera + QR icons */
-  .c7-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  .c7-icon-btn {
-    width: 40px; height: 40px;
-    background: var(--ink); color: var(--butter);
-    border-radius: 12px;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-    text-decoration: none;
-    flex-shrink: 0;
-    transition: transform 0.1s ease;
-  }
-  .c7-icon-btn svg { width: 20px; height: 20px; }
-  .c7-icon-btn:active { transform: scale(0.96); }
-
   /* Guest banner — shown to non-registered users */
   .guest-banner {
     margin: 14px 20px 0;
@@ -2244,12 +3494,33 @@
   .c7-stats .ss-bottom {
     margin-top: 14px;
     padding-top: 14px;
-    border-top: 1px dashed rgba(255,255,255,0.2);
+    border-top: 1px solid rgba(255,255,255,0.12);
     font-family: 'Prompt', sans-serif;
-    font-size: 13.5px;
+    font-size: 13px;
     color: var(--bg);
+    display: flex;
+    align-items: center;
+    gap: 10px;
   }
+  .c7-stats .ss-bottom .ssb-logo {
+    width: 26px;
+    height: 26px;
+    border-radius: 7px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    color: #fff;
+    letter-spacing: -0.025em;
+  }
+  .c7-stats .ss-bottom .ssb-logo.lg-orchid { background: #4A6B5E; }
+  .c7-stats .ss-bottom .ssb-logo .dot { color: var(--butter); }
+  .c7-stats .ss-bottom .ssb-text { flex: 1; min-width: 0; line-height: 1.4; }
   .c7-stats .ss-bottom strong { color: var(--accent); font-weight: 700; }
+  .c7-stats .ss-bottom .ssb-shop { color: #fff; font-weight: 600; }
   .c7-list-head {
     padding: 22px 20px 8px;
     display: flex; justify-content: space-between; align-items: center;
@@ -2272,6 +3543,7 @@
     border-radius: 999px;
     border: 1px solid var(--line);
   }
+
   .c7-card {
     margin: 0 20px 8px;
     background: var(--surface);
@@ -4524,7 +5796,7 @@
     font-weight: 700; font-size: 12px;
   }
   .s10-logout {
-    margin: 24px 20px 20px;
+    margin: 24px 20px 12px;
     padding: 12px 14px;
     background: transparent;
     border: 1px dashed rgba(17,17,17,0.3);
@@ -4536,6 +5808,18 @@
     width: calc(100% - 40px);
     cursor: pointer;
     text-align: center;
+  }
+  .c6-delete-account {
+    display: block;
+    margin: 0 20px 20px;
+    padding: 8px 0;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: rgba(190, 60, 50, 0.85);
+    text-decoration: none;
+    cursor: pointer;
+    letter-spacing: 0.01em;
   }
 
   /* ========================================================== */
@@ -4809,10 +6093,10 @@
   <div class="cover-top">
     <div class="cover-mark">
       <svg class="cover-logo-stamp" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true">
-        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+        <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+        <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
       </svg>
       <span class="cover-wordmark">แต้มดี<span class="td-dot">.</span></span>
     </div>
@@ -4883,15 +6167,15 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">C2.1</span>เริ่มต้น · ขั้นที่ 1</div>
         <h3>ผมแนะนำตัวและถามชื่อพี่</h3>
-        <p>ลูกค้าสแกน QR ครั้งแรก น้องแต้มทักทายและถามชื่อเล่นเพื่อเรียก — ข้ามได้</p>
+        <p>First impression — speech bubble (avatar เป็น speaker, รู้สึกคุยจริง) · skip hint บอกข้ามได้ใช้ค่าเริ่มต้น · taemdee. mark ที่ bottom (consistent ทุก onboarding)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td onboarding">
 
-            <div class="ob-shop-head">
-              <div class="ob-shop-mark">mhee<span class="dot">.</span></div>
-              <div class="ob-shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+            <div class="shop-head hero">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
             </div>
 
             <div class="ob-step-dots">
@@ -4906,20 +6190,21 @@
                 <svg class="ob-spark s-2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
                 <svg class="ob-spark s-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
                 <div class="ob-avatar">
-                  <svg viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                  <svg viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
                 </div>
               </div>
 
-              <div class="ob-greet">
-                สวัสดีครับ ผม<span class="ob-name">น้องแต้ม</span><br>
-                เป็นผู้ช่วยของ<strong>ร้านลุงหมี</strong> ✦<br>
-                ผมจะช่วยเก็บแต้มให้นะครับ
+              <div class="ob-bubble">
+                สวัสดีครับ ผมชื่อ<span class="ob-name">น้องแต้ม</span><br>
+                <strong>ร้านกาแฟลุงหมี</strong><br>
+                ให้ผมมาดูแลแต้มของพี่ครับ
               </div>
 
-              <div class="ob-q">ผมเรียกพี่ว่าอะไรดีครับ?</div>
+              <div class="ob-q">ให้ผมเรียกพี่ว่าอะไรดีครับ?</div>
               <div class="ob-input-wrap">
                 <input type="text" class="ob-input" placeholder="ลูกค้า (ค่าเริ่มต้น)" value="สมศรี" />
               </div>
+              <div class="ob-skip-hint">ข้ามได้ — ผมจะเรียกว่า "ลูกค้า"</div>
             </div>
 
             <div class="ob-bottom">
@@ -4927,6 +6212,11 @@
                 <span>ต่อไป</span>
                 <span class="arrow">→</span>
               </button>
+            </div>
+
+            <div class="ob-footer-mark">
+              <svg class="smile-stamp" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              <span>taemdee<span class="dot">.</span></span>
             </div>
           </div>
         </div>
@@ -4944,9 +6234,9 @@
         <div class="phone-screen">
           <div class="td onboarding step-2">
 
-            <div class="ob-shop-head">
-              <div class="ob-shop-mark">mhee<span class="dot">.</span></div>
-              <div class="ob-shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+            <div class="shop-head hero">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
             </div>
 
             <div class="ob-step-dots">
@@ -4965,17 +6255,33 @@
                 <div class="ob-num-sub">อีก <strong>9 ครั้ง</strong> ได้รางวัล</div>
               </div>
 
-              <div class="ob-stamps">
-                <div class="ob-stamp on"></div>
-                <div class="ob-stamp"></div><div class="ob-stamp"></div><div class="ob-stamp"></div>
-                <div class="ob-stamp"></div><div class="ob-stamp"></div><div class="ob-stamp"></div>
-                <div class="ob-stamp"></div><div class="ob-stamp"></div><div class="ob-stamp"></div>
+              <div class="stamps-wrap" style="padding: 0; margin-bottom: 18px;">
+                <div class="stamps">
+                  <div class="stamp on"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                  <div class="stamp"></div>
+                </div>
               </div>
 
               <div class="ob-reward-card">
                 <div class="ob-rc-line">ครบ 10 รับ</div>
                 <div class="ob-rc-reward"><strong>กาแฟ Signature ฟรี</strong></div>
-                <div class="ob-rc-icon">🎁</div>
+                <div class="ob-rc-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 12 20 22 4 22 4 12"/>
+                    <rect x="2" y="7" width="20" height="5"/>
+                    <line x1="12" y1="22" x2="12" y2="7"/>
+                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                  </svg>
+                </div>
               </div>
             </div>
 
@@ -4984,6 +6290,11 @@
                 <span>ต่อไป</span>
                 <span class="arrow">→</span>
               </button>
+            </div>
+
+            <div class="ob-footer-mark">
+              <svg class="smile-stamp" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              <span>taemdee<span class="dot">.</span></span>
             </div>
           </div>
         </div>
@@ -5001,9 +6312,9 @@
         <div class="phone-screen">
           <div class="td onboarding step-3">
 
-            <div class="ob-shop-head">
-              <div class="ob-shop-mark">mhee<span class="dot">.</span></div>
-              <div class="ob-shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+            <div class="shop-head hero">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
             </div>
 
             <div class="ob-step-dots">
@@ -5046,7 +6357,72 @@
                 </span>
                 <span class="ob-pill-text">สมัครด้วยเบอร์โทร</span>
               </button>
-              <a class="ob-skip center">ขอบคุณแต่ยังก่อน</a>
+              <a class="ob-skip center">ไว้ก่อนครับ</a>
+            </div>
+
+            <div class="ob-footer-mark">
+              <svg class="smile-stamp" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              <span>taemdee<span class="dot">.</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C2.4 — Recovery code (post-skip path from C2.3) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C2.4</span>เริ่มต้น · ทางเลือกเมื่อข้าม signup</div>
+        <h3>รหัสกู้คืนสำหรับคนไม่สมัคร</h3>
+        <p>เปิดเมื่อกด "ไว้ก่อนครับ" จาก C2.3 — น้องแต้มเสนอรหัสส่วนตัวให้จด/cap หน้าจอ ใช้กู้แต้มถ้าเครื่องหาย</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td onboarding">
+
+            <div class="shop-head hero">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+            </div>
+
+            <div class="ob-canvas">
+              <div class="ob-recovery-avatar">
+                <svg viewBox="0 0 100 100">
+                  <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+                  <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+                  <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+                  <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <div class="ob-recovery-h">ไม่สะดวกสมัครสมาชิกใช่ไหมครับ</div>
+              <div class="ob-recovery-s">งั้นพี่จดรหัสส่วนตัวเอาไว้ — กรณีแต้มหาย</div>
+
+              <div class="ob-recovery-card">
+                <div class="ob-recovery-code">K7M-XQ4P-2H9R</div>
+              </div>
+
+              <button class="ob-recovery-copy">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <rect x="9" y="9" width="13" height="13" rx="2"/>
+                  <path d="M5 15H4a2 2 0 0 1-2-2V4a2 2 0 0 1 2-2h9a2 2 0 0 1 2 2v1"/>
+                </svg>
+                คัดลอกรหัส
+              </button>
+
+              <div class="ob-recovery-hint">หรือ screenshot เก็บไว้ก็ได้</div>
+            </div>
+
+            <div class="ob-bottom">
+              <button class="ob-next full">
+                <span>ไปบัตรของพี่</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+
+            <div class="ob-footer-mark">
+              <svg class="smile-stamp" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              <span>taemdee<span class="dot">.</span></span>
             </div>
           </div>
         </div>
@@ -5079,6 +6455,19 @@
                 <input type="tel" placeholder="08X-XXX-XXXX" value="08X-XXX-XXXX" />
               </div>
 
+              <div class="consent-toggle">
+                <div class="ct-info">
+                  <div class="ct-title">ให้ร้านส่งข้อความหาพี่</div>
+                  <div class="ct-sub">เตือนแต้มใกล้ครบ ของฝากและโปรพิเศษจากร้าน</div>
+                </div>
+                <div class="ct-switch">
+                  <div class="ct-dot"></div>
+                </div>
+              </div>
+              <div class="consent-plea">
+                พี่ครับ เตือนแต้มกับของฝากจากร้าน ผมยังเก็บไว้ในกล่องข้อความให้นะครับ อย่าลืมเข้ามาดูนะครับ
+              </div>
+
               <button class="btn btn-primary">
                 ส่ง OTP
                 <span class="arr">→</span>
@@ -5087,6 +6476,70 @@
               <div class="alt-line">
                 หรือ <a class="alt-link">เข้าด้วย LINE</a> (เร็วกว่า)
               </div>
+            </div>
+
+            <div class="ob-footer-mark">
+              <svg class="smile-stamp" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              <span>taemdee<span class="dot">.</span></span>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C3.line — LINE login confirmation + DeeReach consent -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C3.line</span>ยืนยันด้วยไลน์</div>
+        <h3>เข้าด้วยไลน์ + toggle OFF state</h3>
+        <p>หน้านี้แสดง <strong>state เมื่อปิด toggle</strong> — น้องแต้มขึ้นข้อความอ้อนใน butter-soft surface · ลูกค้ายัง signup ต่อได้ · ข้อความจะยังเก็บไว้ในกล่องเสมอ (ไม่หาย)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td c3">
+            <div class="c3-bar">
+              <button class="back" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
+              </button>
+              <div class="c3-title">เข้าด้วยไลน์</div>
+            </div>
+
+            <div class="sheet">
+              <div class="headline">ยืนยันบัญชี<em>ไลน์</em></div>
+              <div class="body-copy">ผมจะเก็บแต้มของพี่ไว้กับบัญชีไลน์นี้ตลอดไปครับ</div>
+
+              <div class="line-account">
+                <div class="la-avatar">
+                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+                </div>
+                <div class="la-info">
+                  <div class="la-label">บัญชี LINE</div>
+                  <div class="la-name">สมศรี ใจดี</div>
+                </div>
+              </div>
+
+              <div class="consent-toggle off">
+                <div class="ct-info">
+                  <div class="ct-title">ให้ร้านส่งข้อความหาพี่</div>
+                  <div class="ct-sub">เตือนแต้มใกล้ครบ ของฝากและโปรพิเศษจากร้าน</div>
+                </div>
+                <div class="ct-switch">
+                  <div class="ct-dot"></div>
+                </div>
+              </div>
+              <div class="consent-plea">
+                พี่ครับ เตือนแต้มกับของฝากจากร้าน ผมยังเก็บไว้ในกล่องข้อความให้นะครับ อย่าลืมเข้ามาดูนะครับ
+              </div>
+
+              <button class="btn-line">
+                ตกลง
+                <span class="arr">→</span>
+              </button>
+            </div>
+
+            <div class="ob-footer-mark">
+              <svg class="smile-stamp" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+              <span>taemdee<span class="dot">.</span></span>
             </div>
           </div>
         </div>
@@ -5120,9 +6573,7 @@
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
-            <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
-
-            <div class="shop-head">
+            <div class="shop-head hero">
               <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
               <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
             </div>
@@ -5170,17 +6621,117 @@
                 <div class="rlabel">รางวัล</div>
                 <div class="rname">กาแฟ Signature ฟรี 1 แก้ว</div>
               </div>
-            </div>            <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+            </div>
+
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab active" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+    <!-- Push.prompt — Web Push consent (bottom sheet overlay on C1) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Push.prompt</span>ขอสิทธิ์แจ้งเตือน</div>
+        <h3>Soft prompt · ขอตอนเปิดจาก icon ครั้งแรก</h3>
+        <p><strong>Trigger:</strong> <code>isPWA && Notification.permission==='default' && first_pwa_open</code> — เปิดจาก home screen icon ครั้งแรก (ไม่ใช่ browser tab) · ลูกค้า invested ใน install แล้ว = high intent moment · กด primary → trigger native browser permission · กด "ไว้ก่อน" → re-ask cooldown 14 วัน · re-ask อีกหลัง C5 redemption</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <!-- Faded C1 background -->
+            <div class="pp-page-fade">
+                <div class="shop-head">
+                <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+                <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+              </div>
+
+              <div class="hero-num-wrap">
+                <div class="hero-label">แต้มของพี่ที่ร้านลุงหมี</div>
+                <div class="hero-num">
+                  2
+                  <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                </div>
+                <div class="hero-num-sub">
+                  <em>อีก 8 ครั้ง!</em> <span class="of">/ ได้กาแฟฟรี</span>
+                </div>
+              </div>
+
+              <div class="stamps-wrap">
+                <div class="stamps">
+                  <div class="stamp on"></div>
+                  <div class="stamp on"></div>
+                  <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
+                  <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
+                  <div class="stamp"></div><div class="stamp"></div>
+                </div>
+              </div>
+            </div>
+
+            <!-- Push prompt overlay -->
+            <div class="pp-overlay">
+              <div class="pp-backdrop"></div>
+              <div class="pp-sheet">
+                <div class="pp-handle"></div>
+
+                <div class="pp-avatar">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+                    <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+                    <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+                    <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+                  </svg>
+                </div>
+
+                <div class="pp-headline">ให้ผมเตือนตอนสำคัญได้ไหมครับ?</div>
+                <div class="pp-sub">ผมจะส่งแจ้งเตือนเมื่อ...</div>
+
+                <div class="pp-bullet-list">
+                  <div class="pp-bullet">
+                    <div class="pb-icon accent">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 11.08V12a10 10 0 11-5.93-9.14"/><polyline points="22 4 12 14.01 9 11.01"/></svg>
+                    </div>
+                    <span>ใกล้ครบบัตรแล้ว</span>
+                  </div>
+                  <div class="pp-bullet">
+                    <div class="pb-icon butter">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                        <polyline points="20 12 20 22 4 22 4 12"/>
+                        <rect x="2" y="7" width="20" height="5"/>
+                        <line x1="12" y1="22" x2="12" y2="7"/>
+                        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                      </svg>
+                    </div>
+                    <span>มีของฝากจากร้าน</span>
+                  </div>
+                </div>
+
+                <button class="pp-primary">เปิดให้ผมหน่อยครับ</button>
+                <a class="pp-secondary">ไว้ก่อน</a>
+              </div>
             </div>
           </div>
         </div>
       </div>
     </div>
+
     <!-- C1.guest — Daily card · guest mode (single shop) -->
     <div class="mockup">
       <div class="mockup-caption">
@@ -5191,9 +6742,7 @@
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
-            <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
-
-            <div class="shop-head">
+            <div class="shop-head hero">
               <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
               <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
             </div>
@@ -5244,32 +6793,41 @@
               </div>
             </div>
 
-            <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-            </div>
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab active" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
           </div>
         </div>
       </div>
     </div>
 
-    <!-- C4 — Ready to redeem (signup required) -->
+    <!-- C4 — Ready to redeem -->
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">C4</span>พี่ครบ 10 แต้มแล้ว</div>
-        <h3>สมัครก่อนรับรางวัลนะครับ</h3>
-        <p>ลูกค้าครบ 10 แต้ม — น้องแต้มชวนให้สมัครก่อนรับรางวัล (กันโกง + ร้านได้ติดต่อกลับลูกค้าได้)</p>
+        <h3>พร้อมรับรางวัลแล้ว</h3>
+        <p>ลูกค้าครบ 10 แต้ม — กดรับรางวัลได้เลย ไม่ต้องสมัคร · soft link ชวนสมัคร "เก็บบัตรไม่ให้หาย" ใต้ปุ่ม (optional)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td c4">
 
-            <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
-
-            <div class="shop-head">
+            <div class="shop-head hero">
               <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
               <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
             </div>
@@ -5289,7 +6847,7 @@
 
             <div class="redeem-num">
               <div class="big">10</div>
-              <div class="done">บอกที่ร้านรับเลย</div>
+              <div class="done">กดเพื่อรับ แล้วโชว์ที่ร้าน</div>
             </div>
 
             <div class="stamps-wrap">
@@ -5308,33 +6866,34 @@
             </div>
 
             <div class="redeem-gate">
-              <div class="gate-msg">
-                <span>สมัครก่อนรับรางวัลนะครับพี่</span>
-              </div>
-              <button class="ob-pill primary">
-                <span class="ob-pill-icon">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
-                </span>
-                <span class="ob-pill-text">สมัครด้วยไลน์</span>
+              <button class="redeem-cta">
+                <span>รับรางวัลตอนนี้</span>
+                <span class="redeem-arrow">→</span>
               </button>
-              <button class="ob-pill secondary">
-                <span class="ob-pill-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="5" y="2" width="14" height="20" rx="2"/>
-                    <line x1="12" y1="18" x2="12.01" y2="18"/>
-                  </svg>
-                </span>
-                <span class="ob-pill-text">สมัครด้วยเบอร์โทร</span>
-              </button>
+              <a class="redeem-soft-link">
+                <span class="rsl-spark">✦</span>
+                <span>สมัครเพื่อเก็บบัตรไม่ให้หาย</span>
+              </a>
             </div>
 
-            <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-            </div>
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab active" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
           </div>
         </div>
       </div>
@@ -5344,19 +6903,19 @@
       <div class="mockup-caption">
         <div class="kicker"><span class="n">C5</span>ขอบคุณที่กลับมาบ่อยๆ</div>
         <h3>ผมเริ่มเก็บใบใหม่ให้แล้ว</h3>
-        <p>ตัวนับวินาทีไหลทันที สกรีนช็อตปลอมไม่ได้ คูปองเหลืองมีรูเจาะข้าง บัตรถัดไปเริ่มที่ 0/10</p>
+        <p>คูปองมีเส้นไหลรอบ + เกล็ดดาวกระจาย — สกรีนช็อตจะหยุดนิ่ง ปลอมไม่ได้ · บัตรใบถัดไปเริ่มที่ 0/10 ทันที</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td c5">
-
-            <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
 
             <div class="claimed-hero">
               <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              <svg class="confetti c5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              <svg class="confetti c6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
 
               <div class="claimed-mark">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -5364,6 +6923,7 @@
                 </svg>
               </div>
               <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
+              <div class="claimed-sub">รางวัลของพี่พร้อมแล้ว</div>
             </div>
 
             <div class="voucher">
@@ -5377,9 +6937,8 @@
                 <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
                 <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               </div>
-              <div class="v-label">✦ คูปองของพี่ ✦</div>
-              <div class="v-title">กาแฟ Signature ฟรี 1 แก้ว</div>
-              <div class="v-id">#MHEE-A72B · 24.04.26</div>
+              <div class="v-title">กาแฟ Signature<br>ฟรี 1 แก้ว</div>
+              <div class="v-id">#MHEE-A72B · รับเมื่อ 24.04.26</div>
             </div>
 
             <div class="reset">
@@ -5397,13 +6956,24 @@
             </div>
             <div class="farewell">เจอกันครั้งหน้านะ</div>
 
-            <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-            </div>
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab active" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
           </div>
         </div>
       </div>
@@ -5437,20 +7007,13 @@
         <div class="phone-screen">
           <div class="td">
 
-            <div class="c7-greet">
-              <div class="hi">
-                สวัสดีครับพี่
-                <svg class="smile-inline" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                <span class="day">วันศุกร์ · ขอให้เป็นวันที่ดี</span>
+            <div class="page-head">
+              <div class="ph-text">
+                <h1>สวัสดีครับพี่สมศรี</h1>
+                <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
-              <div class="c7-actions">
-                <a class="c7-icon-btn" title="สแกน QR ของร้าน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
-                    <circle cx="12" cy="13" r="4"/>
-                  </svg>
-                </a>
-                <a class="c7-icon-btn" title="โชว์ QR ให้ร้านสแกน">
+              <div class="ph-actions">
+                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7" rx="1"/>
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -5470,7 +7033,10 @@
                 </div>
               </div>
               <div class="ss-bottom">
-                อีก <strong>2 ครั้ง</strong> ได้รางวัลแล้วครับพี่ ✦
+                <div class="ssb-logo lg-orchid">o<span class="dot">.</span></div>
+                <div class="ssb-text">
+                  <span class="ssb-shop">Orchid &amp; Oat</span> · อีก <strong>2 ครั้ง</strong> ได้โอ๊ตลาเต้ฟรี
+                </div>
               </div>
             </div>
 
@@ -5564,17 +7130,433 @@
               </div>
             </div>
 
-            <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-            </div>
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab active" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
           </div>
         </div>
       </div>
     </div>
+    <!-- Inbox — DeeReach message list (global, all shops) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Inbox</span>กล่องข้อความ · DeeReach</div>
+        <h3>ข้อความจากร้านทุกร้าน</h3>
+        <p>เปิดจาก dock "กล่อง" tab — ข้อความจากร้านที่พี่เก็บแต้ม. Reverse chronological · 90-day retention · มี filter pills (ทั้งหมด / ยังไม่อ่าน / มีของฝาก)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="page-head">
+              <div class="ph-text">
+                <h1>สวัสดีครับพี่สมศรี</h1>
+                <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
+              </div>
+              <div class="ph-actions">
+                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="inbox-filters">
+              <span class="inbox-filter-pill active">ทั้งหมด · 4</span>
+              <span class="inbox-filter-pill">ยังไม่อ่าน · 2</span>
+              <span class="inbox-filter-pill">มีของฝาก</span>
+            </div>
+
+            <div class="inbox-list">
+
+              <a class="inbox-card">
+                <span class="ic-unread-dot"></span>
+                <div class="ic-logo lg-mhee">m<span class="dot">.</span></div>
+                <div class="ic-body">
+                  <div class="ic-row">
+                    <div class="ic-shop">ร้านกาแฟลุงหมี</div>
+                    <div class="ic-time">2 ชม.</div>
+                  </div>
+                  <div class="ic-preview">คิดถึงพี่สมศรีนะ ☕ แวะมาทักหน่อยสิ</div>
+                  <div class="ic-offer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 12 20 22 4 22 4 12"/>
+                      <rect x="2" y="7" width="20" height="5"/>
+                      <line x1="12" y1="22" x2="12" y2="7"/>
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                    </svg>
+                    ของฝาก: ลด ฿20
+                  </div>
+                </div>
+              </a>
+
+              <a class="inbox-card">
+                <span class="ic-unread-dot"></span>
+                <div class="ic-logo lg-massage">น<span class="dot">.</span></div>
+                <div class="ic-body">
+                  <div class="ic-row">
+                    <div class="ic-shop">ร้านนวดแม่หม่อน</div>
+                    <div class="ic-time">เมื่อวาน</div>
+                  </div>
+                  <div class="ic-preview">อีก 2 ครั้ง พี่ก็ครบแล้วนะ — รอพี่อยู่ค่ะ</div>
+                </div>
+              </a>
+
+              <a class="inbox-card read">
+                <div class="ic-logo lg-orchid">o<span class="dot">.</span></div>
+                <div class="ic-body">
+                  <div class="ic-row">
+                    <div class="ic-shop">Orchid &amp; Oat</div>
+                    <div class="ic-time">3 วัน</div>
+                  </div>
+                  <div class="ic-preview">เมนูใหม่ Matcha Yuzu มาแล้ว 🍵</div>
+                </div>
+              </a>
+
+              <a class="inbox-card read">
+                <div class="ic-logo lg-noodle">b<span class="dot">.</span></div>
+                <div class="ic-body">
+                  <div class="ic-row">
+                    <div class="ic-shop">ก๋วยเตี๋ยวพี่บอย</div>
+                    <div class="ic-time">1 สัปดาห์</div>
+                  </div>
+                  <div class="ic-preview">วันเกิดพี่สมศรี! ขอให้มีความสุขนะครับ 🎂</div>
+                </div>
+              </a>
+
+            </div>
+
+            <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox.empty — Empty state for new users -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Inbox.empty</span>กล่องข้อความ · ว่าง</div>
+        <h3>ยังไม่มีข้อความ</h3>
+        <p>Empty state — น้องแต้ม voice อธิบายว่ายังไม่มีข้อความเข้ามา และจะเริ่มได้ยังไง</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="page-head">
+              <div class="ph-text">
+                <h1>สวัสดีครับพี่สมศรี</h1>
+                <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
+              </div>
+              <div class="ph-actions">
+                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+              </div>
+            </div>
+
+            <div class="inbox-empty">
+              <div class="ie-avatar">
+                <svg viewBox="0 0 100 100">
+                  <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+                  <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+                  <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+                  <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+              <div class="ie-msg">
+                <strong>ยังไม่มีข้อความนะครับ</strong><br>
+                เก็บแต้มที่ร้านโปรด พี่ก็จะได้ข่าวจากร้านที่นี่ครับ
+              </div>
+            </div>
+
+            <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox.detail — Message detail with offer (win-back) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Inbox.detail</span>ข้อความ · มีของฝาก</div>
+        <h3>เปิดข้อความ DeeReach</h3>
+        <p>เปิดจาก inbox card · shop logo + name · image hero · message body (shop voice) · offer card with claim button (primary) · เปิดบัตรของร้าน (link, secondary) · ปิดเสียงร้าน</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">ข้อความ</div>
+              <a class="more" aria-label="เพิ่มเติม">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+              </a>
+            </div>
+
+            <div class="inbox-detail-hero">
+              <div class="idh-logo">m<span class="dot">.</span></div>
+              <div class="idh-text">
+                <div class="idh-shop">ร้านกาแฟลุงหมี</div>
+                <div class="idh-meta">ฝากถึงพี่สมศรี · 2 ชม.ที่แล้ว</div>
+              </div>
+            </div>
+
+            <div class="inbox-detail-image" style="background: linear-gradient(135deg, #FFD952 0%, #FF8B57 50%, #FF5E3A 100%);">
+              <div class="idi-emoji">☕</div>
+            </div>
+
+            <div class="inbox-detail-body">
+              <h1>คิดถึงพี่สมศรีนะ ☕</h1>
+              <p>ห่างหายไปเดือนนึงแล้ว ลุงหมีคิดถึงนะครับ แวะมาเก็บแต้มต่อได้ทุกเมื่อ — เครื่องดื่มร้อนๆ รออยู่</p>
+            </div>
+
+            <div class="inbox-detail-offer">
+              <div class="ido-row">
+                <div class="ido-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <polyline points="20 12 20 22 4 22 4 12"/>
+                    <rect x="2" y="7" width="20" height="5"/>
+                    <line x1="12" y1="22" x2="12" y2="7"/>
+                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                  </svg>
+                </div>
+                <div class="ido-text">
+                  <div class="ido-label">ของฝากจากร้าน</div>
+                  <div class="ido-name">ลด ฿20 เมื่อซื้อกาแฟ</div>
+                  <div class="ido-condition">ใช้ก่อน 30 พ.ค. · โชว์หน้านี้ที่ร้าน</div>
+                </div>
+              </div>
+              <button class="ido-claim">รับของฝาก</button>
+            </div>
+
+            <div class="inbox-detail-cta">
+              <a class="idc-secondary">
+                เปิดบัตรของร้าน
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </a>
+            </div>
+
+            <div class="inbox-detail-mute">
+              <a>ปิดเสียงร้านนี้</a>
+            </div>
+
+            <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox.detail.no-offer — Message detail without offer (almost-there) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Inbox.detail</span>ข้อความ · ไม่มีของฝาก</div>
+        <h3>ข้อความที่ไม่มีของฝาก</h3>
+        <p>ตัวอย่าง almost-there nudge — ไม่มี offer card · "เปิดบัตรของร้าน" ขึ้นเป็น primary CTA สีดำเต็ม (adaptive layout)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">ข้อความ</div>
+              <a class="more" aria-label="เพิ่มเติม">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+              </a>
+            </div>
+
+            <div class="inbox-detail-hero">
+              <div class="idh-logo lg-massage">น<span class="dot">.</span></div>
+              <div class="idh-text">
+                <div class="idh-shop">ร้านนวดแม่หม่อน</div>
+                <div class="idh-meta">ฝากถึงพี่สมศรี · เมื่อวาน</div>
+              </div>
+            </div>
+
+            <div class="inbox-detail-body">
+              <h1>อีก 2 ครั้ง พี่ก็ครบแล้วนะ 🌿</h1>
+              <p>คิดถึงพี่สมศรีค่ะ — รอพี่อยู่นะ มา 2 ครั้งจะได้นวดฟรีแล้ว ครั้งหน้าแม่หม่อนจะรอบริการเองค่ะ</p>
+            </div>
+
+            <div class="inbox-detail-cta">
+              <button class="idc-primary">
+                เปิดบัตรของร้าน
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+              </button>
+            </div>
+
+            <div class="inbox-detail-mute">
+              <a>ปิดเสียงร้านนี้</a>
+            </div>
+
+            <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Inbox.voucher — Voucher activated full screen with QR -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Inbox.voucher</span>ของฝาก · เปิดใช้</div>
+        <h3>ของฝากเปิดใช้แล้ว · ให้ร้านสแกน QR</h3>
+        <p>หลังกด "รับของฝาก" → full-screen voucher with large QR · 5-min countdown · same celebration pattern as C5 (reward claimed)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">ของฝาก</div>
+              <a class="more" aria-label="เพิ่มเติม">
+                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
+              </a>
+            </div>
+
+            <div class="voucher-screen">
+              <div class="vs-shop">
+                <span class="vss-logo">m<span class="dot">.</span></span>
+                <span>ร้านกาแฟลุงหมี</span>
+              </div>
+
+              <div class="vs-headline">ของฝากของพี่สมศรี</div>
+              <div class="vs-offer">ลด ฿20</div>
+
+              <div class="vs-qr-frame">
+                <div class="vs-qr-pattern"></div>
+              </div>
+
+              <div class="vs-instruction">ให้พนักงานสแกน QR นี้</div>
+
+              <div class="vs-countdown">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                หมดใน 4:52
+              </div>
+
+              <div class="vs-condition">เมื่อซื้อกาแฟทุกชนิด · ใช้ได้ครั้งเดียว</div>
+            </div>
+
+            <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- C8 — Guest QR display (show to shop for scanning) -->
     <div class="mockup">
       <div class="mockup-caption">
@@ -5587,7 +7569,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">QR ของพี่</div>
               <div class="placeholder"></div>
             </div>
@@ -5677,6 +7661,25 @@
                 </div>
               </div>
             </div>
+
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab active" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
           </div>
         </div>
       </div>
@@ -5693,10 +7696,21 @@
         <div class="phone-screen">
           <div class="td">
 
-            <div class="app-bar">
-              <div class="x">←</div>
-              <div class="title-mid">บัญชีของพี่</div>
-              <div class="placeholder"></div>
+            <div class="page-head">
+              <div class="ph-text">
+                <h1>สวัสดีครับพี่สมศรี</h1>
+                <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
+              </div>
+              <div class="ph-actions">
+                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+              </div>
             </div>
 
             <div class="c6-profile-card">
@@ -5718,7 +7732,7 @@
                 </div>
                 <div class="row-info">
                   <div class="row-name">บัตรของพี่</div>
-                  <div class="row-meta">6 บัตร · ใกล้ครบ 1 ใบ</div>
+                  <div class="row-meta">6 บัตร · ที่ลุงหมี ครบแล้ว</div>
                 </div>
                 <span class="pill butter">พร้อม 1</span>
               </div>
@@ -5743,10 +7757,11 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
                 </div>
                 <div class="row-info">
-                  <div class="row-name">ข้อความจากร้าน</div>
-                  <div class="row-meta">โปรชวนกลับ · ใกล้ครบบัตร</div>
+                  <div class="row-name">การแจ้งเตือน</div>
+                  <div class="row-meta">ช่องทาง · ร้านที่ปิดเสียง</div>
                 </div>
-                <div class="c6-toggle on"><div class="dot"></div></div>
+                <span class="pill butter">เปิด</span>
+                <div class="arrow-r">›</div>
               </div>
 
               <div class="s10-row">
@@ -5774,16 +7789,120 @@
 
             <button class="s10-logout">ออกจากระบบ</button>
 
+            <a class="c6-delete-account">ลบบัญชี · แต้มและข้อมูลทั้งหมดจะถูกลบ</a>
+
             <div class="c6-version">
               <span class="brand">taemdee<span class="dot">.</span></span> · เวอร์ชัน 1.0.2
             </div>
-                      <div class="footer-mark">
-                        <span class="fm-brand">
-                          <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                          <span class="brand">taemdee<span class="dot">.</span></span>
-                        </span>
-                        <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-                      </div>
+
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab active" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C6.notifications — Notification preferences (channel + muted shops) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C6.notif</span>การแจ้งเตือน</div>
+        <h3>ตั้งค่าการแจ้งเตือน</h3>
+        <p>เปิดจาก C6 row "การแจ้งเตือน" — master toggle · ช่องทางที่ใช้รับ (Auto / In-app only) · ร้านที่ปิดเสียง</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">การแจ้งเตือน</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <!-- Master toggle -->
+            <div class="s10-section">
+              <div class="s10-row">
+                <div class="row-icon mint">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+                </div>
+                <div class="row-info">
+                  <div class="row-name">รับข้อความจากร้าน</div>
+                  <div class="row-meta">โปรชวนกลับ · ใกล้ครบบัตร · วันเกิด</div>
+                </div>
+                <div class="c6-toggle on"><div class="dot"></div></div>
+              </div>
+            </div>
+
+            <!-- Channel preference -->
+            <div class="s10-section">
+              <div class="label">ช่องทางที่ใช้รับ</div>
+              <div class="notif-radio-list">
+
+                <div class="notif-radio selected">
+                  <span class="nr-circle"></span>
+                  <div class="nr-text">
+                    <div class="nr-name">อัตโนมัติ <span class="nr-badge">แนะนำ</span></div>
+                    <div class="nr-desc">ระบบเลือกช่องที่ดีที่สุดให้พี่ — เร็ว ประหยัด</div>
+                  </div>
+                </div>
+
+                <div class="notif-radio">
+                  <span class="nr-circle"></span>
+                  <div class="nr-text">
+                    <div class="nr-name">ในแอปเท่านั้น</div>
+                    <div class="nr-desc">ไม่เด้ง · ดูในกล่องเอง</div>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
+            <!-- Muted shops -->
+            <div class="s10-section">
+              <div class="label">ร้านที่ปิดเสียง · 1</div>
+              <div class="notif-mute-row">
+                <div class="nm-logo lg-noodle">b<span class="dot">.</span></div>
+                <div class="nm-name">ก๋วยเตี๋ยวพี่บอย</div>
+                <a class="nm-unmute">เปิดเสียง</a>
+              </div>
+            </div>
+
+            <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab active" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
           </div>
         </div>
       </div>
@@ -5801,7 +7920,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ทำความรู้จัก</div>
               <div class="placeholder"></div>
             </div>
@@ -5866,7 +7987,7 @@
               </div>
               <div class="c9-review">
                 <div class="c9-review-stars">★★★★★</div>
-                <div class="c9-review-text">"กาแฟอร่อยมาก พี่หมีจำหน้าได้ตลอด · บรรยากาศร้านดี"</div>
+                <div class="c9-review-text">"กาแฟอร่อยมาก เจ้าของร้านน่ารัก จำหน้าได้ตลอด · บรรยากาศร้านดี"</div>
                 <div class="c9-review-meta">— คุณน้อย · ลูกค้าประจำ 2 ปี</div>
               </div>
               <div class="c9-review">
@@ -5884,13 +8005,24 @@
               </button>
             </div>
 
-            <div class="footer-mark">
-              <span class="fm-brand">
-                <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                <span class="brand">taemdee<span class="dot">.</span></span>
-              </span>
-              <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-            </div>
+                        <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab active" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ตั้งค่า">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
+                <span class="gn-label">ตั้งค่า</span>
+              </a>
+            </nav>
           </div>
         </div>
       </div>
@@ -5913,12 +8045,12 @@
 
   <div class="grid">
 
-    <!-- Install sheet preview (bottom sheet UI) -->
+    <!-- Install sheet · Android variant (default with native install API) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">⤴</span>เก็บไว้ใกล้มือ</div>
+        <div class="kicker"><span class="n">Install</span>เพิ่มลงหน้าจอ · Android</div>
         <h3>เพิ่มผมลงหน้าจอพี่</h3>
-        <p>เปิดขึ้นเมื่อกดป้าย "เพิ่มแต้มดีลงหน้าจอ" จากหน้าใดก็ได้ (C1 / C2 / C5 / C7)</p>
+        <p><strong>Trigger:</strong> <code>!isPWA && stamps >= 2</code> — auto-prompt หลังเก็บแต้มที่ 2 · <strong>Stage 1 ของ DeeReach push setup</strong>. Hero เน้น <strong>home screen mock-up</strong> ที่ TaemDee icon spotlit · Android Chrome: กด CTA → trigger <code>beforeinstallprompt</code> (native dialog)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -5932,67 +8064,141 @@
               <div class="install-sheet">
                 <div class="sheet-handle"></div>
 
-                <div class="sheet-pitch">
-                  <svg class="stamp-big" viewBox="0 0 100 100" width="44" height="44">
-                    <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-                    <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-                    <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-                    <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
-                  </svg>
-                  <div class="pitch-h">เพิ่ม<em>แต้มดี</em>ลงหน้าจอ</div>
-                  <div class="pitch-s">เปิดเหมือนแอป · เปิดเร็วทุกครั้ง</div>
-                </div>
-
-                <div class="platforms">
-                  <div class="plat-tile">
-                    <div class="plat-h">iPhone · Safari</div>
-                    <div class="plat-step">
-                      <div class="step-ico">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-                          <polyline points="16 6 12 2 8 6"/>
-                          <line x1="12" y1="2" x2="12" y2="15"/>
-                        </svg>
+                <!-- Home screen mock + spotlit TaemDee icon -->
+                <div class="home-mock">
+                  <div class="icon-row">
+                    <div class="app-icon dim">
+                      <div class="tile t1">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/></svg>
                       </div>
-                      <div class="step-txt">กด Share</div>
+                      <div class="label">FaceTime</div>
                     </div>
-                    <div class="plat-step">
-                      <div class="step-ico">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
-                          <line x1="12" y1="5" x2="12" y2="19"/>
-                          <line x1="5" y1="12" x2="19" y2="12"/>
-                        </svg>
+                    <div class="app-icon dim">
+                      <div class="tile t2">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 9a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.5a2 2 0 110-4 2 2 0 010 4zM20 5h-3.17l-1.86-2H9.03L7.17 5H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2z"/></svg>
                       </div>
-                      <div class="step-txt">"Add to Home Screen"</div>
+                      <div class="label">Camera</div>
                     </div>
-                  </div>
-
-                  <div class="plat-tile">
-                    <div class="plat-h">Android · Chrome</div>
-                    <div class="plat-step">
-                      <div class="step-ico">
-                        <svg viewBox="0 0 24 24" fill="currentColor">
-                          <circle cx="12" cy="5" r="2"/>
-                          <circle cx="12" cy="12" r="2"/>
-                          <circle cx="12" cy="19" r="2"/>
+                    <div class="app-icon spotlight">
+                      <div class="tile">
+                        <svg viewBox="0 0 100 100">
+                          <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+                          <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+                          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
                         </svg>
                       </div>
-                      <div class="step-txt">กด ⋮ menu</div>
+                      <div class="label">แต้มดี</div>
                     </div>
-                    <div class="plat-step">
-                      <div class="step-ico">
-                        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-                          <polyline points="7 10 12 15 17 10"/>
-                          <line x1="12" y1="15" x2="12" y2="3"/>
-                        </svg>
+                    <div class="app-icon dim">
+                      <div class="tile t4">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#E91E63"/><circle cx="12" cy="12" r="6" fill="none" stroke="#E91E63" stroke-width="2.5"/></svg>
                       </div>
-                      <div class="step-txt">"ติดตั้งแอป"</div>
+                      <div class="label">Photos</div>
                     </div>
                   </div>
                 </div>
 
-                <button class="sheet-close">เข้าใจแล้ว</button>
+                <div class="pitch-h">เพิ่ม<em>ผม</em>ลงหน้าจอพี่</div>
+                <div class="pitch-s">ตามนี้นะครับ ↑ บนหน้าจอพี่ — ไม่ต้องสแกน QR ทุกครั้ง</div>
+
+                <button class="sheet-cta">
+                  เพิ่มลงหน้าจอ
+                  <span class="arr">→</span>
+                </button>
+
+                <button class="sheet-close">ไว้ก่อน</button>
+              </div>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Install sheet · iOS variant (with instruction steps) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Install.iOS</span>เพิ่มลงหน้าจอ · iPhone</div>
+        <h3>iOS Safari · มี step-by-step</h3>
+        <p>หน้าเดียวกัน · เนื้อหาเปลี่ยนเมื่อ <code>userAgent.includes('iPhone')</code> · iOS Safari ไม่มี <code>beforeinstallprompt</code> API · ต้องสอนวิธี · sub เปลี่ยนเป็น "ทำตาม 2 ขั้น ↓" · เพิ่ม 2 step rows · CTA เปลี่ยนเป็น "เข้าใจแล้ว" สีดำ</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="shop-head">
+              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+              <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+            </div>
+
+            <div class="install-sheet-overlay">
+              <div class="install-sheet">
+                <div class="sheet-handle"></div>
+
+                <!-- Home screen mock + spotlit TaemDee icon (same) -->
+                <div class="home-mock">
+                  <div class="icon-row">
+                    <div class="app-icon dim">
+                      <div class="tile t1">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/></svg>
+                      </div>
+                      <div class="label">FaceTime</div>
+                    </div>
+                    <div class="app-icon dim">
+                      <div class="tile t2">
+                        <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 9a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.5a2 2 0 110-4 2 2 0 010 4zM20 5h-3.17l-1.86-2H9.03L7.17 5H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2z"/></svg>
+                      </div>
+                      <div class="label">Camera</div>
+                    </div>
+                    <div class="app-icon spotlight">
+                      <div class="tile">
+                        <svg viewBox="0 0 100 100">
+                          <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+                          <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+                          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+                        </svg>
+                      </div>
+                      <div class="label">แต้มดี</div>
+                    </div>
+                    <div class="app-icon dim">
+                      <div class="tile t4">
+                        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#E91E63"/><circle cx="12" cy="12" r="6" fill="none" stroke="#E91E63" stroke-width="2.5"/></svg>
+                      </div>
+                      <div class="label">Photos</div>
+                    </div>
+                  </div>
+                </div>
+
+                <div class="pitch-h">เพิ่ม<em>ผม</em>ลงหน้าจอพี่</div>
+                <div class="pitch-s">ทำตาม 2 ขั้นนะครับ ↓</div>
+
+                <div class="ios-steps">
+                  <div class="ios-step">
+                    <div class="ios-num">1</div>
+                    <div class="ios-step-text">กดปุ่ม <strong>Share</strong> ด้านล่าง</div>
+                    <div class="ios-step-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                        <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                        <polyline points="16 6 12 2 8 6"/>
+                        <line x1="12" y1="2" x2="12" y2="15"/>
+                      </svg>
+                    </div>
+                  </div>
+                  <div class="ios-step">
+                    <div class="ios-num">2</div>
+                    <div class="ios-step-text">เลือก <strong>"Add to Home Screen"</strong></div>
+                    <div class="ios-step-icon">
+                      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                        <line x1="12" y1="5" x2="12" y2="19"/>
+                        <line x1="5" y1="12" x2="19" y2="12"/>
+                      </svg>
+                    </div>
+                  </div>
+                </div>
+
+                <button class="sheet-cta cta-dark">
+                  เข้าใจแล้ว
+                </button>
+
+                <button class="sheet-close">ไว้ก่อน</button>
               </div>
             </div>
           </div>
@@ -6011,7 +8217,7 @@
     <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
     <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
   </svg>
-  <h3>ครบ 12 หน้าจอลูกค้า <span class="accent">·</span> Design v1</h3>
+  <h3>ครบ 23 หน้าจอลูกค้า <span class="accent">·</span> Design v1</h3>
   <p>
     เริ่มจาก C2 (สแกนครั้งแรก) ผ่าน C3 (ยืนยันเบอร์) ใช้งานประจำที่ C1/C4/C5 จัดการบัตรที่ C7/C6 และเพิ่มลงหน้าจอด้วย bottom sheet — ทำเสร็จก่อนค่อยขยับไปฝั่งร้าน
   </p>

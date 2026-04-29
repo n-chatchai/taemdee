@@ -332,36 +332,59 @@
   /* ========================================================== */
   /* SHARED COMPONENTS                                           */
   /* ========================================================== */
+  /* ───────── Unified app bar · ←back · title · right action/placeholder ───────── */
   .app-bar {
-    padding: 48px 20px 12px;
-    display: flex; justify-content: space-between; align-items: center;
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 14px 16px;
     position: sticky;
     top: 0;
     background: var(--bg);
     z-index: 5;
     backdrop-filter: blur(8px);
     -webkit-backdrop-filter: blur(8px);
+    flex-shrink: 0;
   }
-  .app-bar .x {
-    width: 34px; height: 34px;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.18);
+  .app-bar .x,
+  .app-bar .more {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 36px;
+    height: 36px;
+    background: rgba(17,17,17,0.05);
+    border: none;
     border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    box-shadow: none;
-    cursor: pointer; font-size: 16px;
+    cursor: pointer;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .app-bar .x svg {
+    width: 16px;
+    height: 16px;
+  }
+  .app-bar .more svg {
+    width: 18px;
+    height: 18px;
   }
   .app-bar .title-mid {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 14px;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .app-bar .placeholder {
+    width: 36px;
+    height: 36px;
   }
   .app-bar .right-action {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px; font-weight: 500;
+    font-size: 12px;
+    font-weight: 500;
     color: var(--ink-soft);
     cursor: pointer;
   }
-  .app-bar .placeholder { width: 34px; }
 
   .page-title {
     padding: 22px 20px 0;
@@ -6706,10 +6729,10 @@
   <div class="cover-top">
     <div class="cover-mark">
       <svg class="cover-logo-stamp" viewBox="0 0 100 100" width="32" height="32" aria-hidden="true">
-        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+        <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+        <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
       </svg>
       <span class="cover-wordmark">แต้มดี<span class="td-dot">.</span></span>
     </div>
@@ -6788,7 +6811,7 @@
 
             <div class="hm-nav">
               <div class="nav-mark">
-                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
+                <svg viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="9" fill="#FFD952"/><circle cx="64" cy="42" r="9" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/></svg>
                 <span class="brand">แต้มดี<span class="dot">.</span></span>
               </div>
               <span class="nav-login">เข้าสู่ระบบ</span>
@@ -6866,10 +6889,10 @@
             <div class="s1-hero">
               <div class="s1-logo-mark">
                 <svg class="smile-stamp" viewBox="0 0 100 100" width="72" height="72">
-                  <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-                  <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-                  <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-                  <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+                  <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+                  <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+                  <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+                  <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
                 </svg>
               </div>
               <div class="s1-name">แต้มดี<span class="dot">.</span></div>
@@ -8543,7 +8566,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ชวนลูกค้าหายไป</div>
               <div class="placeholder"></div>
             </div>
@@ -8698,7 +8723,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ตั้งค่า</div>
               <div class="placeholder"></div>
             </div>
@@ -8886,7 +8913,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ข้อมูลร้าน</div>
               <div class="placeholder"></div>
             </div>
@@ -8951,7 +8980,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ที่อยู่</div>
               <div class="placeholder"></div>
             </div>
@@ -9016,7 +9047,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ติดต่อ</div>
               <div class="placeholder"></div>
             </div>
@@ -9098,7 +9131,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">วิธีออกแต้ม</div>
               <div class="placeholder"></div>
             </div>
@@ -9202,7 +9237,9 @@
           <div class="td">
 
             <div class="s7-top">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="help">ช่วยเหลือ?</div>
             </div>
 
@@ -9285,7 +9322,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">เติมเครดิต</div>
               <div class="right-action">ช่วยเหลือ</div>
             </div>
@@ -9395,7 +9434,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">คิวอาร์ร้าน</div>
               <div class="placeholder"></div>
             </div>
@@ -9512,7 +9553,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ธีม</div>
               <div class="right-action">บันทึก</div>
             </div>
@@ -9603,7 +9646,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">ทีม</div>
               <div class="right-action">3 คน</div>
             </div>
@@ -9665,7 +9710,9 @@
           <div class="td">
 
             <div class="app-bar">
-              <div class="x">←</div>
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
               <div class="title-mid">สาขา</div>
               <div class="right-action">3 สาขา</div>
             </div>
