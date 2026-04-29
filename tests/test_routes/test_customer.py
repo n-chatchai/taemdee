@@ -182,8 +182,11 @@ async def test_my_cards_renders_for_guest_without_banner(client, shop):
     # Guest banner removed; picker still wired in for other CTAs
     assert "guest-banner-bottom" not in body
     assert 'id="signup-picker"' in body
-    # No claimed-only avatar shortcut (guests don't have an account page)
-    assert 'href="/card/account"' not in body
+    # No claimed-only avatar shortcut in the page-head (guests don't have an
+    # account page). The dock now also points at /card/account, which for
+    # guests redirects to /card/save — that link is fine. We only check the
+    # specific page-head avatar pattern is absent.
+    assert 'class="avatar"' not in body
 
 
 async def test_my_cards_shows_unread_dot_only_for_shops_with_pending_inbox(
@@ -277,6 +280,23 @@ async def test_card_shop_head_links_to_story(client, shop):
     so customers can tap to learn about the shop (per design)."""
     body = (await client.get(f"/card/{shop.id}")).text
     assert f'href="/story/{shop.id}"' in body
+
+
+async def test_customer_dock_renders_on_main_pages(client, shop):
+    """Customer 4-tab dock (c-glass-nav) is mounted on every main customer
+    page per design. Onboarding screens (C2/C3) don't have it."""
+    # Card view (C1)
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert "c-glass-nav" in body
+    assert 'href="/my-cards"' in body and 'href="/my-inbox"' in body
+    # /my-cards (C7)
+    assert "c-glass-nav" in (await client.get("/my-cards")).text
+    # /my-inbox (Inbox)
+    assert "c-glass-nav" in (await client.get("/my-inbox")).text
+    # /story/{id} (C9)
+    assert "c-glass-nav" in (await client.get(f"/story/{shop.id}")).text
+    # Onboarding C3 (Soft Wall) does NOT have the dock
+    assert "c-glass-nav" not in (await client.get("/card/save")).text
 
 
 async def test_card_unknown_shop_renders_friendly_page(client):

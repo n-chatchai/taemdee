@@ -9420,3 +9420,106 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1.55;
   color: var(--ink-soft);
 }
+
+/* Customer dock · liquid glass nav. Pinned to bottom on every C1/C5/C7/
+   Inbox/C6/C9/C8 — mirrors shop-side .s3-glass-nav. Position FIXED, not
+   sticky (design says sticky but .td overflow-x:hidden breaks sticky-
+   bottom in prod — see memory feedback_dock_position_fixed). */
+.c-glass-nav {
+  position: fixed;
+  left: 0;
+  right: 0;
+  bottom: 12px;
+  z-index: 6;
+  margin: 0 auto;
+  max-width: calc(100% - 32px);
+  padding: 6px;
+  border-radius: 22px;
+  background: linear-gradient(
+    135deg,
+    rgba(255, 250, 240, 0.7) 0%,
+    rgba(255, 240, 220, 0.6) 50%,
+    rgba(255, 250, 240, 0.7) 100%
+  );
+  backdrop-filter: blur(16px) saturate(180%);
+  -webkit-backdrop-filter: blur(16px) saturate(180%);
+  border: 1px solid rgba(255, 255, 255, 0.5);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.6),
+    inset 0 -1px 0 rgba(17, 17, 17, 0.05),
+    0 8px 24px -8px rgba(17, 17, 17, 0.18),
+    0 2px 8px -2px rgba(17, 17, 17, 0.08);
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 4px;
+}
+.c-glass-nav .gn-tab {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  gap: 3px;
+  padding: 8px 4px;
+  border-radius: 16px;
+  cursor: pointer;
+  text-decoration: none;
+  color: var(--ink-soft);
+  transition: all 0.15s ease;
+}
+.c-glass-nav .gn-tab .gn-icon {
+  width: 22px;
+  height: 22px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  position: relative;
+}
+.c-glass-nav .gn-tab .gn-icon svg {
+  width: 100%;
+  height: 100%;
+  stroke-width: 2;
+}
+.c-glass-nav .gn-tab .gn-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  font-weight: 500;
+  line-height: 1;
+}
+.c-glass-nav .gn-tab.active {
+  background: linear-gradient(
+    135deg,
+    rgba(17, 17, 17, 0.92) 0%,
+    rgba(17, 17, 17, 1) 100%
+  );
+  color: var(--butter);
+  box-shadow:
+    inset 0 1px 0 rgba(255, 255, 255, 0.1),
+    0 2px 8px -2px rgba(17, 17, 17, 0.3);
+}
+.c-glass-nav .gn-tab.active .gn-icon svg {
+  fill: rgba(255, 217, 82, 0.15);
+}
+.c-glass-nav .gn-tab:active {
+  transform: scale(0.96);
+}
+.c-glass-nav .gn-badge {
+  position: absolute;
+  top: -2px; right: -4px;
+  width: 8px; height: 8px;
+  border-radius: 50%;
+  background: var(--accent);
+  box-shadow: 0 0 0 2px var(--bg);
+  animation: c-gn-badge-pulse 1.6s ease-out infinite;
+}
+@keyframes c-gn-badge-pulse {
+  0%   { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
+  70%  { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
+  100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
+}
+
+/* When the dock is present, leave room at the bottom of `.td` so it doesn't
+   sit on top of the last content row. Applied via .has-c-dock on the
+   container so it's opt-in per page. */
+.td.has-c-dock {
+  padding-bottom: 88px;
+}

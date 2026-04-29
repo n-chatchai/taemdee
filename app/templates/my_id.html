@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
-  <div class="td">
+  <div class="td has-c-dock">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
@@ -52,6 +52,9 @@
     </div>
 
     {% include "_partials/footer_mark.html" %}
+
+    {% set nav_active = 'cards' %}
+    {% include "_partials/c_dock.html" %}
   </div>
 
   {# Anti-screenshot: a visible 60-sec countdown that reloads the page when it

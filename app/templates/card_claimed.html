@@ -10,7 +10,7 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
-  <div class="td c5">
+  <div class="td c5 has-c-dock">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="claimed-hero">
@@ -67,6 +67,9 @@
     <div class="farewell">เจอกันครั้งหน้านะ</div>
 
     {% include "_partials/footer_mark.html" %}
+
+    {% set nav_active = 'cards' %}
+    {% include "_partials/c_dock.html" %}
   </div>
 </body>
 </html>

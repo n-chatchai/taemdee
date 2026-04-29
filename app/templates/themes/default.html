@@ -13,7 +13,7 @@
   {% set is_full = point_count >= shop.reward_threshold %}
   {% set is_guest = customer and customer.is_anonymous %}
   {% set logo = shop_logo(shop) %}
-  <div class="td theme-{{ shop.theme_name|default('taemdee') }} {% if is_full %}c4{% endif %} {% if just_stamped %}cel-shake{% endif %}">
+  <div class="td has-c-dock theme-{{ shop.theme_name|default('taemdee') }} {% if is_full %}c4{% endif %} {% if just_stamped %}cel-shake{% endif %}">
     {% if just_stamped %}{% include "_partials/scan_celebration.html" %}{% endif %}
     <div class="topbar"><span></span><span></span></div>
 
@@ -134,6 +134,9 @@
        via the C4 redeem gate (signup_picker still mounted below). #}
 
     {% include "_partials/footer_mark.html" %}
+
+    {% set nav_active = 'cards' %}
+    {% include "_partials/c_dock.html" %}
 
     {% if is_guest %}
       {# Pass next_redeem only on the C4 gate (full card) so a guest who

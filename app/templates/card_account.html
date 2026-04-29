@@ -11,7 +11,7 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td" x-data="{ armed: false }">
+  <div class="td has-c-dock" x-data="{ armed: false }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
@@ -119,6 +119,9 @@
     </div>
 
     {% include "_partials/footer_mark.html" %}
+
+    {% set nav_active = 'settings' %}
+    {% include "_partials/c_dock.html" %}
   </div>
 </body>
 </html>

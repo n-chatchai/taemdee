@@ -11,7 +11,7 @@
 </head>
 <body>
   {% set is_guest = customer and customer.is_anonymous %}
-  <div class="td">
+  <div class="td has-c-dock">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="c7-greet">
@@ -131,6 +131,10 @@
        The signup_picker stays below in case other CTAs want to open it. #}
 
     {% include "_partials/footer_mark.html" %}
+
+    {% set nav_active = 'cards' %}
+    {% set nav_inbox_badge = inbox_unread > 0 %}
+    {% include "_partials/c_dock.html" %}
 
     {% if is_guest %}
       {% include "_partials/signup_picker.html" %}

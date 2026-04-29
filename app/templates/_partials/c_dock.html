@@ -1,0 +1,45 @@
+{# Customer dock — 4-tab liquid-glass bottom nav. Caller passes `nav_active`
+   = one of "cards" / "scan" / "inbox" / "settings" to highlight the current
+   tab. Optional `nav_inbox_badge=True` for an unread-message dot.
+
+   NB per memory `feedback_dock_position_fixed.md`: must be position fixed
+   even though design says sticky — `.td` overflow-x:hidden breaks sticky-
+   bottom in production. CSS lives at .c-glass-nav. #}
+<nav class="c-glass-nav" aria-label="Main navigation">
+  <a class="gn-tab{% if nav_active == 'cards' %} active{% endif %}" href="/my-cards" aria-label="บัตรของฉัน">
+    <span class="gn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="2" y="6" width="20" height="14" rx="3"/>
+        <line x1="2" y1="11" x2="22" y2="11"/>
+      </svg>
+    </span>
+    <span class="gn-label">บัตร</span>
+  </a>
+  <a class="gn-tab{% if nav_active == 'scan' %} active{% endif %}" href="/scan-shop" aria-label="สแกน">
+    <span class="gn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+        <circle cx="12" cy="13" r="4"/>
+      </svg>
+    </span>
+    <span class="gn-label">สแกน</span>
+  </a>
+  <a class="gn-tab{% if nav_active == 'inbox' %} active{% endif %}" href="/my-inbox" aria-label="กล่องข้อความ">
+    <span class="gn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      {% if nav_inbox_badge %}<span class="gn-badge"></span>{% endif %}
+    </span>
+    <span class="gn-label">ข้อความ</span>
+  </a>
+  <a class="gn-tab{% if nav_active == 'settings' %} active{% endif %}" href="/card/account" aria-label="ตั้งค่า">
+    <span class="gn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
+        <circle cx="12" cy="7" r="4"/>
+      </svg>
+    </span>
+    <span class="gn-label">ตั้งค่า</span>
+  </a>
+</nav>
