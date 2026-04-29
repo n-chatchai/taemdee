@@ -13,7 +13,8 @@
 <body>
   <div class="td c3" x-data="{
         step: 'phone', phone: '', code: '', error: '', simulatedCode: '',
-        nextRedeem: '{{ next_redeem or '' }}'
+        nextRedeem: '{{ next_redeem or '' }}',
+        drConsent: true
       }">
     <div class="topbar"><span></span><span></span></div>
 
@@ -47,6 +48,22 @@
                    x-model="phone" placeholder="08X-XXX-XXXX" required />
           </div>
 
+          {# DeeReach opt-in toggle (PRD §10) — defaults ON. OFF reveals
+             the inbox-fallback plea below; submit value rides through to
+             /card/claim/phone where mute lands per-shop. #}
+          <div class="consent-toggle" :class="{ off: !drConsent }"
+               @click="drConsent = !drConsent">
+            <div class="ct-info">
+              <div class="ct-title">ให้ร้านส่งข้อความหาพี่</div>
+              <div class="ct-sub">เตือนแต้มใกล้ครบ ของฝากและโปรพิเศษจากร้าน</div>
+            </div>
+            <div class="ct-switch"><div class="ct-dot"></div></div>
+          </div>
+          <div class="consent-plea">
+            พี่ครับ เตือนแต้มกับของฝากจากร้าน ผมยังเก็บไว้ในกล่องข้อความให้นะครับ
+            อย่าลืมเข้ามาดูนะครับ
+          </div>
+
           <button type="submit" class="btn btn-primary">
             ส่ง OTP
             <span class="arr">→</span>
@@ -75,6 +92,7 @@
               const fd = new FormData();
               fd.append('phone', phone); fd.append('code', code);
               if (nextRedeem) fd.append('next_redeem', nextRedeem);
+              fd.append('dr_consent', drConsent ? 'on' : 'off');
               const r = await fetch('/card/claim/phone', { method: 'POST', body: fd });
               const j = await r.json().catch(() => ({}));
               if (r.ok) { window.location.href = j.next_url || '/my-cards'; }

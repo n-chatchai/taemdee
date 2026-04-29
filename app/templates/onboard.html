@@ -94,10 +94,12 @@
         <div class="ob-num-sub">อีก <strong>{{ shop.reward_threshold - point_count }} ครั้ง</strong> ได้รางวัล</div>
       </div>
 
-      <div class="ob-stamps">
-        {% for i in range(1, shop.reward_threshold + 1) %}
-          <div class="ob-stamp{% if i <= point_count %} on{% endif %}"></div>
-        {% endfor %}
+      <div class="stamps-wrap">
+        <div class="ob-stamps">
+          {% for i in range(1, shop.reward_threshold + 1) %}
+            <div class="ob-stamp{% if i <= point_count %} on{% endif %}"></div>
+          {% endfor %}
+        </div>
       </div>
 
       <div class="ob-reward-card">

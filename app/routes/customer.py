@@ -443,12 +443,20 @@ async def claim_phone(
     code: str = Form(...),
     display_name: Optional[str] = Form(None),
     next_redeem: Optional[str] = Form(None),
+    dr_consent: Optional[str] = Form("on"),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
     """Soft Wall: customer verifies their phone via OTP and merges/promotes the
     anonymous account to a claimed one. Refreshes the customer cookie since the
     resulting customer_id may change (merge case).
+
+    `dr_consent` reflects the C3 toggle's state at submit time:
+      'on'  → opt in to DeeReach from the shop they're signing up at
+              (default — no mute row written).
+      'off' → mute that shop so future DeeReach campaigns skip them.
+              The mute is per-shop (PRD §10), other shops they collect
+              stamps at later are unaffected.
 
     If `next_redeem=<shop_id>` is set (the C4 gate flow passes it through the
     sheet), we attempt the redemption immediately and return its claimed URL
@@ -465,24 +473,40 @@ async def claim_phone(
     claimed = await claim_by_phone(db, customer, phone, display_name=display_name)
 
     next_url = "/my-cards"
+    target_shop_id: Optional[uuid.UUID] = None
     if next_redeem:
         try:
-            shop_id = uuid.UUID(next_redeem)
+            target_shop_id = uuid.UUID(next_redeem)
         except ValueError:
-            shop_id = None
-        if shop_id:
-            shop = await db.get(Shop, shop_id)
-            if shop:
-                try:
-                    redemption = await redeem(db, shop, claimed)
-                    publish(
-                        shop.id,
-                        "feed-row",
-                        feed_row_html("redemption", redemption.id, bkk_feed_time(redemption.created_at), claimed.display_name or "ลูกค้า"),
-                    )
-                    next_url = f"/card/{shop.id}/claimed?r={redemption.id}"
-                except RedemptionError:
-                    pass  # fall through to /my-cards
+            target_shop_id = None
+    if target_shop_id:
+        shop = await db.get(Shop, target_shop_id)
+        if shop:
+            try:
+                redemption = await redeem(db, shop, claimed)
+                publish(
+                    shop.id,
+                    "feed-row",
+                    feed_row_html("redemption", redemption.id, bkk_feed_time(redemption.created_at), claimed.display_name or "ลูกค้า"),
+                )
+                next_url = f"/card/{shop.id}/claimed?r={redemption.id}"
+            except RedemptionError:
+                pass  # fall through to /my-cards
+
+    # Honour the consent toggle — opt-out → write a CustomerShopMute row
+    # for the shop the customer just claimed at. _audience_for filters on
+    # this in the DeeReach pipeline.
+    if dr_consent != "on" and target_shop_id:
+        from app.models import CustomerShopMute
+        existing_mute = (await db.exec(
+            select(CustomerShopMute).where(
+                CustomerShopMute.customer_id == claimed.id,
+                CustomerShopMute.shop_id == target_shop_id,
+            )
+        )).first()
+        if not existing_mute:
+            db.add(CustomerShopMute(customer_id=claimed.id, shop_id=target_shop_id))
+            await db.commit()
 
     response = JSONResponse({"claimed": True, "customer_id": str(claimed.id), "next_url": next_url})
     set_customer_cookie(response, claimed.id)

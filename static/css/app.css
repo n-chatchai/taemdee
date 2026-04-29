@@ -4157,6 +4157,76 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
   display: block;
 }
+/* DeeReach consent toggle — used in C3 phone signup + C3.line LINE
+   confirm. Toggle ON = customer opts in for the shop they're signing
+   up at (no mute row); OFF flips the .ct-switch grey + reveals the
+   .consent-plea below explaining inbox-fallback so the owner doesn't
+   feel like they lost the customer entirely. */
+.consent-toggle {
+  margin-top: 16px;
+  margin-bottom: 14px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  cursor: pointer;
+  user-select: none;
+}
+.consent-toggle .ct-info { flex: 1; min-width: 0; }
+.consent-toggle .ct-title {
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}
+.consent-toggle .ct-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+  line-height: 1.5;
+}
+.consent-toggle .ct-switch {
+  flex-shrink: 0;
+  width: 40px;
+  height: 24px;
+  background: var(--accent);
+  border-radius: 99px;
+  display: flex;
+  align-items: center;
+  padding: 0 3px;
+  justify-content: flex-end;
+  transition: background 0.15s ease, justify-content 0.15s ease;
+}
+.consent-toggle .ct-switch .ct-dot {
+  width: 18px;
+  height: 18px;
+  background: #fff;
+  border-radius: 50%;
+  box-shadow: 0 1px 2px rgba(17, 17, 17, 0.18);
+}
+.consent-toggle.off .ct-switch {
+  background: rgba(17, 17, 17, 0.18);
+  justify-content: flex-start;
+}
+.consent-plea {
+  display: none;
+  margin-top: -6px;
+  margin-bottom: 14px;
+  padding: 12px 14px;
+  background: var(--butter-soft);
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.55;
+}
+.consent-toggle.off + .consent-plea { display: block; }
+
 /* PDPA delete-account link — quiet, below logout. .armed wears the
    accent so the second tap lands on a clearly-different visual state. */
 .c6-delete-account {

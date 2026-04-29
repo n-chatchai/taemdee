@@ -33,7 +33,7 @@ from sqlmodel import and_, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.redis_queue import task_queue
-from app.models import CreditLog, Customer, DeeReachCampaign, Redemption, Shop, Point
+from app.models import CreditLog, Customer, CustomerShopMute, DeeReachCampaign, Redemption, Shop, Point
 from app.models.deereach import DeeReachMessage
 from app.models.util import utcnow
 
@@ -307,12 +307,14 @@ async def compute_suggestions(
     out: List[Suggestion] = []
 
     # Per PRD §10 anti-spam — exclude customers already messaged this shop
-    # in the last 14 days from every kind. Done up-front so each suggestion
-    # card already reflects the actual sendable audience.
+    # in the last 14 days from every kind. Mute (CustomerShopMute) is also
+    # applied so an opted-out customer never inflates the suggestion
+    # audience count.
     rate_limited = await _recently_messaged_customer_ids(db, shop)
+    muted = await _muted_customer_ids(db, shop)
 
     def _eligible(customers: List[Customer]) -> List[Customer]:
-        return [c for c in customers if c.id not in rate_limited]
+        return [c for c in customers if c.id not in rate_limited and c.id not in muted]
 
     # 1. Unredeemed reward — highest urgency (customer earned it, just forgot)
     unredeemed = _eligible(await find_unredeemed_reward_customers(db, shop))
@@ -423,6 +425,19 @@ async def _recently_messaged_customer_ids(
     return set(rows)
 
 
+async def _muted_customer_ids(db: AsyncSession, shop: Shop) -> set[UUID]:
+    """Customer ids that opted out of DeeReach for this specific shop
+    (CustomerShopMute row exists). Per PRD §10 anti-spam, mute is
+    enforced for every kind including manual — owner explicit-pick can
+    skip rate-limit, but a customer's "ไม่อยากรับข้อความ" is the
+    customer's choice."""
+    rows = (await db.exec(
+        select(CustomerShopMute.customer_id)
+        .where(CustomerShopMute.shop_id == shop.id)
+    )).all()
+    return set(rows)
+
+
 async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Customer]:
     if kind == "win_back":
         candidates = await find_lapsed_customers(db, shop)
@@ -436,14 +451,16 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
         # Manual campaigns are owner-composed (explicit human intent +
         # per-recipient toggle in the editor) so they bypass the
         # 14-day platform rate-limit. Auto-fired suggestion kinds keep
-        # the limit so the system itself can't spam a customer.
-        return await find_all_reachable_customers(db, shop)
+        # the limit so the system itself can't spam a customer. Mute
+        # still applies — opt-out is the customer's right.
+        muted = await _muted_customer_ids(db, shop)
+        return [c for c in await find_all_reachable_customers(db, shop) if c.id not in muted]
     else:
         raise DeeReachSendError(f"Unsupported kind: {kind}")
 
-    # Apply platform rate limit — drop anyone messaged in the last 14d.
     rate_limited = await _recently_messaged_customer_ids(db, shop)
-    return [c for c in candidates if c.id not in rate_limited]
+    muted = await _muted_customer_ids(db, shop)
+    return [c for c in candidates if c.id not in rate_limited and c.id not in muted]
 
 
 def _pick_channel(customer: Customer) -> str:

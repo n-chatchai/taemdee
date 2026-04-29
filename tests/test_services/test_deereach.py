@@ -208,6 +208,31 @@ async def test_send_campaign_insufficient_credits_raises(db, shop):
         await send_campaign(db, shop, "unredeemed_reward")
 
 
+async def test_muted_customer_excluded_from_all_kinds(db, shop):
+    """Per PRD §10 — a CustomerShopMute row drops the customer from every
+    kind, including manual (which bypasses rate-limit but not opt-out)."""
+    from app.models import CustomerShopMute
+    from app.services.deereach import _audience_for
+
+    forgot = await _customer(db, line_id="U_forgot")
+    for _ in range(10):
+        await _stamp(db, shop, forgot, days_ago=14)
+
+    # Without mute → unredeemed_reward and manual both include the customer.
+    pre_auto = await _audience_for(db, shop, "unredeemed_reward")
+    pre_manual = await _audience_for(db, shop, "manual")
+    assert forgot.id in {c.id for c in pre_auto}
+    assert forgot.id in {c.id for c in pre_manual}
+
+    db.add(CustomerShopMute(customer_id=forgot.id, shop_id=shop.id))
+    await db.commit()
+
+    post_auto = await _audience_for(db, shop, "unredeemed_reward")
+    post_manual = await _audience_for(db, shop, "manual")
+    assert forgot.id not in {c.id for c in post_auto}
+    assert forgot.id not in {c.id for c in post_manual}
+
+
 async def test_manual_audience_bypasses_rate_limit(db, shop):
     """Auto-fired kinds drop customers in the 14-day cooldown; manual
     (owner-composed) campaigns do not — the owner is making an explicit
