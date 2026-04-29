@@ -120,6 +120,7 @@
 
       <div class="s13d-customers">
         {% for c in audience %}
+          {% set ch = audience_channels[c.id|string] %}
           <div class="customer-row"
                x-show="matchesSearchById('{{ c.id }}')"
                :class="{ off: !selected['{{ c.id }}'] }"
@@ -130,7 +131,24 @@
             <div class="cr-avatar">{{ (c.display_name[0] if c.display_name else '?')|upper }}</div>
             <div class="cr-info">
               <div class="cr-name">{{ c.display_name or 'ลูกค้า' }}</div>
-              <div class="cr-meta">{{ c.phone or 'LINE' }}</div>
+              {# Channel badges — every channel rendered; the waterfall-
+                 chosen one wears .active, available-but-not-chosen wear
+                 .available, unsubscribed wear .unavailable (dim). #}
+              <div class="cr-channels">
+                {% for ch_id, ch_label, ch_cost in [
+                  ('web_push', 'Web Push', '0.5'),
+                  ('line', 'LINE', '1'),
+                  ('sms', 'SMS', '3'),
+                  ('inbox', 'กล่อง', '0'),
+                ] %}
+                  <span class="ch-badge
+                    {%- if ch.chosen == ch_id %} active
+                    {%- elif ch.available[ch_id] %} available
+                    {%- else %} unavailable{% endif %}">
+                    {{ ch_label }} <em>{{ ch_cost }}</em>
+                  </span>
+                {% endfor %}
+              </div>
             </div>
           </div>
         {% endfor %}

@@ -8374,6 +8374,54 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink-softer);
   margin-top: 1px;
 }
+/* Channel badge strip — one tiny pill per channel, every customer
+   row shows all four. .active = waterfall pick (filled accent),
+   .available = subscribed but not the cheapest (outline ink),
+   .unavailable = no subscription (dim + strikethrough). The trailing
+   <em>N</em> is the per-message Cr cost, monospace. */
+.customer-row .cr-channels {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 4px;
+  margin-top: 4px;
+}
+.customer-row .cr-channels .ch-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 7px;
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  line-height: 1.4;
+  border: 1px solid transparent;
+}
+.customer-row .cr-channels .ch-badge em {
+  font-family: 'Host Grotesk', sans-serif;
+  font-style: normal;
+  font-weight: 700;
+  font-size: 9.5px;
+  letter-spacing: -0.01em;
+  opacity: 0.8;
+}
+.customer-row .cr-channels .ch-badge.active {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.customer-row .cr-channels .ch-badge.available {
+  background: transparent;
+  color: var(--ink);
+  border-color: rgba(17, 17, 17, 0.18);
+}
+.customer-row .cr-channels .ch-badge.unavailable {
+  background: transparent;
+  color: var(--ink-softer);
+  border-color: rgba(17, 17, 17, 0.08);
+  text-decoration: line-through;
+  opacity: 0.5;
+}
 .customer-more {
   text-align: center;
   padding: 10px 6px 6px;

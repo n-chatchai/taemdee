@@ -90,12 +90,28 @@ async def deereach_detail(
 
     audience = await _audience_for(db, shop, kind)
     message = await render_message(kind, shop)
-    # Per-customer satang cost so the editor can sum the live total (live
-    # selection × per-row channel cost) and disable ส่ง when the running
-    # total exceeds shop.credit_balance.
-    audience_cost = {
-        str(c.id): CHANNEL_COST_SATANG[_pick_channel(c)] for c in audience[:200]
-    }
+    # Per-customer cost + channel matrix for the editor:
+    #   audience_cost[id]      satang the campaign locks for this recipient
+    #                          (drives the live ส่ง-button total)
+    #   audience_channels[id]  { chosen, available[ch] } — drives the row
+    #                          badge strip so the owner sees every channel
+    #                          a customer has subscribed AND which one
+    #                          waterfall will actually use (the chosen
+    #                          badge is highlighted, others are dim).
+    audience_cost: dict[str, int] = {}
+    audience_channels: dict[str, dict] = {}
+    for c in audience[:200]:
+        chosen = _pick_channel(c)
+        audience_cost[str(c.id)] = CHANNEL_COST_SATANG[chosen]
+        audience_channels[str(c.id)] = {
+            "chosen": chosen,
+            "available": {
+                "web_push": bool(c.web_push_endpoint),
+                "line": bool(c.line_id),
+                "sms": bool(c.phone),
+                "inbox": True,  # always reachable, no subscription needed
+            },
+        }
     # Pass the full audience so the editor's checkboxes cover everyone —
     # the deselect UI can't work on a truncated list. Capped at 200 as a
     # sanity bound; campaigns with >200 recipients don't fit the per-row
@@ -110,6 +126,7 @@ async def deereach_detail(
             "audience_total": len(audience),
             "message": message,
             "audience_cost": audience_cost,
+            "audience_channels": audience_channels,
             "credit_balance_satang": shop.credit_balance,
         },
     )
