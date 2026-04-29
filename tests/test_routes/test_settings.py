@@ -35,14 +35,14 @@ async def test_identity_get_renders_logo_picker(auth_client):
 async def test_identity_post_saves_name_and_logo(auth_client, db, shop):
     response = await auth_client.post(
         "/shop/settings/identity",
-        data={"name": "New Cafe", "logo_choice": "lt-1"},
+        data={"name": "New Cafe", "logo_choice": "lt-2"},
         follow_redirects=False,
     )
     assert response.status_code == 303
     assert response.headers["location"] == "/shop/settings"
     await db.refresh(shop)
     assert shop.name == "New Cafe"
-    assert shop.logo_url == "text:lt-1"
+    assert shop.logo_url == "text:lt-2"
 
 
 async def test_location_post_saves_split_address(auth_client, db, shop):
