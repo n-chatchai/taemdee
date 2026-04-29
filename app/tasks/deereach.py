@@ -63,14 +63,21 @@ def _send_web_push(customer: Customer, message: str) -> bool:
     Returns True on 2xx, False on any error (including 410 Gone — caller
     should clear the dead subscription separately).
 
-    Drops to log-only stub when web_push_vapid_private_key isn't set so
-    local dev / tests pass without any VAPID config.
+    Drops to log-only stub when the worker hasn't loaded VAPID keys
+    (ensure_vapid_keys never ran for some reason) so dev / tests pass
+    without any DB-side keypair.
     """
     if not (customer.web_push_endpoint and customer.web_push_p256dh and customer.web_push_auth):
         log.warning("web_push → no subscription on customer=%s, marking failed", customer.id)
         return False
-    if not (settings.web_push_vapid_private_key and settings.web_push_vapid_public_key):
-        log.info("web_push STUB (VAPID not configured) → customer=%s", customer.id)
+
+    from app.services.web_push import (
+        WEB_PUSH_VAPID_SUB,
+        get_vapid_private_key,
+    )
+    private_key = get_vapid_private_key()
+    if not private_key:
+        log.info("web_push STUB (VAPID not loaded in this worker) → customer=%s", customer.id)
         return True
     try:
         import json
@@ -88,8 +95,8 @@ def _send_web_push(customer: Customer, message: str) -> bool:
                 "body": message,
                 "url": "/my-inbox",
             }),
-            vapid_private_key=settings.web_push_vapid_private_key,
-            vapid_claims={"sub": settings.web_push_vapid_sub},
+            vapid_private_key=private_key,
+            vapid_claims={"sub": WEB_PUSH_VAPID_SUB},
             ttl=60 * 60 * 24,  # 24h — push services drop messages older than this
         )
         log.info("web_push delivered → customer=%s", customer.id)

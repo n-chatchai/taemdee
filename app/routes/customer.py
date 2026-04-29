@@ -656,14 +656,17 @@ async def my_inbox_mark_read(
 # ── Web Push subscription (VAPID) ────────────────────────────────────────────
 
 @router.get("/push/vapid-public")
-async def push_vapid_public():
+async def push_vapid_public(db: AsyncSession = Depends(get_session)):
     """Frontend service worker pulls the VAPID public key from here at
-    subscribe time. 503 when the operator hasn't configured VAPID — the
-    UI hides the 'enable notifications' button on the same signal."""
-    from app.core.config import settings as app_settings
-    if not app_settings.web_push_vapid_public_key:
+    subscribe time. 503 until the worker has generated + persisted the
+    keypair on its first boot — UI hides the 'enable notifications'
+    button on the same signal."""
+    from app.services.web_push import get_vapid_public_key, load_vapid_keys
+    await load_vapid_keys(db)
+    pub = get_vapid_public_key()
+    if not pub:
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Web Push not configured")
-    return JSONResponse({"public_key": app_settings.web_push_vapid_public_key})
+    return JSONResponse({"public_key": pub})
 
 
 @router.get("/push/status")
@@ -677,10 +680,11 @@ async def push_status(
     can compare against its own pushManager subscription. If the browser
     reports a subscription but `endpoint_prefix` doesn't match (e.g.
     customer cleared site data and re-subscribed), the JS re-uploads."""
-    from app.core.config import settings as app_settings
+    from app.services.web_push import get_vapid_public_key, load_vapid_keys
+    await load_vapid_keys(db)
     customer, _ = await find_or_create_customer(customer_cookie, db)
     return JSONResponse({
-        "vapid_configured": bool(app_settings.web_push_vapid_public_key),
+        "vapid_configured": bool(get_vapid_public_key()),
         "has_endpoint": bool(customer.web_push_endpoint),
         # Send the first 60 chars only — enough for the JS to spot a
         # mismatch without leaking the full endpoint URL in client logs.

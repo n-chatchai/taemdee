@@ -13,17 +13,13 @@ from app.routes import auth, branches, customer, deereach, issuance, shops, team
 from app.services.auth import decode_customer_token, decode_session_token
 
 
-# Backwards-compat shim: tests + the old import path still reach
-# _ensure_vapid_keys here. The implementation moved to
-# app.services.web_push so the RQ worker can call it on boot too.
-from app.services.web_push import ensure_vapid_keys as _ensure_vapid_keys
-
-
 @asynccontextmanager
 async def lifespan(app: FastAPI):
     # Schema is managed by Alembic — run `alembic upgrade head` before starting the server.
+    # VAPID keys are bootstrapped by the RQ worker on its first boot
+    # (services/web_push.ensure_vapid_keys); the web process reads them
+    # lazily via load_vapid_keys when /push/vapid-public is hit.
     from app.services import events
-    await _ensure_vapid_keys()
     await events.start()
     try:
         yield

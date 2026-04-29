@@ -44,14 +44,11 @@ class Settings(BaseSettings):
     # shop-facing — converted to satang internally when applied.
     credit_welcome_amount: int = 50
 
-    # Web Push (VAPID) — generate a keypair once with:
-    #   uv run python -c "from py_vapid import Vapid01; v=Vapid01(); v.generate_keys(); print(v.private_key); print(v.public_key)"
-    # When unset, the DeeReach waterfall skips web_push and the customer
-    # subscribe route returns 503. `vapid_sub` must be a mailto:/https URL
-    # identifying the sender (push services use it to contact you on abuse).
-    web_push_vapid_public_key: Optional[str] = None
-    web_push_vapid_private_key: Optional[str] = None
-    web_push_vapid_sub: str = "mailto:push@taemdee.com"
+    # Web Push (VAPID) keys live exclusively in the app_secrets table.
+    # The worker generates them on first boot (services/web_push.py); the
+    # web process reads via load_vapid_keys + get_vapid_public_key. The
+    # `sub` field (operator contact for push-service abuse mail) is a
+    # constant in services/web_push.py since it's not a secret.
 
 
 settings = Settings()

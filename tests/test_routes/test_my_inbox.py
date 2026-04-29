@@ -69,6 +69,12 @@ async def test_my_inbox_mark_read_blocks_other_customer(client, db, shop):
 
 
 async def test_push_vapid_public_503_when_unconfigured(client):
+    # Cache is a module-level global; another test in the run may have
+    # populated it. Clear so the route actually consults the empty DB.
+    from app.services.web_push import _cache
+    _cache["public"] = None
+    _cache["private"] = None
+
     r = await client.get("/push/vapid-public")
     assert r.status_code == 503
 
@@ -94,15 +100,22 @@ async def test_push_subscribe_persists_keys_on_customer(client, db):
     )
 
 
-async def test_push_status_reports_vapid_and_endpoint(client, db, monkeypatch):
-    """Diagnostic endpoint: vapid_configured True iff env+DB has the public
-    key, has_endpoint reflects the customer's saved subscription state,
-    endpoint_prefix is the first 60 chars of whatever's stored."""
-    from app.core.config import settings
+async def test_push_status_reports_vapid_and_endpoint(client, db):
+    """Diagnostic endpoint: vapid_configured True iff app_secrets has the
+    public key, has_endpoint reflects the customer's saved subscription
+    state, endpoint_prefix is the first 60 chars of whatever's stored."""
+    from app.models import AppSecret
+    from app.services.web_push import PUB_KEY_NAME, PRIV_KEY_NAME, _cache
 
-    monkeypatch.setattr(settings, "web_push_vapid_public_key", "BPubKey")
+    # Seed the keypair via app_secrets (worker would do this on first
+    # boot in production) + clear the process-level cache so load_vapid_keys
+    # actually hits the DB.
+    db.add(AppSecret(name=PUB_KEY_NAME, value="BPubKey"))
+    db.add(AppSecret(name=PRIV_KEY_NAME, value="BPrivKeyPEM"))
+    await db.commit()
+    _cache["public"] = None
+    _cache["private"] = None
 
-    # Empty customer first → flags False / empty.
     r0 = await client.get("/push/status")
     assert r0.status_code == 200
     j0 = r0.json()
@@ -110,7 +123,6 @@ async def test_push_status_reports_vapid_and_endpoint(client, db, monkeypatch):
     assert j0["has_endpoint"] is False
     assert j0["endpoint_prefix"] == ""
 
-    # Subscribe with the same client (cookie carried over) → reflected.
     sub = await client.post(
         "/push/subscribe",
         data={
