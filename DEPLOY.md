@@ -86,19 +86,27 @@ Description=taemdee
 After=network.target
 
 [Service]
-Type=notify
+Type=simple
 User=pace6
 Group=pace6
 WorkingDirectory=/path/to/your/app
 EnvironmentFile=/path/to/your/app/.env
-ExecStart=/home/pace6/.local/bin/uv run gunicorn app.main:app \
+
+# Use direct venv path to avoid 'uv run' overhead in production
+ExecStart=/path/to/your/app/.venv/bin/gunicorn app.main:app \
   --workers 4 \
   --worker-class uvicorn.workers.UvicornWorker \
   --bind 127.0.0.1:9100 \
   --timeout 30 \
-  --graceful-timeout 30
+  --graceful-timeout 5
+
 ExecReload=/bin/kill -HUP $MAINPID
 KillMode=mixed
+
+# Prevent long hangs during stop (default is 90s)
+TimeoutStopSec=8s
+TimeoutStartSec=30s
+
 Restart=always
 RestartSec=3
 Environment=ENV=prod
@@ -158,8 +166,6 @@ sudo nano /etc/systemd/system/taemdee-worker.service
 [Unit]
 Description=taemdee — DeeReach RQ worker (campaign dispatcher)
 After=network.target redis-server.service taemdee.service
-# Worker writes back to the same DB the web app reads from; not strictly a
-# hard dependency, but starting after the web ensures schema is migrated.
 Wants=redis-server.service
 
 [Service]
@@ -168,13 +174,14 @@ User=pace6
 Group=pace6
 WorkingDirectory=/path/to/your/app
 EnvironmentFile=/path/to/your/app/.env
-ExecStart=/home/pace6/.local/bin/uv run python worker.py
+
+# Use direct venv path to avoid 'uv run' overhead
+ExecStart=/path/to/your/app/.venv/bin/python worker.py
+
 KillMode=mixed
+TimeoutStopSec=8s
 Restart=always
 RestartSec=3
-# Worker is single-process; let it crash + restart rather than spawning N
-# replicas (RQ already handles parallelism via the `--workers` count if you
-# need it later — duplicate the unit with `taemdee-worker@N.service`).
 Environment=ENV=prod
 Environment=APP_NAME=taemdee-worker
 

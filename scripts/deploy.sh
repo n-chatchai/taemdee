@@ -83,13 +83,10 @@ PHASE="uv sync"
 PHASE="alembic upgrade head"
 "$UV_BIN" run alembic upgrade head
 
-# stop+start (NOT reload) so asyncpg drops its connection pool and picks
+# restart (NOT reload) so asyncpg drops its connection pool and picks
 # up the new schema — see memory/reference_prod_deploy_restart.md.
-PHASE="systemctl stop ${SERVICE_NAME}"
-sudo systemctl stop "${SERVICE_NAME}"
-
-PHASE="systemctl start ${SERVICE_NAME}"
-sudo systemctl start "${SERVICE_NAME}"
+PHASE="systemctl restart ${SERVICE_NAME}"
+sudo systemctl restart "${SERVICE_NAME}"
 
 # Restart the DeeReach RQ worker too — same reason: it loads
 # app/services/deereach.py + app/tasks/deereach.py at startup, so without
@@ -104,22 +101,22 @@ fi
 
 # ─── Verify the live process is now serving the new SHA ─────────────────
 # /version returns {"version": "<short-sha>"}. We poll briefly so the
-# script doesn't beat the new uvicorn process to the punch — up to 6
-# attempts (~12s). If the live SHA still doesn't match after that, we
+# script doesn't beat the new uvicorn process to the punch — up to 10
+# attempts (~10s). If the live SHA still doesn't match after that, we
 # notify with a ⚠️ instead of ✅ so it's obvious the systemctl restart
 # didn't actually pick up the new code.
 SHA=$(git rev-parse --short HEAD)
 SUBJECT=$(git log -1 --pretty=%s)
 
 LIVE_SHA="?"
-for _ in 1 2 3 4 5 6; do
-  sleep 2
-  LIVE_SHA=$(curl -fsS --max-time 4 "${PROD_URL}/version" 2>/dev/null | python3 -c '
+for _ in {1..10}; do
+  LIVE_SHA=$(curl -fsS --max-time 2 "${PROD_URL}/version" 2>/dev/null | python3 -c '
 import json, sys
 try: print(json.load(sys.stdin).get("version") or "?")
 except Exception: print("?")
 ' || echo "?")
   [ "$LIVE_SHA" = "$SHA" ] && break
+  sleep 1
 done
 
 ELAPSED=$(( $(date +%s) - START_TS ))
