@@ -94,6 +94,32 @@ async def test_send_blank_message_400(auth_client, db, shop):
     assert "ข้อความว่าง" in response.json()["detail"]
 
 
+async def test_deereach_manual_detail_renders(auth_client, db, shop):
+    """The 'สร้างแคมเปญเอง' editor opens on /shop/deereach/manual even when
+    no auto-suggestion fires; audience = every reachable customer of the
+    shop, message defaults to empty so the owner writes their own."""
+    from app.models import Customer
+    from datetime import timedelta
+
+    c = Customer(is_anonymous=False, line_id="U_picked")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    db.add(Point(
+        shop_id=shop.id, customer_id=c.id,
+        issuance_method="customer_scan",
+        created_at=utcnow() - timedelta(days=2),
+    ))
+    await db.commit()
+
+    r = await auth_client.get("/shop/deereach/manual")
+    assert r.status_code == 200
+    body = r.text
+    assert "แคมเปญของคุณเอง" in body
+    # Customer row rendered
+    assert str(c.id) in body
+
+
 async def test_send_with_customer_subset_records_only_selected(auth_client, db, shop):
     """Owner deselects half the audience — only selected ids end up in the
     campaign + DeeReachMessage rows."""

@@ -252,6 +252,32 @@ async def find_new_customers(
     return list(result.all())
 
 
+async def find_all_reachable_customers(
+    db: AsyncSession,
+    shop: Shop,
+) -> List[Customer]:
+    """Every customer who has ever stamped at this shop, ordered by most-
+    recent activity first. Used by the kind='manual' editor — the owner
+    pick recipients themselves so we don't apply a kind-specific filter.
+    Anonymous customers are kept too (they fall through to the inbox
+    channel, which is free and always succeeds)."""
+    last_stamp = (
+        select(
+            Point.customer_id.label("cid"),
+            func.max(Point.created_at).label("last_at"),
+        )
+        .where(Point.shop_id == shop.id, Point.is_voided == False)  # noqa: E712
+        .group_by(Point.customer_id)
+        .subquery()
+    )
+    stmt = (
+        select(Customer)
+        .join(last_stamp, last_stamp.c.cid == Customer.id)
+        .order_by(last_stamp.c.last_at.desc())
+    )
+    return list((await db.exec(stmt)).all())
+
+
 # ----------------------------------------------------------------------
 # Suggestion composition
 # ----------------------------------------------------------------------
@@ -366,6 +392,10 @@ async def render_message(kind: str, shop: Shop) -> str:
         return f"คุณมี {shop.reward_description} รออยู่ที่ {shop.name} — แวะมารับได้เลย"
     if kind == "new_customer":
         return f"ขอบคุณที่แวะมา {shop.name} นะ — แวะอีกครั้งครบ {shop.reward_threshold} แต้ม รับ {shop.reward_description}"
+    if kind == "manual":
+        # Empty seed — owner is writing their own copy. The textarea
+        # placeholder + send-disabled-when-blank guard handles the UX.
+        return ""
     return f"ทักทายจาก {shop.name}"
 
 
@@ -402,6 +432,8 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
         candidates = await find_unredeemed_reward_customers(db, shop)
     elif kind == "new_customer":
         candidates = await find_new_customers(db, shop)
+    elif kind == "manual":
+        candidates = await find_all_reachable_customers(db, shop)
     else:
         raise DeeReachSendError(f"Unsupported kind: {kind}")
 

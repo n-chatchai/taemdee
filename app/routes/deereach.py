@@ -66,13 +66,27 @@ async def deereach_detail(
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    """S13.detail — preview audience + default message before sending. The
-    audience checkboxes are read-only in v1 (send-to-all); per-customer
-    deselect lands in v2 alongside richer audience filters."""
-    suggestions = await compute_suggestions(db, shop)
-    suggestion = next((s for s in suggestions if s.kind == kind), None)
-    if not suggestion:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่มีแคมเปญแนะนำชนิดนี้สำหรับร้านคุณตอนนี้")
+    """S13.detail — preview audience + default message before sending.
+    Loads the kind-specific suggestion when available, or falls back to
+    a synthetic 'manual' suggestion for the 'สร้างแคมเปญเอง' editor where
+    the owner picks recipients + writes their own copy from scratch."""
+    if kind == "manual":
+        # Manual campaign: every reachable customer is a candidate, owner
+        # writes their own copy. compute_suggestions doesn't generate one
+        # for this kind so we fabricate the chrome the editor expects.
+        suggestion = Suggestion(
+            kind="manual",
+            label="แคมเปญของคุณเอง",
+            head="สร้างแคมเปญเอง",
+            body="เลือกลูกค้า + พิมพ์ข้อความเอง",
+            audience_count=0,
+            cost_credit=0,
+        )
+    else:
+        suggestions = await compute_suggestions(db, shop)
+        suggestion = next((s for s in suggestions if s.kind == kind), None)
+        if not suggestion:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่มีแคมเปญแนะนำชนิดนี้สำหรับร้านคุณตอนนี้")
 
     audience = await _audience_for(db, shop, kind)
     message = await render_message(kind, shop)
