@@ -46,6 +46,15 @@ _CATEGORY_PREFIXES = (
     "ร้าน",
     "กาแฟ",
     "ชา",
+    "คุณ",
+    "พี่",
+    "น้อง",
+    "ลุง",
+    "ป้า",
+    "น้า",
+    "อา",
+    "ตา",
+    "ยาย",
     "บ้าน",
     "ครัว",
     "ขนม",
@@ -89,22 +98,34 @@ def _safe_slice(s: str, n: int) -> str:
 
 
 def _brand_part(name: str) -> str:
-    """Drop a category prefix so 'กาแฟชัดเจน' → 'ชัดเจน'.
-
-    Tries word-boundary split first ('กาแฟ ชัดเจน' → 'ชัดเจน'), then
-    substring strip ('กาแฟชัดเจน' → 'ชัดเจน'). Returns the original name
-    if nothing reasonable is left after stripping.
+    """Drop category and honorific prefixes sequentially.
+    
+    'มัทฉะคุณเจน' -> 'คุณเจน' -> 'เจน'.
     """
     cleaned = (name or "").strip() or "ร้าน"
-    parts = cleaned.split()
-    if len(parts) > 1 and parts[0] in _CATEGORY_PREFIXES:
-        return " ".join(parts[1:])
-    for prefix in _CATEGORY_PREFIXES:
-        if cleaned.startswith(prefix) and len(cleaned) > len(prefix):
-            rest = cleaned[len(prefix):].lstrip()
-            if rest:
-                return rest
-    return cleaned
+    
+    while True:
+        changed = False
+        # Try space-separated first
+        parts = cleaned.split()
+        if len(parts) > 1 and parts[0] in _CATEGORY_PREFIXES:
+            cleaned = " ".join(parts[1:]).strip()
+            changed = True
+            continue
+            
+        # Try substring strip
+        for prefix in _CATEGORY_PREFIXES:
+            if cleaned.startswith(prefix) and len(cleaned) > len(prefix):
+                rest = cleaned[len(prefix):].lstrip()
+                if rest:
+                    cleaned = rest
+                    changed = True
+                    break
+        
+        if not changed:
+            break
+            
+    return cleaned or name or "ร้าน"
 
 
 def _first_cluster(name: str) -> str:
