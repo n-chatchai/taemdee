@@ -103,9 +103,12 @@ async def test_deereach_detail_renders_with_empty_audience(auth_client, db, shop
     assert "ไม่มีคนค้างรับรางวัล" in r.text
 
 
-async def test_deereach_unknown_kind_404(auth_client):
-    r = await auth_client.get("/shop/deereach/telepathy")
-    assert r.status_code == 404
+async def test_deereach_unknown_kind_redirects_to_list(auth_client):
+    """Stale bookmark / typo'd kind → bounce to /shop/deereach list,
+    not a jarring JSON 404."""
+    r = await auth_client.get("/shop/deereach/telepathy", follow_redirects=False)
+    assert r.status_code == 303
+    assert r.headers["location"] == "/shop/deereach"
 
 
 async def test_deereach_manual_detail_renders(auth_client, db, shop):

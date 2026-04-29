@@ -88,7 +88,13 @@ async def deereach_detail(
     limited or graduated out of the kind's window between the dashboard
     render and the tap."""
     if kind not in KIND_FALLBACK_LABELS:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่รู้จักชนิดแคมเปญ")
+        # Unknown kind in the URL (bookmark from an older route, typo'd
+        # path, etc.) — bounce back to the DeeReach list rather than
+        # showing a JSON 404 'ไม่รู้จักชนิดแคมเปญ' which is jarring.
+        return RedirectResponse(
+            url="/shop/deereach",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
 
     # Manual is always a fallback (no live suggestion). For auto kinds,
     # try the live one first so the head/body lines reflect current
