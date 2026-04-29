@@ -23,6 +23,17 @@
         {% for c in audience %}{{ c.id|string|tojson }}{% if not loop.last %},{% endif %}
         {% endfor %}
       ];
+      // Per-customer name + phone for the search filter, keyed by id.
+      // Lives inside the <script> so JSON's double quotes don't have to
+      // survive HTML-attribute escaping (the previous inline approach
+      // tripped Alpine on Thai display names).
+      const customerMeta = {
+        {% for c in audience %}{{ c.id|string|tojson }}: {
+          name: {{ (c.display_name or '')|tojson }},
+          phone: {{ (c.phone or '')|tojson }}
+        }{% if not loop.last %},{% endif %}
+        {% endfor %}
+      };
       return {
         message: defaultMessage,
         selected: Object.fromEntries(audienceIds.map((id) => [id, true])),
@@ -69,11 +80,12 @@
         // x-show so search hides non-matching rows but keeps their
         // selected state (untick a row, search, untick another, clear
         // search → both stay unchecked).
-        matchesSearch(name, phone) {
+        matchesSearchById(id) {
           if (!this.searchQuery) return true;
           const q = this.searchQuery.toLowerCase();
-          return (name || '').toLowerCase().includes(q)
-              || (phone || '').toLowerCase().includes(q);
+          const meta = customerMeta[id] || {};
+          return (meta.name || '').toLowerCase().includes(q)
+              || (meta.phone || '').toLowerCase().includes(q);
         },
         resetMessage() {
           this.message = defaultMessage;
@@ -109,7 +121,7 @@
       <div class="s13d-customers">
         {% for c in audience %}
           <div class="customer-row"
-               x-show="matchesSearch({{ (c.display_name or '')|tojson }}, {{ (c.phone or '')|tojson }})"
+               x-show="matchesSearchById('{{ c.id }}')"
                :class="{ off: !selected['{{ c.id }}'] }"
                @click="selected['{{ c.id }}'] = !selected['{{ c.id }}']">
             <div class="cr-check"
