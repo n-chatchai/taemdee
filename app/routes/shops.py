@@ -314,12 +314,20 @@ async def onboard_identity_get(
 ):
     """Step 1/4 — shop name + AI logo picker on the same screen."""
     options = generate_logos(shop.name, seed=gen)
-    picked_id = (
-        shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith("text:") else None
-    )
+    
+    picked_id = None
+    custom_text = None
+    if shop.logo_url and shop.logo_url.startswith("text:"):
+        parts = shop.logo_url.split(":", 2)
+        picked_id = parts[1] if len(parts) > 1 else None
+        custom_text = parts[2].strip() if len(parts) == 3 else None
+
     saved_pick = None
     if picked_id and picked_id not in {o["id"] for o in options} and picked_id in VALID_STYLE_IDS:
         saved_pick = render_style(shop.name, picked_id)
+        if custom_text:
+            saved_pick["text"] = custom_text
+
     return templates.TemplateResponse(
         request=request,
         name="shop/onboard/identity.html",
@@ -329,6 +337,34 @@ async def onboard_identity_get(
             "saved_pick": saved_pick,
             "gen": gen,
             "next_gen": gen + 1,
+            "picked_id": picked_id,
+            "custom_text": custom_text or "",
+        },
+    )
+
+@router.get("/onboard/identity/logos_partial", response_class=HTMLResponse)
+async def onboard_identity_logos_partial(
+    request: Request,
+    name: str,
+    shop: Shop = Depends(get_current_shop),
+):
+    """HTMX endpoint to re-generate logos on the fly as the user types the shop name."""
+    options = generate_logos(name, seed=0)
+    
+    # We only show generated options here. If they had a saved pick, 
+    # it gets overwritten if they change the name and pick a new one.
+    # To keep it simple, we just return the new options.
+    return templates.TemplateResponse(
+        request=request,
+        name="_partials/logo_picker.html",
+        context={
+            "shop": shop,
+            "shop_name": name,
+            "options": options,
+            "saved_pick": None,
+            "picked_id": options[0]["id"] if options else None,
+            "custom_text": "",
+            "next_gen": 1,
         },
     )
 
@@ -337,13 +373,18 @@ async def onboard_identity_get(
 async def onboard_identity_post(
     name: str = Form(...),
     logo_choice: Optional[str] = Form(None),
+    custom_text: Optional[str] = Form(None),
     province: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
     shop.name = name.strip() or shop.name
     if logo_choice in VALID_STYLE_IDS:
-        shop.logo_url = f"text:{logo_choice}"
+        safe_custom_text = (custom_text or "").strip().replace(":", "-")
+        if safe_custom_text:
+            shop.logo_url = f"text:{logo_choice}:{safe_custom_text}"
+        else:
+            shop.logo_url = f"text:{logo_choice}"
     # Province lands in the existing Shop.location field — district + detail
     # come later via S10.location (deferred). Empty submission keeps current.
     cleaned_province = (province or "").strip()
@@ -852,15 +893,53 @@ async def settings_identity_get(
     shop: Shop = Depends(get_current_shop),
 ):
     options = generate_logos(shop.name, seed=gen)
-    saved_pick = None
+    
+    picked_id = None
+    custom_text = None
     if shop.logo_url and shop.logo_url.startswith("text:"):
-        sid = shop.logo_url[5:]
-        if sid in VALID_STYLE_IDS and sid not in {o["id"] for o in options}:
-            saved_pick = render_style(shop.name, sid)
+        parts = shop.logo_url.split(":", 2)
+        picked_id = parts[1] if len(parts) > 1 else None
+        custom_text = parts[2].strip() if len(parts) == 3 else None
+
+    saved_pick = None
+    if picked_id and picked_id not in {o["id"] for o in options} and picked_id in VALID_STYLE_IDS:
+        saved_pick = render_style(shop.name, picked_id)
+        if custom_text:
+            saved_pick["text"] = custom_text
+
     return templates.TemplateResponse(
         request=request,
         name="shop/settings/identity.html",
-        context={"shop": shop, "options": options, "saved_pick": saved_pick, "next_gen": gen + 1},
+        context={
+            "shop": shop,
+            "options": options,
+            "saved_pick": saved_pick,
+            "next_gen": gen + 1,
+            "picked_id": picked_id,
+            "custom_text": custom_text or "",
+        },
+    )
+
+@router.get("/settings/identity/logos_partial", response_class=HTMLResponse)
+async def settings_identity_logos_partial(
+    request: Request,
+    name: str,
+    shop: Shop = Depends(get_current_shop),
+):
+    """HTMX endpoint to re-generate logos on the fly."""
+    options = generate_logos(name, seed=0)
+    return templates.TemplateResponse(
+        request=request,
+        name="_partials/logo_picker.html",
+        context={
+            "shop": shop,
+            "shop_name": name,
+            "options": options,
+            "saved_pick": None,
+            "picked_id": options[0]["id"] if options else None,
+            "custom_text": "",
+            "next_gen": 1,
+        },
     )
 
 
@@ -868,12 +947,17 @@ async def settings_identity_get(
 async def settings_identity_post(
     name: str = Form(...),
     logo_choice: Optional[str] = Form(None),
+    custom_text: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
     shop.name = name.strip() or shop.name
     if logo_choice in VALID_STYLE_IDS:
-        shop.logo_url = f"text:{logo_choice}"
+        safe_custom_text = (custom_text or "").strip().replace(":", "-")
+        if safe_custom_text:
+            shop.logo_url = f"text:{logo_choice}:{safe_custom_text}"
+        else:
+            shop.logo_url = f"text:{logo_choice}"
     db.add(shop)
     await db.commit()
     return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)

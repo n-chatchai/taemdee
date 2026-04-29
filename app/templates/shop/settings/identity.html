@@ -8,12 +8,12 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {% include "_partials/pwa_head.html" %}
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  {% set picked = shop.logo_url[5:] if shop.logo_url and shop.logo_url.startswith('text:') else options[0].id %}
   <form method="POST" action="/shop/settings/identity" class="td"
-        x-data="{ choice: '{{ picked }}' }">
+        x-data="{ choice: '{{ picked_id or options[0].id }}', customText: '{{ custom_text }}' }">
 
     <div class="topbar"><span></span><span></span></div>
 
@@ -33,34 +33,18 @@
       <input id="settings-name" name="name" type="text" required
              class="s2-input"
              value="{{ shop.name }}"
-             placeholder="เช่น ร้านกาแฟลุงหมี">
+             placeholder="เช่น ร้านกาแฟลุงหมี"
+             hx-get="/shop/settings/identity/logos_partial"
+             hx-target="#logo-picker-container"
+             hx-swap="outerHTML"
+             hx-trigger="keyup changed delay:500ms">
     </div>
 
     <div class="s2-field" style="margin-top:18px;">
       <div class="label">โลโก้</div>
     </div>
 
-    <div class="s2-logos">
-      {% for opt in options %}
-        <button type="button" class="s2-logo" :class="{ selected: choice === '{{ opt.id }}' }"
-                @click="choice = '{{ opt.id }}'">
-          <span class="{{ opt.css_class }}">{{ opt.text }}{% if opt.show_dot %}<span class="dot">.</span>{% endif %}</span>
-        </button>
-      {% endfor %}
-    </div>
-
-    {% if saved_pick %}
-      <div class="s2-logos" style="margin-top:8px;">
-        <button type="button" class="s2-logo" :class="{ selected: choice === '{{ saved_pick.id }}' }"
-                @click="choice = '{{ saved_pick.id }}'" title="ที่คุณเลือกไว้">
-          <span class="{{ saved_pick.css_class }}">{{ saved_pick.text }}{% if saved_pick.show_dot %}<span class="dot">.</span>{% endif %}</span>
-        </button>
-      </div>
-    {% endif %}
-
-    <div class="s2-helper">
-      <a href="/shop/settings/identity?gen={{ next_gen }}" class="reroll">↻ สร้างใหม่อีก 3 แบบ</a>
-    </div>
+    {% include "_partials/logo_picker.html" %}
 
     <div class="s2-upload" title="อัปโหลดเอง — เร็วๆ นี้" aria-disabled="true">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -72,6 +56,7 @@
     </div>
 
     <input type="hidden" name="logo_choice" :value="choice">
+    <input type="hidden" name="custom_text" :value="customText">
 
     <div class="s2-foot">
       <button type="submit" class="next" style="flex:1;">

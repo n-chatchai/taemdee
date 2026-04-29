@@ -47,10 +47,18 @@ def shop_logo(shop) -> Optional[dict]:
     """
     if not shop or not shop.logo_url or not shop.logo_url.startswith("text:"):
         return None
-    style_id = shop.logo_url[5:]
+    
+    parts = shop.logo_url.split(":", 2)
+    style_id = parts[1]
+    
     if style_id not in VALID_STYLE_IDS:
         return None
-    return render_style(shop.name, style_id)
+    
+    rendered = render_style(shop.name, style_id)
+    if len(parts) == 3 and parts[2].strip():
+        rendered["text"] = parts[2].strip()
+        
+    return rendered
 
 
 templates = Jinja2Templates(directory="app/templates")
