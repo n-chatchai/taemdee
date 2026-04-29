@@ -145,7 +145,7 @@ async def account_menu(
             "cards_count": cards_count,
             "ready_count": ready_count,
             "redemption_count": redemption_count,
-            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
 
@@ -178,7 +178,7 @@ async def card_account_notifications(
             "customer": customer,
             "preferred_channel": customer.preferred_channel,
             "muted": muted,
-            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
     if was_created:
@@ -290,7 +290,7 @@ async def my_id(
             "customer": customer,
             "qr_svg": qr_svg,
             "identity_url": identity_url,
-            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
     if was_created:
@@ -385,7 +385,7 @@ async def view_card(
             # contextual "this is your first one here" note, not a substitute
             # for the confetti moment every stamp deserves.
             "just_stamped": bool(stamped),
-            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
     if was_created:
@@ -496,7 +496,7 @@ async def shop_story(
             "shop": shop,
             "customer": customer,
             "age_label": age_label,
-            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
     if was_created:
@@ -680,7 +680,7 @@ async def reward_claimed(
         context={
             "shop": shop,
             "redemption": redemption,
-            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
 
@@ -948,7 +948,7 @@ async def my_inbox(
             "items": items,
             "weekday_th": weekday_th,
             "unread_count": unread_count,
-            "nav_inbox_badge": unread_count > 0,
+            "nav_inbox_badge": unread_count,
         },
     )
     if was_created:
@@ -1016,7 +1016,7 @@ async def my_inbox_detail(
             "is_muted": is_muted,
             # Note: this row was just flipped to read above, so the count
             # already excludes it. Badge reflects the next unread, if any.
-            "nav_inbox_badge": (await _inbox_unread_count(db, customer.id)) > 0,
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
 

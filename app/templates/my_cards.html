@@ -124,7 +124,7 @@
     {% include "_partials/footer_mark.html" %}
 
     {% set nav_active = 'cards' %}
-    {% set nav_inbox_badge = inbox_unread > 0 %}
+    {% set nav_inbox_badge = inbox_unread %}
     {% include "_partials/c_dock.html" %}
 
     {% if is_guest %}

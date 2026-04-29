@@ -526,6 +526,102 @@ section {
   text-transform: uppercase;
 }
 
+/* === DEECARD THEMES === */
+.theme-card-grid {
+  display: grid;
+  grid-template-columns: repeat(3, 1fr);
+  gap: 16px;
+}
+.tc-card {
+  border: 1.5px solid var(--ink);
+  border-radius: 18px;
+  padding: 18px 16px 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+}
+.tc-shop-head {
+  text-align: center;
+}
+.tc-logo {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.04em;
+  line-height: 1;
+}
+.tc-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 9.5px;
+  margin-top: 4px;
+}
+.tc-hero {
+  text-align: center;
+}
+.tc-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 56px;
+  line-height: 1;
+  letter-spacing: -0.05em;
+  display: inline-flex;
+  align-items: flex-start;
+  gap: 4px;
+}
+.tc-num .tc-star {
+  font-size: 16px;
+  margin-top: 6px;
+}
+.tc-sub-hero {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  margin-top: 6px;
+}
+.tc-sub-hero em {
+  font-style: italic;
+  font-weight: 700;
+}
+.tc-stamps {
+  display: flex;
+  gap: 3px;
+}
+.tc-pill {
+  flex: 1;
+  height: 6px;
+  border-radius: 99px;
+}
+.tc-reward {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 8px 10px;
+  border-radius: 12px;
+}
+.tc-gift {
+  width: 26px; height: 26px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.tc-rname {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 11px;
+}
+.tc-name {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  text-align: center;
+  padding-top: 4px;
+  border-top: 1px solid currentColor;
+  opacity: 0.7;
+}
+
 /* === ASSETS === */
 .assets-list {
   display: grid;
@@ -606,6 +702,7 @@ section {
   .sec-num { font-size: 44px; }
   .sec-head h2 { font-size: 30px; }
   .variant-grid, .color-grid, .donts-grid, .type-grid, .app-grid { grid-template-columns: 1fr 1fr; }
+  .theme-card-grid { grid-template-columns: 1fr 1fr; }
   .palette-grid { grid-template-columns: 1fr 1fr 1fr; }
   .spacing-grid, .assets-list { grid-template-columns: 1fr; }
 }
@@ -1226,11 +1323,171 @@ section {
   </div>
 </section>
 
-<!-- ============== 10 — ASSETS ============== -->
+<!-- ============== 10 — DEECARD THEMES ============== -->
 <section>
   <div class="container">
     <div class="sec-head">
       <div class="sec-num">10</div>
+      <div>
+        <h2>DeeCard themes · <em>5 looks.</em></h2>
+        <p class="sec-desc">5 ธีม preset ที่ shop เลือกได้ใน onboarding/settings — ทุกธีม render บน DeeCard เดียวกัน · ลูกค้าเห็นการ์ดสีตามที่ shop เลือก</p>
+      </div>
+    </div>
+
+    <div class="theme-card-grid">
+      <!-- 1 · แต้มดี -->
+      <div class="tc-card" style="background: #F6F1E5;">
+        <div class="tc-shop-head">
+          <div class="tc-logo" style="color: #111;">mhee<span style="color: #FF5E3A;">.</span></div>
+          <div class="tc-sub" style="color: #6B6660;">ร้านลุงหมี · เชียงใหม่</div>
+        </div>
+        <div class="tc-hero">
+          <div class="tc-num" style="color: #111;">7<span class="tc-star" style="color: #FFD952;">✦</span></div>
+          <div class="tc-sub-hero" style="color: #111;"><em style="color: #FF5E3A;">อีก 3 ครั้ง!</em> <span style="color: #6B6660;">/ ได้กาแฟฟรี</span></div>
+        </div>
+        <div class="tc-stamps">
+          <div class="tc-pill" style="background: #FF5E3A;"></div>
+          <div class="tc-pill" style="background: #FF5E3A;"></div>
+          <div class="tc-pill" style="background: #FFD952;"></div>
+          <div class="tc-pill" style="background: #FF5E3A;"></div>
+          <div class="tc-pill" style="background: #FF5E3A;"></div>
+          <div class="tc-pill" style="background: #FFD952;"></div>
+          <div class="tc-pill" style="background: #FF5E3A;"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.1);"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.1);"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.1);"></div>
+        </div>
+        <div class="tc-reward" style="background: #FFE6DF;">
+          <div class="tc-gift" style="background: #FF5E3A; color: #fff;">🎁</div>
+          <div class="tc-rname">กาแฟ Signature ฟรี</div>
+        </div>
+        <div class="tc-name">แต้มดี · default</div>
+      </div>
+
+      <!-- 2 · โมโน -->
+      <div class="tc-card" style="background: #FFFFFF;">
+        <div class="tc-shop-head">
+          <div class="tc-logo" style="color: #111;">mhee<span style="color: #111;">.</span></div>
+          <div class="tc-sub" style="color: #666;">ร้านลุงหมี · เชียงใหม่</div>
+        </div>
+        <div class="tc-hero">
+          <div class="tc-num" style="color: #111;">7<span class="tc-star" style="color: #666;">✦</span></div>
+          <div class="tc-sub-hero" style="color: #111;"><em style="color: #111;">อีก 3 ครั้ง!</em> <span style="color: #666;">/ ได้กาแฟฟรี</span></div>
+        </div>
+        <div class="tc-stamps">
+          <div class="tc-pill" style="background: #111;"></div>
+          <div class="tc-pill" style="background: #111;"></div>
+          <div class="tc-pill" style="background: #666;"></div>
+          <div class="tc-pill" style="background: #111;"></div>
+          <div class="tc-pill" style="background: #111;"></div>
+          <div class="tc-pill" style="background: #666;"></div>
+          <div class="tc-pill" style="background: #111;"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.1);"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.1);"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.1);"></div>
+        </div>
+        <div class="tc-reward" style="background: rgba(17,17,17,0.06);">
+          <div class="tc-gift" style="background: #111; color: #fff;">🎁</div>
+          <div class="tc-rname">กาแฟ Signature ฟรี</div>
+        </div>
+        <div class="tc-name">โมโน · minimal</div>
+      </div>
+
+      <!-- 3 · กลางคืน -->
+      <div class="tc-card" style="background: #141414;">
+        <div class="tc-shop-head">
+          <div class="tc-logo" style="color: #fff;">mhee<span style="color: #FFD952;">.</span></div>
+          <div class="tc-sub" style="color: rgba(255,255,255,0.5);">ร้านลุงหมี · เชียงใหม่</div>
+        </div>
+        <div class="tc-hero">
+          <div class="tc-num" style="color: #FFD952;">7<span class="tc-star" style="color: #FF5E3A;">✦</span></div>
+          <div class="tc-sub-hero" style="color: rgba(255,255,255,0.85);"><em style="color: #FF5E3A;">อีก 3 ครั้ง!</em> <span style="color: rgba(255,255,255,0.5);">/ ได้กาแฟฟรี</span></div>
+        </div>
+        <div class="tc-stamps">
+          <div class="tc-pill" style="background: #FFD952;"></div>
+          <div class="tc-pill" style="background: #FFD952;"></div>
+          <div class="tc-pill" style="background: #FF5E3A;"></div>
+          <div class="tc-pill" style="background: #FFD952;"></div>
+          <div class="tc-pill" style="background: #FFD952;"></div>
+          <div class="tc-pill" style="background: #FF5E3A;"></div>
+          <div class="tc-pill" style="background: #FFD952;"></div>
+          <div class="tc-pill" style="background: rgba(255,255,255,0.15);"></div>
+          <div class="tc-pill" style="background: rgba(255,255,255,0.15);"></div>
+          <div class="tc-pill" style="background: rgba(255,255,255,0.15);"></div>
+        </div>
+        <div class="tc-reward" style="background: rgba(255,217,82,0.15);">
+          <div class="tc-gift" style="background: #FFD952; color: #141414;">🎁</div>
+          <div class="tc-rname" style="color: #fff;">กาแฟ Signature ฟรี</div>
+        </div>
+        <div class="tc-name" style="color: #fff;">กลางคืน · dark mode</div>
+      </div>
+
+      <!-- 4 · พาสเทล -->
+      <div class="tc-card" style="background: #FFEEE4;">
+        <div class="tc-shop-head">
+          <div class="tc-logo" style="color: #5C3A2E;">mhee<span style="color: #E87A6A;">.</span></div>
+          <div class="tc-sub" style="color: #B58F7B;">ร้านลุงหมี · เชียงใหม่</div>
+        </div>
+        <div class="tc-hero">
+          <div class="tc-num" style="color: #5C3A2E;">7<span class="tc-star" style="color: #F4B583;">✦</span></div>
+          <div class="tc-sub-hero" style="color: #5C3A2E;"><em style="color: #E87A6A;">อีก 3 ครั้ง!</em> <span style="color: #B58F7B;">/ ได้กาแฟฟรี</span></div>
+        </div>
+        <div class="tc-stamps">
+          <div class="tc-pill" style="background: #E87A6A;"></div>
+          <div class="tc-pill" style="background: #E87A6A;"></div>
+          <div class="tc-pill" style="background: #F4B583;"></div>
+          <div class="tc-pill" style="background: #E87A6A;"></div>
+          <div class="tc-pill" style="background: #E87A6A;"></div>
+          <div class="tc-pill" style="background: #F4B583;"></div>
+          <div class="tc-pill" style="background: #E87A6A;"></div>
+          <div class="tc-pill" style="background: rgba(92,58,46,0.15);"></div>
+          <div class="tc-pill" style="background: rgba(92,58,46,0.15);"></div>
+          <div class="tc-pill" style="background: rgba(92,58,46,0.15);"></div>
+        </div>
+        <div class="tc-reward" style="background: rgba(232,122,106,0.15);">
+          <div class="tc-gift" style="background: #E87A6A; color: #fff;">🎁</div>
+          <div class="tc-rname" style="color: #5C3A2E;">กาแฟ Signature ฟรี</div>
+        </div>
+        <div class="tc-name">พาสเทล · soft</div>
+      </div>
+
+      <!-- 5 · สปอร์ต -->
+      <div class="tc-card" style="background: #F0FDF4;">
+        <div class="tc-shop-head">
+          <div class="tc-logo" style="color: #052E16;">mhee<span style="color: #15803D;">.</span></div>
+          <div class="tc-sub" style="color: #6B6660;">ร้านลุงหมี · เชียงใหม่</div>
+        </div>
+        <div class="tc-hero">
+          <div class="tc-num" style="color: #15803D;">7<span class="tc-star" style="color: #BEF264;">✦</span></div>
+          <div class="tc-sub-hero" style="color: #052E16;"><em style="color: #15803D;">อีก 3 ครั้ง!</em> <span style="color: #6B6660;">/ ได้กาแฟฟรี</span></div>
+        </div>
+        <div class="tc-stamps">
+          <div class="tc-pill" style="background: #15803D;"></div>
+          <div class="tc-pill" style="background: #15803D;"></div>
+          <div class="tc-pill" style="background: #BEF264;"></div>
+          <div class="tc-pill" style="background: #15803D;"></div>
+          <div class="tc-pill" style="background: #15803D;"></div>
+          <div class="tc-pill" style="background: #BEF264;"></div>
+          <div class="tc-pill" style="background: #15803D;"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.08);"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.08);"></div>
+          <div class="tc-pill" style="background: rgba(17,17,17,0.08);"></div>
+        </div>
+        <div class="tc-reward" style="background: rgba(190,242,100,0.3);">
+          <div class="tc-gift" style="background: #15803D; color: #fff;">🎁</div>
+          <div class="tc-rname" style="color: #052E16;">กาแฟ Signature ฟรี</div>
+        </div>
+        <div class="tc-name">สปอร์ต · energy</div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ============== 11 — ASSETS ============== -->
+<section>
+  <div class="container">
+    <div class="sec-head">
+      <div class="sec-num">11</div>
       <div>
         <h2>Asset · <em>downloads.</em></h2>
         <p class="sec-desc">PNG files พร้อมใช้สำหรับการอัปโหลดที่ต้อง raster format (LINE OA, app stores, social) — SVG inline ใน HTML ใช้ได้เลยจาก code ด้านบน</p>
