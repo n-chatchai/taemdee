@@ -275,26 +275,24 @@ async def test_notifications_channel_save_clears_for_auto(client, db):
     assert all(c.preferred_channel is None for c in rows)
 
 
-async def test_my_inbox_renders_mute_link_only_for_unmuted_shops(client, db, shop):
-    """Inbox row carries a per-shop mute link; muted shops omit the link
-    so the customer doesn't see a no-op action."""
-    from app.models import CustomerShopMute, Shop as ShopModel
+async def test_my_inbox_renders_design_aligned_card_markup(client, db, shop):
+    """Inbox list now uses the .inbox-card / .ic-* structure from design,
+    not the old .inbox-row / .ib-* markup. Mute action lives on the
+    detail page only — no row-level mute link any more."""
     customer, [_row] = await _make_customer_with_inbox(db, shop, count=1)
-    other_shop = ShopModel(name="Other", reward_threshold=10)
-    db.add(other_shop)
-    await db.commit()
-    await db.refresh(other_shop)
-    db.add(Inbox(customer_id=customer.id, shop_id=other_shop.id, body="from other"))
-    db.add(CustomerShopMute(customer_id=customer.id, shop_id=other_shop.id))
-    await db.commit()
-
     _set_customer_cookie(client, customer.id)
     body = (await client.get("/my-inbox")).text
 
-    # Active shop → mute link present, exact data-mute-shop attribute.
-    assert f'data-mute-shop="{shop.id}"' in body
-    # Already-muted shop → no mute link rendered for that row.
-    assert f'data-mute-shop="{other_shop.id}"' not in body
+    # Design-aligned classes
+    assert "inbox-card" in body
+    assert "ic-logo" in body
+    assert "ic-preview" in body
+    assert "page-head" in body
+    assert "inbox-filters" in body
+    # Mute link is detail-only now
+    assert "data-mute-shop" not in body
+    # Old markup retired
+    assert "ib-mute" not in body
 
 
 async def test_mute_endpoint_creates_row_and_is_idempotent(client, db, shop):

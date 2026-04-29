@@ -909,10 +909,26 @@ async def my_inbox(
         }
         for r in rows
     ]
+
+    # Greeting context for the page-head ("สวัสดีครับพี่X · วันศุกร์ ขอให้
+    # เป็นวันที่ดี"). Same shape as /my-cards for consistency.
+    from app.models.util import BKK
+    from datetime import datetime, timezone
+    weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[
+        datetime.now(timezone.utc).astimezone(BKK).weekday()
+    ]
+
+    unread_count = sum(1 for it in items if it["row"].read_at is None)
+
     response = templates.TemplateResponse(
         request=request,
         name="my_inbox.html",
-        context={"customer": customer, "items": items},
+        context={
+            "customer": customer,
+            "items": items,
+            "weekday_th": weekday_th,
+            "unread_count": unread_count,
+        },
     )
     if was_created:
         set_customer_cookie(response, customer.id)

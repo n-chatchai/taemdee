@@ -9521,3 +9521,204 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration-thickness: 1.5px;
   text-decoration-color: rgba(17,17,17,0.45);
 }
+
+/* C7/Inbox · page-head — greeting + sub + ph-actions on the right.
+   Replaces the .app-bar pattern for primary destinations from the dock. */
+.page-head {
+  padding: 14px 22px 14px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 12px;
+  flex-shrink: 0;
+}
+.page-head .ph-text { flex: 1; min-width: 0; }
+.page-head h1 {
+  font-family: 'Prompt', sans-serif;
+  font-size: 22px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.25;
+  margin: 0;
+}
+.page-head .ph-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-top: 3px;
+}
+.page-head .ph-actions {
+  display: flex;
+  gap: 8px;
+  flex-shrink: 0;
+}
+.page-head .ph-icon-btn {
+  width: 38px;
+  height: 38px;
+  background: rgba(17,17,17,0.05);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  text-decoration: none;
+}
+.page-head .ph-icon-btn svg { width: 18px; height: 18px; }
+
+/* Inbox filter pills — tab-like row above the list. */
+.inbox-filters {
+  padding: 0 22px 14px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.inbox-filters::-webkit-scrollbar { display: none; }
+.inbox-filter-pill {
+  appearance: none; -webkit-appearance: none;
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.12);
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.inbox-filter-pill.active {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+  font-weight: 500;
+}
+
+/* Inbox card list — replaces the old .inbox-row markup. */
+.inbox-list {
+  margin: 0;
+  padding: 0 14px;
+  display: flex;
+  flex-direction: column;
+  gap: 8px;
+  flex: 1;
+}
+.inbox-card {
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 12px;
+  display: flex;
+  gap: 11px;
+  position: relative;
+  box-shadow: 0 1px 2px rgba(17,17,17,0.04);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+  transition: transform 0.12s ease;
+}
+.inbox-card:active { transform: scale(0.99); }
+.inbox-card.read {
+  background: rgba(253,250,242,0.55);
+  box-shadow: none;
+}
+.inbox-card.read .ic-body { opacity: 0.7; }
+.inbox-card .ic-unread-dot {
+  position: absolute;
+  top: 14px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+}
+.inbox-card .ic-logo {
+  width: 38px;
+  height: 38px;
+  border-radius: 11px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 13px;
+  color: #fff;
+  letter-spacing: -0.025em;
+  background: var(--ink);
+}
+.inbox-card .ic-logo .dot { color: var(--accent); }
+.inbox-card .ic-body { flex: 1; min-width: 0; }
+.inbox-card .ic-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 6px;
+}
+.inbox-card .ic-shop {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13.5px;
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.inbox-card.read .ic-shop {
+  font-weight: 500;
+  color: var(--ink-soft);
+}
+.inbox-card .ic-time {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-softer);
+  flex-shrink: 0;
+}
+.inbox-card .ic-preview {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink);
+  line-height: 1.45;
+  margin-top: 2px;
+  overflow: hidden;
+  display: -webkit-box;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
+  -webkit-box-orient: vertical;
+}
+.inbox-card.read .ic-preview { color: var(--ink-soft); }
+
+/* Inbox empty state — centred avatar + n้องแต้ม voice. Overrides the
+   older .inbox-empty .h/.s rule above; that markup is dead now. */
+.inbox-empty {
+  margin: 0;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 40px 30px;
+  text-align: center;
+}
+.inbox-empty .ie-avatar {
+  width: 64px;
+  height: 64px;
+  margin-bottom: 18px;
+}
+.inbox-empty .ie-avatar svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.inbox-empty .ie-msg {
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+}
+.inbox-empty .ie-msg strong {
+  color: var(--ink);
+  font-weight: 600;
+}
