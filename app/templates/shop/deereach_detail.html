@@ -13,15 +13,15 @@
 <body>
   {# Audience list seeded into Alpine state so the owner can deselect rows
      before sending. `selected` maps customer_id → bool; default true for
-     every row in `audience`. The send form filters to checked ids. #}
-  {% set audience_ids = audience|map(attribute='id')|map('string')|list %}
+     every row in `audience`. The send form filters to checked ids.
+     Built as a JS object literal so we don't depend on Jinja's dict
+     constructor being available in the sandbox. #}
   <div class="td" x-data="{
         message: {{ message|tojson }},
-        selected: {{ dict.fromkeys(audience_ids, True)|tojson }},
+        selected: { {% for c in audience %}'{{ c.id }}': true{% if not loop.last %}, {% endif %}{% endfor %} },
         flash: '',
         flashKind: 'is-error',
-      }"
-      x-init="$watch('selected', () => {})">
+      }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
