@@ -27,7 +27,10 @@ async def test_ensure_vapid_keys_generates_pair_when_missing(db, monkeypatch):
     pub = get_vapid_public_key()
     priv = get_vapid_private_key()
     assert pub
-    assert priv and "BEGIN PRIVATE KEY" in priv
+    assert priv
+    # base64url charset only (no PEM headers) — pywebpush's expected format.
+    import re
+    assert re.fullmatch(r"[A-Za-z0-9_\-]+", priv)
 
     rows = (await db.exec(select(AppSecret))).all()
     names = {r.name for r in rows}
@@ -70,9 +73,47 @@ async def test_load_vapid_keys_populates_cache_when_db_has_rows(db, monkeypatch)
     monkeypatch.setitem(_cache, "private", None)
 
     db.add(AppSecret(name=PUB_KEY_NAME, value="PUB"))
-    db.add(AppSecret(name=PRIV_KEY_NAME, value="PRIV_PEM"))
+    db.add(AppSecret(name=PRIV_KEY_NAME, value="PRIV_B64"))
     await db.commit()
 
     await load_vapid_keys(db)
     assert get_vapid_public_key() == "PUB"
-    assert get_vapid_private_key() == "PRIV_PEM"
+    assert get_vapid_private_key() == "PRIV_B64"
+
+
+async def test_load_vapid_keys_normalizes_legacy_pem_row(db, monkeypatch):
+    """An app_secrets row written by the previous PEM-storing code (pre-fix
+    boots) must transparently convert to base64url DER on load so
+    pywebpush can parse it."""
+    monkeypatch.setitem(_cache, "public", None)
+    monkeypatch.setitem(_cache, "private", None)
+
+    # Generate a real PEM PKCS#8 to exercise the legacy path.
+    from cryptography.hazmat.primitives import serialization
+    from py_vapid import Vapid01
+    import base64
+    v = Vapid01()
+    v.generate_keys()
+    legacy_pem = v.private_key.private_bytes(
+        serialization.Encoding.PEM,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    ).decode()
+    pub = base64.urlsafe_b64encode(
+        v.public_key.public_bytes(
+            serialization.Encoding.X962,
+            serialization.PublicFormat.UncompressedPoint,
+        )
+    ).decode().rstrip("=")
+
+    db.add(AppSecret(name=PUB_KEY_NAME, value=pub))
+    db.add(AppSecret(name=PRIV_KEY_NAME, value=legacy_pem))
+    await db.commit()
+
+    await load_vapid_keys(db)
+    cached = get_vapid_private_key()
+    # PEM headers stripped; result is pywebpush-ready b64url DER.
+    assert cached
+    assert "BEGIN" not in cached
+    import re
+    assert re.fullmatch(r"[A-Za-z0-9_\-]+", cached)

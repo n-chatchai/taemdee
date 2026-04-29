@@ -48,9 +48,25 @@ async def _read_keys(session: AsyncSession) -> Tuple[Optional[str], Optional[str
     return by_name.get(PUB_KEY_NAME), by_name.get(PRIV_KEY_NAME)
 
 
+def _normalize_private_key(stored: str) -> str:
+    """py_vapid (used by pywebpush) expects a base64url-encoded DER
+    private key string — not raw PEM. Older app_secrets rows hold the
+    PEM PKCS#8 form we used to write; convert them on the fly here so
+    the cache always holds the format pywebpush wants."""
+    if not stored.startswith("-----BEGIN"):
+        return stored
+    pkey = serialization.load_pem_private_key(stored.encode(), password=None)
+    der = pkey.private_bytes(
+        serialization.Encoding.DER,
+        serialization.PrivateFormat.PKCS8,
+        serialization.NoEncryption(),
+    )
+    return base64.urlsafe_b64encode(der).decode().rstrip("=")
+
+
 def _populate_cache(public: str, private: str) -> None:
     _cache["public"] = public
-    _cache["private"] = private
+    _cache["private"] = _normalize_private_key(private)
 
 
 async def load_vapid_keys(db: AsyncSession) -> None:
@@ -82,8 +98,11 @@ async def ensure_vapid_keys(db: Optional[AsyncSession] = None) -> None:
             return
 
         # Fresh ECDSA P-256 pair. Public key in X9.62 uncompressed form,
-        # base64url-encoded (browser pushManager.subscribe format);
-        # private key as PKCS#8 PEM (pywebpush vapid_private_key format).
+        # base64url-encoded (browser pushManager.subscribe format).
+        # Private key as base64url-encoded DER PKCS#8 — the format
+        # py_vapid.from_string() expects (it does b64urldecode →
+        # load_der_private_key, so PEM with -----BEGIN headers does NOT
+        # parse and pywebpush throws ASN.1 errors).
         v = Vapid01()
         v.generate_keys()
         pub_b64 = base64.urlsafe_b64encode(
@@ -92,18 +111,20 @@ async def ensure_vapid_keys(db: Optional[AsyncSession] = None) -> None:
                 serialization.PublicFormat.UncompressedPoint,
             )
         ).decode().rstrip("=")
-        priv_pem = v.private_key.private_bytes(
-            serialization.Encoding.PEM,
-            serialization.PrivateFormat.PKCS8,
-            serialization.NoEncryption(),
-        ).decode()
+        priv_b64 = base64.urlsafe_b64encode(
+            v.private_key.private_bytes(
+                serialization.Encoding.DER,
+                serialization.PrivateFormat.PKCS8,
+                serialization.NoEncryption(),
+            )
+        ).decode().rstrip("=")
 
         session.add(AppSecret(name=PUB_KEY_NAME, value=pub_b64))
-        session.add(AppSecret(name=PRIV_KEY_NAME, value=priv_pem))
+        session.add(AppSecret(name=PRIV_KEY_NAME, value=priv_b64))
         try:
             await session.commit()
             log.info("Generated VAPID keypair (web_push) — stored in app_secrets")
-            _populate_cache(pub_b64, priv_pem)
+            _populate_cache(pub_b64, priv_b64)
         except IntegrityError:
             await session.rollback()
             pub2, priv2 = await _read_keys(session)
