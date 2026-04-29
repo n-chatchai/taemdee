@@ -65,3 +65,19 @@
     <button class="sheet-close" onclick="document.getElementById('install-sheet').classList.remove('open');">เข้าใจแล้ว</button>
   </div>
 </div>
+<script>
+  // Auto-open the install sheet whenever the page is opened in a regular
+  // browser tab (not the installed PWA). Mutually exclusive with
+  // push-prompt.js which only fires inside the PWA — so on any given
+  // page-load at most one of the two overlays appears.
+  (function () {
+    const sheet = document.getElementById('install-sheet');
+    if (!sheet) return;
+    const isPWA = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
+                || window.navigator.standalone === true;
+    if (isPWA) return;
+    // Slight delay so the page paints first — sheet sliding up after the
+    // content is visible reads as "supplementary" rather than "blocking".
+    setTimeout(() => sheet.classList.add('open'), 600);
+  })();
+</script>
