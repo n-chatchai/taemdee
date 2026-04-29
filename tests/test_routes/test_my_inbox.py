@@ -325,6 +325,55 @@ async def test_mute_endpoint_creates_row_and_is_idempotent(client, db, shop):
     assert len(rows) == 1
 
 
+def test_sse_me_route_is_registered():
+    """Verify the customer SSE route is registered. We don't actually open
+    a request — httpx + ASGITransport can't cleanly cancel a long-lived
+    streaming generator, the test would hang. The publish/subscribe
+    roundtrip tests below cover the dispatcher behaviour."""
+    from app.main import app
+    paths = {getattr(r, "path", None) for r in app.routes}
+    assert "/sse/me" in paths
+
+
+async def test_publish_customer_dispatches_to_local_subscriber(db):
+    """events.publish_customer + subscribe_customer roundtrip in-process
+    (sqlite test mode — no Postgres NOTIFY, so this exercises the
+    fallback dispatcher that the real worker also hits when NOTIFY isn't
+    initialised)."""
+    import asyncio
+    from uuid import uuid4
+    from app.services import events
+
+    cid = uuid4()
+    q = events.subscribe_customer(cid)
+    try:
+        events.publish_customer(cid, "inbox-update", "3")
+        # Local dispatch is sync; should be on the queue already.
+        name, payload = await asyncio.wait_for(q.get(), timeout=1.0)
+        assert name == "inbox-update"
+        assert payload == "3"
+    finally:
+        events.unsubscribe_customer(cid, q)
+
+
+async def test_publish_customer_async_also_dispatches_locally(db):
+    """The awaitable variant used from the RQ worker context follows the
+    same local fallback when no publisher pool is configured."""
+    import asyncio
+    from uuid import uuid4
+    from app.services import events
+
+    cid = uuid4()
+    q = events.subscribe_customer(cid)
+    try:
+        await events.publish_customer_async(cid, "inbox-update", "5")
+        name, payload = await asyncio.wait_for(q.get(), timeout=1.0)
+        assert name == "inbox-update"
+        assert payload == "5"
+    finally:
+        events.unsubscribe_customer(cid, q)
+
+
 async def test_push_unsubscribe_clears_keys(client, db):
     # First subscribe, then unsubscribe — same cookie/customer.
     sub = await client.post(

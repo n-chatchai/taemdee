@@ -35,6 +35,10 @@ CHANNEL = "taemdee_events"
 
 # shop_id → list of subscriber queues (per-worker)
 _subscribers: Dict[UUID, List[asyncio.Queue]] = defaultdict(list)
+# customer_id → list of subscriber queues (per-worker). Same fan-out
+# pattern as the shop side; payloads carry "customer_id" instead of
+# "shop_id" so a single LISTEN connection routes both kinds.
+_customer_subscribers: Dict[UUID, List[asyncio.Queue]] = defaultdict(list)
 _listener_conn: Optional[asyncpg.Connection] = None
 _publisher_pool: Optional[asyncpg.Pool] = None
 
@@ -53,9 +57,16 @@ def _on_notify(connection, pid, channel, payload):
     """asyncpg listener callback — dispatch a NOTIFY payload to local queues."""
     try:
         msg = json.loads(payload)
-        shop_id = UUID(msg["shop_id"])
         item = (msg["event_name"], msg["html"])
-        for q in _subscribers.get(shop_id, []):
+        if "shop_id" in msg:
+            shop_id = UUID(msg["shop_id"])
+            queues = _subscribers.get(shop_id, [])
+        elif "customer_id" in msg:
+            customer_id = UUID(msg["customer_id"])
+            queues = _customer_subscribers.get(customer_id, [])
+        else:
+            return
+        for q in queues:
             try:
                 q.put_nowait(item)
             except asyncio.QueueFull:
@@ -178,6 +189,91 @@ def feed_row_html(kind: str, item_id: UUID, when_label: str, customer_name: str 
         f'<td class="a">{label}</td>'
         f"</tr>"
     )
+
+
+# ---------------------------------------------------------------------------
+# Customer-side parallel API. Same fan-out pattern, separate subscribers dict
+# so a customer's stream doesn't see shop dashboard events and vice-versa.
+# ---------------------------------------------------------------------------
+
+
+async def _notify_customer_async(customer_id: UUID, event_name: str, html: str) -> None:
+    if _publisher_pool is None:
+        return
+    payload = json.dumps({
+        "customer_id": str(customer_id),
+        "event_name": event_name,
+        "html": html,
+    })
+    try:
+        async with _publisher_pool.acquire() as conn:
+            await conn.execute("SELECT pg_notify($1, $2)", CHANNEL, payload)
+    except Exception:
+        log.exception("events: pg_notify failed for customer=%s event=%s", customer_id, event_name)
+
+
+def publish_customer(customer_id: UUID, event_name: str, html: str) -> None:
+    """Fire-and-forget publish to a single customer's SSE subscribers.
+    Mirrors `publish()` but routes to `_customer_subscribers`. Use from
+    web routes; from a worker process where the loop terminates after
+    the job, prefer `publish_customer_async` so the NOTIFY actually
+    flushes before the loop closes."""
+    if _publisher_pool is not None:
+        try:
+            loop = asyncio.get_running_loop()
+            loop.create_task(_notify_customer_async(customer_id, event_name, html))
+            return
+        except RuntimeError:
+            pass
+    item = (event_name, html)
+    for q in _customer_subscribers.get(customer_id, []):
+        try:
+            q.put_nowait(item)
+        except asyncio.QueueFull:
+            pass
+
+
+async def publish_customer_async(customer_id: UUID, event_name: str, html: str) -> None:
+    """Awaitable customer publish — use from RQ worker context where the
+    asyncio loop closes right after _run returns. Awaits the NOTIFY so
+    the payload actually crosses the wire before the loop tears down."""
+    if _publisher_pool is not None:
+        await _notify_customer_async(customer_id, event_name, html)
+        return
+    item = (event_name, html)
+    for q in _customer_subscribers.get(customer_id, []):
+        try:
+            q.put_nowait(item)
+        except asyncio.QueueFull:
+            pass
+
+
+def subscribe_customer(customer_id: UUID) -> asyncio.Queue:
+    q: asyncio.Queue = asyncio.Queue(maxsize=64)
+    _customer_subscribers[customer_id].append(q)
+    return q
+
+
+def unsubscribe_customer(customer_id: UUID, q: asyncio.Queue) -> None:
+    if q in _customer_subscribers.get(customer_id, []):
+        _customer_subscribers[customer_id].remove(q)
+
+
+async def stream_customer(customer_id: UUID) -> AsyncIterator[bytes]:
+    """SSE wire format generator for a single customer's events. Caller
+    wraps in StreamingResponse with media_type='text/event-stream'."""
+    q = subscribe_customer(customer_id)
+    try:
+        yield b": connected\n\n"
+        while True:
+            try:
+                event_name, html = await asyncio.wait_for(q.get(), timeout=20.0)
+                data_lines = "\n".join(f"data: {line}" for line in html.splitlines() or [""])
+                yield f"event: {event_name}\n{data_lines}\n\n".encode()
+            except asyncio.TimeoutError:
+                yield b": keep-alive\n\n"
+    finally:
+        unsubscribe_customer(customer_id, q)
 
 
 async def stream(shop_id: UUID) -> AsyncIterator[bytes]:

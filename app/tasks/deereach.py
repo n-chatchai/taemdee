@@ -39,6 +39,7 @@ from app.models.customer import Customer
 from app.models.deereach import DeeReachCampaign, DeeReachMessage
 from app.models.inbox import Inbox
 from app.models.shop import Shop
+from app.services import events
 
 log = logging.getLogger(__name__)
 
@@ -187,6 +188,11 @@ async def _run(campaign_id: UUID) -> None:
     # don't share connection pools across forked processes.
     engine = create_async_engine(settings.database_url, echo=False)
 
+    # Make sure this worker's NOTIFY publisher pool is up before we start
+    # firing inbox-update events at the end. start() is idempotent so
+    # repeat calls across jobs are free.
+    await events.start()
+
     async with AsyncSession(engine) as db:
         # ------------------------------------------------------------------
         # 1. Load campaign
@@ -229,6 +235,10 @@ async def _run(campaign_id: UUID) -> None:
         # ------------------------------------------------------------------
         delivered_satang = 0
         failed_satang = 0
+        # Track every customer that got an inbox row this run — we publish
+        # the new unread count to each of them after the commit lands so
+        # any open SSE stream updates the dock badge in real time.
+        inbox_recipient_ids: set = set()
 
         for msg in messages:
             # Load the customer for channel-specific data (line_id, phone)
@@ -257,6 +267,7 @@ async def _run(campaign_id: UUID) -> None:
                 await _send_inbox(
                     db, customer.id, shop.id, campaign.id, message_text,
                 )
+            inbox_recipient_ids.add(customer.id)
 
             if success:
                 msg.status = "delivered"
@@ -303,5 +314,21 @@ async def _run(campaign_id: UUID) -> None:
         )
 
         await db.commit()
+
+        # Publish per-recipient inbox-update so any open SSE stream on the
+        # customer's device bumps the dock badge live. Awaited (not fire-
+        # and-forget) so the NOTIFY actually flushes before the worker's
+        # asyncio.run loop tears down at function exit.
+        from sqlalchemy import func as _func
+        for cid in inbox_recipient_ids:
+            unread = (await db.exec(
+                select(_func.count())
+                .select_from(Inbox)
+                .where(Inbox.customer_id == cid, Inbox.read_at.is_(None))
+            )).one()
+            try:
+                await events.publish_customer_async(cid, "inbox-update", str(unread))
+            except Exception:
+                log.exception("events: failed to publish inbox-update for customer=%s", cid)
 
     await engine.dispose()

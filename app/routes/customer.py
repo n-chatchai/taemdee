@@ -4,7 +4,7 @@ import uuid
 from typing import Optional
 
 from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, status
-from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from app.core.templates import templates
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -26,6 +26,29 @@ from app.services.redemption import RedemptionError, active_point_count, redeem
 from app.services.soft_wall import claim_by_phone
 
 router = APIRouter()
+
+
+@router.get("/sse/me")
+async def customer_event_stream(
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Per-customer SSE stream — drives the dock inbox badge live (so when
+    DeeReach delivers a new message in the worker, the customer sees the
+    badge bump without refreshing). Currently emits one event kind:
+        inbox-update — payload is the new unread count as plain string.
+    Anonymous customers get a stream too (cookie alone identifies them) so
+    inbox events still reach guest mode."""
+    from app.services.events import stream_customer
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    response = StreamingResponse(
+        stream_customer(customer.id),
+        media_type="text/event-stream",
+        headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
 
 
 async def _inbox_unread_count(db: AsyncSession, customer_id: uuid.UUID) -> int:
