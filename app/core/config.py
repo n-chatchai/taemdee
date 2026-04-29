@@ -38,6 +38,12 @@ class Settings(BaseSettings):
     # design; bump to 5/10 if a busy shop wants more history at a glance.
     shop_customer_last_scan_display_number: int = 10
 
+    # Welcome-credit grant amount (in CREDITS, not satang) — handed to
+    # every shop the first time they tap the dashboard's 'รับเครดิตต้อนรับ'
+    # item. 0 disables the item. Stored as credits because the value is
+    # shop-facing — converted to satang internally when applied.
+    credit_welcome_amount: int = 50
+
     # Web Push (VAPID) — generate a keypair once with:
     #   uv run python -c "from py_vapid import Vapid01; v=Vapid01(); v.generate_keys(); print(v.private_key); print(v.public_key)"
     # When unset, the DeeReach waterfall skips web_push and the customer

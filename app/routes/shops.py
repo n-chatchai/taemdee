@@ -18,6 +18,7 @@ from app.services.auth import issue_session_token
 from app.services.branch import s3_top_context
 from app.services.deereach import compute_suggestions
 from app.services.events import stream as event_stream
+from app.services.items import ItemError, claim as claim_item, list_available as list_available_items
 from app.services.logo_gen import VALID_STYLE_IDS, generate_logos, render_style
 from app.services.referrals import (
     complete_referral_for,
@@ -230,6 +231,9 @@ async def dashboard(
 
     from app.core.config import settings as app_settings
 
+    # Generic claim cards (welcome credit, future onboarding nudges, etc.)
+    items = await list_available_items(db, shop)
+
     return templates.TemplateResponse(
         request=request,
         name="shop/dashboard.html",
@@ -248,9 +252,27 @@ async def dashboard(
             "redemptions_total": redemptions_total,
             "feed_cap": app_settings.shop_customer_last_scan_display_number,
             "attn_cards": attn_cards,
+            "items": items,
             **s3_top,
         },
     )
+
+
+@router.post("/items/{kind}/claim")
+async def claim_dashboard_item(
+    kind: str,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Apply the per-kind side effect (e.g. credit grant), record the
+    ShopItem row, redirect back to /shop/dashboard. Already-claimed +
+    unknown kinds → 400 with the Thai error so the user sees what
+    happened instead of a silent retry."""
+    try:
+        await claim_item(db, shop, kind)
+    except ItemError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
+    return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
 
 
 VALID_THEMES = ("taemdee", "mono", "night", "pastel")

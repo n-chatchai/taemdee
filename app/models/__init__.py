@@ -9,6 +9,7 @@ from app.models.otp import OtpCode
 from app.models.point import Point
 from app.models.redemption import Redemption
 from app.models.shop import Shop
+from app.models.shop_item import ShopItem
 from app.models.staff import StaffMember
 
 __all__ = [
@@ -26,6 +27,7 @@ __all__ = [
     "Redemption",
     "Referral",
     "Shop",
+    "ShopItem",
     "StaffMember",
     "TopupSlip",
 ]

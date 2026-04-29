@@ -68,6 +68,24 @@
       </div>
     </div>
 
+    {% if items %}
+      <div class="ph-section-h" style="margin-top:8px;">
+        <div class="label">รายการที่ต้องทำ</div>
+      </div>
+      {% for it in items %}
+        <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
+          <button type="submit" class="s3-item">
+            <span class="s3-item-icon">✦</span>
+            <div class="s3-item-info">
+              <div class="s3-item-h">{{ it.label }}</div>
+              <div class="s3-item-s">{{ it.sub }}</div>
+            </div>
+            <span class="s3-item-cta">{{ it.cta }} ›</span>
+          </button>
+        </form>
+      {% endfor %}
+    {% endif %}
+
     {% if attn_cards %}
       <div class="ph-section-h" style="margin-top:8px;">
         <div class="label">แต้มดีแนะนำ ✦</div>

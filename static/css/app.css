@@ -6423,6 +6423,59 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
 }
 
+/* Dashboard claimable items (welcome credit, future onboarding nudges).
+   Card row with accent gift-edge — tap submits the per-kind claim. */
+.s3-item-form { margin: 0 20px 8px; }
+.s3-item {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  background: var(--butter-soft);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-left: 4px solid var(--accent);
+  border-radius: 14px;
+  padding: 12px 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  text-align: left;
+  font-family: 'Prompt', sans-serif;
+}
+.s3-item:active { transform: scale(0.99); }
+.s3-item .s3-item-icon {
+  width: 32px;
+  height: 32px;
+  background: var(--accent);
+  color: var(--butter);
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+  flex-shrink: 0;
+}
+.s3-item .s3-item-info { flex: 1; line-height: 1.3; min-width: 0; }
+.s3-item .s3-item-h {
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.s3-item .s3-item-s {
+  font-size: 12px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.s3-item .s3-item-cta {
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+
 /* ==========================================================
    S3.issue — full-page ออกแต้ม hub: feed + 3 action buttons
    ========================================================== */
