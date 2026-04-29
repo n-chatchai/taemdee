@@ -1056,6 +1056,31 @@ async def settings_contact_post(
     return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@router.get("/settings/story", response_class=HTMLResponse)
+async def settings_story_get(request: Request, shop: Shop = Depends(get_current_shop)):
+    """S10.story — owner editor for the C9 emotional layer. Two textareas:
+    `thanks_message` (short personal note) and `story_text` (longer paragraph)."""
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/settings/story.html",
+        context={"shop": shop},
+    )
+
+
+@router.post("/settings/story")
+async def settings_story_post(
+    thanks_message: Optional[str] = Form(None),
+    story_text: Optional[str] = Form(None),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    shop.thanks_message = (thanks_message or "").strip() or None
+    shop.story_text = (story_text or "").strip() or None
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.get("/refer", response_class=HTMLResponse)
 async def refer_page(
     request: Request,

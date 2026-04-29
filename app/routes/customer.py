@@ -419,7 +419,7 @@ async def onboard_recovery(
     return response
 
 
-@router.get("/shop/{shop_id}/story", response_class=HTMLResponse)
+@router.get("/story/{shop_id}", response_class=HTMLResponse)
 async def shop_story(
     request: Request,
     shop_id: uuid.UUID,

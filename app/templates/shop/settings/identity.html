@@ -17,7 +17,7 @@
           choice: '{{ picked_id or options[0].id }}',
           customText: '{{ custom_text }}',
           isUploading: false,
-          customLogoUrl: '{{ shop.logo_url if shop.logo_url.startswith('url:') else '' }}',
+          customLogoUrl: '{{ shop.logo_url if shop.logo_url and shop.logo_url.startswith('url:') else '' }}',
           async handleFileUpload(e) {
             const file = e.target.files[0];
             if (!file) return;

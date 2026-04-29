@@ -108,3 +108,62 @@ async def test_contact_get_renders_default_hours_for_blank_shop(auth_client):
     assert "เวลาเปิด-ปิด" in body
     # Default sunday is rendered as closed
     assert "อาทิตย์" in body
+
+
+# ---------------------------------------------------------------------------
+# S10.story — owner editor for the C9 emotional layer
+# ---------------------------------------------------------------------------
+
+
+async def test_story_get_renders_existing_values(auth_client, db, shop):
+    shop.thanks_message = "ดีใจที่กลับมาทุกครั้ง"
+    shop.story_text = "เริ่มจากความหลงใหลในกาแฟดอยช้าง"
+    db.add(shop)
+    await db.commit()
+
+    r = await auth_client.get("/shop/settings/story")
+    assert r.status_code == 200
+    body = r.text
+    assert "ดีใจที่กลับมาทุกครั้ง" in body
+    assert "ความหลงใหลในกาแฟดอยช้าง" in body
+
+
+async def test_story_post_saves_both_fields(auth_client, db, shop):
+    response = await auth_client.post(
+        "/shop/settings/story",
+        data={
+            "thanks_message": "ขอบคุณนะครับ",
+            "story_text": "เริ่มจากบ้าน · ปัจจุบันมี 2 สาขา",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    assert response.headers["location"] == "/shop/settings"
+    await db.refresh(shop)
+    assert shop.thanks_message == "ขอบคุณนะครับ"
+    assert shop.story_text == "เริ่มจากบ้าน · ปัจจุบันมี 2 สาขา"
+
+
+async def test_story_post_blank_clears_fields(auth_client, db, shop):
+    """Empty submit nulls both columns out — owner can hide the story
+    sections again without going to the DB."""
+    shop.thanks_message = "old"
+    shop.story_text = "old story"
+    db.add(shop)
+    await db.commit()
+
+    await auth_client.post(
+        "/shop/settings/story",
+        data={"thanks_message": "", "story_text": ""},
+        follow_redirects=False,
+    )
+    await db.refresh(shop)
+    assert shop.thanks_message is None
+    assert shop.story_text is None
+
+
+async def test_settings_index_links_to_story(auth_client, shop):
+    """The S10 menu now exposes the story row so owners can find the editor."""
+    body = (await auth_client.get("/shop/settings")).text
+    assert "/shop/settings/story" in body
+    assert "เรื่องราวร้าน" in body

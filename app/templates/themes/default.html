@@ -22,7 +22,7 @@
        their identity QR via the camera/QR row in /my-cards. #}
     <a href="/my-cards" class="c1-avatar" title="ดูบัตรทั้งหมด" aria-label="บัตรทั้งหมด">{{ (customer.display_name or 'ล')[0] }}</a>
 
-    <a class="shop-head" href="/shop/{{ shop.id }}/story" style="display:block; text-decoration:none; color:inherit;">
+    <a class="shop-head" href="/story/{{ shop.id }}" style="display:block; text-decoration:none; color:inherit;">
       <div class="shop-logo-mark">
         {% if logo %}
           {% if logo.is_image %}

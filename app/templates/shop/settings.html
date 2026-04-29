@@ -159,6 +159,19 @@
         </div>
         <div class="arrow-r">›</div>
       </a>
+
+      <a href="/shop/settings/story" class="s10-row">
+        <div class="row-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M4 19.5A2.5 2.5 0 016.5 17H20"/><path d="M6.5 2H20v20H6.5A2.5 2.5 0 014 19.5v-15A2.5 2.5 0 016.5 2z"/></svg>
+        </div>
+        <div class="row-info">
+          <div class="row-name">เรื่องราวร้าน</div>
+          <div class="row-meta">
+            {% if shop.story_text or shop.thanks_message %}เขียนแล้ว · ลูกค้าเห็นที่หน้า "ทำความรู้จัก"{% else %}ยังไม่ได้เล่า · เขียนเรื่องราว{% endif %}
+          </div>
+        </div>
+        <div class="arrow-r">›</div>
+      </a>
     </div>
 
     <div class="s10-section">
