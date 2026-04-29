@@ -366,14 +366,14 @@ body {
    ========================================================== */
 
 .s2-steps {
-  padding: 14px 20px 0;
+  padding: 18px 20px 0;
   display: flex;
   align-items: center;
   gap: 6px;
 }
 .s2-steps .step {
   flex: 1;
-  height: 4px;
+  height: 8px;
   background: var(--line);
   border-radius: 999px;
 }
@@ -381,19 +381,22 @@ body {
 .s2-steps .step.active { background: var(--accent); }
 
 .s2-counter {
-  padding: 14px 20px 0;
+  padding: 8px 20px 0;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 12px;
+  font-size: 10px;
   letter-spacing: 0.16em;
   color: var(--ink-soft);
   text-transform: uppercase;
   display: flex;
-  justify-content: space-between;
+  justify-content: flex-end;
   align-items: center;
+  gap: 14px;
 }
 .s2-counter .step-num strong { color: var(--accent); }
 
-.s2-q { padding: 24px 20px 4px; }
+.s2-q {
+  padding: 14px 20px 4px;
+}
 .s2-q .ask {
   font-weight: 700;
   font-size: 26px;
@@ -436,9 +439,10 @@ body {
   letter-spacing: -0.01em;
   color: var(--ink);
 }
+.s2-field:focus-within input,
 .s2-field input:focus {
-  outline: none;
   border-color: var(--accent);
+  outline: none;
   box-shadow: none;
 }
 .s2-hint {
@@ -5216,6 +5220,27 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-size: 13px;
   font-weight: 700;
   border: 1px solid rgba(17, 17, 17, 0.18);
+}
+.s2-logo .edit-hint {
+  display: none;
+  position: absolute;
+  bottom: 6px;
+  left: 6px;
+  width: 18px;
+  height: 18px;
+  background: rgba(17, 17, 17, 0.12);
+  border-radius: 50%;
+  align-items: center;
+  justify-content: center;
+  color: var(--ink);
+  pointer-events: none;
+}
+.s2-logo.selected .edit-hint {
+  display: flex;
+}
+.s2-logo .edit-hint svg {
+  width: 10px;
+  height: 10px;
 }
 /* Typography variants for the AI logo generator (PRD §6.E).
    Size-agnostic: container sets font-size, .lt-N controls family/weight/casing/colour
