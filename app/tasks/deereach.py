@@ -248,6 +248,16 @@ async def _run(campaign_id: UUID) -> None:
                 db=db, shop_id=shop.id, campaign_id=campaign.id,
             )
 
+            # Inbox is the source of truth — every campaign message lands
+            # there so customers can re-read past notifications (and so the
+            # primary push isn't lost if it was missed/dismissed). When
+            # the primary channel WAS inbox, _dispatch_channel already wrote
+            # the row — don't double-write.
+            if msg.channel != "inbox":
+                await _send_inbox(
+                    db, customer.id, shop.id, campaign.id, message_text,
+                )
+
             if success:
                 msg.status = "delivered"
                 delivered_satang += msg.cost_satang

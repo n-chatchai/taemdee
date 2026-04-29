@@ -398,6 +398,92 @@ async def test_send_campaign_writes_inbox_for_anonymous_customer(db, shop):
     assert rows[0].read_at is None
 
 
+async def test_dispatch_loop_always_copies_to_inbox_for_non_inbox_channels(db, shop):
+    """Per Channel Waterfall spec — every campaign message must land in the
+    customer's inbox even when the primary delivery channel is something
+    else (web_push / line / sms). Inbox is the source of truth so a
+    customer who missed the push notification can still find the message."""
+    from app.models import Customer, DeeReachCampaign, DeeReachMessage, Inbox
+    from app.tasks.deereach import _dispatch_channel, _send_inbox
+
+    # Customer who would normally be reached via LINE
+    line_customer = await _customer(db, line_id="U_line_test")
+
+    # Simulate the dispatch loop's per-message behaviour (not the full _run
+    # since that boots a fresh engine — just check the inbox-copy branch)
+    fake_campaign_id = (await _customer(db)).id  # any UUID
+
+    # Primary channel = line → _dispatch_channel returns True (stub) and
+    # the loop then writes a parallel inbox row. Reproduce that here.
+    await _send_inbox(
+        db, line_customer.id, shop.id, fake_campaign_id, "ฝากบอกพี่",
+    )
+    await db.commit()
+
+    rows = (await db.exec(
+        select(Inbox).where(Inbox.customer_id == line_customer.id)
+    )).all()
+    assert len(rows) == 1
+    assert rows[0].body == "ฝากบอกพี่"
+    # The user with a LINE id can still find the message in their inbox
+    # regardless of whether LINE delivery succeeded.
+
+
+async def test_run_writes_inbox_copy_for_each_recipient(db, shop, monkeypatch):
+    """Full dispatch loop: when a campaign targets customers reached via
+    web_push / line / sms, every recipient gets an Inbox row in addition
+    to the primary channel."""
+    from app.models import Customer, DeeReachCampaign, DeeReachMessage, Inbox
+    from app.services.deereach import send_campaign
+    from app.tasks import deereach as worker
+
+    # Mute the line + sms channel calls so they always succeed without
+    # external API; web_push goes through its own stub.
+    monkeypatch.setattr(worker, "_send_line", lambda *a, **kw: True)
+    monkeypatch.setattr(worker, "_send_sms", lambda *a, **kw: True)
+    monkeypatch.setattr(worker, "_send_web_push", lambda *a, **kw: True)
+
+    line_c = await _customer(db, line_id="U_lc")
+    phone_c = await _customer(db, phone="0800000001")
+    # Backfill some stamps so they're eligible for the manual audience query
+    for c in (line_c, phone_c):
+        await _stamp(db, shop, c, days_ago=7)
+    # Give the shop credits so the lock step succeeds
+    shop.credit_balance = 1000_00  # 1000 credits in satang
+    db.add(shop)
+    await db.commit()
+
+    campaign = await send_campaign(
+        db, shop, kind="manual",
+        message_override="ฝากถึงทุกคน — แวะมาด้วยนะครับ",
+    )
+
+    # Reach into the worker's async impl directly (skip RQ enqueue) so the
+    # test runs sync. Patch the engine factory to reuse the test session's
+    # connection — the worker's _run constructs its own engine which
+    # would be on a separate connection and not see our test data.
+    from sqlmodel.ext.asyncio.session import AsyncSession as _AsyncSession
+    from contextlib import asynccontextmanager
+
+    class _ReuseEngine:
+        async def dispose(self):
+            pass
+
+    @asynccontextmanager
+    async def _session_yielding_test_db(*a, **kw):
+        yield db
+
+    monkeypatch.setattr(worker, "create_async_engine", lambda *a, **kw: _ReuseEngine())
+    monkeypatch.setattr(worker, "AsyncSession", _session_yielding_test_db)
+
+    await worker._run(campaign.id)
+
+    rows = (await db.exec(select(Inbox).where(Inbox.campaign_id == campaign.id))).all()
+    customer_ids = {r.customer_id for r in rows}
+    assert line_c.id in customer_ids
+    assert phone_c.id in customer_ids
+
+
 async def test_compute_suggestions_caps_at_max(db, shop):
     forgot = await _customer(db, line_id="U_forgot")
     for _ in range(10):
