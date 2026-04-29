@@ -9894,6 +9894,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 /* Zoom application — class lives on <html>, scales the whole .td block.
    md is default (no class). The dock is position: fixed so it sits
    outside the zoomed flow — by design, dock stays normal size while
-   content scales. */
-html.ts-sm .td { zoom: 0.92; }
-html.ts-lg .td { zoom: 1.12; }
+   content scales.
+   Ratios match the design picker's button label sizes (sm 12px / md 14px
+   / lg 16px → 12/14 = 0.86, 16/14 = 1.14) so the choice the user
+   makes in the picker is the choice they get on every page. */
+html.ts-sm .td { zoom: 0.86; }
+html.ts-lg .td { zoom: 1.14; }
