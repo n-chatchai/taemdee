@@ -868,6 +868,49 @@ async def my_inbox_mark_read(
     return JSONResponse({"ok": True}, status_code=200)
 
 
+@router.get("/my-inbox/{inbox_id}", response_class=HTMLResponse)
+async def my_inbox_detail(
+    request: Request,
+    inbox_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Inbox.detail — single message view with shop hero + body + 'open
+    card' / 'mute shop' actions. Auto-marks the row as read on view.
+    404s if the row belongs to another customer (ownership check) so
+    sharing a URL leaks nothing."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    row = await db.get(Inbox, inbox_id)
+    if row is None or row.customer_id != customer.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบข้อความ")
+    shop = await db.get(Shop, row.shop_id) if row.shop_id else None
+    if row.read_at is None:
+        row.read_at = utcnow()
+        db.add(row)
+        await db.commit()
+
+    from app.models import CustomerShopMute
+    is_muted = False
+    if shop is not None:
+        is_muted = (await db.exec(
+            select(CustomerShopMute).where(
+                CustomerShopMute.customer_id == customer.id,
+                CustomerShopMute.shop_id == shop.id,
+            )
+        )).first() is not None
+
+    return templates.TemplateResponse(
+        request=request,
+        name="my_inbox_detail.html",
+        context={
+            "customer": customer,
+            "shop": shop,
+            "row": row,
+            "is_muted": is_muted,
+        },
+    )
+
+
 # ── Web Push subscription (VAPID) ────────────────────────────────────────────
 
 @router.get("/push/vapid-public")

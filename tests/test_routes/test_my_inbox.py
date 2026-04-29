@@ -55,6 +55,59 @@ async def test_my_inbox_mark_read_flips_read_at(client, db, shop):
     assert row.read_at is not None
 
 
+async def test_my_inbox_detail_renders_and_auto_marks_read(client, db, shop):
+    """GET /my-inbox/{id} renders the detail page, auto-flips read_at,
+    and exposes the mute link for an unmuted shop."""
+    customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
+    _set_customer_cookie(client, customer.id)
+    assert row.read_at is None
+
+    r = await client.get(f"/my-inbox/{row.id}")
+    assert r.status_code == 200
+    body = r.text
+    assert row.body in body
+    assert shop.name in body
+    # Mute link present, with the shop id as data attribute
+    assert f'data-mute-shop="{shop.id}"' in body
+    # And the row was flipped to read
+    await db.refresh(row)
+    assert row.read_at is not None
+
+
+async def test_my_inbox_detail_blocks_other_customer(client, db, shop):
+    """A different customer must not be able to view someone else's row."""
+    from app.models import Customer
+    owner, [row] = await _make_customer_with_inbox(db, shop, count=1)
+    intruder = Customer(is_anonymous=True)
+    db.add(intruder)
+    await db.commit()
+    await db.refresh(intruder)
+
+    _set_customer_cookie(client, intruder.id)
+    r = await client.get(f"/my-inbox/{row.id}")
+    assert r.status_code == 404
+
+
+async def test_my_inbox_detail_hides_mute_link_when_already_muted(client, db, shop):
+    from app.models import CustomerShopMute
+    customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
+    db.add(CustomerShopMute(customer_id=customer.id, shop_id=shop.id))
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get(f"/my-inbox/{row.id}")).text
+    assert 'data-mute-shop' not in body
+    assert "ปิดเสียงร้านนี้แล้ว" in body
+
+
+async def test_my_inbox_list_rows_link_to_detail(client, db, shop):
+    """Each row in the list is now an <a> linking to /my-inbox/{id}."""
+    customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get("/my-inbox")).text
+    assert f'href="/my-inbox/{row.id}"' in body
+
+
 async def test_my_inbox_mark_read_blocks_other_customer(client, db, shop):
     """A different customer must not be able to flip someone else's row."""
     owner, [row] = await _make_customer_with_inbox(db, shop, count=1)
