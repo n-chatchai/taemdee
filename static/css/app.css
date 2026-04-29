@@ -9009,3 +9009,21 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-style: italic;
   margin-bottom: 6px;
 }
+
+/* C7 — per-shop unread message dot. Positioned over the top-left of the
+   card so it sits on the corner of .logo without disturbing the grid. */
+.c7-card .c7-card-unread {
+  position: absolute;
+  top: 10px;
+  left: 10px;
+  width: 8px;
+  height: 8px;
+  background: var(--accent);
+  border-radius: 50%;
+  border: 1.5px solid var(--surface);
+  z-index: 1;
+  animation: pop 1.6s ease-in-out infinite;
+}
+.c7-card.featured .c7-card-unread {
+  border-color: var(--butter);
+}

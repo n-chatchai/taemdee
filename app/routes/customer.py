@@ -707,6 +707,14 @@ async def my_cards(
         .group_by(Point.shop_id)
     )).all()
 
+    # Per-shop unread inbox count → small accent dot on the c7-card so the
+    # customer sees which shop has a pending message without opening /my-inbox.
+    unread_per_shop = dict((await db.exec(
+        select(Inbox.shop_id, func.count())
+        .where(Inbox.customer_id == customer.id, Inbox.read_at.is_(None))
+        .group_by(Inbox.shop_id)
+    )).all())
+
     cards = []
     for shop_id, active_count in points_per_shop:
         shop = await db.get(Shop, shop_id)
@@ -716,6 +724,7 @@ async def my_cards(
             "shop": shop,
             "point_count": active_count,
             "ratio": active_count / shop.reward_threshold if shop.reward_threshold else 0,
+            "unread": unread_per_shop.get(shop_id, 0),
         })
     cards.sort(key=lambda c: c["ratio"], reverse=True)
 

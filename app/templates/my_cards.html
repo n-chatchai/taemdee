@@ -94,6 +94,7 @@
           {% if ready %}
             <div class="ready-tag"><span class="dot"></span>ครบแล้ว!</div>
           {% endif %}
+          {% if c.unread %}<span class="c7-card-unread" aria-label="ข้อความใหม่"></span>{% endif %}
           <div class="logo">{{ c.shop.name[0]|upper }}</div>
           <div class="info">
             {% set logo = shop_logo(c.shop) %}

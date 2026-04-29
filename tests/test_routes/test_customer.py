@@ -186,6 +186,51 @@ async def test_my_cards_renders_for_guest_without_banner(client, shop):
     assert 'href="/card/account"' not in body
 
 
+async def test_my_cards_shows_unread_dot_only_for_shops_with_pending_inbox(
+    client, db, shop
+):
+    """C7 per-shop unread indicator: a c7-card-unread dot renders only on
+    cards whose shop has at least one Inbox row with read_at IS NULL for
+    this customer."""
+    from app.models import Customer, Inbox, Shop
+
+    # Customer needs cards at two shops to make the per-shop scoping testable.
+    other = Shop(name="Other Shop", reward_threshold=10)
+    db.add(other)
+    await db.commit()
+    await db.refresh(other)
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    await client.get(f"/scan/{other.id}", follow_redirects=True)
+
+    customer = (await db.exec(select(Customer))).first()
+    # Unread message at `shop`, no message at `other`.
+    db.add(Inbox(customer_id=customer.id, shop_id=shop.id, body="ใหม่!"))
+    await db.commit()
+
+    body = (await client.get("/my-cards")).text
+    assert "c7-card-unread" in body
+    # And only once — `other` has no unread, so the dot should NOT appear twice.
+    assert body.count("c7-card-unread") == 1
+
+
+async def test_my_cards_no_dot_when_message_already_read(client, db, shop):
+    from app.models import Customer, Inbox
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    customer = (await db.exec(select(Customer))).first()
+
+    from app.models.util import utcnow
+    db.add(Inbox(
+        customer_id=customer.id, shop_id=shop.id,
+        body="อ่านแล้ว", read_at=utcnow(),
+    ))
+    await db.commit()
+
+    body = (await client.get("/my-cards")).text
+    assert "c7-card-unread" not in body
+
+
 async def test_card_unknown_shop_renders_friendly_page(client):
     bogus = uuid4()
     response = await client.get(f"/card/{bogus}")
