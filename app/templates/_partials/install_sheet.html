@@ -1,83 +1,127 @@
+{# Install sheet — auto-pops in regular browser tabs (not the installed
+   PWA). Two variants share the same template:
+     · Android Chrome → "เพิ่มลงหน้าจอ" CTA fires beforeinstallprompt
+     · iOS Safari    → step-by-step "Share → Add to Home Screen" + dark
+                        "เข้าใจแล้ว" CTA (no native install API)
+   JS at the bottom flips data-variant visibility via UA sniff. #}
 <div class="install-sheet-overlay" id="install-sheet" onclick="this.classList.remove('open');">
   <div class="install-sheet" onclick="event.stopPropagation();">
     <div class="sheet-handle"></div>
 
-    <div class="sheet-pitch">
-      <svg class="stamp-big" viewBox="0 0 100 100" width="44" height="44">
-        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
-      </svg>
-      <div class="pitch-h">เพิ่ม<em>แต้มดี</em>ลงหน้าจอ</div>
-      <div class="pitch-s">เปิดเหมือนแอป · เปิดเร็วทุกครั้ง</div>
-    </div>
-
-    <div class="platforms">
-      <div class="plat-tile">
-        <div class="plat-h">iPhone · Safari</div>
-        <div class="plat-step">
-          <div class="step-ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-              <polyline points="16 6 12 2 8 6"/>
-              <line x1="12" y1="2" x2="12" y2="15"/>
-            </svg>
+    {# Home-screen mock-up — 4 phone-app icons with TaemDee spotlit in
+       slot 3 so the user can see what the result of installing looks like. #}
+    <div class="home-mock">
+      <div class="icon-row">
+        <div class="app-icon dim">
+          <div class="tile t1">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M17 10.5V7a1 1 0 00-1-1H4a1 1 0 00-1 1v10a1 1 0 001 1h12a1 1 0 001-1v-3.5l4 4v-11l-4 4z"/></svg>
           </div>
-          <div class="step-txt">กด Share</div>
+          <div class="label">FaceTime</div>
         </div>
-        <div class="plat-step">
-          <div class="step-ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round">
-              <line x1="12" y1="5" x2="12" y2="19"/>
-              <line x1="5" y1="12" x2="19" y2="12"/>
-            </svg>
+        <div class="app-icon dim">
+          <div class="tile t2">
+            <svg viewBox="0 0 24 24" fill="#fff"><path d="M12 9a3.5 3.5 0 100 7 3.5 3.5 0 000-7zm0 5.5a2 2 0 110-4 2 2 0 010 4zM20 5h-3.17l-1.86-2H9.03L7.17 5H4a2 2 0 00-2 2v12a2 2 0 002 2h16a2 2 0 002-2V7a2 2 0 00-2-2z"/></svg>
           </div>
-          <div class="step-txt">"Add to Home Screen"</div>
+          <div class="label">Camera</div>
         </div>
-      </div>
-
-      <div class="plat-tile">
-        <div class="plat-h">Android · Chrome</div>
-        <div class="plat-step">
-          <div class="step-ico">
-            <svg viewBox="0 0 24 24" fill="currentColor">
-              <circle cx="12" cy="5" r="2"/>
-              <circle cx="12" cy="12" r="2"/>
-              <circle cx="12" cy="19" r="2"/>
+        <div class="app-icon spotlight">
+          <div class="tile">
+            <svg viewBox="0 0 100 100">
+              <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+              <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+              <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
             </svg>
           </div>
-          <div class="step-txt">กด ⋮ menu</div>
+          <div class="label">แต้มดี</div>
         </div>
-        <div class="plat-step">
-          <div class="step-ico">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-              <polyline points="7 10 12 15 17 10"/>
-              <line x1="12" y1="15" x2="12" y2="3"/>
-            </svg>
+        <div class="app-icon dim">
+          <div class="tile t4">
+            <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3" fill="#E91E63"/><circle cx="12" cy="12" r="6" fill="none" stroke="#E91E63" stroke-width="2.5"/></svg>
           </div>
-          <div class="step-txt">"ติดตั้งแอป"</div>
+          <div class="label">Photos</div>
         </div>
       </div>
     </div>
 
-    <button class="sheet-close" onclick="document.getElementById('install-sheet').classList.remove('open');">เข้าใจแล้ว</button>
+    <div class="pitch-h">เพิ่ม<em>ผม</em>ลงหน้าจอพี่</div>
+    <div class="pitch-s" data-variant="android">ตามนี้นะครับ ↑ บนหน้าจอพี่ — ไม่ต้องสแกน QR ทุกครั้ง</div>
+    <div class="pitch-s" data-variant="ios" style="display:none;">ทำตาม 2 ขั้นนะครับ ↓</div>
+
+    {# iOS-only step rows (hidden by default; UA detection unhides). #}
+    <div class="ios-steps" data-variant="ios" style="display:none;">
+      <div class="ios-step">
+        <div class="ios-num">1</div>
+        <div class="ios-step-text">กดปุ่ม <strong>Share</strong> ด้านล่าง</div>
+        <div class="ios-step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+            <polyline points="16 6 12 2 8 6"/>
+            <line x1="12" y1="2" x2="12" y2="15"/>
+          </svg>
+        </div>
+      </div>
+      <div class="ios-step">
+        <div class="ios-num">2</div>
+        <div class="ios-step-text">เลือก <strong>"Add to Home Screen"</strong></div>
+        <div class="ios-step-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+            <line x1="12" y1="5" x2="12" y2="19"/>
+            <line x1="5" y1="12" x2="19" y2="12"/>
+          </svg>
+        </div>
+      </div>
+    </div>
+
+    <button type="button" class="sheet-cta" data-variant="android" id="install-cta-android">
+      เพิ่มลงหน้าจอ
+      <span class="arr">→</span>
+    </button>
+    <button type="button" class="sheet-cta cta-dark" data-variant="ios" id="install-cta-ios" style="display:none;"
+            onclick="document.getElementById('install-sheet').classList.remove('open');">
+      เข้าใจแล้ว
+    </button>
+
+    <button type="button" class="sheet-close" onclick="document.getElementById('install-sheet').classList.remove('open');">ไว้ก่อน</button>
   </div>
 </div>
 <script>
-  // Auto-open the install sheet whenever the page is opened in a regular
-  // browser tab (not the installed PWA). Mutually exclusive with
-  // push-prompt.js which only fires inside the PWA — so on any given
-  // page-load at most one of the two overlays appears.
   (function () {
     const sheet = document.getElementById('install-sheet');
     if (!sheet) return;
     const isPWA = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
                 || window.navigator.standalone === true;
-    if (isPWA) return;
-    // Slight delay so the page paints first — sheet sliding up after the
-    // content is visible reads as "supplementary" rather than "blocking".
+    if (isPWA) return; // already installed — don't pester
+
+    // Variant pick: iOS Safari has no beforeinstallprompt, must instruct
+    // manual Share → Add to Home Screen.
+    const ua = navigator.userAgent || '';
+    const isIOS = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
+    const wantedVariant = isIOS ? 'ios' : 'android';
+    sheet.querySelectorAll('[data-variant]').forEach((el) => {
+      el.style.display = (el.dataset.variant === wantedVariant)
+        ? (el.tagName === 'BUTTON' ? '' : '')
+        : 'none';
+    });
+
+    // Capture beforeinstallprompt so the Android CTA can fire the native
+    // dialog. Some Chromium variants only fire this once per page-load.
+    let deferredPrompt = null;
+    window.addEventListener('beforeinstallprompt', (e) => {
+      e.preventDefault();
+      deferredPrompt = e;
+    });
+    const androidCta = document.getElementById('install-cta-android');
+    if (androidCta) {
+      androidCta.addEventListener('click', async () => {
+        if (deferredPrompt) {
+          deferredPrompt.prompt();
+          try { await deferredPrompt.userChoice; } catch (_) {}
+          deferredPrompt = null;
+        }
+        sheet.classList.remove('open');
+      });
+    }
+
     setTimeout(() => sheet.classList.add('open'), 600);
   })();
 </script>

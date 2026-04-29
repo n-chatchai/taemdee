@@ -3711,7 +3711,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1;
 }
 
-/* Install bottom sheet — hidden by default; .open shows it */
+/* Install bottom sheet — hidden by default; .open shows it. Ported from
+   design 2564-2776 (Apr 29 home-mock variant + iOS step-by-step). */
 .install-sheet-overlay {
   position: fixed;
   inset: 0;
@@ -3729,6 +3730,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-top-right-radius: 22px;
   padding: 18px 18px 16px;
   width: 100%;
+  max-width: 440px;
   box-shadow: 0 -8px 24px -8px rgba(0, 0, 0, 0.25);
   position: relative;
 }
@@ -3740,90 +3742,178 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin: 0 auto 12px;
   opacity: 0.4;
 }
-.install-sheet .sheet-pitch {
-  text-align: center;
-  margin-bottom: 14px;
+
+/* Home-screen mock-up · TaemDee icon spotlit (4 phone-app icons in a row) */
+.install-sheet .home-mock {
+  background: linear-gradient(180deg, #F7B65A 0%, #FF8E4F 100%);
+  border-radius: 16px;
+  padding: 16px 14px 14px;
+  margin: 0 -2px 14px;
+  position: relative;
+  overflow: hidden;
 }
-.install-sheet .sheet-pitch .stamp-big {
-  display: inline-block;
-  margin-bottom: 8px;
-  filter: drop-shadow(2px 2px 0 var(--ink));
+.install-sheet .home-mock .icon-row {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 10px;
+  align-items: end;
 }
-.install-sheet .sheet-pitch .pitch-h {
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.02em;
-  line-height: 1.2;
-  margin-bottom: 4px;
-}
-.install-sheet .sheet-pitch .pitch-h em {
-  font-style: italic;
-  color: var(--accent);
-}
-.install-sheet .sheet-pitch .pitch-s {
-  font-size: 11.5px;
-  color: var(--ink-soft);
-  line-height: 1.4;
-}
-.install-sheet .platforms {
-  display: flex;
-  flex-direction: column;
-  gap: 8px;
-  margin-bottom: 14px;
-}
-.install-sheet .plat-tile {
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
+.install-sheet .home-mock .app-icon { text-align: center; }
+.install-sheet .home-mock .app-icon.dim { opacity: 0.5; }
+.install-sheet .home-mock .app-icon .tile {
+  aspect-ratio: 1;
   border-radius: 12px;
-  padding: 10px 12px;
-}
-.install-sheet .plat-h {
-  font-family: 'JetBrains Mono', monospace;
-  font-weight: 700;
-  font-size: 9.5px;
-  letter-spacing: 0.1em;
-  color: var(--ink);
-  text-transform: uppercase;
-  margin-bottom: 7px;
-  padding-bottom: 6px;
-  border-bottom: 1px dashed rgba(17, 17, 17, 0.15);
-}
-.install-sheet .plat-step {
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  margin-bottom: 5px;
-  font-size: 11.5px;
-  color: var(--ink);
-}
-.install-sheet .plat-step:last-child { margin-bottom: 0; }
-.install-sheet .plat-step .step-ico {
-  width: 22px;
-  height: 22px;
-  background: var(--bg);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 6px;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
-  color: var(--ink);
 }
-.install-sheet .plat-step .step-ico svg {
-  width: 11px;
-  height: 11px;
+.install-sheet .home-mock .app-icon .tile.t1 {
+  background: linear-gradient(135deg, #34D058, #28A745);
+}
+.install-sheet .home-mock .app-icon .tile.t2 {
+  background: linear-gradient(135deg, #6B6660, #3A3633);
+}
+.install-sheet .home-mock .app-icon .tile.t4 {
+  background: #fff;
+  color: #E91E63;
+}
+.install-sheet .home-mock .app-icon .tile svg { width: 56%; }
+.install-sheet .home-mock .app-icon .label {
+  font-size: 9px;
+  color: #fff;
+  margin-top: 4px;
+  font-weight: 500;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.18);
+}
+.install-sheet .home-mock .app-icon.spotlight {
+  transform: scale(1.18);
+  z-index: 2;
+  position: relative;
+}
+.install-sheet .home-mock .app-icon.spotlight::before {
+  content: '';
+  position: absolute;
+  inset: -12px -8px 8px -8px;
+  background: radial-gradient(circle, rgba(255,217,82,0.55) 0%, transparent 65%);
+  border-radius: 50%;
+  z-index: -1;
+  animation: spot-pulse 2.4s ease-in-out infinite;
+}
+@keyframes spot-pulse {
+  0%, 100% { opacity: 0.6; transform: scale(1); }
+  50% { opacity: 0.9; transform: scale(1.08); }
+}
+.install-sheet .home-mock .app-icon.spotlight .tile {
+  background: var(--accent);
+  box-shadow: 0 8px 22px -6px rgba(0,0,0,0.45);
+  border: 2px solid var(--butter);
+}
+.install-sheet .home-mock .app-icon.spotlight .tile svg { width: 64%; }
+.install-sheet .home-mock .app-icon.spotlight .label {
+  color: #fff;
+  font-weight: 700;
+}
+
+.install-sheet .pitch-h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800; font-size: 22px;
+  letter-spacing: -0.025em;
+  line-height: 1.15;
+  margin-bottom: 6px;
+  text-align: center;
+}
+.install-sheet .pitch-h em {
+  font-style: italic; color: var(--accent);
+}
+.install-sheet .pitch-s {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px; color: var(--ink-soft);
+  line-height: 1.5;
+  text-align: center;
+  margin-bottom: 14px;
+}
+
+.install-sheet .sheet-cta {
+  width: 100%;
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  padding: 13px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.install-sheet .sheet-cta .arr {
+  font-weight: 800; font-size: 14px;
+}
+.install-sheet .sheet-cta.cta-dark {
+  background: var(--ink);
+  color: var(--bg);
 }
 .install-sheet .sheet-close {
   width: 100%;
-  background: transparent;
-  color: var(--ink);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  padding: 10px;
-  border-radius: 12px;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 15px;
+  background: transparent; color: var(--ink-soft);
+  border: none;
+  padding: 8px;
+  margin-top: 4px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 500; font-size: 12px;
   cursor: pointer;
+}
+
+/* iOS variant — 2 step rows above the dark CTA */
+.install-sheet .ios-steps {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-bottom: 4px;
+}
+.install-sheet .ios-steps .ios-step {
+  background: rgba(17,17,17,0.04);
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+.install-sheet .ios-steps .ios-step .ios-num {
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  flex-shrink: 0;
+}
+.install-sheet .ios-steps .ios-step .ios-step-text {
+  flex: 1;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink);
+  line-height: 1.4;
+}
+.install-sheet .ios-steps .ios-step .ios-step-text strong {
+  font-weight: 700;
+}
+.install-sheet .ios-steps .ios-step .ios-step-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.install-sheet .ios-steps .ios-step .ios-step-icon svg {
+  width: 100%;
+  height: 100%;
 }
 
 /* ==========================================================
