@@ -41,12 +41,17 @@ _CATEGORY_PREFIXES = (
     "ก๋วยเตี๋ยว",
     "ร้านกาแฟ",
     "ร้านอาหาร",
+    "มัทฉะ",
+    "ชาไข่มุก",
     "ร้าน",
     "กาแฟ",
+    "ชา",
     "บ้าน",
     "ครัว",
     "ขนม",
     "เบเกอรี่",
+    "สลัด",
+    "ยำ",
     "ซาลอน",
     "Café",
     "Cafe",
@@ -190,7 +195,6 @@ def _lower_full(name: str) -> str:
 # out readable across the picker. Keep variety: first-word + last-word +
 # full-name styles all in rotation so a 3-pick covers different framings.
 STYLES: List[LogoStyle] = [
-    LogoStyle("lt-1", "lt-1", _first_cluster, show_dot=True),
     LogoStyle("lt-2", "lt-2", _first_word),
     LogoStyle("lt-3", "lt-3", _first_two_words),
     LogoStyle("lt-4", "lt-4", _all_caps_full),
@@ -200,8 +204,6 @@ STYLES: List[LogoStyle] = [
     LogoStyle("lt-8", "lt-8", _sparkle_last),
     LogoStyle("lt-9", "lt-9", _last_two_words, show_dot=True),
     LogoStyle("lt-10", "lt-10", _last_word),
-    LogoStyle("lt-11", "lt-11", _two_initials, show_dot=True),
-    LogoStyle("lt-12", "lt-12", _first_n_clusters(3)),
 ]
 
 VALID_STYLE_IDS = {s.id for s in STYLES}
