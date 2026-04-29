@@ -9,11 +9,21 @@ named typography variant (CSS class + a derivation rule for the display text).
 The `generate_logos` function picks 3 deterministically-seeded variants from
 the pool so the same `(shop_name, seed)` always renders the same trio
 (important so a page refresh doesn't reshuffle the picker).
+
+Thai shop names tokenize via pythainlp:
+  - word_tokenize(engine='newmm') for word-level styles ('มัทฉะคุณเจน' →
+    ['มัทฉะ', 'คุณ', 'เจน'] — recognises real Thai words from a dict so
+    a 'first word' logo lands on a complete unit)
+  - subword_tokenize(engine='tcc') for cluster-level slicing where we need
+    finer cuts ('มัทฉะคุณเจน' → ['มั', 'ท', 'ฉะ', …]) — every cluster is
+    one visible character, no stranded combining marks
 """
 
 import random
 from dataclasses import dataclass
 from typing import Callable, List
+
+from pythainlp.tokenize import subword_tokenize, word_tokenize
 
 
 @dataclass(frozen=True)
@@ -43,20 +53,34 @@ _CATEGORY_PREFIXES = (
 )
 
 
-def _safe_slice(s: str, n: int) -> str:
-    """Slice to n chars but never strand a Thai leading vowel at the end.
+def _clusters(s: str) -> List[str]:
+    """TCC (Thai Character Cluster) subword tokenize — every cluster is
+    one visible character, mixed Thai/Latin handled. Used for n-cluster
+    slicing where we want finer granularity than whole words."""
+    return [c for c in subword_tokenize(s, engine="tcc") if c]
 
-    Thai leading vowels (เ แ โ ใ ไ — Unicode 0E40–0E44) are written before the
-    base consonant they belong to. If a hard slice lands right after one,
-    it leaves the vowel hanging visually ('ชัดเ' instead of 'ชัด'). Trim
-    those trailing leading-vowels back to the previous consonant.
-    """
-    if n >= len(s):
-        return s
-    end = n
-    while end > 0 and 0x0E40 <= ord(s[end - 1]) <= 0x0E44:
-        end -= 1
-    return s[:end]
+
+def _has_thai(s: str) -> bool:
+    return any(0x0E00 <= ord(ch) <= 0x0E7F for ch in s)
+
+
+def _words(s: str) -> List[str]:
+    """Word segmentation. pythainlp's newmm engine works great for Thai
+    but mangles Latin text with accents ('Café Bleu' → ['Caf', 'é',
+    'Bleu']). Route pure-Latin / non-Thai input through plain whitespace
+    split to keep names like 'Café' intact."""
+    if not _has_thai(s):
+        return [w for w in s.split() if w.strip()]
+    return [w for w in word_tokenize(s, engine="newmm", keep_whitespace=False) if w.strip()]
+
+
+def _safe_slice(s: str, n: int) -> str:
+    """Slice to the first `n` visible (Thai-aware) clusters.
+
+    For names with combining marks ('มัทฉะคุณเจน') this returns clean
+    visual cuts — n=3 → 'มัทฉะ' (3 clusters), not 'มัท' (3 codepoints).
+    Pure-Latin names behave like a normal codepoint slice."""
+    return "".join(_clusters(s)[:n])
 
 
 def _brand_part(name: str) -> str:
@@ -78,72 +102,106 @@ def _brand_part(name: str) -> str:
     return cleaned
 
 
-def _initial(name: str) -> str:
-    return _brand_part(name)[0].upper()
+def _first_cluster(name: str) -> str:
+    """First visible cluster of the brand part — 'มั' for 'มัทฉะคุณเจน'
+    (better than just 'ม' which loses the vowel)."""
+    clusters = _clusters(_brand_part(name))
+    return clusters[0] if clusters else _brand_part(name)[:1]
 
 
 def _two_initials(name: str) -> str:
-    brand = _brand_part(name)
-    parts = brand.split()
-    if len(parts) >= 2:
-        return (parts[0][:1] + parts[1][:1]).upper()
-    return _safe_slice(brand, 2).upper()
+    """First cluster of each of the first two words. Falls back to the
+    first two clusters when the brand is a single word."""
+    words = _words(_brand_part(name))
+    if len(words) >= 2:
+        a = _clusters(words[0])
+        b = _clusters(words[1])
+        return ((a[0] if a else "") + (b[0] if b else "")).upper()
+    return _safe_slice(_brand_part(name), 2).upper()
 
 
-def _first_n(n: int) -> Callable[[str], str]:
+def _first_word(name: str) -> str:
+    """Whole first word ('มัทฉะ' for 'มัทฉะคุณเจน'). Falls back to first
+    cluster if tokenization returns nothing."""
+    words = _words(_brand_part(name))
+    return words[0] if words else _first_cluster(name)
+
+
+def _first_two_words(name: str) -> str:
+    """Up to the first two words joined ('มัทฉะคุณ' for 'มัทฉะคุณเจน').
+    Single-word brands collapse to that one word."""
+    words = _words(_brand_part(name))
+    return "".join(words[:2]) if words else _brand_part(name)
+
+
+def _all_words(name: str) -> str:
+    """All words joined — same characters as `_brand_part` but routed
+    through tokenize so any tokenizer-specific cleanup applies."""
+    words = _words(_brand_part(name))
+    return "".join(words) if words else _brand_part(name)
+
+
+def _last_word(name: str) -> str:
+    """The trailing word of the brand part. Useful when the *brand* is
+    the proper-noun suffix and the prefix is generic ('มัทฉะคุณเจน' →
+    'เจน', 'ลุงหมี' → 'หมี'). Single-word brands fall back to the whole
+    word."""
+    words = _words(_brand_part(name))
+    return words[-1] if words else _brand_part(name)
+
+
+def _last_two_words(name: str) -> str:
+    """Last two words joined — captures honourific + name patterns like
+    'คุณเจน', 'ลุงหมี', 'พี่นิด'. The user shouldn't have to think about
+    where the brand split is, the variety in the picker covers it."""
+    words = _words(_brand_part(name))
+    return "".join(words[-2:]) if words else _brand_part(name)
+
+
+def _first_n_clusters(n: int) -> Callable[[str], str]:
     def fn(name: str) -> str:
         return _safe_slice(_brand_part(name), n)
-
     return fn
 
 
-def _bracket(n: int) -> Callable[[str], str]:
-    def fn(name: str) -> str:
-        return f"[{_safe_slice(_brand_part(name), n)}]"
-
-    return fn
+def _bracket_word(name: str) -> str:
+    return f"[{_first_word(name)}]"
 
 
-def _sparkle(n: int) -> Callable[[str], str]:
-    def fn(name: str) -> str:
-        return f"✦ {_safe_slice(_brand_part(name), n)}"
-
-    return fn
+def _sparkle_last(name: str) -> str:
+    """✦ + last word — surfaces the brand suffix ('✦ เจน', '✦ หมี')."""
+    return f"✦ {_last_word(name)}"
 
 
-def _all_caps(n: int) -> Callable[[str], str]:
-    def fn(name: str) -> str:
-        return _safe_slice(_brand_part(name), n).upper()
-
-    return fn
+def _all_caps_full(name: str) -> str:
+    return _all_words(name).upper()
 
 
-def _dot_shop(n: int) -> Callable[[str], str]:
-    def fn(name: str) -> str:
-        return f"{_safe_slice(_brand_part(name), n)}.shop"
-
-    return fn
+def _dot_shop_word(name: str) -> str:
+    return f"{_first_word(name)}.shop"
 
 
-def _lower(n: int) -> Callable[[str], str]:
-    def fn(name: str) -> str:
-        return _safe_slice(_brand_part(name), n).lower()
-
-    return fn
+def _lower_full(name: str) -> str:
+    return _all_words(name).lower()
 
 
 # Curated pool. Each id maps to a CSS class defined in static/css/app.css.
+# Mix word-aware (whole-syllable) with cluster slicing — Thai brands come
+# out readable across the picker. Keep variety: first-word + last-word +
+# full-name styles all in rotation so a 3-pick covers different framings.
 STYLES: List[LogoStyle] = [
-    LogoStyle("lt-1", "lt-1", _initial, show_dot=True),
-    LogoStyle("lt-2", "lt-2", _first_n(5)),
-    LogoStyle("lt-3", "lt-3", _first_n(3)),
-    LogoStyle("lt-4", "lt-4", _all_caps(6)),
-    LogoStyle("lt-5", "lt-5", _bracket(4)),
-    LogoStyle("lt-6", "lt-6", _dot_shop(4)),
-    LogoStyle("lt-7", "lt-7", _lower(7)),
-    LogoStyle("lt-8", "lt-8", _sparkle(5)),
-    LogoStyle("lt-9", "lt-9", _two_initials, show_dot=True),
-    LogoStyle("lt-10", "lt-10", _first_n(2)),
+    LogoStyle("lt-1", "lt-1", _first_cluster, show_dot=True),
+    LogoStyle("lt-2", "lt-2", _first_word),
+    LogoStyle("lt-3", "lt-3", _first_two_words),
+    LogoStyle("lt-4", "lt-4", _all_caps_full),
+    LogoStyle("lt-5", "lt-5", _bracket_word),
+    LogoStyle("lt-6", "lt-6", _dot_shop_word),
+    LogoStyle("lt-7", "lt-7", _lower_full),
+    LogoStyle("lt-8", "lt-8", _sparkle_last),
+    LogoStyle("lt-9", "lt-9", _last_two_words, show_dot=True),
+    LogoStyle("lt-10", "lt-10", _last_word),
+    LogoStyle("lt-11", "lt-11", _two_initials, show_dot=True),
+    LogoStyle("lt-12", "lt-12", _first_n_clusters(3)),
 ]
 
 VALID_STYLE_IDS = {s.id for s in STYLES}

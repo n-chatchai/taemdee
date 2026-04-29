@@ -39,3 +39,47 @@ def test_render_style_for_saved_pick():
     rendered = render_style("Café Tana", STYLES[0].id)
     assert rendered["id"] == STYLES[0].id
     assert rendered["text"]
+
+
+def test_thai_word_aware_first_word():
+    """pythainlp recognises 'มัทฉะ' (matcha) so the first-word style returns
+    that whole syllable instead of stranding mid-cluster."""
+    rendered = render_style("มัทฉะคุณเจน", "lt-2")
+    assert rendered["text"] == "มัทฉะ"
+
+
+def test_thai_first_two_words():
+    rendered = render_style("มัทฉะคุณเจน", "lt-3")
+    assert rendered["text"] == "มัทฉะคุณ"
+
+
+def test_thai_first_cluster_keeps_combining_mark():
+    """First cluster of 'มัทฉะคุณเจน' is 'มั' (the leading consonant +
+    its วรรณยุกต์ vowel) — never just 'ม' which would lose the vowel."""
+    rendered = render_style("มัทฉะคุณเจน", "lt-1")
+    assert rendered["text"] == "มั"
+    assert rendered["show_dot"] is True
+
+
+def test_thai_category_prefix_stripped_then_word_split():
+    """ร้านกาแฟลุงหมี → strip ร้านกาแฟ → ลุงหมี → first word 'ลุง'."""
+    rendered = render_style("ร้านกาแฟลุงหมี", "lt-2")
+    assert rendered["text"] == "ลุง"
+
+
+def test_thai_last_word_surfaces_brand_suffix():
+    """For honourific+name brands ('คุณเจน', 'ลุงหมี') the trailing word
+    is the actual proper-noun. lt-10 (last word) and lt-9 (last 2)
+    surface that so the picker isn't stuck on the generic prefix."""
+    assert render_style("มัทฉะคุณเจน", "lt-10")["text"] == "เจน"
+    assert render_style("มัทฉะคุณเจน", "lt-9")["text"] == "คุณเจน"
+    assert render_style("ร้านกาแฟลุงหมี", "lt-10")["text"] == "หมี"
+
+
+def test_latin_word_split_via_whitespace():
+    """pythainlp's newmm mangles accented Latin (Café → Caf+é); pure-Latin
+    input must route through whitespace split to keep words intact."""
+    rendered = render_style("Hello World", "lt-2")
+    assert rendered["text"] == "Hello"
+    rendered2 = render_style("Hello World", "lt-10")
+    assert rendered2["text"] == "World"

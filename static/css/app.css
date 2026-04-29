@@ -4954,6 +4954,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .lt-9 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.06em; text-transform: uppercase; }
 .lt-9 .dot { color: var(--butter); }
 .lt-10 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.08em; font-style: italic; }
+.lt-11 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.04em; }
+.lt-11 .dot { color: var(--butter); }
+.lt-12 { font-family: 'Host Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.025em; color: var(--ink); }
 
 /* Picker tile sets the base font-size; the .lt-N classes inherit it. */
 .s2-logo { font-size: 28px; }

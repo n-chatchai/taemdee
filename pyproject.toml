@@ -24,6 +24,7 @@ dependencies = [
     "rq>=2.8.0",
     "redis>=7.4.0",
     "pywebpush>=2.0.0",
+    "pythainlp>=5.3.4",
 ]
 
 [project.optional-dependencies]
