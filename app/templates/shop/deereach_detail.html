@@ -11,17 +11,26 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  {# Audience list seeded into Alpine state so the owner can deselect rows
-     before sending. `selected` maps customer_id → bool; default true for
-     every row in `audience`. The send form filters to checked ids.
-     Built as a JS object literal so we don't depend on Jinja's dict
-     constructor being available in the sandbox. #}
-  <div class="td" x-data="{
+  {# Alpine state lives in a <script> block instead of inline x-data so
+     the audience map + Thai message text can include double-quote
+     characters without breaking the surrounding x-data="..." attribute. #}
+  <script>
+    function deereachEditorState() {
+      return {
         message: {{ message|tojson }},
-        selected: { {% for c in audience %}'{{ c.id }}': true{% if not loop.last %}, {% endif %}{% endfor %} },
+        selected: {
+          {% for c in audience %}{{ c.id|string|tojson }}: true{% if not loop.last %},{% endif %}
+          {% endfor %}
+        },
         flash: '',
         flashKind: 'is-error',
-      }">
+        countSelected() {
+          return Object.values(this.selected).filter(Boolean).length;
+        },
+      };
+    }
+  </script>
+  <div class="td" x-data="deereachEditorState()">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
