@@ -27,21 +27,29 @@
       <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
     </div>
 
-    <div class="voucher">
-      {# Floating particles — continuous CSS animation that a screenshot
-         can't reproduce. Per the revised C5 design this replaces the older
-         "0 sec ago" pulse counter. #}
-      <div class="v-particles" aria-hidden="true">
-        <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <div class="voucher{% if redemption.served_at %} served{% endif %}">
+      {% if not redemption.served_at %}
+        {# Floating particles — continuous CSS animation that a screenshot
+           can't reproduce. Per the revised C5 design this replaces the older
+           "0 sec ago" pulse counter. Hidden once the voucher is served. #}
+        <div class="v-particles" aria-hidden="true">
+          <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        </div>
+      {% endif %}
+      <div class="v-label">
+        {% if redemption.served_at %}
+          <span class="v-served">✓ ใช้แล้ว {{ redemption.served_at|bkk_hms }}</span>
+        {% else %}
+          ✦ คูปองของพี่ ✦
+        {% endif %}
       </div>
-      <div class="v-label">✦ คูปองของพี่ ✦</div>
       <div class="v-title">{{ shop.reward_description }}</div>
       <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
     </div>
@@ -65,6 +73,14 @@
     </div>
 
     <div class="farewell">เจอกันครั้งหน้านะ</div>
+
+    {# Per Push.prompt spec — high-intent moment after a redemption is one
+       of the two re-ask points (the other being first PWA open). Clear
+       any active dismissal cooldown so push-prompt.js will re-evaluate
+       and show the sheet if the customer is in the PWA + still on
+       Notification.permission === 'default'. Granted/denied users are
+       unaffected (push-prompt.js gates on permission === 'default'). #}
+    <script>try { localStorage.removeItem('td_push_prompt_until'); } catch (_) {}</script>
 
     {% include "_partials/footer_mark.html" %}
 

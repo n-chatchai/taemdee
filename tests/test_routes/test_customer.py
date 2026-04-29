@@ -299,6 +299,82 @@ async def test_customer_dock_renders_on_main_pages(client, shop):
     assert "c-glass-nav" not in (await client.get("/card/save")).text
 
 
+async def test_c5_voucher_renders_active_state_when_unserved(client, db, shop):
+    """C5 — fresh redemption (served_at NULL) shows the celebration label
+    and particles. No served indicator yet."""
+    from app.models import Customer, Redemption
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id)
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
+    assert "✦ คูปองของพี่ ✦" in body
+    assert "ใช้แล้ว" not in body
+    assert "v-particles" in body
+    # No served class on the voucher container
+    assert "voucher served" not in body and 'voucher\n' in body or 'class="voucher"' in body
+
+
+async def test_c5_voucher_swaps_to_served_state_when_served_at_set(client, db, shop):
+    """C5 — once /issue/scan flips served_at, the voucher renders the
+    'ใช้แล้ว' label, drops particles, and adds the .served container class
+    so CSS can grey it out."""
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id, served_at=utcnow())
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
+    assert "ใช้แล้ว" in body
+    assert "voucher served" in body
+    # Particles removed in served state
+    assert "v-particles" not in body
+
+
+async def test_c5_clears_push_prompt_cooldown_for_re_ask(client, db, shop):
+    """C5 page emits a tiny inline script that clears the push-prompt
+    cooldown so the prompt can re-fire on this high-intent moment per
+    Push.prompt spec."""
+    from app.models import Customer, Redemption
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id)
+    db.add(r)
+    await db.commit()
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
+    assert "td_push_prompt_until" in body
+    assert "removeItem" in body
+    # Push prompt partial is mounted via footer_mark, so the JS that reads
+    # the cleared cooldown is also present.
+    assert 'id="push-prompt"' in body
+
+
 async def test_card_unknown_shop_renders_friendly_page(client):
     bogus = uuid4()
     response = await client.get(f"/card/{bogus}")

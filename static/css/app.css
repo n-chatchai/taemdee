@@ -9523,3 +9523,21 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .td.has-c-dock {
   padding-bottom: 88px;
 }
+
+/* C5 voucher · served state. After the shop scans the customer's QR
+   within the served-window, the voucher swaps to a greyed "✓ ใช้แล้ว"
+   label so the customer can see the redemption was fulfilled. */
+.c5 .voucher.served {
+  opacity: 0.62;
+  filter: saturate(0.6);
+}
+.c5 .voucher.served .v-label .v-served {
+  color: var(--mint-ink);
+  font-weight: 700;
+  letter-spacing: 0;
+}
+.c5 .voucher.served .v-title {
+  text-decoration: line-through;
+  text-decoration-thickness: 1.5px;
+  text-decoration-color: rgba(17,17,17,0.45);
+}

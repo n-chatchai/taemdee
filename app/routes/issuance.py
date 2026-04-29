@@ -154,6 +154,44 @@ async def issue_scan_grant(
             "ไม่พบลูกค้าตามบัตรนี้ — บัญชีอาจถูกลบไปแล้ว",
         )
 
+    # Voucher serve-on-scan: if this customer has an unserved redemption at
+    # this shop in the last 30 minutes, the staff is almost certainly here
+    # to serve the reward — flip served_at instead of issuing a fresh
+    # stamp. Avoids the awkward "stamp the customer who's collecting their
+    # free coffee" race + powers C5 "✓ ใช้แล้ว HH:MM" state.
+    from datetime import timedelta
+    served_window_start = utcnow() - timedelta(minutes=30)
+    pending_redemption = (await db.exec(
+        select(Redemption).where(
+            Redemption.customer_id == customer.id,
+            Redemption.shop_id == shop.id,
+            Redemption.is_voided == False,  # noqa: E712
+            Redemption.served_at.is_(None),
+            Redemption.created_at >= served_window_start,
+        )
+        .order_by(Redemption.created_at.desc())
+    )).first()
+    if pending_redemption is not None:
+        pending_redemption.served_at = utcnow()
+        pending_redemption.served_by_staff_id = staff.id if staff else None
+        db.add(pending_redemption)
+        await db.commit()
+        publish(
+            shop.id,
+            "feed-row",
+            feed_row_html(
+                "redemption", pending_redemption.id,
+                bkk_feed_time(pending_redemption.served_at),
+                customer.display_name or "ลูกค้า",
+            ),
+        )
+        return {
+            "served_redemption_id": str(pending_redemption.id),
+            "customer_id": str(customer.id),
+            "customer_name": customer.display_name or "ลูกค้า",
+            "reward_description": shop.reward_description,
+        }
+
     try:
         point = await issue_point(
             db, shop, customer,

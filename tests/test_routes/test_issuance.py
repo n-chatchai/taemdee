@@ -221,6 +221,96 @@ async def test_issue_scan_rejects_garbage_uuid(auth_client):
     assert "ไม่ถูกต้อง" in response.json()["detail"]
 
 
+async def test_issue_scan_serves_pending_voucher_instead_of_stamping(auth_client, db, shop):
+    """When the scanned customer has an unserved redemption at this shop in
+    the last 30 minutes, /issue/scan flips served_at instead of issuing a
+    fresh stamp — powers the C5 'ใช้แล้ว' state."""
+    from app.models import Customer, Redemption
+
+    c = Customer(is_anonymous=False, display_name="คุณกาแฟ", phone="0855555555")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+
+    redemption = Redemption(customer_id=c.id, shop_id=shop.id)
+    db.add(redemption)
+    await db.commit()
+    await db.refresh(redemption)
+
+    response = await auth_client.post(
+        "/shop/issue/scan",
+        data={"scanned_value": f"https://taemdee.com/c/{c.id}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    # Served-redemption response shape, NOT point shape
+    assert "served_redemption_id" in body
+    assert "point_id" not in body
+    assert body["served_redemption_id"] == str(redemption.id)
+
+    await db.refresh(redemption)
+    assert redemption.served_at is not None
+
+    # And no fresh point was issued
+    points = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
+    assert len(list(points)) == 0
+
+
+async def test_issue_scan_serves_only_redemption_younger_than_30min(auth_client, db, shop):
+    """An unserved redemption older than the served-window is treated as
+    abandoned — the next scan issues a fresh stamp instead of serving."""
+    from datetime import timedelta
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+
+    c = Customer(is_anonymous=False, display_name="คุณกาแฟ", phone="0866666666")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+
+    redemption = Redemption(
+        customer_id=c.id, shop_id=shop.id,
+        created_at=utcnow() - timedelta(minutes=45),
+    )
+    db.add(redemption)
+    await db.commit()
+
+    response = await auth_client.post(
+        "/shop/issue/scan",
+        data={"scanned_value": f"https://taemdee.com/c/{c.id}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    # Stale redemption ignored, fresh stamp issued
+    assert "point_id" in body
+    assert "served_redemption_id" not in body
+
+
+async def test_issue_scan_skips_already_served_redemption(auth_client, db, shop):
+    """Once a redemption is served, the next scan resumes normal stamp
+    issuance — voucher won't double-fire."""
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+
+    c = Customer(is_anonymous=False, display_name="คุณกาแฟ", phone="0877777777")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+
+    redemption = Redemption(customer_id=c.id, shop_id=shop.id, served_at=utcnow())
+    db.add(redemption)
+    await db.commit()
+
+    response = await auth_client.post(
+        "/shop/issue/scan",
+        data={"scanned_value": f"https://taemdee.com/c/{c.id}"},
+    )
+    assert response.status_code == 200
+    body = response.json()
+    assert "point_id" in body
+    assert "served_redemption_id" not in body
+
+
 async def test_issue_scan_404_for_deleted_customer(auth_client):
     from uuid import uuid4
     response = await auth_client.post(
