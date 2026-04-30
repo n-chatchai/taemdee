@@ -32,6 +32,76 @@ async def test_identity_post_saves_name_and_logo(auth_client, db, shop):
     assert shop.logo_url == "text:lt-5"
 
 
+async def test_identity_post_blocks_same_district_collision(auth_client, db, shop):
+    """S2.1.warn — same name + same district as another shop = 400 +
+    inline warning. Owner can't accidentally clone an existing
+    neighbourhood shop."""
+    from app.models import Shop
+    other = Shop(name="ร้านกาแฟลุงหมี", district="นิมมาน")
+    db.add(other)
+    await db.commit()
+
+    response = await auth_client.post(
+        "/shop/onboard/identity",
+        data={
+            "name": "ร้านกาแฟลุงหมี",
+            "district": "นิมมาน",
+            "province": "เชียงใหม่",
+            "logo_choice": "lt-2",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 400
+    body = response.text
+    assert "ชื่อนี้มีในเขตนิมมานแล้ว" in body
+    assert "s2-warn" in body
+    # Suggestion includes "<name> 2"
+    assert "ร้านกาแฟลุงหมี 2" in body
+    # Current shop wasn't saved with the colliding name
+    await db.refresh(shop)
+    assert shop.name != "ร้านกาแฟลุงหมี" or shop.id == other.id
+
+
+async def test_identity_post_auto_suffixes_different_district_collision(auth_client, db, shop):
+    """Same name, different district → silent auto-suffix
+    'ร้านกาแฟลุงหมี · ทุ่งโฮเต็ล' so the customer sees disambiguated
+    names in /my-cards."""
+    from app.models import Shop
+    other = Shop(name="ร้านกาแฟลุงหมี", district="นิมมาน")
+    db.add(other)
+    await db.commit()
+
+    response = await auth_client.post(
+        "/shop/onboard/identity",
+        data={
+            "name": "ร้านกาแฟลุงหมี",
+            "district": "ทุ่งโฮเต็ล",
+            "province": "เชียงใหม่",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    await db.refresh(shop)
+    assert shop.name == "ร้านกาแฟลุงหมี · ทุ่งโฮเต็ล"
+    assert shop.district == "ทุ่งโฮเต็ล"
+
+
+async def test_identity_post_no_collision_when_name_unique(auth_client, db, shop):
+    response = await auth_client.post(
+        "/shop/onboard/identity",
+        data={
+            "name": "ร้านใหม่ไม่ซ้ำ",
+            "district": "นิมมาน",
+            "province": "เชียงใหม่",
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    await db.refresh(shop)
+    assert shop.name == "ร้านใหม่ไม่ซ้ำ"
+    assert shop.district == "นิมมาน"
+
+
 async def test_identity_post_ignores_unknown_logo_choice(auth_client, db, shop):
     response = await auth_client.post(
         "/shop/onboard/identity",

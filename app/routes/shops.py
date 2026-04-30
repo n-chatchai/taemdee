@@ -375,14 +375,71 @@ async def onboard_identity_logos_partial(
 
 @router.post("/onboard/identity")
 async def onboard_identity_post(
+    request: Request,
     name: str = Form(...),
     logo_choice: Optional[str] = Form(None),
     custom_text: Optional[str] = Form(None),
     province: Optional[str] = Form(None),
+    district: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    shop.name = name.strip() or shop.name
+    cleaned_name = (name or "").strip() or shop.name
+    cleaned_province = (province or "").strip()
+    cleaned_district = (district or "").strip()
+
+    # Collision check (S2.1.warn): same name + same district = block. Same
+    # name + DIFFERENT district = silent auto-suffix so the customer can
+    # disambiguate ("ลุงหมี · นิมมาน" vs "ลุงหมี · ทุ่งโฮเต็ล"). Anonymous
+    # / pre-naming shops carrying the seed name are excluded so the owner
+    # can keep their auto-generated default through this step.
+    same_name_clause = func.lower(Shop.name) == cleaned_name.lower()
+    other_shops = (await db.exec(
+        select(Shop).where(same_name_clause, Shop.id != shop.id)
+    )).all()
+    same_district_collision = next(
+        (s for s in other_shops if cleaned_district and (s.district or "").lower() == cleaned_district.lower()),
+        None,
+    )
+    different_district_collision = next(
+        (s for s in other_shops if not cleaned_district or (s.district or "").lower() != cleaned_district.lower()),
+        None,
+    )
+
+    if same_district_collision is not None:
+        # Re-render the same step with inline warning + form values preserved.
+        from app.services.logo_gen import generate_logos, render_style
+        shop.name = cleaned_name
+        shop.district = cleaned_district or shop.district
+        if cleaned_province:
+            shop.location = cleaned_province
+        options = generate_logos(cleaned_name, seed=0)
+        return templates.TemplateResponse(
+            request=request,
+            name="shop/onboard/identity.html",
+            context={
+                "shop": shop,
+                "options": options,
+                "saved_pick": None,
+                "next_gen": 1,
+                "picked_id": None,
+                "custom_text": "",
+                "logos_partial_url": "/shop/onboard/identity/logos_partial",
+                "collision_warning": {
+                    "district": cleaned_district,
+                    "suggestion": f"{cleaned_name} 2",
+                },
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    # Different-district collision → auto-suffix so the customer doesn't see
+    # two identical names on /my-cards. Skip if district is blank (we can't
+    # disambiguate without one).
+    if different_district_collision is not None and cleaned_district and not cleaned_name.endswith(f"· {cleaned_district}"):
+        cleaned_name = f"{cleaned_name} · {cleaned_district}"
+
+    shop.name = cleaned_name
     if logo_choice and logo_choice.startswith("url:"):
         shop.logo_url = logo_choice
     elif logo_choice in VALID_STYLE_IDS:
@@ -391,11 +448,10 @@ async def onboard_identity_post(
             shop.logo_url = f"text:{logo_choice}:{safe_custom_text}"
         else:
             shop.logo_url = f"text:{logo_choice}"
-    # Province lands in the existing Shop.location field — district + detail
-    # come later via S10.location (deferred). Empty submission keeps current.
-    cleaned_province = (province or "").strip()
     if cleaned_province:
         shop.location = cleaned_province
+    if cleaned_district:
+        shop.district = cleaned_district
     db.add(shop)
     await db.commit()
     return RedirectResponse(url="/shop/onboard/reward", status_code=status.HTTP_303_SEE_OTHER)
