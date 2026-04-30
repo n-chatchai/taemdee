@@ -945,6 +945,32 @@ async def my_cards(
 
 # ── Customer inbox (DeeReach channel "inbox" lands here) ─────────────────────
 
+@router.get("/my-gifts", response_class=HTMLResponse)
+async def my_gifts(
+    request: Request,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """C-gifts — list of vouchers/rewards (พร้อมใช้ + ใช้แล้ว). v1
+    placeholder — full implementation lands in step B of the design
+    refresh (once Voucher / Offer→Customer wiring is in). For now the
+    page renders an empty-state with the dock so navigation works."""
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    response = templates.TemplateResponse(
+        request=request,
+        name="my_gifts.html",
+        context={
+            "customer": customer,
+            "active_gifts": [],
+            "used_gifts": [],
+            "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+        },
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
 @router.get("/my-inbox", response_class=HTMLResponse)
 async def my_inbox(
     request: Request,

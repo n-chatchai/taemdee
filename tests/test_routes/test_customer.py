@@ -329,6 +329,36 @@ async def test_customer_dock_renders_on_main_pages(client, shop):
     assert "c-glass-nav" not in (await client.get("/card/save")).text
 
 
+async def test_dock_has_4_tabs_with_gifts_replacing_settings(client):
+    """Apr 30 design refresh: settings tab is gone from the dock,
+    replaced by ของขวัญ → /my-gifts. Settings is reachable via the gear
+    icon in /my-cards page-head instead."""
+    body = (await client.get("/my-cards")).text
+    assert 'href="/my-gifts"' in body
+    assert 'aria-label="ของขวัญ"' in body
+    # Settings tab no longer exists in the dock
+    assert 'aria-label="ตั้งค่า"' in body  # gear icon in page-head still uses this label
+    # But it must NOT be a dock tab — check no gn-tab carries that label
+    import re
+    dock_tabs = re.findall(r'class="gn-tab[^"]*"\s+href="[^"]*"\s+aria-label="([^"]+)"', body)
+    assert "ตั้งค่า" not in dock_tabs
+
+
+async def test_my_cards_page_head_has_gear_icon_to_settings(client):
+    body = (await client.get("/my-cards")).text
+    # Gear icon in page-head ph-actions targets /card/account
+    assert 'href="/card/account" class="ph-icon-btn"' in body
+
+
+async def test_my_gifts_renders_empty_state(client):
+    body = (await client.get("/my-gifts")).text
+    assert "ของขวัญของพี่" in body
+    # Empty state copy
+    assert "ยังไม่มีของขวัญ" in body
+    # Dock mounted with gifts tab active
+    assert "c-glass-nav" in body
+
+
 async def test_c5_voucher_renders_active_state_when_unserved(client, db, shop):
     """C5 — fresh redemption (served_at NULL) shows the celebration label
     and particles. No served indicator yet."""

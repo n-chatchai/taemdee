@@ -1,6 +1,9 @@
 {# Customer dock — 4-tab liquid-glass bottom nav. Caller passes `nav_active`
-   = one of "cards" / "scan" / "inbox" / "settings" to highlight the current
+   = one of "cards" / "scan" / "gifts" / "inbox" to highlight the current
    tab. Optional `nav_inbox_badge=True` for an unread-message dot.
+
+   "ตั้งค่า" was removed from the dock per the Apr 30 design refresh —
+   reach C6 via the gear icon in /my-cards page-head instead.
 
    NB per memory `feedback_dock_position_fixed.md`: must be position fixed
    even though design says sticky — `.td` overflow-x:hidden breaks sticky-
@@ -15,7 +18,7 @@
     </span>
     <span class="gn-label">บัตร</span>
   </a>
-  <a class="gn-tab{% if nav_active == 'scan' %} active{% endif %}" href="/scan-shop" aria-label="สแกน">
+  <a class="gn-tab gn-scan{% if nav_active == 'scan' %} active{% endif %}" href="/scan-shop" aria-label="สแกน">
     <span class="gn-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
@@ -23,6 +26,19 @@
       </svg>
     </span>
     <span class="gn-label">สแกน</span>
+  </a>
+  <a class="gn-tab{% if nav_active == 'gifts' %} active{% endif %}" href="/my-gifts" aria-label="ของขวัญ">
+    <span class="gn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 12 20 22 4 22 4 12"/>
+        <rect x="2" y="7" width="20" height="5"/>
+        <line x1="12" y1="22" x2="12" y2="7"/>
+        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+      </svg>
+      {% if nav_gifts_badge %}<span class="gn-badge{% if nav_gifts_badge is number and nav_gifts_badge > 0 %} has-count{% endif %}">{% if nav_gifts_badge is number and nav_gifts_badge > 0 %}{{ nav_gifts_badge }}{% endif %}</span>{% endif %}
+    </span>
+    <span class="gn-label">ของขวัญ</span>
   </a>
   <a class="gn-tab{% if nav_active == 'inbox' %} active{% endif %}" href="/my-inbox" aria-label="กล่องข้อความ">
     <span class="gn-icon">
@@ -32,15 +48,6 @@
       {% if nav_inbox_badge %}<span class="gn-badge{% if nav_inbox_badge is number and nav_inbox_badge > 0 %} has-count{% endif %}">{% if nav_inbox_badge is number and nav_inbox_badge > 0 %}{{ nav_inbox_badge }}{% endif %}</span>{% endif %}
     </span>
     <span class="gn-label">ข้อความ</span>
-  </a>
-  <a class="gn-tab{% if nav_active == 'settings' %} active{% endif %}" href="/card/account" aria-label="ตั้งค่า">
-    <span class="gn-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/>
-        <circle cx="12" cy="7" r="4"/>
-      </svg>
-    </span>
-    <span class="gn-label">ตั้งค่า</span>
   </a>
 </nav>
 
