@@ -1,6 +1,6 @@
 # TaemDee (แต้มดี) — Product Requirements Document
 
-**Audience:** Core Product & Engineering · **Status:** Current · **Last updated:** 2026-04-29
+**Audience:** Core Product & Engineering · **Status:** Current · **Last updated:** 2026-04-28
 
 ---
 
@@ -52,28 +52,17 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 | # | Screen | Purpose |
 |---|---|---|
 | C1 | **DeeCard** | Daily point card — shows progress, shop branding, reward summary. |
-| C1.guest | **DeeCard · guest** | Same as C1 but for unsigned users (single shop only, no dock). |
 | C2.1 | **First scan · Greeting** | First-ever scan. น้องแต้ม character introduces itself and asks for nickname. |
 | C2.2 | **First scan · First stamp** | Reveal of the first point (+1/N) and the reward goal. |
 | C2.3 | **First scan · Save & signup** | Soft Wall: Offers Link LINE or Verify Phone (OTP) for permanent save, or skip. |
-| C2.4 | **Recovery code** | Post-skip path from C2.3. Shows recovery code for guest users to save. |
-| C3 | **Phone OTP** | Phone OTP form. Includes DeeReach consent toggle (default ON) + soft plea on toggle off. |
-| C3.line | **LINE confirm** | After LINE OAuth callback. Confirms LINE account + DeeReach consent toggle. |
+| C3 | **Phone OTP** | Phone OTP form for customers who chose "Verify Phone". |
 | C4 | **Redeem state** | DeeCard at reward threshold. Primary CTA to redeem. |
-| C5 | **Reward claimed** | Celebration screen + voucher with QR for shop to scan. |
-| C6 | **Account menu** | Profile, link to notification preferences, privacy submenu, logout, delete account (PDPA). |
-| C6.notifications | **Notification preferences** | Master DeeReach toggle, per-channel preference (auto/in-app), per-shop muted list. |
-| C7 | **My Cards** | List of all DeeCards across shops. Has scan-camera button + greeting page-head. |
+| C5 | **Reward claimed** | Celebration screen shown right after a redemption. |
+| C6 | **Account menu** | Profile, preferred notification channel toggle, privacy submenu, logout, delete account (PDPA). |
+| C7 | **My Cards** | List of all DeeCards across shops. Has scan-camera button. |
 | C8 | **My QR** | Guest QR for shops that use "Shop scans customer" issuance method. |
 | C9 | **Shop Story** | Customer-facing emotional layer — shop's story, menu, reviews. |
-| Inbox | **Message list** | Global DeeReach inbox across all shops. |
-| Inbox.empty | **Empty inbox** | Empty state for new users. |
-| Inbox.detail | **Message detail (offer)** | Win-back / promo message with offer + claim CTA. |
-| Inbox.detail.no-offer | **Message detail (no offer)** | Almost-there nudges, just-checking messages without offer. |
-| Inbox.voucher | **Voucher activated** | Full screen with QR for shop to scan, after claiming offer. |
-| Push.prompt | **Web Push consent** | Bottom sheet asking permission for native push notifications. Triggered on first PWA open from icon. |
-| Install | **Install · Android** | Bottom sheet with home-screen mock + native install API trigger. |
-| Install.iOS | **Install · iOS** | Same sheet · variant content with step-by-step instructions (Share → Add to Home Screen). |
+| Install | **Add to home** | Bottom sheet with install steps. |
 
 ### Shop-facing
 | # | Screen | Purpose |
@@ -97,45 +86,6 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 - **First Visit:** A brief, warm onboarding flow introduces "น้องแต้ม" and asks for a nickname. Points are issued instantly without forced account creation (anonymous guest mode).
 - **Return Visits:** Extremely fast (≤2 seconds). A scan updates the progress in place without re-onboarding.
 - **Identity Claim (Soft Wall):** Guests are encouraged to link their LINE account or phone number (OTP) to persist their points across devices or to redeem rewards.
-- **Recovery Code:** Guests who skip signup get a recovery code (e.g., `K7M-XQ4P-2H9R`) shown at C2.4 and stored in localStorage. Used to recover points if device changes.
-
-### DeeReach Consent Flow (Customer-side)
-The consent layer is **multi-channel** and **explicit-by-design**:
-
-| Channel | Consent Type | Disclosure Point |
-|---|---|---|
-| **LINE OA** | Implicit (add OA via "สมัครด้วยไลน์") | C3.line — confirms LINE account |
-| **SMS** | Implicit + PDPA disclosure | C3 — OTP signup form |
-| **Web Push** | Explicit + native browser dialog | Push.prompt screen |
-| **In-app Inbox** | Always on (source of truth) | No consent needed — owned by user |
-
-**Consent Toggle (C3 + C3.line):**
-- Single toggle "ให้ร้านส่งข้อความหาพี่" with sub "เตือนแต้มใกล้ครบ ของฝากและโปรพิเศษจากร้าน"
-- **Default: ON** — visible UI lets user opt-out immediately = informed consent (PDPA-compliant)
-- Toggle off → soft plea appears: "พี่ครับ เตือนแต้มกับของฝากจากร้าน ผมยังเก็บไว้ในกล่องข้อความให้นะครับ อย่าลืมเข้ามาดูนะครับ"
-- Off state: signup proceeds normally · DeeReach stays OFF · all messages go to in-app Inbox only
-
-### Smart PWA Install + Push Trigger (Two-Stage)
-Splits PWA install and Push permission into separate moments:
-
-**Stage 1 — Install Prompt:**
-- Trigger: `!isPWA && stamps >= 2`
-- UI: Install bottom sheet (auto-detect device → Android/iOS variant)
-  - Android: native `beforeinstallprompt` API
-  - iOS: step-by-step instructions (Share → Add to Home Screen)
-- Cooldown: 14 days if dismissed
-
-**Stage 2 — Push Prompt:**
-- Trigger: `isPWA && Notification.permission === 'default' && first_pwa_open`
-- UI: Push.prompt bottom sheet → tap CTA → native browser permission
-- Self-selection: only users who installed PWA + opened from icon → high engagement → high acceptance
-- Cooldown: 14 days if dismissed · re-ask after C5 redemption (peak goodwill)
-
-**Detection:**
-```js
-const isPWA = navigator.standalone 
-  || matchMedia('(display-mode: standalone)').matches
-```
 
 ### Shop Operations
 - **Frictionless Setup:** Phone/LINE login, minimal configuration (name, reward, logo, theme). First batch of points is free.
@@ -235,3 +185,37 @@ Missions are challenges that, when completed, generate an Offer.
 - Web app, HTMX-powered. No native apps.
 - Mobile-first responsive — desktop is a scaled-up phone view.
 - Real-time notifications via server-sent events.
+
+## 13. UX Decisions Log (Apr 2026 update)
+
+### Customer dock & scan
+- Dock = 4 tabs: บัตร · สแกน · ของขวัญ · ข้อความ (settings moved to top-right gear)
+- "สแกน" tab = primary action · 1-tap opens fullscreen camera modal (high-frequency action)
+- C-scan modal has bottom toggle to switch to QR display (for cases when shop scans customer instead)
+
+### Vouchers/Gifts
+- "วอชเชอร์" → "ของขวัญ" (friendly Thai term · SME-friendly)
+- C-gifts dedicated page with พร้อมใช้ + ใช้แล้ว sections
+- C5 (reward claimed) reframed: "เก็บไว้ใช้ครั้งหน้า" (not "use now") · realistic flow accounts for customer leaving and returning
+
+### DeeReach terminology
+- "แคมเปญ" too marketing-heavy for SMEs · replaced with:
+  - "ข้อความ" (the message itself)
+  - "สร้างเอง" (custom message page · was "สร้างแคมเปญเอง")
+  - "ส่งอีกครั้ง" (re-send · was "ทำซ้ำแคมเปญ")
+  - "ปรับข้อความ" (edit · was "ปรับแคมเปญ")
+
+### S13 enhancements
+- Segment badges with AI-suggested filters (หายไป 14+ วัน · มีแต้ม 4+ · ลูกค้าใหม่)
+- Template badges (ชวนกลับ · เกือบครบ · วันเกิด · เมนูใหม่ · ขอบคุณ · เปล่า)
+- Channel chips per customer showing waterfall (Push 0.5 → LINE 1 → SMS 3 → Inbox)
+  - Active (orange) = will send
+  - Available (white outline) = fallback option
+  - Strikethrough = customer has no permission
+- Search + ปลดทั้งหมด integrated INTO customer box
+
+### Accessibility
+- Font-size picker in customer settings: เล็ก / กลาง / ใหญ่
+- rem-based 9-tier scale · toggles `<html>` font-size
+- Respects iOS Dynamic Type
+

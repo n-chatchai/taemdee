@@ -26,7 +26,25 @@
     --gallery-bg: #EFEBE1;
     --gallery-ink: #141414;
     --gallery-muted: #8A857C;
+
+    /* Font scale tokens · rem-based for accessibility */
+    --text-2xs:    0.625rem;  /* 10px @16 base · labels, ids */
+    --text-xs:     0.75rem;   /* 12px · caption, meta */
+    --text-sm:     0.8125rem; /* 13px · secondary body */
+    --text-base:   0.875rem;  /* 14px · body, row name (DEFAULT) */
+    --text-md:     1rem;      /* 16px · emphasis */
+    --text-lg:     1.125rem;  /* 18px · subtitle */
+    --text-xl:     1.375rem;  /* 22px · page title (h1) */
+    --text-2xl:    2.25rem;   /* 36px · hero number */
+    --text-display: 4rem;     /* 64px · DeeCard hero */
   }
+
+  /* Font-size setting · เล็ก/กลาง/ใหญ่ — toggles root rem
+     Only affects elements using rem-based tokens · existing px stay fixed */
+  html { font-size: 16px; }
+  html.fs-sm { font-size: 14px; }   /* −12.5% */
+  html.fs-md { font-size: 16px; }   /* default */
+  html.fs-lg { font-size: 18px; }   /* +12.5% */
   * { box-sizing: border-box; margin: 0; padding: 0; }
   html, body { background: var(--gallery-bg); color: var(--gallery-ink); }
   body {
@@ -74,7 +92,7 @@
   .cover-mark .cover-wordmark {
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 22px;
+    font-size: var(--text-xl);
     letter-spacing: -0.035em;
     color: var(--ink);
   }
@@ -125,7 +143,7 @@
   }
   .cover-stat .n {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 36px;
+    font-weight: 700; font-size: var(--text-2xl);
     letter-spacing: -0.035em; line-height: 1;
     color: #FF5E3A;
     margin-bottom: 4px;
@@ -144,7 +162,7 @@
   }
   .cover-toc {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     line-height: 1.8;
   }
   .cover-toc strong { font-weight: 700; display: block; margin-bottom: 8px; }
@@ -155,7 +173,7 @@
   .cover-toc .toc-row .num {
     font-family: 'JetBrains Mono', monospace;
     color: var(--gallery-muted);
-    font-size: 11px;
+    font-size: var(--text-2xs);
     width: 28px; flex-shrink: 0;
     text-align: right;
     padding-top: 5px;
@@ -164,7 +182,7 @@
 
   .cover-page-num {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; letter-spacing: 0.14em;
+    font-size: var(--text-2xs); letter-spacing: 0.14em;
     color: var(--gallery-muted);
     text-transform: uppercase;
   }
@@ -191,7 +209,7 @@
     background: var(--gallery-ink); color: #fff;
     border-radius: 50%;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 22px;
+    font-weight: 700; font-size: var(--text-xl);
     letter-spacing: -0.02em;
   }
   .section-head h2 {
@@ -204,7 +222,7 @@
   }
   .section-head .desc {
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--gallery-muted);
     max-width: 320px;
     text-align: right;
@@ -236,7 +254,7 @@
   }
   .mockup-caption h3 {
     font-family: 'Host Grotesk', sans-serif; font-weight: 700;
-    font-size: 22px; letter-spacing: -0.02em; margin-bottom: 6px;
+    font-size: var(--text-xl); letter-spacing: -0.02em; margin-bottom: 6px;
   }
   .mockup-caption p {
     font-family: 'Prompt', sans-serif;
@@ -355,7 +373,7 @@
   .app-bar .title-mid {
     font-family: 'Prompt', sans-serif;
     font-weight: 600;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink);
   }
   .app-bar .placeholder {
@@ -364,7 +382,7 @@
   }
   .app-bar .right-action {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     font-weight: 500;
     color: var(--ink-soft);
     cursor: pointer;
@@ -385,7 +403,7 @@
   }
   .page-title .sub {
     font-family: 'Prompt', sans-serif;
-    font-weight: 400; font-size: 13px;
+    font-weight: 400; font-size: var(--text-sm);
     color: var(--ink-soft);
   }
 
@@ -394,6 +412,31 @@
     padding: 48px 20px 0;
     text-align: center;
     position: relative;
+  }
+  /* Top-right action icons — QR display + camera scan */
+  .shop-head .head-actions {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    display: flex;
+    gap: 6px;
+    z-index: 2;
+  }
+  .shop-head .head-actions .ha-btn {
+    width: 38px; height: 38px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: var(--ink);
+    text-decoration: none;
+  }
+  .shop-head .head-actions .ha-btn:active { transform: scale(0.92); }
+  .shop-head .head-actions .ha-btn svg {
+    width: 18px; height: 18px;
   }
 
   /* Back button — top-left corner of mockup */
@@ -420,7 +463,7 @@
     border-bottom: 1px solid var(--line);
   }  .signup-sub {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     line-height: 1.4;
     color: var(--ink-soft);
   }  .signup-skip {
@@ -428,7 +471,7 @@
     text-align: center;
     font-family: 'Prompt', sans-serif;
     font-style: italic;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-softer);
     padding: 8px 0 2px;
     cursor: pointer;
@@ -448,7 +491,7 @@
   .shop-logo-mark .dot { color: var(--accent); }
   .shop-sub {
     font-family: 'Prompt', sans-serif;
-    font-weight: 400; font-size: 13px;
+    font-weight: 400; font-size: var(--text-sm);
     color: var(--ink-soft);
     display: inline-flex; align-items: center; gap: 6px;
   }
@@ -476,7 +519,7 @@
     display: inline-flex; align-items: center; gap: 6px;
     margin-bottom: 8px;
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink);
   }
   .hero-greeting .hg-avatar {
@@ -550,7 +593,7 @@
     margin-bottom: 8px;
   }
   .shop-head.hero .shop-sub {
-    font-size: 16px;
+    font-size: var(--text-md);
     color: var(--ink-soft);
     letter-spacing: 0.01em;
   }
@@ -701,7 +744,7 @@
     flex-shrink: 0;
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 14px;
+    font-size: var(--text-base);
     letter-spacing: -0.025em;
     color: var(--ink);
     line-height: 1;
@@ -821,7 +864,7 @@
   }
   .page-head h1 {
     font-family: 'Prompt', sans-serif;
-    font-size: 22px;
+    font-size: var(--text-xl);
     font-weight: 600;
     color: var(--ink);
     line-height: 1.25;
@@ -931,7 +974,7 @@
     flex-shrink: 0;
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: #fff;
     letter-spacing: -0.025em;
   }
@@ -970,7 +1013,7 @@
   }
   .inbox-card .ic-time {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-softer);
     flex-shrink: 0;
   }
@@ -996,7 +1039,7 @@
     padding: 3px 9px;
     border-radius: 99px;
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     font-weight: 500;
     color: var(--ink);
     margin-top: 6px;
@@ -1029,7 +1072,7 @@
   }
   .inbox-empty .ie-msg {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink-soft);
     line-height: 1.55;
   }
@@ -1069,7 +1112,7 @@
   .inbox-detail-hero .idh-text { flex: 1; min-width: 0; }
   .inbox-detail-hero .idh-shop {
     font-family: 'Prompt', sans-serif;
-    font-size: 16px;
+    font-size: var(--text-md);
     font-weight: 600;
     color: var(--ink);
     line-height: 1.3;
@@ -1099,7 +1142,7 @@
     background: radial-gradient(circle at 30% 30%, rgba(255,255,255,0.3), transparent 50%);
   }
   .inbox-detail-image .idi-emoji {
-    font-size: 36px;
+    font-size: var(--text-2xl);
     position: relative;
     z-index: 1;
     color: rgba(255,255,255,0.85);
@@ -1119,7 +1162,7 @@
   }
   .inbox-detail-body p {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink-soft);
     line-height: 1.65;
     margin: 0;
@@ -1164,14 +1207,14 @@
   }
   .inbox-detail-offer .ido-name {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--ink);
     margin-top: 2px;
   }
   .inbox-detail-offer .ido-condition {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-soft);
     margin-top: 2px;
   }
@@ -1184,7 +1227,7 @@
     border-radius: 99px;
     padding: 12px;
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 600;
     cursor: pointer;
   }
@@ -1206,7 +1249,7 @@
     border-radius: 99px;
     padding: 13px;
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 600;
     cursor: pointer;
   }
@@ -1265,7 +1308,7 @@
     border: 1px solid rgba(17,17,17,0.08);
     margin-bottom: 22px;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink);
   }
   .voucher-screen .vs-shop .vss-logo {
@@ -1278,7 +1321,7 @@
     justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: #fff;
     letter-spacing: -0.025em;
     flex-shrink: 0;
@@ -1286,7 +1329,7 @@
   .voucher-screen .vs-shop .vss-logo .dot { color: var(--accent); }
   .voucher-screen .vs-headline {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink-soft);
     margin-bottom: 6px;
   }
@@ -1352,7 +1395,7 @@
     padding: 7px 14px;
     border-radius: 99px;
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     margin-bottom: 14px;
   }
@@ -1362,7 +1405,7 @@
   }
   .voucher-screen .vs-condition {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-softer);
     line-height: 1.5;
     max-width: 220px;
@@ -1415,7 +1458,7 @@
   }
   .notif-radio .nr-name {
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 500;
     color: var(--ink);
     display: flex;
@@ -1461,7 +1504,7 @@
     justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: #fff;
     letter-spacing: -0.025em;
     flex-shrink: 0;
@@ -1471,7 +1514,7 @@
   .notif-mute-row .nm-name {
     flex: 1;
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink);
   }
   .notif-mute-row .nm-unmute {
@@ -1560,7 +1603,7 @@
   .pp-sub {
     text-align: center;
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     line-height: 1.55;
     margin-bottom: 16px;
@@ -1605,7 +1648,7 @@
     border-radius: 99px;
     padding: 13px;
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 600;
     cursor: pointer;
     margin-bottom: 6px;
@@ -1615,7 +1658,7 @@
     text-align: center;
     padding: 10px;
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     text-decoration: underline;
     text-decoration-color: rgba(17,17,17,0.25);
@@ -1657,7 +1700,7 @@
   .ob-skip-hint {
     text-align: center;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-softer);
     margin-top: 10px;
     font-style: italic;
@@ -1691,7 +1734,7 @@
   .ob-recovery-h {
     text-align: center;
     font-family: 'Prompt', sans-serif;
-    font-size: 16px;
+    font-size: var(--text-md);
     font-weight: 600;
     color: var(--ink);
     margin-bottom: 6px;
@@ -1731,7 +1774,7 @@
     border-radius: 99px;
     padding: 10px;
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     font-weight: 600;
     display: flex;
     align-items: center;
@@ -1749,7 +1792,7 @@
   .ob-recovery-hint {
     text-align: center;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-softer);
     font-style: italic;
     margin-bottom: 6px;
@@ -1808,7 +1851,7 @@
   }
   .ob-num-sub {
     font-family: 'Prompt', sans-serif;
-    font-size: 16px;
+    font-size: var(--text-md);
     color: var(--ink-soft);
     margin-top: 4px;
   }
@@ -1827,7 +1870,7 @@
   }
   .ob-rc-line {
     font-family: 'Prompt', sans-serif;
-    font-size: 16px;
+    font-size: var(--text-md);
     color: var(--ink-soft);
     line-height: 1.4;
   }
@@ -1872,7 +1915,7 @@
   .ob-icon-wrap svg { width: 28px; height: 28px; }
   .ob-warn-h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 22px;
+    font-weight: 700; font-size: var(--text-xl);
     line-height: 1.3;
     color: var(--ink);
     margin-bottom: 8px;
@@ -1880,7 +1923,7 @@
   }
   .ob-warn-s {
     font-family: 'Prompt', sans-serif;
-    font-size: 16px;
+    font-size: var(--text-md);
     line-height: 1.5;
     color: var(--ink-soft);
     margin-bottom: 18px;
@@ -1901,7 +1944,7 @@
   .ob-pc-h strong { color: var(--accent); }
   .ob-pc-s {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink-soft);
     line-height: 1.5;
   }
@@ -1964,7 +2007,7 @@
   }
   .ob-next .arrow {
     color: var(--butter);
-    font-size: 16px; font-weight: 800;
+    font-size: var(--text-md); font-weight: 800;
     flex-shrink: 0;
   }
   .ob-next.primary .arrow { color: #fff; }
@@ -2013,7 +2056,7 @@
   .hero-label {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 14px; color: var(--ink-soft);
+    font-size: var(--text-base); color: var(--ink-soft);
     margin-bottom: 2px;
   }
   .hero-num {
@@ -2039,7 +2082,7 @@
   }
   .hero-num-sub {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px; font-weight: 500;
+    font-size: var(--text-base); font-weight: 500;
     color: var(--ink); letter-spacing: -0.005em;
   }
   .hero-num-sub em {
@@ -2082,7 +2125,7 @@
     text-align: center;
     gap: 8px;
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink-soft);
     line-height: 1.35;
   }
@@ -2122,7 +2165,7 @@
     padding: 4px 11px;
     border-radius: 999px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 11px;
+    font-weight: 700; font-size: var(--text-2xs);
     letter-spacing: 0.04em;
     border: 1px solid rgba(17,17,17,0.18);
   }
@@ -2137,7 +2180,7 @@
   .reward-pill .rtxt { flex: 1; line-height: 1.3; min-width: 0; }
   .reward-pill .rlabel {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-soft);
     margin-bottom: 3px;
     letter-spacing: 0.02em;
@@ -2159,7 +2202,7 @@
   .ph-section-h .label {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 13px; color: var(--ink);
+    font-size: var(--text-sm); color: var(--ink);
   }
   .ph-section-h .live {
     display: inline-flex; align-items: center; gap: 5px;
@@ -2196,13 +2239,13 @@
   }
   .feed-row .w {
     font-family: 'Prompt', sans-serif;
-    font-size: 13px; font-weight: 500;
+    font-size: var(--text-sm); font-weight: 500;
     letter-spacing: -0.005em;
   }
   .feed-row .w .id {
     font-family: 'JetBrains Mono', monospace;
     color: var(--ink-softer);
-    font-size: 11px; font-weight: 400;
+    font-size: var(--text-2xs); font-weight: 400;
   }
   .feed-row .w .icon-mini {
     color: var(--accent); margin-right: 4px;
@@ -2214,7 +2257,7 @@
     border: 1px solid rgba(17,17,17,0.18);
     padding: 4px 10px;
     border-radius: 999px;
-    font-size: 11px; font-weight: 600;
+    font-size: var(--text-2xs); font-weight: 600;
     cursor: pointer;
   }
 
@@ -2235,7 +2278,7 @@
     border-radius: 50%;
     background: var(--ink); color: #FFF;
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; font-weight: 700;
+    font-size: var(--text-base); font-weight: 700;
     cursor: pointer; z-index: 3;
   }
   .c3 .sheet {
@@ -2289,7 +2332,7 @@
   .c3 .headline {
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 22px;
+    font-size: var(--text-xl);
     letter-spacing: -0.025em;
     text-align: center;
     line-height: 1.15;
@@ -2300,7 +2343,7 @@
   }
   .c3 .body-copy {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     text-align: center;
     color: var(--ink-soft);
     line-height: 1.5;
@@ -2312,7 +2355,7 @@
     border-radius: 14px;
     border: 1px solid rgba(17,17,17,0.18);
     font-family: 'Prompt', sans-serif;
-    font-size: 14px; font-weight: 700;
+    font-size: var(--text-base); font-weight: 700;
     display: flex; align-items: center; justify-content: center; gap: 8px;
     cursor: pointer;
     margin-bottom: 8px;
@@ -2326,7 +2369,7 @@
     display: block; text-align: center;
     margin-top: 12px;
     font-family: 'Prompt', sans-serif;
-    font-style: italic; font-size: 12px;
+    font-style: italic; font-size: var(--text-xs);
     color: var(--ink-soft);
     text-decoration: underline;
     text-decoration-color: rgba(17,17,17,0.3);
@@ -2384,7 +2427,7 @@
   .c3 .phone-input .prefix {
     padding: 13px 14px;
     font-family: 'JetBrains Mono', monospace;
-    font-weight: 700; font-size: 13px;
+    font-weight: 700; font-size: var(--text-sm);
     background: var(--ink); color: #fff;
     display: flex; align-items: center;
     letter-spacing: 0.04em;
@@ -2406,7 +2449,7 @@
     text-align: center;
     margin-top: 14px;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     line-height: 1.5;
   }
@@ -2436,7 +2479,7 @@
   }
   .consent-toggle .ct-title {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--ink);
     line-height: 1.3;
@@ -2481,7 +2524,7 @@
     background: var(--butter-soft);
     border-radius: 12px;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink);
     line-height: 1.55;
   }
@@ -2512,7 +2555,7 @@
     color: #fff;
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 16px;
+    font-size: var(--text-md);
   }
   .line-account .la-avatar svg {
     width: 20px;
@@ -2521,13 +2564,13 @@
   .line-account .la-info { flex: 1; min-width: 0; }
   .line-account .la-label {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-softer);
     margin-bottom: 2px;
   }
   .line-account .la-name {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 600;
     color: var(--ink);
     line-height: 1.3;
@@ -2543,7 +2586,7 @@
     border-radius: 99px;
     padding: 12px;
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 600;
     cursor: pointer;
     display: flex;
@@ -2552,7 +2595,7 @@
     gap: 6px;
   }
   .btn-line .arr {
-    font-size: 14px;
+    font-size: var(--text-base);
     font-weight: 800;
   }
 
@@ -2673,7 +2716,7 @@
 
   .install-sheet .pitch-h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 800; font-size: 22px;
+    font-weight: 800; font-size: var(--text-xl);
     letter-spacing: -0.025em;
     line-height: 1.15;
     margin-bottom: 6px;
@@ -2698,7 +2741,7 @@
     padding: 13px;
     border-radius: 99px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     cursor: pointer;
     display: flex;
     align-items: center;
@@ -2706,7 +2749,7 @@
     gap: 6px;
   }
   .install-sheet .sheet-cta .arr {
-    font-weight: 800; font-size: 14px;
+    font-weight: 800; font-size: var(--text-base);
   }
   .install-sheet .sheet-close {
     width: 100%;
@@ -2715,7 +2758,7 @@
     padding: 8px;
     margin-top: 4px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 500; font-size: 12px;
+    font-weight: 500; font-size: var(--text-xs);
     cursor: pointer;
   }
 
@@ -2751,7 +2794,7 @@
   .install-sheet .ios-steps .ios-step .ios-step-text {
     flex: 1;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink);
     line-height: 1.4;
   }
@@ -2790,7 +2833,7 @@
     border-radius: 999px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-style: italic;
-    font-size: 12px; letter-spacing: -0.005em;
+    font-size: var(--text-xs); letter-spacing: -0.005em;
     box-shadow: 0 8px 20px -6px rgba(255,94,58,0.5);
     transform: rotate(-3deg);
   }
@@ -2842,7 +2885,7 @@
   .c4 .redeem-num .done {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 700;
-    font-size: 16px; color: var(--ink);
+    font-size: var(--text-md); color: var(--ink);
   }
   .c4 .btn-redeem {
     margin: 18px 20px 0;
@@ -2861,13 +2904,13 @@
     width: 30px; height: 30px;
     background: var(--accent); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: #FFF; font-size: 14px;
+    color: #FFF; font-size: var(--text-base);
   }
   .c4 .counter-note {
     text-align: center;
     padding: 10px 20px 0;
     font-family: 'Prompt', sans-serif;
-    font-size: 11px; color: var(--ink-softer);
+    font-size: var(--text-2xs); color: var(--ink-softer);
     font-style: italic;
   }
 
@@ -2902,7 +2945,7 @@
     color: #FFF;
     border-radius: 50%;
     display: inline-flex; align-items: center; justify-content: center;
-    font-size: 14px;
+    font-size: var(--text-base);
   }
   .c4 .redeem-cta:active {
     transform: scale(0.98);
@@ -2919,7 +2962,7 @@
   }
   .c4 .redeem-soft-link .rsl-spark {
     color: var(--accent);
-    font-size: 12px;
+    font-size: var(--text-xs);
   }
   .c4 .redeem-gate .counter-note {
     padding: 0;
@@ -2996,7 +3039,7 @@
   .c5 .claimed-title {
     font-family: 'Prompt', sans-serif;
     font-weight: 800;
-    font-size: 36px;
+    font-size: var(--text-2xl);
     letter-spacing: -0.03em;
     line-height: 1.1;
     margin-bottom: 0;
@@ -3007,7 +3050,7 @@
   .c5 .claimed-sub {
     font-family: 'Prompt', sans-serif;
     font-weight: 500;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     margin-top: 10px;
     text-align: center;
@@ -3111,7 +3154,7 @@
   .c5 .voucher .v-title {
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 22px;
+    font-size: var(--text-xl);
     letter-spacing: -0.015em;
     text-align: center; margin-bottom: 10px;
     line-height: 1.25;
@@ -3133,7 +3176,7 @@
   .c5 .reset .kicker {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 13px; color: var(--ink-soft);
+    font-size: var(--text-sm); color: var(--ink-soft);
     margin-bottom: 14px;
     display: inline-flex; align-items: center; gap: 6px;
   }
@@ -3156,7 +3199,7 @@
     margin-bottom: 10px; line-height: 1;
   }
   .c5 .reset .mini-num .of {
-    color: var(--ink-softer); font-weight: 400; font-size: 16px;
+    color: var(--ink-softer); font-weight: 400; font-size: var(--text-md);
   }
   .c5 .reset .mini-stamps {
     display: grid; grid-template-columns: repeat(10, 1fr); gap: 4px;
@@ -3170,9 +3213,270 @@
     margin: 16px 20px 0;
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 14px; color: var(--ink);
+    font-size: var(--text-base); color: var(--ink);
+  }
+  /* C5 · CTA "ดูในของขวัญ" · ทาง gentle to gifts page */
+  .c5 .c5-cta-gifts {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    margin: 14px 20px 0;
+    padding: 12px 16px;
+    background: var(--ink);
+    color: var(--butter);
+    border-radius: 14px;
+    text-decoration: none;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-base);
+    cursor: pointer;
+  }
+  .c5 .c5-cta-gifts svg {
+    width: 16px; height: 16px;
+    color: var(--butter);
+  }
+  .c5 .c5-cta-gifts .arrow {
+    margin-left: 2px;
+    font-weight: 700;
   }
 
+  /* ========================================================== */
+  /* C-gifts — Gift list page                                    */
+  /* ========================================================== */
+  .c-gifts-section {
+    padding: 14px 20px 0;
+  }
+  .c-gifts-section.last { padding-bottom: 100px; }
+  .c-gifts-label {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    margin-bottom: 10px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .c-gifts-label.muted {
+    color: var(--ink-soft);
+  }
+  .c-gifts-label .star {
+    width: 12px; height: 12px;
+    color: var(--butter);
+  }
+
+  .gift-card {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+    padding: 14px;
+    margin-bottom: 8px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+  }
+  .gift-card.used {
+    background: rgba(17,17,17,0.04);
+    opacity: 0.6;
+    border-color: transparent;
+  }
+  .gift-card .gc-icon {
+    width: 44px; height: 44px;
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .gift-card.used .gc-icon {
+    background: rgba(17,17,17,0.06);
+    border: none;
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    font-size: 16px;
+  }
+  .gift-card .gc-icon.butter { background: var(--butter); border: 1px solid var(--ink); }
+  .gift-card .gc-icon.mint { background: var(--mint); border: 1px solid var(--mint-ink); }
+  .gift-card .gc-icon.accent { background: var(--accent-soft); border: 1px solid var(--accent); }
+
+  .gift-card .gc-info {
+    flex: 1;
+    line-height: 1.3;
+    min-width: 0;
+  }
+  .gift-card .gc-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--ink);
+  }
+  .gift-card.used .gc-name {
+    text-decoration: line-through;
+    font-weight: 600;
+    font-size: var(--text-xs);
+  }
+  .gift-card .gc-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-xs);
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .gift-card.used .gc-meta {
+    font-size: var(--text-2xs);
+  }
+  .gift-card .gc-cta {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    padding: 5px 12px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-2xs);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* ========================================================== */
+  /* C-scan — Fullscreen scan modal                              */
+  .c-scan-modal {
+    background: #0a0a0a;
+    color: #fff;
+    min-height: 100%;
+    display: flex;
+    flex-direction: column;
+  }
+  .c-scan-modal .csm-bar {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 18px 16px;
+  }
+  .c-scan-modal .csm-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-md);
+    color: #fff;
+  }
+  .c-scan-modal .csm-x {
+    width: 36px; height: 36px;
+    background: rgba(255,255,255,0.12);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+    cursor: pointer;
+  }
+  .c-scan-modal .csm-x svg {
+    width: 18px; height: 18px;
+  }
+  .c-scan-modal .csm-spacer {
+    width: 36px; height: 36px;
+  }
+  .c-scan-modal .csm-stage {
+    flex: 1;
+    padding: 8px 24px 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .c-scan-modal .csm-viewfinder {
+    width: 100%;
+    aspect-ratio: 1;
+    background: #000;
+    border-radius: 22px;
+    position: relative;
+    overflow: hidden;
+    margin-bottom: 16px;
+  }
+  /* Camera viewfinder corners */
+  .c-scan-modal .csm-viewfinder::before,
+  .c-scan-modal .csm-viewfinder::after {
+    content: '';
+    position: absolute;
+    width: 100%; height: 100%;
+    pointer-events: none;
+  }
+  .c-scan-modal .vf-corners {
+    position: absolute;
+    inset: 28px;
+    pointer-events: none;
+  }
+  .c-scan-modal .vf-corners::before,
+  .c-scan-modal .vf-corners::after,
+  .c-scan-modal .vf-corners > .ct,
+  .c-scan-modal .vf-corners > .cb {
+    content: '';
+    position: absolute;
+    width: 32px; height: 32px;
+  }
+  .c-scan-modal .vf-corners::before {
+    top: 0; left: 0;
+    border-top: 4px solid var(--butter);
+    border-left: 4px solid var(--butter);
+    border-radius: 8px 0 0 0;
+  }
+  .c-scan-modal .vf-corners::after {
+    top: 0; right: 0;
+    border-top: 4px solid var(--butter);
+    border-right: 4px solid var(--butter);
+    border-radius: 0 8px 0 0;
+  }
+  .c-scan-modal .vf-corners .ct {
+    bottom: 0; left: 0;
+    border-bottom: 4px solid var(--butter);
+    border-left: 4px solid var(--butter);
+    border-radius: 0 0 0 8px;
+  }
+  .c-scan-modal .vf-corners .cb {
+    bottom: 0; right: 0;
+    border-bottom: 4px solid var(--butter);
+    border-right: 4px solid var(--butter);
+    border-radius: 0 0 8px 0;
+  }
+  /* Animated scanning line */
+  .c-scan-modal .vf-line {
+    position: absolute;
+    left: 28px; right: 28px;
+    top: 50%;
+    height: 2px;
+    background: linear-gradient(90deg, transparent, var(--butter), transparent);
+    box-shadow: 0 0 12px rgba(255,217,82,0.5);
+  }
+  .c-scan-modal .csm-helper {
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-sm);
+    color: rgba(255,255,255,0.7);
+    line-height: 1.5;
+    margin-bottom: 18px;
+  }
+  .c-scan-modal .csm-bottom {
+    padding: 0 24px 28px;
+  }
+  .c-scan-modal .csm-toggle {
+    width: 100%;
+    background: var(--butter);
+    color: var(--ink);
+    border: none;
+    border-radius: 14px;
+    padding: 16px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-base);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+  }
+  .c-scan-modal .csm-toggle svg {
+    width: 18px; height: 18px;
+  }
   /* ========================================================== */
   /* C8 — Guest QR display                                       */
   /* ========================================================== */
@@ -3194,7 +3498,7 @@
   .c8-icon svg { width: 100%; height: 100%; }
   .c8-msg {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 18px;
+    font-weight: 700; font-size: var(--text-lg);
     line-height: 1.3;
     letter-spacing: -0.02em;
     color: var(--ink);
@@ -3239,7 +3543,7 @@
   }
   .c8-refresh {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     display: inline-flex; align-items: center; gap: 5px;
   }
@@ -3262,7 +3566,7 @@
     border: 1px dashed var(--ink-softer);
     border-radius: 12px;
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     line-height: 1.35;
     margin-bottom: 10px;
@@ -3275,7 +3579,7 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 13px;
+    font-weight: 800; font-size: var(--text-sm);
   }
   .c8-upgrade {
     display: flex; align-items: center; justify-content: center;
@@ -3285,7 +3589,7 @@
     border: 1px solid rgba(17,17,17,0.18);
     border-radius: 14px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     color: var(--ink);
     text-decoration: none;
     box-shadow: none;
@@ -3320,7 +3624,7 @@
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 22px;
+    font-weight: 700; font-size: var(--text-xl);
     letter-spacing: -0.02em;
     flex-shrink: 0;
     position: relative;
@@ -3350,7 +3654,7 @@
   .c6-profile-card .meta .verified {
     color: var(--mint-ink); font-weight: 600;
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
   }
   .c6-profile-card .edit {
     width: 32px; height: 32px;
@@ -3444,7 +3748,7 @@
     margin-top: 1px;
   }
   .guest-banner .gb-arrow {
-    font-size: 16px;
+    font-size: var(--text-md);
     font-weight: 700;
     color: var(--ink-soft);
     flex-shrink: 0;
@@ -3488,7 +3792,7 @@
     color: var(--ink-softer); margin-bottom: 2px;
   }
   .c7-stats .ss-meta .total {
-    font-size: 14px; font-weight: 600;
+    font-size: var(--text-base); font-weight: 600;
     letter-spacing: -0.005em;
   }
   .c7-stats .ss-bottom {
@@ -3496,7 +3800,7 @@
     padding-top: 14px;
     border-top: 1px solid rgba(255,255,255,0.12);
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--bg);
     display: flex;
     align-items: center;
@@ -3512,7 +3816,7 @@
     flex-shrink: 0;
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: #fff;
     letter-spacing: -0.025em;
   }
@@ -3528,7 +3832,7 @@
   .c7-list-head .label {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 14px; color: var(--ink);
+    font-size: var(--text-base); color: var(--ink);
     display: inline-flex; align-items: center; gap: 5px;
   }
   .c7-list-head .label .star {
@@ -3536,7 +3840,7 @@
   }
   .c7-list-head .sort {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px; font-weight: 500;
+    font-size: var(--text-xs); font-weight: 500;
     color: var(--ink-soft);
     background: var(--surface);
     padding: 4px 10px;
@@ -3568,7 +3872,7 @@
     border-radius: 999px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-style: italic;
-    font-size: 12px;
+    font-size: var(--text-xs);
     letter-spacing: -0.005em;
     border: 1px solid rgba(17,17,17,0.18);
     display: inline-flex; align-items: center; gap: 5px;
@@ -3584,7 +3888,7 @@
     background: var(--ink); color: #fff;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 16px;
+    font-weight: 800; font-size: var(--text-md);
     letter-spacing: -0.03em;
     flex-shrink: 0;
     border: 1px solid rgba(17,17,17,0.18);
@@ -3605,7 +3909,7 @@
   .c7-card .reward {
     font-family: 'Prompt', sans-serif;
     font-weight: 400;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     line-height: 1.2;
     white-space: nowrap; overflow: hidden;
@@ -3618,14 +3922,14 @@
   }
   .c7-card .progress .num {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 22px;
+    font-weight: 700; font-size: var(--text-xl);
     letter-spacing: -0.025em;
     color: var(--accent);
     line-height: 1;
   }
   .c7-card .progress .num .of {
     color: var(--ink-softer);
-    font-weight: 400; font-size: 14px;
+    font-weight: 400; font-size: var(--text-base);
     margin-left: 2px;
   }
   .c7-card.featured .progress .num { color: var(--ink); }
@@ -3652,12 +3956,12 @@
   .c7-add .h {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 14px; margin-bottom: 2px;
+    font-size: var(--text-base); margin-bottom: 2px;
     letter-spacing: -0.01em;
   }
   .c7-add .s {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px; color: var(--ink-soft);
+    font-size: var(--text-2xs); color: var(--ink-soft);
     line-height: 1.4;
   }
 
@@ -3710,7 +4014,7 @@
   .s1-tag {
     font-family: 'Prompt', sans-serif;
     font-weight: 500;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     line-height: 1.55;
   }
@@ -3741,7 +4045,7 @@
     border-radius: 12px;
     text-align: center;
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink);
     line-height: 1.4;
   }
@@ -3754,7 +4058,7 @@
     padding: 20px 30px;
     font-family: 'Prompt', sans-serif;
     font-weight: 400;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-softer);
     line-height: 1.5;
   }
@@ -3783,7 +4087,7 @@
     text-align: center;
     font-family: 'Prompt', sans-serif;
     font-weight: 600;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     border-radius: 10px;
     cursor: pointer;
@@ -3810,7 +4114,7 @@
     text-align: center;
     font-family: 'Prompt', sans-serif;
     font-weight: 600;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink);
     line-height: 1.4;
     display: flex; align-items: center; justify-content: center; gap: 6px;
@@ -3863,13 +4167,13 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     color: #fff;
-    font-size: 12px;
+    font-size: var(--text-xs);
   }
   .s1-guest .gs {
     font-family: 'Prompt', sans-serif;
     font-style: italic;
     font-weight: 400;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-softer);
     line-height: 1.4;
   }
@@ -3881,7 +4185,7 @@
     font-family: 'Prompt', sans-serif;
     font-style: italic;
     font-weight: 500;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-softer);
   }
   .s1-or::before, .s1-or::after {
@@ -3897,7 +4201,7 @@
     padding: 0 4px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink);
     display: flex; align-items: center; gap: 6px;
   }
@@ -3915,7 +4219,7 @@
   .s1-benefit-row {
     display: flex; align-items: flex-start; gap: 10px;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink);
     line-height: 1.4;
     padding: 4px 0;
@@ -3942,7 +4246,7 @@
     margin-bottom: 1px;
   }
   .s1-benefit-row span {
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-soft);
     font-style: italic;
   }
@@ -3989,7 +4293,7 @@
   .s2-counter .step-num strong { color: var(--accent); }
   .s2-counter .skip {
     font-family: 'Prompt', sans-serif;
-    font-weight: 500; font-size: 12px;
+    font-weight: 500; font-size: var(--text-xs);
     letter-spacing: 0; text-transform: none;
     color: var(--ink-soft);
     cursor: pointer;
@@ -4010,7 +4314,7 @@
   }
   .s2-q .sub {
     font-family: 'Prompt', sans-serif;
-    font-weight: 400; font-size: 13px;
+    font-weight: 400; font-size: var(--text-sm);
     color: var(--ink-soft);
     line-height: 1.4;
   }
@@ -4019,7 +4323,7 @@
   }
   .s2-field .label {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 12px;
+    font-weight: 600; font-size: var(--text-xs);
     color: var(--ink-soft);
     margin-bottom: 6px;
     padding-left: 4px;
@@ -4031,7 +4335,7 @@
     box-shadow: none;
     padding: 14px 16px;
     font-family: 'Prompt', sans-serif;
-    font-size: 16px;
+    font-size: var(--text-md);
     font-weight: 600;
     letter-spacing: -0.01em;
     display: flex; align-items: center;
@@ -4058,7 +4362,7 @@
     padding-left: 4px;
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 400;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-soft);
   }
   .s2-goal-pills {
@@ -4072,7 +4376,7 @@
     border: 1px solid rgba(17,17,17,0.18);
     border-radius: 999px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
+    font-weight: 700; font-size: var(--text-sm);
     text-align: center;
     cursor: pointer;
     box-shadow: none;
@@ -4089,7 +4393,7 @@
     border: 1px solid rgba(17,17,17,0.18);
     border-radius: 14px;
     box-shadow: none;
-    font-size: 16px; cursor: pointer;
+    font-size: var(--text-md); cursor: pointer;
     color: var(--ink);
   }
   .s2-foot .next {
@@ -4100,7 +4404,7 @@
     border-radius: 14px;
     padding: 14px 16px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     display: flex; align-items: center; justify-content: space-between;
     cursor: pointer;
     box-shadow: none;
@@ -4140,7 +4444,7 @@
     background: var(--accent); color: #fff;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
+    font-size: var(--text-2xs); font-weight: 700;
     border: 1px solid rgba(17,17,17,0.18);
   }
   .s2-logo .lt-1 {
@@ -4152,7 +4456,7 @@
   .s2-logo .lt-2 {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 700;
-    font-size: 22px; letter-spacing: -0.02em;
+    font-size: var(--text-xl); letter-spacing: -0.02em;
   }
   .s2-logo .lt-3 {
     font-family: 'Prompt', sans-serif;
@@ -4163,7 +4467,7 @@
     padding: 14px 20px 0;
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     text-align: center;
   }
@@ -4182,7 +4486,7 @@
     border-radius: 14px;
     display: flex; align-items: center; justify-content: center; gap: 10px;
     font-family: 'Prompt', sans-serif;
-    font-size: 12px; font-weight: 500;
+    font-size: var(--text-xs); font-weight: 500;
     color: var(--ink); cursor: pointer;
   }
   .s2-upload svg { width: 14px; height: 14px; }
@@ -4254,7 +4558,7 @@
   .s2-tmeta { padding: 8px 10px; }
   .s2-tmeta .name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 12px;
+    font-weight: 700; font-size: var(--text-xs);
     letter-spacing: -0.01em;
   }
   .s2-tmeta .meta {
@@ -4311,7 +4615,7 @@
   }
   .s2-done-sub {
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     line-height: 1.5;
     margin-bottom: 24px;
@@ -4339,12 +4643,12 @@
   .s2-qr-prev .meta { flex: 1; line-height: 1.3; }
   .s2-qr-prev .meta .h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     margin-bottom: 1px;
   }
   .s2-qr-prev .meta .s {
     font-family: 'Prompt', sans-serif;
-    font-weight: 400; font-size: 11px;
+    font-weight: 400; font-size: var(--text-2xs);
     color: var(--ink-softer);
   }
   .s2-qr-prev .arrow {
@@ -4352,7 +4656,7 @@
     background: var(--accent); color: #fff;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px; flex-shrink: 0;
+    font-size: var(--text-base); flex-shrink: 0;
   }
   .s2-cta-final {
     margin: 0 22px 12px;
@@ -4379,7 +4683,7 @@
     text-align: center;
     font-family: 'Prompt', sans-serif;
     font-style: italic;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     text-decoration: underline;
     text-decoration-color: rgba(17,17,17,0.3);
@@ -4419,7 +4723,7 @@
     border-radius: 999px;
     padding: 6px 12px 6px 8px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 11px;
+    font-weight: 600; font-size: var(--text-2xs);
     box-shadow: none;
   }
   .s3-top .branch-pill::before {
@@ -4431,7 +4735,7 @@
     background: var(--accent); color: #FFF;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     box-shadow: 0 4px 12px -4px rgba(255,94,58,0.4);
     border: 1px solid rgba(17,17,17,0.18);
     font-family: 'Prompt', sans-serif;
@@ -4452,7 +4756,7 @@
   .s3-hero .label {
     display: inline-flex; align-items: center; gap: 6px;
     font-family: 'Prompt', sans-serif;
-    font-style: italic; font-weight: 500; font-size: 12px;
+    font-style: italic; font-weight: 500; font-size: var(--text-xs);
     color: var(--ink-soft);
     margin-bottom: 8px;
     background: var(--butter-soft);
@@ -4480,7 +4784,7 @@
   }
   .s3-hero .caption {
     font-family: 'Prompt', sans-serif;
-    font-size: 16px; font-weight: 700;
+    font-size: var(--text-md); font-weight: 700;
     letter-spacing: -0.02em;
     line-height: 1.25;
     margin-bottom: 4px;
@@ -4489,7 +4793,7 @@
     display: inline-flex; align-items: center; gap: 4px;
     margin-top: 12px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 12px;
+    font-weight: 700; font-size: var(--text-xs);
     color: var(--mint-ink);
     background: var(--mint);
     padding: 4px 10px;
@@ -4510,7 +4814,7 @@
   }
   .s3-stat .n {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 22px;
+    font-weight: 700; font-size: var(--text-xl);
     letter-spacing: -0.025em; line-height: 1;
     margin-bottom: 3px;
   }
@@ -4533,14 +4837,14 @@
     content: '★';
     position: absolute;
     top: 10px; right: 16px;
-    color: var(--ink); font-size: 18px;
+    color: var(--ink); font-size: var(--text-lg);
     transform: rotate(12deg);
   }
   .s3-reach .reach-kicker {
     display: inline-flex; align-items: center; gap: 5px;
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 700;
-    font-size: 11px; color: var(--ink);
+    font-size: var(--text-2xs); color: var(--ink);
     background: rgba(17,17,17,0.08);
     padding: 3px 10px;
     border-radius: 999px;
@@ -4548,13 +4852,13 @@
   }
   .s3-reach .reach-head {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 16px;
+    font-weight: 700; font-size: var(--text-md);
     letter-spacing: -0.015em;
     margin-bottom: 4px; line-height: 1.25;
   }
   .s3-reach .reach-body {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px; color: var(--ink); opacity: 0.75;
+    font-size: var(--text-xs); color: var(--ink); opacity: 0.75;
     line-height: 1.4; margin-bottom: 14px;
   }
   .s3-reach .reach-btn {
@@ -4562,7 +4866,7 @@
     border: none; padding: 12px 14px 12px 18px;
     border-radius: 14px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
+    font-weight: 700; font-size: var(--text-sm);
     width: 100%;
     display: flex; justify-content: space-between; align-items: center;
     cursor: pointer;
@@ -4588,7 +4892,7 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     box-shadow: none;
-    font-size: 16px;
+    font-size: var(--text-md);
   }
   .s5-top .branch {
     display: flex; align-items: center; gap: 6px;
@@ -4597,7 +4901,7 @@
     border-radius: 999px;
     padding: 6px 12px 6px 8px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 11px;
+    font-weight: 600; font-size: var(--text-2xs);
     box-shadow: none;
   }
   .s5-top .branch::before {
@@ -4620,7 +4924,7 @@
   }
   .s5-q .ask-th {
     font-family: 'Prompt', sans-serif;
-    font-weight: 500; font-size: 13px;
+    font-weight: 500; font-size: var(--text-sm);
     color: var(--ink-soft);
   }
   .s5-options {
@@ -4682,7 +4986,7 @@
   .s5-option.primary .opt-name { color: var(--bg); }
   .s5-option .opt-sub {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px; color: var(--ink-soft);
+    font-size: var(--text-2xs); color: var(--ink-soft);
     line-height: 1.3;
   }
   .s5-option.primary .opt-sub { color: var(--ink-softer); }
@@ -4691,7 +4995,7 @@
     border-radius: 50%;
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px;
+    font-size: var(--text-2xs);
   }
   .s5-tip {
     margin: 22px 20px 0;
@@ -4714,7 +5018,7 @@
     border-radius: 50%;
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-style: normal; font-weight: 700;
+    font-size: var(--text-xs); font-style: normal; font-weight: 700;
   }
 
   /* ========================================================== */
@@ -4765,20 +5069,20 @@
     border: 1.5px solid var(--bg);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 22px;
+    font-weight: 800; font-size: var(--text-xl);
     transform: rotate(-6deg);
     flex-shrink: 0;
   }
   .s6-toast .info { flex: 1; line-height: 1.25; }
   .s6-toast .info .h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 16px;
+    font-weight: 700; font-size: var(--text-md);
     letter-spacing: -0.015em;
     margin-bottom: 2px;
   }
   .s6-toast .info .s {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px; color: var(--ink-softer);
+    font-size: var(--text-2xs); color: var(--ink-softer);
     letter-spacing: 0.05em;
   }
   .s6-toast .progress-mini {
@@ -4793,16 +5097,16 @@
   }
   .s6-toast .progress-mini .name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 12px;
+    font-weight: 600; font-size: var(--text-xs);
   }
   .s6-toast .progress-mini .count {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 18px;
+    font-weight: 700; font-size: var(--text-lg);
     letter-spacing: -0.02em;
     color: var(--butter);
   }
   .s6-toast .progress-mini .count .of {
-    color: var(--ink-softer); font-weight: 400; font-size: 12px;
+    color: var(--ink-softer); font-weight: 400; font-size: var(--text-xs);
   }
   .s6-toast .progress-mini .stamps-mini {
     display: grid;
@@ -4833,7 +5137,7 @@
     padding: 12px 14px;
     border-radius: 12px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
+    font-weight: 700; font-size: var(--text-sm);
     cursor: pointer;
   }
   .s6-toast .countdown {
@@ -4846,7 +5150,7 @@
     text-align: center;
     font-family: 'JetBrains Mono', monospace;
     font-weight: 700;
-    font-size: 14px;
+    font-size: var(--text-base);
   }
 
   /* ========================================================== */
@@ -4863,11 +5167,11 @@
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
     box-shadow: none;
-    cursor: pointer; font-size: 16px;
+    cursor: pointer; font-size: var(--text-md);
   }
   .s7-top .help {
     font-family: 'Prompt', sans-serif;
-    font-style: italic; font-size: 12px;
+    font-style: italic; font-size: var(--text-xs);
     color: var(--ink-soft);
     text-decoration: underline;
     text-underline-offset: 3px;
@@ -4895,7 +5199,7 @@
   .s7-balance .lbl {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-softer);
     margin-bottom: 4px;
     position: relative;
@@ -4914,7 +5218,7 @@
   .s7-balance .unit {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--bg);
   }
   .s7-balance .est {
@@ -4922,7 +5226,7 @@
     padding-top: 12px;
     border-top: 1px dashed rgba(255,255,255,0.2);
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-softer);
     position: relative;
   }
@@ -4930,7 +5234,7 @@
   .s7-q { padding: 22px 20px 0; }
   .s7-q .ask {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 22px;
+    font-weight: 700; font-size: var(--text-xl);
     letter-spacing: -0.025em;
     margin-bottom: 2px;
   }
@@ -4939,7 +5243,7 @@
   }
   .s7-q .sub {
     font-family: 'Prompt', sans-serif;
-    font-weight: 500; font-size: 12px;
+    font-weight: 500; font-size: var(--text-xs);
     color: var(--ink-soft);
   }
   .s7-packages {
@@ -4974,7 +5278,7 @@
   }
   .s7-pkg .left .credits {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 22px;
+    font-weight: 700; font-size: var(--text-xl);
     letter-spacing: -0.025em;
     line-height: 1;
     margin-bottom: 2px;
@@ -4982,7 +5286,7 @@
   .s7-pkg .left .credits .unit {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     margin-left: 3px;
   }
@@ -4996,13 +5300,13 @@
   .s7-pkg .right { text-align: right; }
   .s7-pkg .right .price {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 18px;
+    font-weight: 700; font-size: var(--text-lg);
     letter-spacing: -0.02em;
     color: var(--ink);
   }
   .s7-pkg .right .price .currency {
     font-style: italic; font-weight: 500;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     margin-right: 2px;
   }
@@ -5037,11 +5341,11 @@
   .s7-method .meta { flex: 1; line-height: 1.2; }
   .s7-method .meta .name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
+    font-weight: 700; font-size: var(--text-sm);
   }
   .s7-method .meta .sub {
     font-family: 'Prompt', sans-serif;
-    font-style: italic; font-size: 11px;
+    font-style: italic; font-size: var(--text-2xs);
     color: var(--ink-soft);
     margin-top: 1px;
   }
@@ -5050,7 +5354,7 @@
     background: var(--accent); color: #fff;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-weight: 700;
+    font-size: var(--text-xs); font-weight: 700;
     border: 1px solid rgba(17,17,17,0.18);
   }
   .s7-cta {
@@ -5071,7 +5375,7 @@
     width: 30px; height: 30px;
     background: var(--accent); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: #FFF; font-size: 14px;
+    color: #FFF; font-size: var(--text-base);
   }
 
   /* S7 confirm — PromptPay */
@@ -5082,7 +5386,7 @@
   .s7c-meta .label {
     font-family: 'Prompt', sans-serif;
     font-weight: 500; font-style: italic;
-    font-size: 13px; color: var(--ink-soft);
+    font-size: var(--text-sm); color: var(--ink-soft);
     margin-bottom: 4px;
   }
   .s7c-meta .pkg {
@@ -5094,12 +5398,12 @@
   .s7c-meta .pkg .accent { color: var(--accent); }
   .s7c-meta .pkg .unit {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 18px;
+    font-weight: 600; font-size: var(--text-lg);
     margin-left: 4px;
   }
   .s7c-meta .price {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 14px;
+    font-weight: 600; font-size: var(--text-base);
     color: var(--ink-soft);
   }
   .s7c-qr {
@@ -5133,12 +5437,12 @@
   .s7c-qr .qr-box svg { width: 100%; height: 100%; }
   .s7c-qr .recipient {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 13px;
+    font-weight: 600; font-size: var(--text-sm);
     margin-bottom: 2px;
   }
   .s7c-qr .recipient-id {
     font-family: 'JetBrains Mono', monospace;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-soft);
   }
   .s7c-step {
@@ -5160,17 +5464,17 @@
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 12px;
+    font-weight: 700; font-size: var(--text-xs);
   }
   .s7c-step.active { background: var(--butter); }
   .s7c-step .text {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 13px;
+    font-weight: 600; font-size: var(--text-sm);
     line-height: 1.3;
   }
   .s7c-step .text .sub {
     font-family: 'Prompt', sans-serif;
-    font-weight: 400; font-size: 11px;
+    font-weight: 400; font-size: var(--text-2xs);
     color: var(--ink-soft);
     display: block;
     margin-top: 1px;
@@ -5196,7 +5500,7 @@
     width: 28px; height: 28px;
     background: var(--accent); border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    color: #fff; font-size: 14px;
+    color: #fff; font-size: var(--text-base);
   }
 
   /* ========================================================== */
@@ -5215,7 +5519,7 @@
     box-shadow: none;
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 12px;
+    font-size: var(--text-xs);
     display: flex; align-items: center; justify-content: center; gap: 6px;
     cursor: pointer;
   }
@@ -5249,7 +5553,7 @@
     text-align: center;
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink-soft);
     margin-bottom: 4px;
   }
@@ -5291,7 +5595,7 @@
     color: #fff;
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 14px;
+    font-size: var(--text-base);
     letter-spacing: -0.02em;
   }
   .s8-qr .center .dot { color: var(--butter); }
@@ -5325,7 +5629,7 @@
   }
   .s8-print .reward-strip .vv {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     letter-spacing: -0.015em;
   }
   .s8-print .reward-strip .vv .stars {
@@ -5337,7 +5641,7 @@
     border-top: 1px dashed var(--line);
     padding-top: 10px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 11px;
+    font-weight: 700; font-size: var(--text-2xs);
     color: var(--ink);
   }
   .s8-print .brand-foot .dot { color: var(--accent); }
@@ -5375,7 +5679,7 @@
     border-radius: 50%;
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
-    font-size: 12px; font-style: normal; font-weight: 700;
+    font-size: var(--text-xs); font-style: normal; font-weight: 700;
   }
 
   /* ========================================================== */
@@ -5405,7 +5709,7 @@
     background: var(--accent); color: #fff;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
+    font-size: var(--text-2xs); font-weight: 700;
     border: 1px solid rgba(17,17,17,0.18); z-index: 2;
   }
   .theme-preview {
@@ -5419,7 +5723,7 @@
   .theme-preview.taemdee { background: #F6F1E5; }
   .theme-preview.taemdee .num {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 36px;
+    font-weight: 700; font-size: var(--text-2xl);
     letter-spacing: -0.04em;
     color: #FF5E3A; line-height: 1;
   }
@@ -5436,7 +5740,7 @@
   .theme-preview.mono { background: #fff; }
   .theme-preview.mono .num {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 36px;
+    font-weight: 700; font-size: var(--text-2xl);
     color: #111; letter-spacing: -0.04em; line-height: 1;
   }
   .theme-preview.mono .stamps {
@@ -5451,7 +5755,7 @@
   .theme-preview.night { background: #141414; }
   .theme-preview.night .num {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 36px;
+    font-weight: 700; font-size: var(--text-2xl);
     color: #FFD952; letter-spacing: -0.04em; line-height: 1;
   }
   .theme-preview.night .stamps {
@@ -5466,7 +5770,7 @@
   .theme-preview.pastel { background: #FFEEE4; }
   .theme-preview.pastel .num {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 700; font-size: 36px;
+    font-weight: 700; font-size: var(--text-2xl);
     color: #E87A6A; letter-spacing: -0.04em; line-height: 1;
   }
   .theme-preview.pastel .stamps {
@@ -5481,13 +5785,13 @@
   .theme-meta { padding: 10px 12px; }
   .theme-meta .name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 13px;
+    font-weight: 700; font-size: var(--text-sm);
     letter-spacing: -0.015em;
     margin-bottom: 1px;
   }
   .theme-meta .meta {
     font-family: 'Prompt', sans-serif;
-    font-style: italic; font-size: 11px;
+    font-style: italic; font-size: var(--text-2xs);
     color: var(--ink-soft);
   }
   .theme-card.selected .theme-meta { background: var(--butter); }
@@ -5566,7 +5870,7 @@
   }
   .c9-thanks-s {
     font-family: 'Prompt', sans-serif;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     margin-top: 2px;
   }
@@ -5577,7 +5881,7 @@
   .c9-section-h {
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink);
     margin-bottom: 10px;
     text-transform: none;
@@ -5623,14 +5927,14 @@
   .c9-menu-name {
     font-family: 'Prompt', sans-serif;
     font-weight: 600;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink);
     line-height: 1.3;
   }
   .c9-menu-price {
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 600;
-    font-size: 12px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
   }
 
@@ -5643,20 +5947,20 @@
   }
   .c9-review-stars {
     color: var(--accent);
-    font-size: 13px;
+    font-size: var(--text-sm);
     letter-spacing: 1px;
     margin-bottom: 4px;
   }
   .c9-review-text {
     font-family: 'Prompt', sans-serif;
-    font-size: 13px;
+    font-size: var(--text-sm);
     line-height: 1.5;
     color: var(--ink);
     margin-bottom: 6px;
   }
   .c9-review-meta {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-softer);
     font-style: italic;
   }
@@ -5711,7 +6015,7 @@
     border-radius: 14px;
     display: flex; align-items: center; justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 22px;
+    font-weight: 800; font-size: var(--text-xl);
     letter-spacing: -0.03em;
     flex-shrink: 0;
     border: 1.5px solid var(--bg);
@@ -5730,7 +6034,7 @@
   .s10-shop-card .meta {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 400;
-    font-size: 11px; color: var(--ink-softer);
+    font-size: var(--text-2xs); color: var(--ink-softer);
   }
   .s10-shop-card .edit {
     width: 32px; height: 32px;
@@ -5744,7 +6048,7 @@
   .s10-section { padding: 22px 20px 0; }
   .s10-section .label {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 12px;
+    font-weight: 700; font-size: var(--text-xs);
     color: var(--ink-soft);
     margin-bottom: 8px;
     padding-left: 4px;
@@ -5775,25 +6079,25 @@
   .s10-row .row-info { line-height: 1.2; }
   .s10-row .row-name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     letter-spacing: -0.01em;
     margin-bottom: 1px;
   }
   .s10-row .row-meta {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 400;
-    font-size: 13px; color: var(--ink-soft);
+    font-size: var(--text-sm); color: var(--ink-soft);
   }
   .s10-row .arrow-r {
     font-family: 'JetBrains Mono', monospace;
-    color: var(--ink-soft); font-size: 14px;
+    color: var(--ink-soft); font-size: var(--text-base);
   }
   .s10-row .pill {
     background: var(--mint); color: var(--mint-ink);
     border: 1px solid var(--mint-ink);
     padding: 3px 8px; border-radius: 999px;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 12px;
+    font-weight: 700; font-size: var(--text-xs);
   }
 
   /* Font-size picker (C6 settings) */
@@ -5819,13 +6123,13 @@
     flex-shrink: 0;
     font-family: 'Host Grotesk', sans-serif;
     font-weight: 800;
-    font-size: 16px;
+    font-size: var(--text-md);
     letter-spacing: -0.04em;
   }
   .s10-fontsize .fs-info { line-height: 1.2; }
   .s10-fontsize .fs-name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     letter-spacing: -0.01em;
     margin-bottom: 1px;
   }
@@ -5850,9 +6154,9 @@
     color: var(--ink);
     transition: none;
   }
-  .s10-fontsize .fs-opt.sm { font-size: 12px; font-weight: 500; }
-  .s10-fontsize .fs-opt.md { font-size: 14px; font-weight: 600; }
-  .s10-fontsize .fs-opt.lg { font-size: 16px; font-weight: 600; }
+  .s10-fontsize .fs-opt.sm { font-size: var(--text-xs); font-weight: 500; }
+  .s10-fontsize .fs-opt.md { font-size: var(--text-base); font-weight: 600; }
+  .s10-fontsize .fs-opt.lg { font-size: var(--text-md); font-weight: 600; }
   .s10-fontsize .fs-opt.active {
     border: 2px solid var(--accent);
     padding: 9px 7px;
@@ -5866,7 +6170,7 @@
     border-radius: 14px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink);
     width: calc(100% - 40px);
     cursor: pointer;
@@ -5908,7 +6212,7 @@
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 16px;
+    font-weight: 800; font-size: var(--text-md);
     transform: rotate(8deg);
   }
   .s11-invite .ic {
@@ -5927,7 +6231,7 @@
   }
   .s11-invite .meta .s {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px; color: var(--ink); opacity: 0.75;
+    font-size: var(--text-2xs); color: var(--ink); opacity: 0.75;
     margin-top: 1px;
   }
   .s11-list { padding: 22px 20px 0; }
@@ -5950,21 +6254,21 @@
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
   }
   .s11-member .av.b { background: var(--butter); color: var(--ink); }
   .s11-member .av.m { background: var(--mint); color: var(--mint-ink); }
   .s11-member .info { line-height: 1.2; }
   .s11-member .name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     letter-spacing: -0.015em; margin-bottom: 2px;
   }
   .s11-member .role {
     display: inline-flex; align-items: center; gap: 4px;
     font-family: 'Prompt', sans-serif;
     font-style: italic;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--ink-soft);
   }
   .s11-member .role .dot {
@@ -5978,7 +6282,7 @@
     border: 1px solid var(--line);
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 14px;
+    font-size: var(--text-base);
     color: var(--ink-soft);
     cursor: pointer;
   }
@@ -6001,7 +6305,7 @@
   }
   .s12-mode .top .l {
     font-family: 'Prompt', sans-serif;
-    font-weight: 600; font-size: 11px;
+    font-weight: 600; font-size: var(--text-2xs);
     color: var(--ink-soft);
   }
   .s12-mode .top .pill {
@@ -6019,7 +6323,7 @@
   }
   .s12-mode .desc {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px; color: var(--ink-soft);
+    font-size: var(--text-2xs); color: var(--ink-soft);
     line-height: 1.4;
   }
   .s12-add {
@@ -6039,28 +6343,28 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 18px;
+    font-weight: 800; font-size: var(--text-lg);
   }
   .s12-add .meta { flex: 1; line-height: 1.25; }
   .s12-add .meta .h {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     letter-spacing: -0.015em;
   }
   .s12-add .meta .s {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 400;
-    font-size: 11px; color: var(--ink); opacity: 0.7;
+    font-size: var(--text-2xs); color: var(--ink); opacity: 0.7;
     margin-top: 1px;
   }
   .s12-add .arrow {
-    font-size: 14px; color: var(--ink);
+    font-size: var(--text-base); color: var(--ink);
   }
   .s12-list-h {
     padding: 22px 20px 8px;
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 13px;
+    font-size: var(--text-sm);
     color: var(--ink);
   }
   .s12-branch {
@@ -6082,24 +6386,24 @@
     border: 1px solid rgba(17,17,17,0.18);
     display: flex; align-items: center; justify-content: center;
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 13px;
+    font-weight: 800; font-size: var(--text-sm);
   }
   .s12-branch.b2 .num { background: var(--butter); color: var(--ink); }
   .s12-branch.b3 .num { background: var(--mint); color: var(--mint-ink); }
   .s12-branch .info { line-height: 1.2; }
   .s12-branch .name {
     font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 14px;
+    font-weight: 700; font-size: var(--text-base);
     letter-spacing: -0.015em; margin-bottom: 2px;
   }
   .s12-branch .addr {
     font-family: 'Prompt', sans-serif;
-    font-size: 11px; color: var(--ink-soft);
+    font-size: var(--text-2xs); color: var(--ink-soft);
   }
   .s12-branch .qr-link {
     font-family: 'Prompt', sans-serif;
     font-style: italic; font-weight: 500;
-    font-size: 11px;
+    font-size: var(--text-2xs);
     color: var(--accent);
     text-decoration: underline;
     text-decoration-color: rgba(255,94,58,0.4);
@@ -6132,7 +6436,7 @@
   .end p {
     max-width: 540px; margin: 0 auto;
     font-family: 'Prompt', sans-serif;
-    font-size: 14px; color: #555;
+    font-size: var(--text-base); color: #555;
     line-height: 1.55;
   }
 
@@ -6691,17 +6995,17 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -6861,17 +7165,17 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -6944,17 +7248,17 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -6965,8 +7269,8 @@
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">C5</span>ขอบคุณที่กลับมาบ่อยๆ</div>
-        <h3>ผมเริ่มเก็บใบใหม่ให้แล้ว</h3>
-        <p>คูปองมีเส้นไหลรอบ + เกล็ดดาวกระจาย — สกรีนช็อตจะหยุดนิ่ง ปลอมไม่ได้ · บัตรใบถัดไปเริ่มที่ 0/10 ทันที</p>
+        <h3>เก็บไว้ใช้ครั้งหน้านะครับ</h3>
+        <p>ลูกค้าครบ 10 แต้ม → เห็นหน้านี้ทันที · voucher ผมเก็บไว้ในของขวัญ ใช้เมื่อกลับมาร้านครั้งหน้า · CTA "ดูในของขวัญ" + บัตรใหม่เริ่ม 0/10 ทันที · ลูกค้าไม่ต้องรู้สึกบังคับใช้เลย</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -6986,7 +7290,7 @@
                 </svg>
               </div>
               <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
-              <div class="claimed-sub">รางวัลของพี่พร้อมแล้ว</div>
+              <div class="claimed-sub">ของขวัญพร้อมแล้วครับ · เก็บไว้ใช้ครั้งหน้าได้</div>
             </div>
 
             <div class="voucher">
@@ -7004,6 +7308,12 @@
               <div class="v-id">#MHEE-A72B · รับเมื่อ 24.04.26</div>
             </div>
 
+            <a class="c5-cta-gifts">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg>
+              <span>ดูในของขวัญของพี่</span>
+              <span class="arrow">→</span>
+            </a>
+
             <div class="reset">
               <div class="kicker">
                 <svg class="arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><polyline points="19 12 12 19 5 12"/></svg>
@@ -7017,24 +7327,24 @@
                 </div>
               </div>
             </div>
-            <div class="farewell">เจอกันครั้งหน้านะ</div>
+            <div class="farewell">เจอกันครั้งหน้านะครับ</div>
 
                         <nav class="c-glass-nav" aria-label="Main navigation">
               <a class="gn-tab active" aria-label="บัตรของฉัน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7076,12 +7386,10 @@
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
-                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
+                <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                   </svg>
                 </a>
               </div>
@@ -7198,17 +7506,17 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7231,12 +7539,10 @@
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
-                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
+                <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                   </svg>
                 </a>
               </div>
@@ -7313,17 +7619,18 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab active" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7347,12 +7654,10 @@
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
-                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
+                <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                   </svg>
                 </a>
               </div>
@@ -7378,17 +7683,18 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab active" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7469,17 +7775,18 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab active" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7536,17 +7843,18 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab active" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7602,19 +7910,158 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab active" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <span class="gn-label">ข้อความ</span>
               </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
+            </nav>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C-gifts — ของขวัญ (vouchers earned, ready to use) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C-gifts</span>ของขวัญของพี่</div>
+        <h3>เก็บไว้ใช้ครั้งหน้า · ไม่บังคับใช้ทันที</h3>
+        <p>เปิดจากปุ่ม "ของขวัญ" ใน liquid glass dock — list ของรางวัลที่ลูกค้าได้แล้ว · พร้อมใช้ + ใช้แล้ว · ลูกค้าใช้เมื่อกลับมาร้านครั้งหน้า · กด "ใช้" → โชว์ voucher QR ให้ร้านสแกน</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="page-head">
+              <div class="ph-text">
+                <h1>ของขวัญของพี่</h1>
+                <div class="ph-sub">ผมเก็บไว้ให้นะครับ ใช้เมื่อพร้อม</div>
+              </div>
+            </div>
+
+            <div class="c-gifts-section">
+              <div class="c-gifts-label">
+                <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                พร้อมใช้
+              </div>
+
+              <div class="gift-card">
+                <div class="gc-icon butter">🎁</div>
+                <div class="gc-info">
+                  <div class="gc-name">กาแฟ Signature ฟรี 1 แก้ว</div>
+                  <div class="gc-meta">ลุงหมี · หมดอายุ 30 ก.ย.</div>
+                </div>
+                <button class="gc-cta">ใช้</button>
+              </div>
+
+              <div class="gift-card">
+                <div class="gc-icon mint">🥐</div>
+                <div class="gc-info">
+                  <div class="gc-name">ครัวซองต์ฟรี 1 ชิ้น</div>
+                  <div class="gc-meta">Bake &amp; Co. · หมด 12 ต.ค.</div>
+                </div>
+                <button class="gc-cta">ใช้</button>
+              </div>
+
+              <div class="gift-card">
+                <div class="gc-icon accent">🍵</div>
+                <div class="gc-info">
+                  <div class="gc-name">ลด 50 บาท เมนูใดก็ได้</div>
+                  <div class="gc-meta">Orchid &amp; Oat · หมด 5 พ.ย.</div>
+                </div>
+                <button class="gc-cta">ใช้</button>
+              </div>
+            </div>
+
+            <div class="c-gifts-section last">
+              <div class="c-gifts-label muted">ใช้แล้ว</div>
+
+              <div class="gift-card used">
+                <div class="gc-icon">🍩</div>
+                <div class="gc-info">
+                  <div class="gc-name">โดนัทฟรี 1 ชิ้น</div>
+                  <div class="gc-meta">Sweet Co. · 14 ก.พ.</div>
+                </div>
+              </div>
+
+              <div class="gift-card used">
+                <div class="gc-icon">☕</div>
+                <div class="gc-info">
+                  <div class="gc-name">ลาเต้ฟรี 1 แก้ว</div>
+                  <div class="gc-meta">ลุงหมี · 8 ม.ค.</div>
+                </div>
+              </div>
+            </div>
+
+            <nav class="c-glass-nav" aria-label="Main navigation">
+              <a class="gn-tab" aria-label="บัตรของฉัน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
+                <span class="gn-label">บัตร</span>
+              </a>
+              <a class="gn-tab gn-scan" aria-label="สแกน">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
+                <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab active" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
+              </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
               </a>
             </nav>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- C-scan — Fullscreen scan modal (opened from dock สแกน button) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">C-scan</span>สแกน QR ของร้าน</div>
+        <h3>Fullscreen camera · 1-tap จาก dock</h3>
+        <p>เปิดเมื่อกด tab "สแกน" ใน liquid glass dock — fullscreen camera พร้อม viewfinder · ปุ่มล่างสลับไป QR display ของลูกค้า (กรณีร้านสแกนลูกค้าแทน · 20% case) · auto-detect QR → เด้งไป C5 (claim reward) หรือ +1 stamp animation</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td c-scan-modal">
+
+            <div class="csm-bar">
+              <div class="csm-spacer"></div>
+              <div class="csm-title">สแกน QR ที่ร้าน</div>
+              <a class="csm-x" aria-label="ปิด">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </a>
+            </div>
+
+            <div class="csm-stage">
+              <div class="csm-viewfinder">
+                <div class="vf-corners">
+                  <div class="ct"></div>
+                  <div class="cb"></div>
+                </div>
+                <div class="vf-line"></div>
+              </div>
+              <div class="csm-helper">วาง QR ของร้านในกรอบ<br>ผมจะเก็บแต้มให้เลยครับ</div>
+            </div>
+
+            <div class="csm-bottom">
+              <button class="csm-toggle">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                ให้ร้านสแกน QR ของพี่
+              </button>
+            </div>
+
           </div>
         </div>
       </div>
@@ -7734,13 +8181,13 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
+              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7765,12 +8212,10 @@
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
-                <a class="ph-icon-btn" title="โชว์ QR ของพี่">
+                <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="3" y="3" width="7" height="7" rx="1"/>
-                    <rect x="14" y="3" width="7" height="7" rx="1"/>
-                    <rect x="3" y="14" width="7" height="7" rx="1"/>
-                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
                   </svg>
                 </a>
               </div>
@@ -7861,17 +8306,18 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab active" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -7951,17 +8397,18 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab active" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -8071,17 +8518,17 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
                 <span class="gn-label">บัตร</span>
               </a>
-              <a class="gn-tab" aria-label="สแกน">
+              <a class="gn-tab gn-scan" aria-label="สแกน">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ตั้งค่า">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg></span>
-                <span class="gn-label">ตั้งค่า</span>
               </a>
             </nav>
           </div>
@@ -8284,5 +8731,20 @@
   </p>
 </div>
 
+<script>
+  // Font-size picker · toggle html.fs-sm/md/lg
+  document.querySelectorAll('.s10-fontsize').forEach(function(picker) {
+    picker.querySelectorAll('.fs-opt').forEach(function(btn) {
+      btn.addEventListener('click', function() {
+        var size = btn.classList.contains('sm') ? 'fs-sm' :
+                   btn.classList.contains('lg') ? 'fs-lg' : 'fs-md';
+        document.documentElement.classList.remove('fs-sm','fs-md','fs-lg');
+        document.documentElement.classList.add(size);
+        picker.querySelectorAll('.fs-opt').forEach(function(b){ b.classList.remove('active'); });
+        btn.classList.add('active');
+      });
+    });
+  });
+</script>
 </body>
 </html>
