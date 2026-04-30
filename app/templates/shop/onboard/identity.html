@@ -80,60 +80,82 @@
       {% endif %}
     </div>
 
-    {# S2.1 — single district field. JS pings /shop/onboard/district/
-       lookup on input. Three render paths:
-         · 0 candidates → no chip, free-text fallback (rare)
-         · 1 candidate → mint chip auto-fills inline
-         · N>1 candidates → render small picker pills below the field
-           (e.g., จอมทอง → กรุงเทพมหานคร / เชียงใหม่) — owner taps to
-           commit. The hidden `province` input carries the chosen value. #}
+    {# S2.1 — combobox picker. Search input with magnifier prefix, no
+       chevron arrow. Dropdown filters the district list as the owner
+       types; each row shows "<district> · <province>" so ambiguous
+       names (จอมทอง / เฉลิมพระเกียรติ) resolve in one tap rather than
+       a separate ambiguity row. ✓ marks the current pick. Click outside
+       closes the dropdown. #}
     <div class="s2-field" style="margin-top:18px;"
-         x-data="{
-           district: '{{ shop.district or '' }}',
-           candidates: {{ initial_candidates|tojson }},
-           province: {{ initial_province|tojson if initial_province else 'null' }},
-           async lookup() {
-             const q = this.district.trim();
-             if (!q) { this.candidates = []; this.province = null; return; }
-             try {
-               const r = await fetch('/shop/onboard/district/lookup?q=' + encodeURIComponent(q));
-               const j = await r.json();
-               this.candidates = j.provinces || [];
-               this.province = this.candidates.length === 1 ? this.candidates[0] : null;
-             } catch (_) { this.candidates = []; this.province = null; }
-           },
-           pick(p) { this.province = p; }
-         }">
+         x-data="districtPicker({
+           initialDistrict: '{{ shop.district or '' }}',
+           initialProvince: {{ initial_province|tojson if initial_province else 'null' }}
+         })" @click.outside="open = false">
       <label class="label" for="onboard-district">เขต/อำเภอ</label>
-      <div class="s2-input s2-district-pick" :class="{ focused: $refs.di === document.activeElement }">
-        <input id="onboard-district" name="district" type="text"
+      <div class="s2-input s2-district-search" :class="{ focused: open }" @click="$refs.di.focus()">
+        <svg class="s2-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <input id="onboard-district" type="text"
                class="s2-district-input"
                x-ref="di"
-               x-model="district"
-               @input.debounce.250ms="lookup()"
-               @blur="lookup()"
-               list="thai-districts"
-               placeholder="เช่น นิมมาน">
-        <span class="s2-province-auto" x-show="province" x-text="province" x-cloak></span>
+               x-model="query"
+               @focus="open = true"
+               @input="open = true; lookupActive()"
+               placeholder="เช่น นิมมาน · เชียงใหม่"
+               autocomplete="off">
       </div>
-      <datalist id="thai-districts">
-        {% for d in all_districts %}<option value="{{ d }}">{% endfor %}
-      </datalist>
-      <input type="hidden" name="province" :value="province || ''">
+      <input type="hidden" name="district" :value="picked.district">
+      <input type="hidden" name="province" :value="picked.province">
 
-      {# Ambiguous-district picker — quiet pills row, only when N>1
-         candidates and no province has been picked yet. #}
-      <div class="s2-province-pills" x-show="candidates.length > 1 && !province" x-cloak>
-        <template x-for="p in candidates" :key="p">
-          <button type="button" class="s2-pp-pill" @click="pick(p)" x-text="p"></button>
+      <div class="s2-combo-list" x-show="open && results.length" x-cloak>
+        <template x-for="r in results" :key="r.district + '|' + r.province">
+          <button type="button" class="s2-combo-row"
+                  :class="{ selected: r.district === picked.district && r.province === picked.province }"
+                  @click="commit(r)">
+            <span class="s2-combo-check" x-show="r.district === picked.district && r.province === picked.province" x-cloak>✓</span>
+            <span class="s2-combo-name" x-text="r.district"></span>
+            <span class="s2-combo-prov" x-text="r.province"></span>
+          </button>
         </template>
       </div>
 
-      <div class="s2-hint">
-        <span x-show="candidates.length > 1 && !province" x-cloak>มีหลายจังหวัด — แตะเลือกด้านบน</span>
-        <span x-show="!(candidates.length > 1 && !province)">เลือกเขต/อำเภอ · จังหวัดจะ auto-fill</span>
-      </div>
+      <div class="s2-hint" x-show="!open">เลือกเขต/อำเภอ · จังหวัดจะมาเอง</div>
     </div>
+
+    <script>
+      function districtPicker(init) {
+        // Inlined dataset of {district, province} pairs — full list,
+        // ~975 rows. Prebuilt server-side from the lookup table so the
+        // typeahead filter stays client-side (no per-keystroke fetch).
+        const PAIRS = {{ district_pairs|tojson }};
+        return {
+          query: init.initialDistrict,
+          picked: { district: init.initialDistrict, province: init.initialProvince || '' },
+          results: [],
+          open: false,
+          lookupActive() {
+            const q = this.query.trim().toLowerCase();
+            if (!q) { this.results = []; return; }
+            // Match by startsWith first, then includes — cap at 12 rows.
+            const starts = [], contains = [];
+            for (const p of PAIRS) {
+              const lower = p.district.toLowerCase();
+              if (lower === q || lower.startsWith(q)) starts.push(p);
+              else if (lower.includes(q)) contains.push(p);
+              if (starts.length >= 12) break;
+            }
+            this.results = starts.concat(contains).slice(0, 12);
+          },
+          commit(r) {
+            this.picked = { district: r.district, province: r.province };
+            this.query = r.district;
+            this.results = [];
+            this.open = false;
+          },
+        };
+      }
+    </script>
 
     <div class="s2-field" style="margin-top:18px;">
       <div class="label">เลือกโลโก้</div>

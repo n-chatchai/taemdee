@@ -39,3 +39,21 @@ def all_districts() -> List[str]:
     """Sorted list of district short names — used as the <datalist>
     options for the S2.1 picker autocomplete."""
     return list(_load()["districts"])
+
+
+def district_province_pairs() -> List[dict]:
+    """Flat list of {district, province} pairs — one row per
+    (district, province) combo. Ambiguous district names (จอมทอง,
+    เฉลิมพระเกียรติ) emit multiple rows so the combobox can render
+    each candidate as its own selectable option. Sorted by district
+    name. ~970 entries, ~50KB JSON when serialised inline."""
+    out = []
+    for district, provinces in _load()["by_district"].items():
+        # Skip the prefixed forms ("เขตจอมทอง", "อำเภอนิมมาน") — they
+        # bloat the dropdown and the user types short names anyway.
+        if district.startswith(("เขต", "อำเภอ", "กิ่งอำเภอ")):
+            continue
+        for province in provinces:
+            out.append({"district": district, "province": province})
+    out.sort(key=lambda r: r["district"])
+    return out

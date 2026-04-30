@@ -10633,19 +10633,23 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   line-height: 1.5;
 }
 
-/* S2.1 district picker — single field with auto-fill mint chip
-   (matches design .s2-district-pick / .s2-province-auto). Ambiguous
-   districts surface a quiet pills row below — no big mint container,
-   the field itself stays the visual focus. */
-.s2-input.s2-district-pick {
+/* S2.1 district combobox — search input + filtered dropdown of
+   "<district> · <province>" rows. Ambiguous district names render
+   one row per candidate so the picker resolves them in a single tap. */
+.s2-input.s2-district-search {
   display: flex !important;
   align-items: center;
-  justify-content: space-between;
   gap: 10px;
   cursor: text;
 }
-.s2-input.s2-district-pick.focused {
+.s2-input.s2-district-search.focused {
   border-color: var(--accent);
+}
+.s2-search-icon {
+  width: 18px;
+  height: 18px;
+  color: var(--ink-softer);
+  flex-shrink: 0;
 }
 .s2-district-input {
   flex: 1;
@@ -10659,45 +10663,52 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   padding: 0;
 }
 .s2-district-input::placeholder { color: var(--ink-softer); font-weight: 400; }
-.s2-province-auto {
-  background: var(--mint);
-  color: var(--mint-ink);
-  font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
-  font-weight: 600;
-  padding: 3px 10px;
-  border-radius: 99px;
-  flex-shrink: 0;
-  white-space: nowrap;
-}
-.s2-province-auto::before {
-  content: '✓ ';
-  font-weight: 700;
-}
 
-.s2-province-pills {
-  margin-top: 8px;
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-  padding-left: 4px;
-}
-.s2-province-pills .s2-pp-pill {
-  appearance: none; -webkit-appearance: none;
-  padding: 5px 12px;
-  border-radius: 99px;
+.s2-combo-list {
+  margin-top: 6px;
   background: var(--surface);
-  border: 1px solid rgba(17,17,17,0.18);
-  color: var(--ink);
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  font-weight: 600;
-  cursor: pointer;
-  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
+  border: 1px solid rgba(17,17,17,0.10);
+  border-radius: 14px;
+  padding: 4px;
+  max-height: 280px;
+  overflow-y: auto;
+  box-shadow: 0 4px 14px -4px rgba(17,17,17,0.10);
 }
-.s2-province-pills .s2-pp-pill:hover,
-.s2-province-pills .s2-pp-pill:focus {
-  background: var(--mint);
-  color: var(--mint-ink);
-  border-color: var(--mint-ink);
+.s2-combo-row {
+  appearance: none; -webkit-appearance: none;
+  width: 100%;
+  background: transparent;
+  border: 0;
+  padding: 10px 12px;
+  border-radius: 10px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  cursor: pointer;
+  text-align: left;
+  font-family: 'Prompt', sans-serif;
+}
+.s2-combo-row:hover,
+.s2-combo-row:focus {
+  background: rgba(17,17,17,0.04);
+}
+.s2-combo-row.selected {
+  background: var(--accent-soft);
+}
+.s2-combo-check {
+  color: var(--accent);
+  font-weight: 700;
+  flex-shrink: 0;
+  width: 14px;
+}
+.s2-combo-name {
+  flex: 1;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.s2-combo-prov {
+  font-size: 12px;
+  color: var(--ink-soft);
+  flex-shrink: 0;
 }

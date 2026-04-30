@@ -329,7 +329,7 @@ async def onboard_identity_get(
         if custom_text:
             saved_pick["text"] = custom_text
 
-    from app.services.thai_address import all_districts, lookup_provinces
+    from app.services.thai_address import all_districts, district_province_pairs, lookup_provinces
     initial_candidates = lookup_provinces(shop.district) if shop.district else []
     initial_province = (
         shop.location if shop.location in initial_candidates
@@ -348,6 +348,7 @@ async def onboard_identity_get(
             "custom_text": custom_text or "",
             "logos_partial_url": "/shop/onboard/identity/logos_partial",
             "all_districts": all_districts(),
+            "district_pairs": district_province_pairs(),
             "initial_province": initial_province,
             "initial_candidates": initial_candidates,
         },
@@ -440,7 +441,7 @@ async def onboard_identity_post(
     if same_district_collision is not None:
         # Re-render the same step with inline warning + form values preserved.
         from app.services.logo_gen import generate_logos, render_style
-        from app.services.thai_address import all_districts
+        from app.services.thai_address import all_districts, district_province_pairs
         shop.name = cleaned_name
         shop.district = cleaned_district or shop.district
         if cleaned_province:
@@ -458,6 +459,7 @@ async def onboard_identity_post(
                 "custom_text": "",
                 "logos_partial_url": "/shop/onboard/identity/logos_partial",
                 "all_districts": all_districts(),
+                "district_pairs": district_province_pairs(),
                 "initial_province": cleaned_province or None,
                 "initial_candidates": [],
                 "collision_warning": {
