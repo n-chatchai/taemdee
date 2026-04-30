@@ -8432,13 +8432,16 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    (PRD §9: themes apply to customer DeeCard only, not shop UI)
    ========================================================== */
 
-/* "taemdee" is the default; "default" is a legacy alias for backfilled rows */
-.td.theme-taemdee,
-.td.theme-default {
+/* "taemdee" is the default; "default" is a legacy alias for backfilled rows.
+   Applied to either the customer DeeCard root (.td) or the onboarding
+   live preview (.s2-c1-preview) so the swatch picker repaints in place. */
+.td.theme-taemdee, .td.theme-default,
+.s2-c1-preview.theme-taemdee, .s2-c1-preview.theme-default {
   /* uses default tokens defined on .td above */
 }
 
-.td.theme-mono {
+.td.theme-mono,
+.s2-c1-preview.theme-mono {
   --bg: #ffffff;
   --surface: #f6f6f6;
   --ink: #111111;
@@ -8455,7 +8458,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .td.theme-mono::before { display: none; }       /* no warm radial gradients */
 .td.theme-mono::after { opacity: 0.2; }          /* dotted bg lighter */
 
-.td.theme-night {
+.td.theme-night,
+.s2-c1-preview.theme-night {
   --bg: #141414;
   --surface: #1d1d1d;
   --ink: #fafafa;
@@ -8481,8 +8485,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .td.theme-night .td-badge { background: #FFD952; color: #141414; }
 .td.theme-night .td-badge .s { color: #141414; }
 .td.theme-night .footer-mark .brand .dot { color: #FFD952; }
+/* Mini-preview also needs its border darkened on night so the card edge stays visible */
+.s2-c1-preview.theme-night { border-color: rgba(255, 255, 255, 0.18); }
 
-.td.theme-pastel {
+.td.theme-pastel,
+.s2-c1-preview.theme-pastel {
   --bg: #FFEEE4;
   --surface: #FFF6F0;
   --ink: #3a201c;
