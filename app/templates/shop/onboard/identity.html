@@ -120,7 +120,16 @@
         </template>
       </div>
 
-      <div class="s2-hint" x-show="!open">เลือกเขต/อำเภอ · จังหวัดจะมาเอง</div>
+      {# Static province confirmation — shown after a pick so the owner
+         doesn't lose visibility of which province they committed once
+         the dropdown closes. Falls back to the placeholder hint when
+         no pick yet. #}
+      <div class="s2-hint" x-show="!open && picked.province" x-cloak>
+        ✓ จังหวัด<strong x-text="picked.province" style="color:var(--mint-ink); font-weight:700;"></strong>
+      </div>
+      <div class="s2-hint" x-show="!open && !picked.province">
+        เลือกเขต/อำเภอ · จังหวัดจะมาเอง
+      </div>
     </div>
 
     <script>
