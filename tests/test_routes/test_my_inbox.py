@@ -100,6 +100,55 @@ async def test_my_inbox_detail_hides_mute_link_when_already_muted(client, db, sh
     assert "ปิดเสียงร้านนี้แล้ว" in body
 
 
+async def test_my_inbox_detail_renders_offer_card_when_offer_text_set(client, db, shop):
+    """Inbox.detail offer card — render only when row.offer_text is non-NULL.
+    Shows the design's 'ของฝากจากร้าน' kicker + offer name + 'ใช้ก่อน
+    <date>' condition (or the no-expiry fallback)."""
+    from datetime import datetime, timezone, timedelta
+    customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
+    row.offer_text = "ลด ฿20 เมื่อซื้อกาแฟ"
+    row.offer_until = datetime.now(timezone.utc).replace(tzinfo=None) + timedelta(days=21)
+    db.add(row)
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get(f"/my-inbox/{row.id}")).text
+    assert "inbox-detail-offer" in body
+    assert "ของฝากจากร้าน" in body
+    assert "ลด ฿20 เมื่อซื้อกาแฟ" in body
+    # bkk_short_date filter formats the expiry — expect "ใช้ก่อน " prefix
+    assert "ใช้ก่อน " in body
+
+
+async def test_my_inbox_detail_no_offer_card_when_offer_text_unset(client, db, shop):
+    """Plain DeeReach message without an offer renders body only — the
+    .inbox-detail-offer block is omitted entirely (not just empty)."""
+    customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
+    # offer_text stays NULL by default
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get(f"/my-inbox/{row.id}")).text
+    # The offer card container + kicker are absent. (The push prompt
+    # overlay also has "มีของฝากจากร้าน" copy, so check the .ido-label
+    # kicker class specifically rather than the substring alone.)
+    assert "inbox-detail-offer" not in body
+    assert "ido-label" not in body
+
+
+async def test_my_inbox_detail_offer_no_expiry_uses_fallback_copy(client, db, shop):
+    """offer_text set but offer_until NULL → 'โชว์หน้านี้ที่ร้านได้เลยครับ'
+    fallback copy instead of the dated ใช้ก่อน line."""
+    customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
+    row.offer_text = "ครัวซองต์ฟรี 1 ชิ้น"
+    db.add(row)
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get(f"/my-inbox/{row.id}")).text
+    assert "ครัวซองต์ฟรี 1 ชิ้น" in body
+    assert "ใช้ก่อน " not in body
+    assert "โชว์หน้านี้ที่ร้านได้เลย" in body
+
+
 async def test_my_inbox_includes_push_prompt_partial(client):
     """Push.prompt partial is mounted on customer pages that include
     footer_mark — JS gates the show, but the markup must exist server-side

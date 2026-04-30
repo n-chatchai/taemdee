@@ -25,5 +25,14 @@ class Inbox(SQLModel, table=True):
 
     body: str
 
+    # Optional "ของฝาก" attached to the message (Inbox.detail offer card).
+    # offer_text is the headline ("ลด ฿20 เมื่อซื้อกาแฟ" / "ครัวซองต์ฟรี
+    # 1 ชิ้น"). offer_until is the expiry shown as "ใช้ก่อน <date>" — both
+    # nullable, when offer_text is empty the card is hidden entirely.
+    # Claim flow + Inbox.voucher full-screen QR are deferred until the
+    # shop-side S13 editor can write these fields.
+    offer_text: Optional[str] = Field(default=None)
+    offer_until: Optional[datetime] = Field(default=None)
+
     read_at: Optional[datetime] = Field(default=None)
     created_at: datetime = Field(default_factory=utcnow, index=True)
