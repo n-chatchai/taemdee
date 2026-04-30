@@ -10152,3 +10152,31 @@ html.ts-lg .td { zoom: 1.14; }
   text-decoration: none;
 }
 .c-scan-modal .csm-toggle svg { width: 18px; height: 18px; }
+
+/* C5 CTA "ดูในของขวัญของพี่" — pins the voucher to /my-gifts so the
+   customer can keep browsing without losing the receipt of the redemption.
+   Ported from design lines 3219-3242 (Apr 30 design refresh). */
+.c5 .c5-cta-gifts {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  margin: 14px 20px 0;
+  padding: 12px 16px;
+  background: var(--ink);
+  color: var(--butter);
+  border-radius: 14px;
+  text-decoration: none;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-md);
+  cursor: pointer;
+}
+.c5 .c5-cta-gifts svg {
+  width: 16px; height: 16px;
+  color: var(--butter);
+}
+.c5 .c5-cta-gifts .arrow {
+  margin-left: 2px;
+  font-weight: 700;
+}

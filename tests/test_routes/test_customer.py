@@ -475,6 +475,52 @@ async def test_c5_voucher_renders_active_state_when_unserved(client, db, shop):
     assert "voucher served" not in body and 'voucher\n' in body or 'class="voucher"' in body
 
 
+async def test_c5_active_voucher_offers_link_to_gifts(client, db, shop):
+    """Apr 30 design refresh — active C5 voucher carries a 'ดูในของขวัญ'
+    CTA that pins it to /my-gifts. Hidden once the voucher is served
+    (it's already in the used pile by then)."""
+    from app.models import Customer, Redemption
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id)
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
+    assert "c5-cta-gifts" in body
+    assert 'href="/my-gifts"' in body
+    assert "ดูในของขวัญของพี่" in body
+
+
+async def test_c5_served_voucher_hides_gifts_cta(client, db, shop):
+    """Once served, the gifts CTA disappears — voucher is in the used
+    pile and the link would loop the customer to its already-greyed row."""
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id, served_at=utcnow())
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
+    assert "c5-cta-gifts" not in body
+
+
 async def test_c5_voucher_swaps_to_served_state_when_served_at_set(client, db, shop):
     """C5 — once /issue/scan flips served_at, the voucher renders the
     'ใช้แล้ว' label, drops particles, and adds the .served container class

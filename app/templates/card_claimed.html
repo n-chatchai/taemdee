@@ -51,8 +51,26 @@
         {% endif %}
       </div>
       <div class="v-title">{{ shop.reward_description }}</div>
-      <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
+      <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · รับเมื่อ {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
     </div>
+
+    {# C5 CTA "ดูในของขวัญของพี่" → /my-gifts. Lets the customer pin the
+       voucher to their gifts list and continue browsing without losing
+       the redemption. Hidden once the voucher is served (already in the
+       used pile by then). #}
+    {% if not redemption.served_at %}
+      <a class="c5-cta-gifts" href="/my-gifts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 12 20 22 4 22 4 12"/>
+          <rect x="2" y="7" width="20" height="5"/>
+          <line x1="12" y1="22" x2="12" y2="7"/>
+          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+        </svg>
+        <span>ดูในของขวัญของพี่</span>
+        <span class="arrow">→</span>
+      </a>
+    {% endif %}
 
     <div class="reset">
       <div class="kicker">
