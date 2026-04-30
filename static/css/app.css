@@ -10633,35 +10633,10 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   line-height: 1.5;
 }
 
-/* S2.1 district combobox — search input + filtered dropdown of
-   "<district> · <province>" rows. Ambiguous district names render
-   one row per candidate so the picker resolves them in a single tap. */
-.s2-input.s2-district-search {
-  display: flex !important;
-  align-items: center;
-  gap: 10px;
-  cursor: text;
-}
-.s2-input.s2-district-search.focused {
-  border-color: var(--accent);
-}
-.s2-search-icon {
-  width: 18px;
-  height: 18px;
-  color: var(--ink-softer);
-  flex-shrink: 0;
-}
-.s2-district-input {
-  flex: 1;
-  min-width: 0;
-  border: 0;
-  background: transparent;
-  outline: none;
-  font: inherit;
-  color: inherit;
-  letter-spacing: inherit;
-  padding: 0;
-}
+/* S2.1 district combobox — plain input (full-width, same as other
+   .s2-input fields) + filtered dropdown of "<district> · <province>"
+   rows. Ambiguous district names render one row per candidate so the
+   picker resolves them in a single tap. */
 .s2-district-input::placeholder { color: var(--ink-softer); font-weight: 400; }
 
 .s2-combo-list {

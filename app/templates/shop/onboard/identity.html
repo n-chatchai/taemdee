@@ -92,19 +92,14 @@
            initialProvince: {{ initial_province|tojson if initial_province else 'null' }}
          })" @click.outside="open = false">
       <label class="label" for="onboard-district">เขต/อำเภอ</label>
-      <div class="s2-input s2-district-search" :class="{ focused: open }" @click="$refs.di.focus()">
-        <svg class="s2-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <circle cx="11" cy="11" r="7"/><line x1="21" y1="21" x2="16.65" y2="16.65"/>
-        </svg>
-        <input id="onboard-district" type="text"
-               class="s2-district-input"
-               x-ref="di"
-               x-model="query"
-               @focus="open = true"
-               @input="open = true; lookupActive()"
-               placeholder="เช่น นิมมาน · เชียงใหม่"
-               autocomplete="off">
-      </div>
+      <input id="onboard-district" type="text"
+             class="s2-input s2-district-input"
+             x-ref="di"
+             x-model="query"
+             @focus="open = true"
+             @input="open = true; lookupActive()"
+             placeholder="เช่น นิมมาน"
+             autocomplete="off">
       <input type="hidden" name="district" :value="picked.district">
       <input type="hidden" name="province" :value="picked.province">
 
@@ -125,7 +120,7 @@
          the dropdown closes. Falls back to the placeholder hint when
          no pick yet. #}
       <div class="s2-hint" x-show="!open && picked.province" x-cloak>
-        ✓ จังหวัด<strong x-text="picked.province" style="color:var(--mint-ink); font-weight:700;"></strong>
+        ✓ <strong x-text="picked.province" style="color:var(--mint-ink); font-weight:700;"></strong>
       </div>
       <div class="s2-hint" x-show="!open && !picked.province">
         เลือกเขต/อำเภอ · จังหวัดจะมาเอง
