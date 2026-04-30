@@ -56,12 +56,15 @@ body {
   /* Text-size scale (Apr 30 design refresh — rem-based so the C6
      ขนาดตัวอักษร picker can swap font-size on <html> and any rule
      using these vars scales naturally). 1rem = 16px default. */
-  --text-2xs: 0.625rem;  /* 10px · labels, ids */
-  --text-xs:  0.75rem;   /* 12px · caption, meta */
-  --text-sm:  0.8125rem; /* 13px · secondary body */
-  --text-md:  1rem;      /* 16px · emphasis */
-  --text-lg:  1.125rem;  /* 18px · subtitle */
-  --text-xl:  1.375rem;  /* 22px · page title (h1) */
+  --text-2xs:    0.625rem;  /* 10px · labels, ids */
+  --text-xs:     0.75rem;   /* 12px · caption, meta */
+  --text-sm:     0.8125rem; /* 13px · secondary body */
+  --text-base:   0.875rem;  /* 14px · body, row name (DEFAULT) */
+  --text-md:     1rem;      /* 16px · emphasis */
+  --text-lg:     1.125rem;  /* 18px · subtitle */
+  --text-xl:     1.375rem;  /* 22px · page title (h1) */
+  --text-2xl:    2.25rem;   /* 36px · hero number */
+  --text-display: 4rem;     /* 64px · DeeCard hero */
   font-family: 'Prompt', sans-serif;
   color: var(--ink);
   background: var(--bg);
@@ -9900,15 +9903,15 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 700;
 }
 
-/* Zoom application — class lives on <html>, scales the whole .td block.
-   md is default (no class). The dock is position: fixed so it sits
-   outside the zoomed flow — by design, dock stays normal size while
-   content scales.
-   Ratios match the design picker's button label sizes (sm 12px / md 14px
-   / lg 16px → 12/14 = 0.86, 16/14 = 1.14) so the choice the user
-   makes in the picker is the choice they get on every page. */
-html.ts-sm .td { zoom: 0.86; }
-html.ts-lg .td { zoom: 1.14; }
+/* C6 ขนาดตัวอักษร — toggles root rem so any rule using --text-* (rem)
+   tokens scales naturally. Per Apr 30 design refresh: rem-based, not
+   zoom — accessibility-correct (Apple HIG, WCAG) and standard CSS.
+   Existing px-based rules stay fixed; future ports of px → var(--text-*)
+   widen the scope of what scales. */
+html { font-size: 16px; }
+html.fs-sm { font-size: 14px; }   /* −12.5% */
+html.fs-md { font-size: 16px; }   /* default */
+html.fs-lg { font-size: 18px; }   /* +12.5% */
 
 /* C-gifts — list of vouchers/rewards (Apr 30 design refresh). The
    placeholder /my-gifts route renders an empty state for now; section/

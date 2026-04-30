@@ -623,11 +623,13 @@ async def test_text_size_post_persists_and_normalises_md_to_null(client, db, sho
 
 
 async def test_text_size_bootstrap_script_in_pwa_head(client, shop):
-    """The pwa_head bootstrap (sets ts-* on <html> from localStorage) must
-    ship on every customer page for instant first-paint zoom."""
+    """The pwa_head bootstrap (sets fs-* on <html> from localStorage) must
+    ship on every customer page for instant first-paint sizing — drives
+    root font-size via html.fs-sm/fs-lg so any rule using --text-* rem
+    tokens scales accordingly."""
     body = (await client.get(f"/card/{shop.id}")).text
     assert "td_text_size" in body
-    assert "classList.add('ts-'" in body
+    assert "classList.add('fs-'" in body
 
 
 async def test_card_unknown_shop_renders_friendly_page(client):

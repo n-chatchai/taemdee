@@ -22,8 +22,9 @@
    older iOS Safari which uses the non-standard navigator.standalone instead. #}
 <style>@media (display-mode: standalone){.footer-mark .fm-install{display:none}}.pwa-standalone .footer-mark .fm-install{display:none}</style>
 <script>if(window.navigator.standalone)document.documentElement.classList.add('pwa-standalone');</script>
-{# C6 ขนาดตัวอักษร bootstrap — apply the saved zoom class to <html> before
-   first paint so users on the lg/sm setting don't see a flash of the
-   default size. Reads localStorage (mirror of customer.text_size); the
-   /card/account picker is what writes it. #}
-<script>(function(){try{var s=localStorage.getItem('td_text_size');if(s==='sm'||s==='lg')document.documentElement.classList.add('ts-'+s);}catch(_){}})();</script>
+{# C6 ขนาดตัวอักษร bootstrap — apply the saved fs-* class to <html>
+   before first paint so users on the lg/sm setting don't flash the
+   default 16px. The class drives root font-size (14/16/18px) — any
+   rule using --text-* rem tokens scales with it. Reads localStorage
+   (mirror of customer.text_size); the /card/account picker writes it. #}
+<script>(function(){try{var s=localStorage.getItem('td_text_size');if(s==='sm'||s==='lg')document.documentElement.classList.add('fs-'+s);}catch(_){}})();</script>

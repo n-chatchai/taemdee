@@ -18,10 +18,10 @@
     var s = '{{ text_size }}';
     if (s === 'sm' || s === 'lg') {
       localStorage.setItem('td_text_size', s);
-      document.documentElement.classList.add('ts-' + s);
+      document.documentElement.classList.add('fs-' + s);
     } else {
       localStorage.removeItem('td_text_size');
-      document.documentElement.classList.remove('ts-sm','ts-lg');
+      document.documentElement.classList.remove('fs-sm','fs-lg');
     }
   }catch(_){}}())</script>
   <div class="td has-c-dock" x-data="{ armed: false }">
@@ -163,8 +163,8 @@
           opts.forEach((b) => b.classList.toggle('active', b === btn));
           // Apply to <html> immediately for instant feedback on this page
           const html = document.documentElement;
-          html.classList.remove('ts-sm', 'ts-md', 'ts-lg');
-          html.classList.add('ts-' + size);
+          html.classList.remove('fs-sm', 'fs-md', 'fs-lg');
+          html.classList.add('fs-' + size);
           // Mirror to localStorage so future first-paints don't flash the
           // default size before the server-rendered class kicks in
           try {
