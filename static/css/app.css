@@ -10634,18 +10634,31 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 }
 
 /* S2.1 district picker — single field with auto-fill mint chip
-   (matches design .s2-district-pick / .s2-province-auto). When the
-   district is ambiguous (จอมทอง / เฉลิมพระเกียรติ) the .s2-province-
-   picker block surfaces below the field with one pill per candidate. */
+   (matches design .s2-district-pick / .s2-province-auto). Ambiguous
+   districts surface a quiet pills row below — no big mint container,
+   the field itself stays the visual focus. */
 .s2-input.s2-district-pick {
   display: flex !important;
   align-items: center;
-  gap: 8px;
+  justify-content: space-between;
+  gap: 10px;
   cursor: text;
 }
 .s2-input.s2-district-pick.focused {
   border-color: var(--accent);
 }
+.s2-district-input {
+  flex: 1;
+  min-width: 0;
+  border: 0;
+  background: transparent;
+  outline: none;
+  font: inherit;
+  color: inherit;
+  letter-spacing: inherit;
+  padding: 0;
+}
+.s2-district-input::placeholder { color: var(--ink-softer); font-weight: 400; }
 .s2-province-auto {
   background: var(--mint);
   color: var(--mint-ink);
@@ -10662,39 +10675,29 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   font-weight: 700;
 }
 
-.s2-province-picker {
+.s2-province-pills {
   margin-top: 8px;
-  padding: 10px 12px;
-  background: var(--mint);
-  border-radius: 10px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.s2-province-picker .s2-pp-label {
-  font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
-  font-weight: 600;
-  color: var(--mint-ink);
-}
-.s2-province-picker .s2-pp-options {
   display: flex;
   gap: 6px;
   flex-wrap: wrap;
+  padding-left: 4px;
 }
-.s2-province-picker .s2-pp-pill {
+.s2-province-pills .s2-pp-pill {
   appearance: none; -webkit-appearance: none;
   padding: 5px 12px;
   border-radius: 99px;
   background: var(--surface);
-  border: 1px solid var(--mint-ink);
-  color: var(--mint-ink);
+  border: 1px solid rgba(17,17,17,0.18);
+  color: var(--ink);
   font-family: 'Prompt', sans-serif;
   font-size: 12px;
   font-weight: 600;
   cursor: pointer;
+  transition: background 0.12s ease, color 0.12s ease, border-color 0.12s ease;
 }
-.s2-province-picker .s2-pp-pill:hover {
-  background: var(--mint-ink);
-  color: var(--surface);
+.s2-province-pills .s2-pp-pill:hover,
+.s2-province-pills .s2-pp-pill:focus {
+  background: var(--mint);
+  color: var(--mint-ink);
+  border-color: var(--mint-ink);
 }
