@@ -52,6 +52,16 @@
     <div class="s3-issue-actions">
       <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
       <div class="sap-actions">
+        {# S3.qr — show rotating on-screen QR for the customer's camera. #}
+        <a class="sap-action" href="/shop/qr/live">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+          <span>ลูกค้าสแกน</span>
+        </a>
         {% if shop.issue_method_phone_entry %}
           <a class="sap-action" href="/shop/issue/phone">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

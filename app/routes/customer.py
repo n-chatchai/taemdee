@@ -588,8 +588,10 @@ async def recover_submit(
 
 @router.get("/scan/{shop_id}")
 async def scan(
+    request: Request,
     shop_id: uuid.UUID,
     branch: Optional[uuid.UUID] = None,
+    t: Optional[str] = None,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
@@ -597,7 +599,22 @@ async def scan(
 
     Branch-specific QRs encode `?branch=<id>` so the issued stamp is tagged to that
     branch and the customer's DeeCard shows the branch name in the wordmark sub.
+
+    `?t=<jwt>` carries the live-QR (S3.qr) freshness token. When present
+    the JWT must validate (not expired, signed for this shop) — screenshots
+    of stale on-screen QRs hit this branch and get a friendly 410. Bare
+    /scan/{shop_id} (no token) keeps working for printed sticker QRs.
     """
+    if t:
+        from app.services.auth import verify_live_qr_token
+        if not verify_live_qr_token(t, shop_id):
+            return templates.TemplateResponse(
+                request=request,
+                name="scan_expired.html",
+                context={"shop_id": shop_id},
+                status_code=status.HTTP_410_GONE,
+            )
+
     shop = await db.get(Shop, shop_id)
     if not shop:
         # Forward to /card/{shop_id} so the friendly "ไม่พบร้านนี้" page renders.

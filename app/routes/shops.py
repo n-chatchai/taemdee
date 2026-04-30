@@ -4,7 +4,7 @@ from typing import Optional
 
 import segno
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status, UploadFile, File
-from fastapi.responses import HTMLResponse, RedirectResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from app.core.templates import templates
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -1167,6 +1167,50 @@ async def shop_qr(
         name="shop/qr.html",
         context={"shop": shop, "scan_url": scan_url, "qr_svg": qr_svg},
     )
+
+
+@router.get("/qr/live", response_class=HTMLResponse)
+async def shop_qr_live(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+):
+    """S3.qr — fullscreen rotating-QR mode for "หันจอให้ลูกค้าสแกน".
+    QR rotates every 15s with a signed JWT in the URL; screenshots of
+    stale QRs hit the expired-token branch in /scan/{shop_id}."""
+    from app.services.auth import LIVE_QR_TTL_SECONDS, issue_live_qr_token
+    token = issue_live_qr_token(shop.id)
+    base = str(request.base_url).rstrip("/")
+    scan_url = f"{base}/scan/{shop.id}?t={token}"
+    qr_svg = segno.make(scan_url, error="m").svg_inline(
+        scale=10, dark="#111111", light="#ffffff", border=1, omitsize=True
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/qr_live.html",
+        context={
+            "shop": shop,
+            "qr_svg": qr_svg,
+            "ttl_seconds": LIVE_QR_TTL_SECONDS,
+        },
+    )
+
+
+@router.get("/qr/live/refresh")
+async def shop_qr_live_refresh(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+):
+    """JSON endpoint the S3.qr page polls every 15s — returns a fresh
+    QR SVG + the new TTL countdown. Lets the page swap innerHTML
+    without a full reload."""
+    from app.services.auth import LIVE_QR_TTL_SECONDS, issue_live_qr_token
+    token = issue_live_qr_token(shop.id)
+    base = str(request.base_url).rstrip("/")
+    scan_url = f"{base}/scan/{shop.id}?t={token}"
+    qr_svg = segno.make(scan_url, error="m").svg_inline(
+        scale=10, dark="#111111", light="#ffffff", border=1, omitsize=True
+    )
+    return JSONResponse({"svg": qr_svg, "expires_in": LIVE_QR_TTL_SECONDS})
 
 
 @router.get("/qr.png")

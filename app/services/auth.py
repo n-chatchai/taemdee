@@ -83,6 +83,31 @@ def decode_session_token(token: str) -> Optional[dict]:
         return None
 
 
+LIVE_QR_TTL_SECONDS = 15
+LIVE_QR_GRACE_SECONDS = 15  # extra grace for slow shutters / network
+
+
+def issue_live_qr_token(shop_id: UUID) -> str:
+    """Sign a 15s JWT for the S3.qr rotating-QR mode. The /scan/<shop_id>
+    handler validates this when a `?t=<token>` query is present —
+    screenshots of stale QRs hit the expired-token branch."""
+    expire = utcnow() + timedelta(seconds=LIVE_QR_TTL_SECONDS + LIVE_QR_GRACE_SECONDS)
+    payload = {"shop_id": str(shop_id), "kind": "live_qr", "exp": expire}
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
+def verify_live_qr_token(token: str, expected_shop_id: UUID) -> bool:
+    """True iff the token is a valid live_qr JWT for this shop and unexpired."""
+    try:
+        payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        return (
+            payload.get("kind") == "live_qr"
+            and payload.get("shop_id") == str(expected_shop_id)
+        )
+    except JWTError:
+        return False
+
+
 def issue_customer_token(customer_id: UUID) -> str:
     """Long-lived token for the customer's identity cookie (1 year)."""
     expire = utcnow() + timedelta(days=365)

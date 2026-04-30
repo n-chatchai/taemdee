@@ -1,0 +1,26 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>QR หมดอายุ · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="staff-join">
+      <div class="sj-shop-mark" style="background:var(--ink-soft);">⏱</div>
+      <div class="sj-question">QR<br><em>หมดอายุแล้ว</em></div>
+      <div class="sj-helper">
+        QR ที่พี่สแกนเป็นภาพถ่ายเก่า — บอกพนักงานเปิด QR ใหม่นะครับ<br>
+        (เพื่อกัน QR ปลอม ระบบเปลี่ยน QR ทุก 15 วิ)
+      </div>
+      <a class="sj-cta-cancel" href="/my-cards">กลับไปบัตรของพี่</a>
+    </div>
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>

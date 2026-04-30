@@ -53,3 +53,26 @@ async def test_dashboard_renders_with_recent_points(auth_client, db, shop, custo
     # has > min height
     assert body.count('class="tb-bar"') == 7
     assert "tb-bar" in body
+
+
+async def test_qr_live_renders_rotating_page(auth_client, shop):
+    """S3.qr — fullscreen rotating QR mode. Initial render embeds an
+    inline SVG with a fresh JWT token; the JS polls /shop/qr/live/refresh
+    to swap it every 15s."""
+    response = await auth_client.get("/shop/qr/live")
+    assert response.status_code == 200
+    body = response.text
+    assert "s3-qr-page" in body
+    assert "s3-qr-card" in body
+    assert "s3-qr-countdown" in body
+    # Initial QR is embedded server-side (inline SVG)
+    assert "<svg" in body
+
+
+async def test_qr_live_refresh_returns_fresh_svg_and_ttl(auth_client):
+    """The polling endpoint returns a JSON envelope the page can swap in."""
+    response = await auth_client.get("/shop/qr/live/refresh")
+    assert response.status_code == 200
+    payload = response.json()
+    assert "svg" in payload and "<svg" in payload["svg"]
+    assert payload["expires_in"] >= 10

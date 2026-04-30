@@ -632,6 +632,42 @@ async def test_text_size_bootstrap_script_in_pwa_head(client, shop):
     assert "classList.add('fs-'" in body
 
 
+async def test_scan_live_token_invalid_shows_expired_page(client, shop):
+    """S3.qr anti-fraud — /scan/{shop_id}?t=<bad_jwt> returns 410 with
+    the friendly 'QR หมดอายุ' page (so screenshots of stale on-screen
+    QRs don't issue stamps)."""
+    response = await client.get(
+        f"/scan/{shop.id}?t=not_a_real_jwt", follow_redirects=False,
+    )
+    assert response.status_code == 410
+    assert "หมดอายุ" in response.text
+
+
+async def test_scan_live_token_valid_proceeds_normally(client, shop):
+    """A freshly-issued live-QR token is accepted; scan flow proceeds
+    normally (303 redirect to either /card/{id} or /onboard/{id}
+    depending on whether the customer is brand new)."""
+    from app.services.auth import issue_live_qr_token
+    token = issue_live_qr_token(shop.id)
+    response = await client.get(
+        f"/scan/{shop.id}?t={token}", follow_redirects=False,
+    )
+    assert response.status_code == 303
+    location = response.headers["location"]
+    assert str(shop.id) in location
+    assert location.startswith(("/card/", "/onboard/"))
+
+
+async def test_scan_no_token_still_works_for_printed_sticker(client, shop):
+    """Bare /scan/{shop_id} (no t= param) is the printed-sticker path —
+    must keep working untouched (no token validation gate)."""
+    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    assert response.status_code == 303
+    location = response.headers["location"]
+    assert str(shop.id) in location
+    assert location.startswith(("/card/", "/onboard/"))
+
+
 async def test_card_unknown_shop_renders_friendly_page(client):
     bogus = uuid4()
     response = await client.get(f"/card/{bogus}")
