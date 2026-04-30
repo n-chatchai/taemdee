@@ -80,37 +80,61 @@
       {% endif %}
     </div>
 
-    <div class="s2-field" style="margin-top:18px;">
+    {# S2.1 — single district field. JS pings /shop/onboard/district/
+       lookup on input. Three render paths:
+         · 0 candidates → no chip, free-text fallback (rare)
+         · 1 candidate → mint chip auto-fills inline
+         · N>1 candidates → render small picker pills below the field
+           (e.g., จอมทอง → กรุงเทพมหานคร / เชียงใหม่) — owner taps to
+           commit. The hidden `province` input carries the chosen value. #}
+    <div class="s2-field" style="margin-top:18px;"
+         x-data="{
+           district: '{{ shop.district or '' }}',
+           candidates: {{ initial_candidates|tojson }},
+           province: {{ initial_province|tojson if initial_province else 'null' }},
+           async lookup() {
+             const q = this.district.trim();
+             if (!q) { this.candidates = []; this.province = null; return; }
+             try {
+               const r = await fetch('/shop/onboard/district/lookup?q=' + encodeURIComponent(q));
+               const j = await r.json();
+               this.candidates = j.provinces || [];
+               this.province = this.candidates.length === 1 ? this.candidates[0] : null;
+             } catch (_) { this.candidates = []; this.province = null; }
+           },
+           pick(p) { this.province = p; }
+         }">
       <label class="label" for="onboard-district">เขต/อำเภอ</label>
-      <input id="onboard-district" name="district" type="text"
-             class="s2-input"
-             value="{{ shop.district or '' }}"
-             placeholder="เช่น นิมมาน">
-      <div class="s2-hint">ใช้เช็คชื่อซ้ำในละแวกใกล้เคียง</div>
-    </div>
-
-    <div class="s2-field" style="margin-top:18px;">
-      <label class="label" for="onboard-province">จังหวัด</label>
-      <input id="onboard-province" name="province" type="text"
-             class="s2-input"
-             value="{{ shop.location or '' }}"
-             placeholder="เช่น เชียงใหม่"
-             list="thai-provinces">
-      <datalist id="thai-provinces">
-        {% for p in [
-          'กรุงเทพมหานคร','นนทบุรี','สมุทรปราการ','ปทุมธานี','นครปฐม',
-          'เชียงใหม่','เชียงราย','ลำปาง','ลำพูน','แม่ฮ่องสอน','น่าน','พะเยา','แพร่','อุตรดิตถ์',
-          'พิษณุโลก','สุโขทัย','เพชรบูรณ์','พิจิตร','กำแพงเพชร','นครสวรรค์','อุทัยธานี','ตาก',
-          'ชัยภูมิ','ขอนแก่น','อุดรธานี','เลย','หนองคาย','หนองบัวลำภู','สกลนคร','นครพนม','มุกดาหาร',
-          'กาฬสินธุ์','ร้อยเอ็ด','ยโสธร','อำนาจเจริญ','อุบลราชธานี','ศรีสะเกษ','สุรินทร์','บุรีรัมย์',
-          'นครราชสีมา','มหาสารคาม','บึงกาฬ',
-          'ชลบุรี','ระยอง','จันทบุรี','ตราด','ฉะเชิงเทรา','ปราจีนบุรี','สระแก้ว','นครนายก',
-          'อยุธยา','สระบุรี','ลพบุรี','สิงห์บุรี','อ่างทอง','ชัยนาท','สุพรรณบุรี','กาญจนบุรี','ราชบุรี',
-          'เพชรบุรี','ประจวบคีรีขันธ์','สมุทรสาคร','สมุทรสงคราม',
-          'ชุมพร','ระนอง','สุราษฎร์ธานี','พังงา','ภูเก็ต','กระบี่','ตรัง','สงขลา','สตูล','พัทลุง','นครศรีธรรมราช','ยะลา','ปัตตานี','นราธิวาส',
-        ] %}<option value="{{ p }}">{% endfor %}
+      <div class="s2-input s2-district-pick" :class="{ focused: $refs.di === document.activeElement }">
+        <input id="onboard-district" name="district" type="text"
+               x-ref="di"
+               x-model="district"
+               @input.debounce.250ms="lookup()"
+               @blur="lookup()"
+               list="thai-districts"
+               placeholder="เช่น นิมมาน"
+               style="flex:1; border:none; background:transparent; outline:none; font:inherit; color:inherit; min-width:0;">
+        <span class="s2-province-auto" x-show="province" x-text="province" x-cloak></span>
+      </div>
+      <datalist id="thai-districts">
+        {% for d in all_districts %}<option value="{{ d }}">{% endfor %}
       </datalist>
-      <div class="s2-hint">รายละเอียดอำเภอ/ที่อยู่เพิ่มภายหลังได้ในตั้งค่า</div>
+      <input type="hidden" name="province" :value="province || ''">
+
+      {# Ambiguous-district picker — only shows when N>1 candidates AND
+         no province has been picked yet. #}
+      <div class="s2-province-picker" x-show="candidates.length > 1 && !province" x-cloak>
+        <div class="s2-pp-label">มีหลายจังหวัด — เลือก:</div>
+        <div class="s2-pp-options">
+          <template x-for="p in candidates" :key="p">
+            <button type="button" class="s2-pp-pill" @click="pick(p)" x-text="p"></button>
+          </template>
+        </div>
+      </div>
+
+      <div class="s2-hint" x-show="candidates.length <= 1 || province">
+        เลือกเขต/อำเภอ · จังหวัดจะ auto-fill
+      </div>
     </div>
 
     <div class="s2-field" style="margin-top:18px;">

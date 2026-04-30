@@ -329,6 +329,12 @@ async def onboard_identity_get(
         if custom_text:
             saved_pick["text"] = custom_text
 
+    from app.services.thai_address import all_districts, lookup_provinces
+    initial_candidates = lookup_provinces(shop.district) if shop.district else []
+    initial_province = (
+        shop.location if shop.location in initial_candidates
+        else (initial_candidates[0] if len(initial_candidates) == 1 else None)
+    )
     return templates.TemplateResponse(
         request=request,
         name="shop/onboard/identity.html",
@@ -341,6 +347,9 @@ async def onboard_identity_get(
             "picked_id": picked_id,
             "custom_text": custom_text or "",
             "logos_partial_url": "/shop/onboard/identity/logos_partial",
+            "all_districts": all_districts(),
+            "initial_province": initial_province,
+            "initial_candidates": initial_candidates,
         },
     )
 
@@ -373,6 +382,15 @@ async def onboard_identity_logos_partial(
     )
 
 
+@router.get("/onboard/district/lookup")
+async def onboard_district_lookup(q: str = ""):
+    """JSON endpoint the S2.1 picker pings on input — always returns
+    a `provinces` list. 0 = no match, 1 = auto-fill chip, N>1 = render
+    the disambiguation picker (e.g., จอมทอง → กรุงเทพมหานคร / เชียงใหม่)."""
+    from app.services.thai_address import lookup_provinces
+    return JSONResponse({"provinces": lookup_provinces(q)})
+
+
 @router.post("/onboard/identity")
 async def onboard_identity_post(
     request: Request,
@@ -384,9 +402,22 @@ async def onboard_identity_post(
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
+    from app.services.thai_address import lookup_provinces
     cleaned_name = (name or "").strip() or shop.name
-    cleaned_province = (province or "").strip()
     cleaned_district = (district or "").strip()
+    cleaned_province = (province or "").strip()
+    # Province lookup hierarchy:
+    #   1. explicit `province` from form (used for ambiguous picks +
+    #      free-text fallback for districts not in the dataset)
+    #   2. derived from district (only when exactly 1 candidate)
+    if not cleaned_province and cleaned_district:
+        candidates = lookup_provinces(cleaned_district)
+        if len(candidates) == 1:
+            cleaned_province = candidates[0]
+        # If len > 1 (จอมทอง, เฉลิมพระเกียรติ) the user must pick on the
+        # picker; we leave province empty and the form would re-render with
+        # the picker open. The submit-without-pick case is rare enough that
+        # we just save with empty province and let the user fix in S10.
 
     # Collision check (S2.1.warn): same name + same district = block. Same
     # name + DIFFERENT district = silent auto-suffix so the customer can
@@ -409,6 +440,7 @@ async def onboard_identity_post(
     if same_district_collision is not None:
         # Re-render the same step with inline warning + form values preserved.
         from app.services.logo_gen import generate_logos, render_style
+        from app.services.thai_address import all_districts
         shop.name = cleaned_name
         shop.district = cleaned_district or shop.district
         if cleaned_province:
@@ -425,6 +457,9 @@ async def onboard_identity_post(
                 "picked_id": None,
                 "custom_text": "",
                 "logos_partial_url": "/shop/onboard/identity/logos_partial",
+                "all_districts": all_districts(),
+                "initial_province": cleaned_province or None,
+                "initial_candidates": [],
                 "collision_warning": {
                     "district": cleaned_district,
                     "suggestion": f"{cleaned_name} 2",
