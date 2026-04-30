@@ -10238,3 +10238,287 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   color: var(--ink-soft);
   margin-top: 2px;
 }
+
+/* S-staff list — Settings → พนักงาน. Ported from design 4078-4163. */
+.s-staff-page { padding-bottom: 100px; }
+.s-staff-add-btn {
+  margin: 14px 18px 0;
+  padding: 12px 16px;
+  background: var(--ink);
+  color: var(--butter);
+  border: none;
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  width: calc(100% - 36px);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.s-staff-add-btn .plus { font-size: 18px; line-height: 1; }
+.s-staff-list {
+  margin: 14px 18px 0;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.10);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.staff-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  border-bottom: 1px solid rgba(17,17,17,0.06);
+  cursor: pointer;
+  text-decoration: none;
+  color: inherit;
+}
+.staff-row:last-child { border-bottom: none; }
+.staff-row .sr-avatar {
+  width: 38px; height: 38px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.staff-row .sr-info { flex: 1; line-height: 1.3; min-width: 0; }
+.staff-row .sr-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+}
+.staff-row .sr-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.staff-row .sr-status {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 2px 8px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  flex-shrink: 0;
+  text-decoration: none;
+}
+.staff-row .sr-status.online {
+  background: rgba(26,107,58,0.12);
+  color: var(--mint-ink);
+}
+.staff-row .sr-status.online::before {
+  content: '';
+  width: 5px; height: 5px;
+  border-radius: 50%;
+  background: var(--mint-ink);
+}
+.staff-row .sr-status.pending {
+  background: var(--butter-soft);
+  color: #6B5102;
+}
+.staff-row .sr-more {
+  appearance: none; -webkit-appearance: none;
+  background: transparent;
+  border: none;
+  font-size: 18px;
+  color: var(--ink-soft);
+  cursor: pointer;
+  padding: 4px 8px;
+  flex-shrink: 0;
+}
+
+/* S-staff.add — single nickname field form */
+.s-staff-form { padding: 18px; }
+.ssf-field { margin-bottom: 14px; }
+.ssf-label {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  margin-bottom: 6px;
+}
+.ssf-input {
+  width: 100%;
+  padding: 12px 14px;
+  border: 1px solid rgba(17,17,17,0.18);
+  border-radius: 12px;
+  background: var(--surface);
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  color: var(--ink);
+  outline: none;
+  box-sizing: border-box;
+}
+.ssf-helper {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+  line-height: 1.5;
+}
+
+/* S-staff.invite — QR + share */
+.ssi-stage { padding: 18px; text-align: center; }
+.ssi-greet {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.ssi-greet em { color: var(--accent); font-style: normal; }
+.ssi-helper {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-bottom: 18px;
+  line-height: 1.5;
+}
+.ssi-qr-card {
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.18);
+  border-radius: 18px;
+  padding: 24px;
+  margin-bottom: 14px;
+}
+.ssi-qr-card .qr-svg {
+  width: 100%;
+  aspect-ratio: 1;
+  max-width: 220px;
+  margin: 0 auto;
+  display: block;
+}
+.ssi-qr-card .qr-svg svg { width: 100%; height: 100%; display: block; }
+.ssi-qr-card .ssi-expire {
+  margin-top: 12px;
+  font-family: 'JetBrains Mono', ui-monospace, monospace;
+  font-size: 11px;
+  color: var(--ink-soft);
+  letter-spacing: 0.05em;
+}
+.ssi-qr-card .ssi-expire strong { color: var(--accent); }
+.ssi-share { display: flex; gap: 8px; margin: 0 18px 8px; }
+.ssi-share-btn {
+  flex: 1;
+  padding: 12px;
+  background: var(--ink);
+  color: var(--butter);
+  border: none;
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  cursor: pointer;
+}
+.ssi-share-btn.secondary {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid rgba(17,17,17,0.18);
+}
+.ssi-share-btn svg { width: 16px; height: 16px; }
+
+/* Staff.join — staff-side join confirm */
+.staff-join { padding: 24px 20px 0; text-align: center; }
+.staff-join .sj-shop-mark {
+  width: 64px; height: 64px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 28px;
+  margin: 0 auto 12px;
+}
+.staff-join .sj-shop-name {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  letter-spacing: -0.03em;
+  color: var(--ink);
+  margin-bottom: 4px;
+}
+.staff-join .sj-shop-name .dot { color: var(--accent); }
+.staff-join .sj-shop-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-bottom: 18px;
+}
+.staff-join .sj-question {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  margin-bottom: 6px;
+  line-height: 1.4;
+}
+.staff-join .sj-question em { color: var(--accent); font-style: normal; }
+.staff-join .sj-helper {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-bottom: 22px;
+  line-height: 1.5;
+}
+.staff-join .sj-login-btn {
+  width: 100%;
+  padding: 14px;
+  border: none;
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  margin-bottom: 8px;
+  text-decoration: none;
+}
+.staff-join .sj-login-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+.staff-join .sj-login-btn.line {
+  background: #06C755;
+  color: #fff;
+}
+.staff-join .sj-login-btn.phone {
+  background: var(--surface);
+  color: var(--ink);
+  border: 1px solid rgba(17,17,17,0.18);
+}
+.staff-join .sj-cta-cancel {
+  width: 100%;
+  display: block;
+  padding: 12px;
+  background: transparent;
+  color: var(--ink-soft);
+  border: none;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 500;
+  font-size: 12.5px;
+  cursor: pointer;
+  margin-top: 6px;
+  text-decoration: none;
+  text-align: center;
+}

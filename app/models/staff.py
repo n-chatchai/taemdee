@@ -28,4 +28,10 @@ class StaffMember(SQLModel, table=True):
     accepted_at: Optional[datetime] = Field(default=None)
     revoked_at: Optional[datetime] = Field(default=None)
 
+    # S-staff.invite — short token in the join URL the staff scans/clicks.
+    # 24h TTL, single-use (cleared on accept). Owner can re-invite to mint
+    # a fresh token after expiry.
+    invite_token: Optional[str] = Field(default=None, unique=True, index=True)
+    invite_token_expires_at: Optional[datetime] = Field(default=None)
+
     shop: "Shop" = Relationship(back_populates="staff_members")

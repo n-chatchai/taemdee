@@ -1,5 +1,7 @@
 """Team (staff) management — invite, accept, update permissions, revoke."""
 
+import secrets
+from datetime import timedelta
 from typing import List, Optional
 from uuid import UUID
 
@@ -10,6 +12,42 @@ from app.models import Shop, StaffMember
 from app.models.util import utcnow
 
 VALID_PERMISSIONS = {"can_void", "can_deereach", "can_topup", "can_settings"}
+INVITE_TOKEN_TTL_HOURS = 24
+
+
+def _generate_invite_token() -> str:
+    """24 url-safe chars · ~144 bits entropy · single-use, 24h TTL."""
+    return secrets.token_urlsafe(18)
+
+
+async def mint_invite_token(db: AsyncSession, staff: StaffMember) -> str:
+    """Refresh the invite token + expiry. Idempotent — calling twice replaces
+    the previous token (old QR/link stops working, owner shares the new
+    one). Used by the S-staff.invite re-share flow."""
+    staff.invite_token = _generate_invite_token()
+    staff.invite_token_expires_at = utcnow() + timedelta(hours=INVITE_TOKEN_TTL_HOURS)
+    db.add(staff)
+    await db.commit()
+    await db.refresh(staff)
+    return staff.invite_token
+
+
+async def find_pending_by_token(db: AsyncSession, token: str) -> Optional[StaffMember]:
+    """Resolve the Staff.join URL token → pending staff member. Returns
+    None for expired / revoked / already-accepted / unknown tokens so
+    the join page can render a friendly 'invite expired' state."""
+    if not token:
+        return None
+    row = (await db.exec(
+        select(StaffMember).where(StaffMember.invite_token == token)
+    )).first()
+    if row is None:
+        return None
+    if row.revoked_at is not None or row.accepted_at is not None:
+        return None
+    if row.invite_token_expires_at and row.invite_token_expires_at < utcnow():
+        return None
+    return row
 
 
 async def invite_staff(

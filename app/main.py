@@ -9,7 +9,7 @@ from app.core.auth import CUSTOMER_COOKIE_NAME, SESSION_COOKIE_NAME, SessionAuth
 from app.core.database import engine, get_session
 from app.core.templates import ASSET_VERSION, templates
 from app.models import Customer, Shop
-from app.routes import auth, branches, customer, deereach, issuance, shops, team
+from app.routes import auth, branches, customer, deereach, issuance, shops, staff_join, team
 from app.services.auth import decode_customer_token, decode_session_token
 
 
@@ -133,4 +133,5 @@ app.include_router(shops.router, prefix="/shop", tags=["shops"])
 app.include_router(issuance.router, prefix="/shop", tags=["issuance"])
 app.include_router(branches.router, prefix="/shop/branches", tags=["branches"])
 app.include_router(team.router, prefix="/shop/team", tags=["team"])
+app.include_router(staff_join.router, tags=["staff-join"])
 app.include_router(deereach.router, prefix="/shop/deereach", tags=["deereach"])
