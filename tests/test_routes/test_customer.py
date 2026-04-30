@@ -359,6 +359,80 @@ async def test_my_gifts_renders_empty_state(client):
     assert "c-glass-nav" in body
 
 
+async def test_my_gifts_lists_active_voucher_with_use_link(client, db, shop):
+    """An unserved Redemption is the customer's active voucher → it
+    appears in 'พร้อมใช้' with the 'ใช้' link wired to /card/{shop}/claimed."""
+    from app.models import Customer, Redemption
+    c = Customer(is_anonymous=False, display_name="พี่ลูก", phone="0811111111")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id)  # served_at NULL = active
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get("/my-gifts")).text
+    assert "พร้อมใช้" in body
+    assert shop.reward_description in body
+    assert shop.name in body
+    # Use link points at the C5 voucher screen
+    assert f'/card/{shop.id}/claimed?r={r.id}' in body
+
+
+async def test_my_gifts_lists_used_voucher_in_used_section(client, db, shop):
+    """A served Redemption shows up in 'ใช้แล้ว' (greyed) with no use link."""
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+    c = Customer(is_anonymous=False, display_name="พี่หมี", phone="0822222222")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id, served_at=utcnow())
+    db.add(r)
+    await db.commit()
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get("/my-gifts")).text
+    assert "ใช้แล้ว" in body
+    # The used row exists but has no /claimed link (it's read-only)
+    assert "gift-card used" in body
+    # No "use" CTA for used rows
+    assert body.count('class="gc-cta"') == 0
+
+
+async def test_my_gifts_voided_redemption_excluded(client, db, shop):
+    """Voided redemptions don't appear anywhere on the gifts page —
+    they aren't a usable voucher and they aren't 'used' either."""
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+    c = Customer(is_anonymous=False, display_name="พี่ป้อ", phone="0833333334")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(
+        customer_id=c.id, shop_id=shop.id,
+        is_voided=True, voided_at=utcnow(),
+    )
+    db.add(r)
+    await db.commit()
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get("/my-gifts")).text
+    # Falls back to empty state
+    assert "ยังไม่มีของขวัญ" in body
+
+
 async def test_c5_voucher_renders_active_state_when_unserved(client, db, shop):
     """C5 — fresh redemption (served_at NULL) shows the celebration label
     and particles. No served indicator yet."""

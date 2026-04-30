@@ -945,25 +945,96 @@ async def my_cards(
 
 # ── Customer inbox (DeeReach channel "inbox" lands here) ─────────────────────
 
+_REWARD_EMOJI = {
+    "coffee_cup": "☕",
+    "latte_art": "☕",
+    "iced": "🧋",
+    "card": "🎟️",
+    "gift_box": "🎁",
+    "star": "✨",
+}
+_GIFT_ICON_PALETTE = ("butter", "mint", "accent")
+
+
+def _gift_emoji(reward_image: Optional[str]) -> str:
+    return _REWARD_EMOJI.get(reward_image or "", "🎁")
+
+
+def _bkk_short_date(dt) -> str:
+    """Render a Redemption.served_at / created_at as Thai short date
+    (e.g., '14 ก.พ.') for the gifts list. Naive UTC → Asia/Bangkok."""
+    from datetime import timezone
+    from app.models.util import BKK, _THAI_MONTH_SHORT
+    bkk = dt.replace(tzinfo=timezone.utc).astimezone(BKK)
+    return f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]}"
+
+
 @router.get("/my-gifts", response_class=HTMLResponse)
 async def my_gifts(
     request: Request,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """C-gifts — list of vouchers/rewards (พร้อมใช้ + ใช้แล้ว). v1
-    placeholder — full implementation lands in step B of the design
-    refresh (once Voucher / Offer→Customer wiring is in). For now the
-    page renders an empty-state with the dock so navigation works."""
+    """C-gifts — list of vouchers (พร้อมใช้ + ใช้แล้ว). Surfaces the
+    customer's Redemption rows: served_at IS NULL = active voucher
+    waiting to be claimed at the shop, served_at set = used.
+    Active gifts link to /card/{shop}/claimed?r={id} so the customer
+    can show the voucher to staff. Used gifts are read-only."""
     customer, was_created = await find_or_create_customer(customer_cookie, db)
+
+    active_rows = (await db.exec(
+        select(Redemption, Shop)
+        .join(Shop, Shop.id == Redemption.shop_id)
+        .where(
+            Redemption.customer_id == customer.id,
+            Redemption.is_voided == False,  # noqa: E712
+            Redemption.served_at.is_(None),
+        )
+        .order_by(Redemption.created_at.desc())
+    )).all()
+
+    used_rows = (await db.exec(
+        select(Redemption, Shop)
+        .join(Shop, Shop.id == Redemption.shop_id)
+        .where(
+            Redemption.customer_id == customer.id,
+            Redemption.served_at.is_not(None),
+        )
+        .order_by(Redemption.served_at.desc())
+        .limit(30)
+    )).all()
+
+    active_gifts = [
+        {
+            "id": r.id,
+            "name": s.reward_description,
+            "shop_name": s.name,
+            "emoji": _gift_emoji(s.reward_image),
+            "icon_color": _GIFT_ICON_PALETTE[i % len(_GIFT_ICON_PALETTE)],
+            "use_url": f"/card/{s.id}/claimed?r={r.id}",
+        }
+        for i, (r, s) in enumerate(active_rows)
+    ]
+    used_gifts = [
+        {
+            "id": r.id,
+            "name": s.reward_description,
+            "shop_name": s.name,
+            "emoji": _gift_emoji(s.reward_image),
+            "used_at": _bkk_short_date(r.served_at) if r.served_at else None,
+        }
+        for r, s in used_rows
+    ]
+
     response = templates.TemplateResponse(
         request=request,
         name="my_gifts.html",
         context={
             "customer": customer,
-            "active_gifts": [],
-            "used_gifts": [],
+            "active_gifts": active_gifts,
+            "used_gifts": used_gifts,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": len(active_gifts),
         },
     )
     if was_created:

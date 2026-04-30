@@ -34,7 +34,7 @@
                 <div class="gc-name">{{ g.name }}</div>
                 <div class="gc-meta">{{ g.shop_name }}{% if g.expires_at %} · หมด {{ g.expires_at }}{% endif %}</div>
               </div>
-              <button class="gc-cta">ใช้</button>
+              <a class="gc-cta" href="{{ g.use_url }}">ใช้</a>
             </div>
           {% endfor %}
         </div>
