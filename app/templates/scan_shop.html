@@ -3,44 +3,53 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>สแกน QR ร้าน · TaemDee</title>
+  <title>สแกน QR ที่ร้าน · TaemDee</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {% include "_partials/pwa_head.html" %}
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
-  <div class="td">
-    <div class="topbar"><span></span><span></span></div>
+  <div class="td c-scan-modal">
 
-    <div class="app-bar">
-      <a href="/my-cards" class="x" aria-label="ย้อนกลับ">←</a>
-      <div class="title-mid">สแกน QR ร้าน</div>
-      <div class="placeholder"></div>
+    <div class="csm-bar">
+      <div class="csm-spacer"></div>
+      <div class="csm-title">สแกน QR ที่ร้าน</div>
+      <a href="/my-cards" class="csm-x" aria-label="ปิด">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </a>
     </div>
 
-    <div class="scan-page">
-      <div class="scan-viewfinder" id="scan-viewfinder">
+    <div class="csm-stage">
+      <div class="csm-viewfinder" id="scan-viewfinder">
         <video id="scan-video" playsinline muted autoplay></video>
-        <div class="scan-corners">
-          <span class="tl"></span><span class="tr"></span>
-          <span class="bl"></span><span class="br"></span>
+        <div class="vf-corners">
+          <div class="ct"></div>
+          <div class="cb"></div>
         </div>
-        <div class="scan-line"></div>
+        <div class="vf-line"></div>
       </div>
-
-      <div class="scan-hint" id="scan-hint">
-        วาง QR ของร้านให้อยู่ในกรอบ<br>
-        ผมจะอ่านอัตโนมัติครับพี่
+      <div class="csm-helper" id="scan-hint">
+        วาง QR ของร้านในกรอบ<br>
+        ผมจะเก็บแต้มให้เลยครับ
       </div>
-
-      <div class="scan-status" id="scan-status" hidden></div>
+      <div class="csm-helper" id="scan-status" hidden></div>
     </div>
 
-    {% include "_partials/footer_mark.html" %}
+    <div class="csm-bottom">
+      <a href="/my-id" class="csm-toggle">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        ให้ร้านสแกน QR ของพี่
+      </a>
+    </div>
   </div>
 
-  {# Same qr-scanner library as the shop-side issue_scan page. #}
+  {# qr-scanner library — same one the shop-side issue_scan page uses. #}
   <script type="module">
     import QrScanner from 'https://cdn.jsdelivr.net/npm/qr-scanner@1.4.2/qr-scanner.min.js';
 
@@ -51,19 +60,19 @@
 
     function setStatus(msg, kind) {
       statusBox.textContent = msg;
-      statusBox.className = 'scan-status ' + (kind || '');
+      statusBox.dataset.kind = kind || '';
       statusBox.hidden = false;
+      hint.hidden = true;
     }
 
     function navigateOnSuccess(scannedValue) {
       if (busy) return;
-      // Accept either the full https://<host>/scan/<uuid> URL or a bare
-      // /scan/<uuid> path. Reject anything else so a malicious QR can't
-      // bounce us off-domain.
+      // Accept full https://<host>/scan/<uuid> or bare /scan/<uuid>. Reject
+      // anything else so a malicious QR can't bounce us off-domain.
       const m = (scannedValue || '').match(/\/scan\/([0-9a-fA-F-]{36})(?:\?|$|\/)/);
       if (!m) {
         setStatus('QR นี้ไม่ใช่ของแต้มดี — ลอง QR อื่น', 'err');
-        setTimeout(() => { statusBox.hidden = true; }, 2000);
+        setTimeout(() => { statusBox.hidden = true; hint.hidden = false; }, 2000);
         return;
       }
       busy = true;
@@ -78,7 +87,6 @@
     );
 
     scanner.start().catch((err) => {
-      hint.hidden = true;
       setStatus('เปิดกล้องไม่ได้ — กรุณาอนุญาตการใช้กล้องในเบราว์เซอร์', 'err');
       console.warn('QrScanner.start failed:', err);
     });

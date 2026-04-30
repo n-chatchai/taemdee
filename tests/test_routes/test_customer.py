@@ -408,6 +408,23 @@ async def test_my_gifts_lists_used_voucher_in_used_section(client, db, shop):
     assert body.count('class="gc-cta"') == 0
 
 
+async def test_scan_shop_renders_design_aligned_modal(client):
+    """C-scan modal — fullscreen scanner with butter-bracket viewfinder
+    and 'ให้ร้านสแกน QR ของพี่' toggle to /my-id."""
+    body = (await client.get("/scan-shop")).text
+    assert "c-scan-modal" in body
+    # Viewfinder corner markers + scanning line
+    assert "vf-corners" in body
+    assert "vf-line" in body
+    # Bottom toggle to flip to the customer's own QR display
+    assert 'href="/my-id"' in body
+    assert "ให้ร้านสแกน QR ของพี่" in body
+    # X close jumps back to /my-cards
+    assert 'href="/my-cards"' in body
+    # No customer dock on the modal — it's fullscreen
+    assert "c-glass-nav" not in body
+
+
 async def test_my_gifts_voided_redemption_excluded(client, db, shop):
     """Voided redemptions don't appear anywhere on the gifts page —
     they aren't a usable voucher and they aren't 'used' either."""

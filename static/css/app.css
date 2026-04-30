@@ -10008,3 +10008,147 @@ html.ts-lg .td { zoom: 1.14; }
   text-decoration: none;
   display: inline-block;
 }
+
+/* C-scan modal — fullscreen QR scanner reached from dock "สแกน" tab.
+   Ported from design lines 3345-3479 (Apr 30 design refresh).
+   Camera viewfinder with butter corner brackets + subtle scanning
+   line, dark backdrop so the camera feed dominates. */
+.c-scan-modal {
+  background: #0a0a0a;
+  color: #fff;
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+  padding-bottom: 0;
+}
+.c-scan-modal .csm-bar {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 18px 16px;
+}
+.c-scan-modal .csm-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-md);
+  color: #fff;
+}
+.c-scan-modal .csm-x {
+  width: 36px; height: 36px;
+  background: rgba(255,255,255,0.12);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  color: #fff;
+  cursor: pointer;
+  text-decoration: none;
+}
+.c-scan-modal .csm-x svg { width: 18px; height: 18px; }
+.c-scan-modal .csm-spacer { width: 36px; height: 36px; }
+
+.c-scan-modal .csm-stage {
+  flex: 1;
+  padding: 8px 24px 0;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.c-scan-modal .csm-viewfinder {
+  width: 100%;
+  aspect-ratio: 1;
+  background: #000;
+  border-radius: 22px;
+  position: relative;
+  overflow: hidden;
+  margin-bottom: 16px;
+}
+.c-scan-modal .csm-viewfinder video {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.c-scan-modal .vf-corners {
+  position: absolute;
+  inset: 28px;
+  pointer-events: none;
+}
+.c-scan-modal .vf-corners::before,
+.c-scan-modal .vf-corners::after,
+.c-scan-modal .vf-corners > .ct,
+.c-scan-modal .vf-corners > .cb {
+  content: '';
+  position: absolute;
+  width: 32px; height: 32px;
+}
+.c-scan-modal .vf-corners::before {
+  top: 0; left: 0;
+  border-top: 4px solid var(--butter);
+  border-left: 4px solid var(--butter);
+  border-radius: 8px 0 0 0;
+}
+.c-scan-modal .vf-corners::after {
+  top: 0; right: 0;
+  border-top: 4px solid var(--butter);
+  border-right: 4px solid var(--butter);
+  border-radius: 0 8px 0 0;
+}
+.c-scan-modal .vf-corners .ct {
+  bottom: 0; left: 0;
+  border-bottom: 4px solid var(--butter);
+  border-left: 4px solid var(--butter);
+  border-radius: 0 0 0 8px;
+}
+.c-scan-modal .vf-corners .cb {
+  bottom: 0; right: 0;
+  border-bottom: 4px solid var(--butter);
+  border-right: 4px solid var(--butter);
+  border-radius: 0 0 8px 0;
+}
+.c-scan-modal .vf-line {
+  position: absolute;
+  left: 28px; right: 28px;
+  top: 50%;
+  height: 2px;
+  background: linear-gradient(90deg, transparent, var(--butter), transparent);
+  box-shadow: 0 0 12px rgba(255,217,82,0.5);
+  animation: csm-vf-line 2.2s ease-in-out infinite;
+}
+@keyframes csm-vf-line {
+  0%, 100% { transform: translateY(-40%); opacity: 0.85; }
+  50%      { transform: translateY(40%); opacity: 1; }
+}
+
+.c-scan-modal .csm-helper {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  color: rgba(255,255,255,0.7);
+  line-height: 1.5;
+  margin-bottom: 18px;
+}
+.c-scan-modal .csm-helper[data-kind="err"] { color: #ff8a78; }
+.c-scan-modal .csm-helper[data-kind="ok"]  { color: var(--butter); }
+
+.c-scan-modal .csm-bottom {
+  padding: 0 24px 28px;
+}
+.c-scan-modal .csm-toggle {
+  width: 100%;
+  background: var(--butter);
+  color: var(--ink);
+  border: none;
+  border-radius: 14px;
+  padding: 16px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-md);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  cursor: pointer;
+  text-decoration: none;
+}
+.c-scan-modal .csm-toggle svg { width: 18px; height: 18px; }
