@@ -27,6 +27,15 @@
     </span>
     <span class="gn-label">สแกน</span>
   </a>
+  <a class="gn-tab{% if nav_active == 'inbox' %} active{% endif %}" href="/my-inbox" aria-label="กล่องข้อความ">
+    <span class="gn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
+      </svg>
+      {% if nav_inbox_badge %}<span class="gn-badge{% if nav_inbox_badge is number and nav_inbox_badge > 0 %} has-count{% endif %}">{% if nav_inbox_badge is number and nav_inbox_badge > 0 %}{{ nav_inbox_badge }}{% endif %}</span>{% endif %}
+    </span>
+    <span class="gn-label">ข้อความ</span>
+  </a>
   <a class="gn-tab{% if nav_active == 'gifts' %} active{% endif %}" href="/my-gifts" aria-label="ของขวัญ">
     <span class="gn-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -39,15 +48,6 @@
       {% if nav_gifts_badge %}<span class="gn-badge{% if nav_gifts_badge is number and nav_gifts_badge > 0 %} has-count{% endif %}">{% if nav_gifts_badge is number and nav_gifts_badge > 0 %}{{ nav_gifts_badge }}{% endif %}</span>{% endif %}
     </span>
     <span class="gn-label">ของขวัญ</span>
-  </a>
-  <a class="gn-tab{% if nav_active == 'inbox' %} active{% endif %}" href="/my-inbox" aria-label="กล่องข้อความ">
-    <span class="gn-icon">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/>
-      </svg>
-      {% if nav_inbox_badge %}<span class="gn-badge{% if nav_inbox_badge is number and nav_inbox_badge > 0 %} has-count{% endif %}">{% if nav_inbox_badge is number and nav_inbox_badge > 0 %}{{ nav_inbox_badge }}{% endif %}</span>{% endif %}
-    </span>
-    <span class="gn-label">ข้อความ</span>
   </a>
 </nav>
 
