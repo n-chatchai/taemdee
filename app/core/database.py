@@ -3,12 +3,16 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
 
-engine = create_async_engine(
-    settings.database_url,
-    connect_args={
+connect_args = {}
+if "postgresql" in settings.database_url:
+    connect_args = {
         "statement_cache_size": 0,
         "prepared_statement_cache_size": 0,
-    },
+    }
+
+engine = create_async_engine(
+    settings.database_url,
+    connect_args=connect_args,
 )
 
 
