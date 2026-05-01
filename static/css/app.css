@@ -9743,45 +9743,36 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .inbox-detail-cta {
   padding: 0 22px 8px;
   flex-shrink: 0;
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 8px;
 }
-.inbox-detail-cta .idc-secondary {
+.inbox-detail-cta.single { grid-template-columns: 1fr; }
+.inbox-detail-cta .idc-btn {
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 6px;
-  padding: 10px;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.18);
+  border-radius: 12px;
+  padding: 12px;
   font-family: 'Prompt', sans-serif;
   font-size: var(--text-sm);
+  font-weight: 600;
   color: var(--ink);
-  font-weight: 500;
-  text-decoration: underline;
-  text-decoration-color: rgba(17,17,17,0.25);
-  text-underline-offset: 4px;
-  cursor: pointer;
-}
-.inbox-detail-cta .idc-secondary svg {
-  width: 13px;
-  height: 13px;
-}
-
-.inbox-detail-mute {
-  text-align: center;
-  padding: 4px 22px 4px;
-  flex-shrink: 0;
-}
-.inbox-detail-mute a {
-  font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
-  color: var(--ink-softer);
-  text-decoration: underline;
-  text-decoration-color: rgba(163,157,146,0.4);
-  text-underline-offset: 3px;
-  cursor: pointer;
-}
-.inbox-detail-mute a.muted-done {
-  color: var(--mint-ink);
   text-decoration: none;
-  cursor: default;
+  cursor: pointer;
+}
+.inbox-detail-cta .idc-btn.primary {
+  background: var(--ink);
+  color: var(--butter);
+  border-color: var(--ink);
+}
+.inbox-detail-cta .idc-btn svg {
+  width: 16px;
+  height: 16px;
+  flex-shrink: 0;
 }
 
 /* Push.prompt — auto-trigger bottom sheet on first PWA open. Hidden by
@@ -11056,6 +11047,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   display: flex;
   gap: 11px;
   align-items: center;
+  margin-bottom: 12px;
 }
 .inbox-detail-offer .ido-icon {
   width: 38px;
@@ -11075,11 +11067,18 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 .inbox-detail-offer .ido-text { flex: 1; }
 .inbox-detail-offer .ido-label {
   font-family: 'Prompt', sans-serif;
-  font-size: var(--text-2xs);
-  color: var(--ink-softer);
-  font-weight: 500;
-  letter-spacing: 0.04em;
-  text-transform: none;
+  font-size: 10.5px;
+  color: var(--mint-ink);
+  font-weight: 600;
+  letter-spacing: 0.02em;
+  display: flex;
+  align-items: center;
+  gap: 4px;
+}
+.inbox-detail-offer .ido-check {
+  width: 12px;
+  height: 12px;
+  color: var(--mint-ink);
 }
 .inbox-detail-offer .ido-name {
   font-family: 'Prompt', sans-serif;
@@ -11093,6 +11092,28 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   font-size: var(--text-2xs);
   color: var(--ink-soft);
   margin-top: 2px;
+}
+/* "ดูใน ของขวัญของพี่ →" — full-width pill nudges the customer to
+   gifts.list now that vouchers auto-receive. */
+.inbox-detail-offer .ido-link {
+  display: block;
+  width: 100%;
+  background: var(--ink);
+  color: var(--butter);
+  text-align: center;
+  border-radius: 99px;
+  padding: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  text-decoration: none;
+  cursor: pointer;
+  margin-top: 4px;
+  box-sizing: border-box;
+}
+.inbox-detail-offer .ido-link strong {
+  font-weight: 700;
+  color: var(--butter);
 }
 
 /* S-staff list — Settings → พนักงาน. Ported from design 4078-4163. */

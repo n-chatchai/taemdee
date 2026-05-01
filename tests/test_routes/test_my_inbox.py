@@ -57,7 +57,8 @@ async def test_my_inbox_mark_read_flips_read_at(client, db, shop):
 
 async def test_my_inbox_detail_renders_and_auto_marks_read(client, db, shop):
     """GET /my-inbox/{id} renders the detail page, auto-flips read_at,
-    and exposes the mute link for an unmuted shop."""
+    and surfaces the single "ดูร้าน" CTA. Mute link was retired in the
+    May 1 design pass — customer manages mute via /card/account/notifications."""
     customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
     _set_customer_cookie(client, customer.id)
     assert row.read_at is None
@@ -67,8 +68,10 @@ async def test_my_inbox_detail_renders_and_auto_marks_read(client, db, shop):
     body = r.text
     assert row.body in body
     assert shop.name in body
-    # Mute link present, with the shop id as data attribute
-    assert f'data-mute-shop="{shop.id}"' in body
+    # Single primary CTA → /story/<shop>, no per-row mute affordance.
+    assert f'href="/story/{shop.id}"' in body
+    assert "idc-btn primary" in body
+    assert "data-mute-shop" not in body
     # And the row was flipped to read
     await db.refresh(row)
     assert row.read_at is not None
@@ -88,16 +91,18 @@ async def test_my_inbox_detail_blocks_other_customer(client, db, shop):
     assert r.status_code == 404
 
 
-async def test_my_inbox_detail_hides_mute_link_when_already_muted(client, db, shop):
-    from app.models import CustomerShopMute
+async def test_my_inbox_detail_omits_mute_affordance_entirely(client, db, shop):
+    """Per-row mute link was retired by the May 1 design pass — neither
+    the active link nor the muted confirmation should appear on the
+    inbox detail page anymore. Customer manages mute through
+    /card/account/notifications now."""
     customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
-    db.add(CustomerShopMute(customer_id=customer.id, shop_id=shop.id))
-    await db.commit()
 
     _set_customer_cookie(client, customer.id)
     body = (await client.get(f"/my-inbox/{row.id}")).text
-    assert 'data-mute-shop' not in body
-    assert "ปิดเสียงร้านนี้แล้ว" in body
+    assert "ปิดเสียงร้านนี้" not in body
+    assert "data-mute-shop" not in body
+    assert "inbox-detail-mute" not in body
 
 
 async def test_my_inbox_detail_renders_offer_card_when_offer_text_set(client, db, shop):
@@ -134,9 +139,13 @@ async def test_my_inbox_detail_no_offer_card_when_offer_text_unset(client, db, s
     assert "ido-label" not in body
 
 
-async def test_my_inbox_detail_offer_no_expiry_uses_fallback_copy(client, db, shop):
-    """offer_text set but offer_until NULL → 'โชว์หน้านี้ที่ร้านได้เลยครับ'
-    fallback copy instead of the dated ใช้ก่อน line."""
+async def test_my_inbox_detail_offer_no_expiry_omits_condition(client, db, shop):
+    """offer_text set but offer_until NULL → render the offer card
+    without the .ido-condition expiry line. The retired
+    'โชว์หน้านี้ที่ร้านได้เลยครับ' fallback copy made sense when the
+    inbox screen was the redemption surface; auto-receive moved that
+    job to /my-gifts so the offer block on the message page is
+    purely confirmation."""
     customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
     row.offer_text = "ครัวซองต์ฟรี 1 ชิ้น"
     db.add(row)
@@ -146,7 +155,8 @@ async def test_my_inbox_detail_offer_no_expiry_uses_fallback_copy(client, db, sh
     body = (await client.get(f"/my-inbox/{row.id}")).text
     assert "ครัวซองต์ฟรี 1 ชิ้น" in body
     assert "ใช้ก่อน " not in body
-    assert "โชว์หน้านี้ที่ร้านได้เลย" in body
+    # "ดูใน ของขวัญของพี่ →" replaces the retired show-at-shop copy.
+    assert "ของขวัญของพี่" in body
 
 
 async def test_my_inbox_includes_push_prompt_partial(client):

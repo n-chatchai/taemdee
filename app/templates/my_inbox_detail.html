@@ -32,6 +32,10 @@
   </div>
 
   {% if row.offer_text %}
+    {# Voucher auto-receive per the May 1 design: when a DeeReach
+       message has an offer attached the system already minted the
+       Redemption row, so this block reads as confirmation ("เก็บไว้
+       ให้แล้ว") and routes the customer onward to /my-gifts. #}
     <div class="inbox-detail-offer">
       <div class="ido-row">
         <div class="ido-icon">
@@ -44,53 +48,29 @@
           </svg>
         </div>
         <div class="ido-text">
-          <div class="ido-label">ของฝากจากร้าน</div>
+          <div class="ido-label">
+            <svg class="ido-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            ของฝากจากร้าน · เก็บไว้ให้แล้ว
+          </div>
           <div class="ido-name">{{ row.offer_text }}</div>
           {% if row.offer_until %}
-            <div class="ido-condition">ใช้ก่อน {{ row.offer_until|bkk_short_date }} · โชว์หน้านี้ที่ร้าน</div>
-          {% else %}
-            <div class="ido-condition">โชว์หน้านี้ที่ร้านได้เลยครับ</div>
+            <div class="ido-condition">ใช้ก่อน {{ row.offer_until|bkk_short_date }}</div>
           {% endif %}
         </div>
       </div>
+      <a class="ido-link" href="/my-gifts">ดูใน <strong>ของขวัญของพี่</strong> →</a>
     </div>
   {% endif %}
 
   {% if shop %}
-    <div class="inbox-detail-cta">
-      <a class="idc-secondary" href="/card/{{ shop.id }}">
-        เปิดบัตรของร้าน
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+    {# .single forces 1-col grid — design dropped the secondary "บัตร"
+       button per the May 1 pass; "ดูร้าน" goes to /story/{shop} as the
+       single primary action. #}
+    <div class="inbox-detail-cta single">
+      <a class="idc-btn primary" href="/story/{{ shop.id }}">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/></svg>
+        ดูร้าน
       </a>
     </div>
-
-    {% if not is_muted %}
-      <div class="inbox-detail-mute">
-        <a href="#" data-mute-shop="{{ shop.id }}"
-           onclick="window.muteShopFromDetail(event, this)">ปิดเสียงร้านนี้</a>
-      </div>
-    {% else %}
-      <div class="inbox-detail-mute">
-        <a class="muted-done">✓ ปิดเสียงร้านนี้แล้ว</a>
-      </div>
-    {% endif %}
   {% endif %}
-{% endblock %}
-
-{% block body_end %}
-  <script>
-    window.muteShopFromDetail = async function(ev, linkEl) {
-      ev.preventDefault();
-      const shopId = linkEl.dataset.muteShop;
-      if (!shopId) return;
-      try {
-        const r = await fetch(`/card/account/mute/${shopId}/mute`, { method: 'POST' });
-        if (!r.ok) throw new Error('mute failed: ' + r.status);
-        linkEl.textContent = '✓ ปิดเสียงร้านนี้แล้ว';
-        linkEl.classList.add('muted-done');
-        linkEl.removeAttribute('href');
-        linkEl.onclick = null;
-      } catch (_) { /* leave the link in place so user can retry */ }
-    };
-  </script>
 {% endblock %}
