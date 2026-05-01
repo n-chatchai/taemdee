@@ -21,6 +21,8 @@ class Customer(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     is_anonymous: bool = Field(default=True)
     line_id: Optional[str] = Field(default=None, unique=True, index=True)
+    google_id: Optional[str] = Field(default=None, unique=True, index=True)
+    facebook_id: Optional[str] = Field(default=None, unique=True, index=True)
     phone: Optional[str] = Field(default=None, unique=True, index=True)
     # NULL = "haven't been asked yet" — the welcome sheet auto-opens until
     # the customer either provides a nickname or skips (skip stores the

@@ -16,7 +16,7 @@ from app.core.database import get_session
 from app.core.templates import templates
 from app.models import Customer, CustomerShopMute, Shop
 from app.services.auth import generate_and_send_otp, issue_session_token, verify_otp
-from app.services.soft_wall import claim_by_line
+from app.services.soft_wall import claim_by_facebook, claim_by_google, claim_by_line
 from app.services.referrals import consume_referral_on_signup, find_referral_by_code
 from app.services.line_login import (
     LineLoginError,
@@ -27,10 +27,13 @@ from app.services.line_login import (
     make_oauth_state,
     verify_oauth_state,
 )
+from app.services import google_login, facebook_login
 
 router = APIRouter()
 
 LINE_STATE_COOKIE = "line_oauth_state"
+GOOGLE_STATE_COOKIE = "google_oauth_state"
+FACEBOOK_STATE_COOKIE = "facebook_oauth_state"
 
 
 @router.post("/otp/request")
@@ -255,6 +258,144 @@ async def line_callback(
     redirect = RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
     _set_session_cookie(redirect, issue_session_token(shop.id))
     redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
+    return redirect
+
+
+def _start_google_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
+    if not google_login.is_configured():
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Google Login not configured (set GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in .env)",
+        )
+    nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
+    redirect = RedirectResponse(
+        url=google_login.build_authorize_url(nonce), status_code=status.HTTP_302_FOUND
+    )
+    redirect.set_cookie(
+        key=GOOGLE_STATE_COOKIE,
+        value=cookie_token,
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="lax",
+        max_age=600,
+        path="/auth/google",
+    )
+    return redirect
+
+
+def _start_facebook_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
+    if not facebook_login.is_configured():
+        raise HTTPException(
+            status.HTTP_503_SERVICE_UNAVAILABLE,
+            "Facebook Login not configured (set FACEBOOK_APP_ID + FACEBOOK_APP_SECRET in .env)",
+        )
+    nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
+    redirect = RedirectResponse(
+        url=facebook_login.build_authorize_url(nonce), status_code=status.HTTP_302_FOUND
+    )
+    redirect.set_cookie(
+        key=FACEBOOK_STATE_COOKIE,
+        value=cookie_token,
+        httponly=True,
+        secure=settings.environment == "production",
+        samesite="lax",
+        max_age=600,
+        path="/auth/facebook",
+    )
+    return redirect
+
+
+@router.get("/google/customer/start")
+async def google_customer_start(next_redeem: Optional[str] = None):
+    """Customer-side Google Sign-In. Mirrors the LINE flow — start sets a
+    short-lived state cookie + redirects to Google's consent screen.
+    `?next_redeem=<shop_id>` carries through state and auto-resumes a C4
+    redemption after the callback completes."""
+    return _start_google_oauth(role="customer", next_redeem=next_redeem)
+
+
+@router.get("/google/callback")
+async def google_callback(
+    code: str,
+    state: str,
+    google_oauth_state: Optional[str] = Cookie(None, alias=GOOGLE_STATE_COOKIE),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Google OAuth came back. Verify state, exchange code, claim the
+    anonymous Customer with the `sub` from the userinfo endpoint, then
+    bounce to /my-cards (or /card/{shop}/claimed if next_redeem is set).
+    No C3.confirm step yet — DeeReach defaults to opt-in; consent UI
+    will be a follow-up frontend pass."""
+    payload = verify_oauth_state(state, google_oauth_state)
+    if not payload:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
+
+    next_redeem = payload.get("next_redeem")
+
+    try:
+        tokens = await google_login.exchange_code_for_token(code)
+        profile = await google_login.fetch_profile(tokens["access_token"])
+    except google_login.GoogleLoginError as e:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
+
+    google_id = profile.get("sub")
+    if not google_id:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Google userinfo missing 'sub'")
+    display_name = profile.get("name") or None
+
+    anon, _ = await find_or_create_customer(customer_cookie, db)
+    claimed = await claim_by_google(db, anon, google_id, display_name=display_name)
+
+    target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
+    redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+    set_customer_cookie(redirect, claimed.id)
+    redirect.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
+    return redirect
+
+
+@router.get("/facebook/customer/start")
+async def facebook_customer_start(next_redeem: Optional[str] = None):
+    """Customer-side Facebook Login. Same shape as Google/LINE."""
+    return _start_facebook_oauth(role="customer", next_redeem=next_redeem)
+
+
+@router.get("/facebook/callback")
+async def facebook_callback(
+    code: str,
+    state: str,
+    facebook_oauth_state: Optional[str] = Cookie(None, alias=FACEBOOK_STATE_COOKIE),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Facebook OAuth came back. Same shape as the Google callback —
+    exchange code, claim by `id` from /me, redirect to /my-cards. The
+    `email` field may be missing if the user denied that permission;
+    we don't rely on it for the claim, only display_name."""
+    payload = verify_oauth_state(state, facebook_oauth_state)
+    if not payload:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
+
+    next_redeem = payload.get("next_redeem")
+
+    try:
+        tokens = await facebook_login.exchange_code_for_token(code)
+        profile = await facebook_login.fetch_profile(tokens["access_token"])
+    except facebook_login.FacebookLoginError as e:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
+
+    facebook_id = profile.get("id")
+    if not facebook_id:
+        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Facebook profile missing 'id'")
+    display_name = profile.get("name") or None
+
+    anon, _ = await find_or_create_customer(customer_cookie, db)
+    claimed = await claim_by_facebook(db, anon, facebook_id, display_name=display_name)
+
+    target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
+    redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+    set_customer_cookie(redirect, claimed.id)
+    redirect.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
     return redirect
 
 
