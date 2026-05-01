@@ -2770,34 +2770,81 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   z-index: 0;
 }
 .c5 .claimed-hero > * { position: relative; z-index: 1; }
-.c5 .claimed-mark {
-  width: 68px;
-  height: 68px;
-  margin: 0 auto 14px;
-  border-radius: 50%;
-  background: var(--accent);
-  color: #fff;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  box-shadow: 0 8px 20px -6px rgba(255, 94, 58, 0.5);
-  display: flex;
+
+/* Achievement ribbon · "10/10 ครั้งสำเร็จ" */
+.c5 .claimed-streak {
+  display: inline-flex;
   align-items: center;
-  justify-content: center;
-  position: relative;
+  gap: 6px;
+  padding: 6px 14px;
+  background: var(--ink);
+  color: var(--butter);
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-2xs);
+  letter-spacing: 0.04em;
+  margin-bottom: 16px;
+  box-shadow: 0 4px 12px -4px rgba(0,0,0,0.3);
 }
-.c5 .claimed-mark svg { width: 32px; height: 32px; }
+.c5 .claimed-streak .num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  letter-spacing: -0.02em;
+  color: var(--butter);
+}
+.c5 .claimed-streak svg {
+  width: 12px; height: 12px;
+  fill: var(--butter);
+}
+
+/* Big gift-box hero icon (May 1 redesign — replaces the small accent
+   checkmark dot). Gradient + shine + animated bob. */
+.c5 .claimed-mark {
+  width: 110px; height: 110px;
+  margin: 0 auto 18px;
+  border-radius: 28px;
+  background: linear-gradient(145deg, #FF7A55 0%, #FF5E3A 50%, #E04020 100%);
+  color: #fff;
+  border: 2px solid var(--ink);
+  box-shadow:
+    0 16px 40px -8px rgba(255, 94, 58, 0.55),
+    6px 6px 0 var(--ink),
+    inset 0 -4px 0 rgba(0,0,0,0.15);
+  display: flex; align-items: center; justify-content: center;
+  position: relative;
+  transform: rotate(-3deg);
+  animation: gift-bob 2.5s ease-in-out infinite;
+}
+.c5 .claimed-mark svg { width: 56px; height: 56px; }
+.c5 .claimed-mark::after {
+  content: '';
+  position: absolute;
+  top: 8px; left: 12px;
+  width: 26px; height: 14px;
+  background: rgba(255,255,255,0.45);
+  border-radius: 50%;
+  filter: blur(2px);
+}
 .c5 .claimed-mark::before {
   content: '';
   position: absolute;
-  top: -6px; left: -6px; right: -6px; bottom: -6px;
-  border: 1.5px dashed var(--accent);
-  opacity: 0.4;
-  border-radius: 50%;
+  top: -8px; left: -8px; right: -8px; bottom: -8px;
+  border: 2px dashed var(--accent);
+  opacity: 0.45;
+  border-radius: 32px;
   animation: pulse-ring 2s ease-in-out infinite;
 }
 @keyframes pulse-ring {
-  0%, 100% { transform: scale(1); opacity: 0.4; }
-  50% { transform: scale(1.14); opacity: 0.1; }
+  0%, 100% { transform: scale(1); opacity: 0.45; }
+  50% { transform: scale(1.18); opacity: 0.05; }
 }
+@keyframes gift-bob {
+  0%, 100% { transform: rotate(-3deg) translateY(0); }
+  50% { transform: rotate(2deg) translateY(-4px); }
+}
+
 .c5 .claimed-hero .confetti {
   position: absolute;
   color: var(--butter);
@@ -2805,37 +2852,43 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   stroke-width: 1.5;
   animation: twinkle-c 2s ease-in-out infinite;
 }
-.c5 .claimed-hero .confetti.c1 { top: 40px; left: 18%; width: 12px; height: 12px; }
-.c5 .claimed-hero .confetti.c2 { top: 18px; right: 20%; width: 10px; height: 10px; animation-delay: 0.5s; color: var(--accent); stroke: none; }
-.c5 .claimed-hero .confetti.c3 { top: 60px; right: 14%; width: 10px; height: 10px; animation-delay: 1.2s; }
-.c5 .claimed-hero .confetti.c4 { top: 66px; left: 12%; width: 8px; height: 8px; animation-delay: 1.6s; color: var(--accent); stroke: none; }
-.c5 .claimed-hero .confetti.c5 { top: 88px; left: 24%; width: 11px; height: 11px; animation-delay: 0.9s; color: var(--accent); stroke: none; }
-.c5 .claimed-hero .confetti.c6 { top: 95px; right: 22%; width: 12px; height: 12px; animation-delay: 1.4s; }
+.c5 .claimed-hero .confetti.c1 { top: 16px;  left: 12%;  width: 14px; height: 14px; color: var(--accent); stroke: none; }
+.c5 .claimed-hero .confetti.c2 { top: 24px;  right: 14%; width: 10px; height: 10px; animation-delay: 0.5s; }
+.c5 .claimed-hero .confetti.c3 { top: 60px;  right: 8%;  width: 11px; height: 11px; animation-delay: 1.2s; color: var(--accent); stroke: none; }
+.c5 .claimed-hero .confetti.c4 { top: 80px;  left: 6%;   width: 9px;  height: 9px;  animation-delay: 1.6s; }
+.c5 .claimed-hero .confetti.c5 { top: 130px; left: 18%;  width: 11px; height: 11px; animation-delay: 0.9s; color: var(--accent); stroke: none; }
+.c5 .claimed-hero .confetti.c6 { top: 130px; right: 18%; width: 12px; height: 12px; animation-delay: 1.4s; }
+.c5 .claimed-hero .confetti.c7 { top: 175px; left: 8%;   width: 10px; height: 10px; animation-delay: 0.3s; color: var(--mint-ink, #2D8050); stroke: none; }
+.c5 .claimed-hero .confetti.c8 { top: 175px; right: 10%; width: 9px;  height: 9px;  animation-delay: 1.8s; color: var(--accent); stroke: none; }
+
+.c5 .claimed-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  letter-spacing: -0.035em;
+  line-height: 1.05;
+  margin-bottom: 6px;
+  color: var(--ink);
+}
+.c5 .claimed-title em {
+  font-style: italic;
+  font-weight: 800;
+  color: var(--accent);
+}
 
 .c5 .claimed-sub {
   font-family: 'Prompt', sans-serif;
   font-weight: 500;
   font-size: var(--text-sm);
   color: var(--ink-soft);
-  margin-top: 10px;
+  margin-top: 4px;
   text-align: center;
   position: relative;
   z-index: 1;
 }
-
-.c5 .claimed-title {
+.c5 .claimed-sub strong {
+  color: var(--ink);
   font-weight: 700;
-  /* Hero "ขอบคุณที่กลับมาบ่อยๆ" — kept px so it stays bold celebration
-     scale even when fs-sm shrinks the rest. */
-  font-size: 28px;
-  letter-spacing: -0.025em;
-  line-height: 1.1;
-  margin-bottom: 12px;
-}
-.c5 .claimed-title em {
-  font-style: italic;
-  font-weight: 700;
-  color: var(--accent);
 }
 
 /* Voucher floating particles (anti-screenshot animation per the revised

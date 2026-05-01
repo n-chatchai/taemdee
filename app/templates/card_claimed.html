@@ -1,9 +1,13 @@
 {% extends "_layouts/c_base.html" %}
 {% set nav_active = 'cards' %}
-{% block title %}รับรางวัลแล้ว · {{ shop.name }} · TaemDee{% endblock %}
+{% block title %}เก็บครบแล้ว · {{ shop.name }} · TaemDee{% endblock %}
 {% block td_class %} c5{% endblock %}
 
 {% block content %}
+  {# May 1 design — voucher auto-saves to /my-gifts the moment redemption
+     fires, so this screen is purely the celebration. The big gift-box
+     mark + "เก็บครบแล้ว!" headline + ดูในของขวัญ CTA replace the older
+     voucher card; the voucher itself lives in /my-gifts. #}
   <div class="claimed-hero">
     <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
     <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
@@ -11,49 +15,34 @@
     <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
     <svg class="confetti c5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
     <svg class="confetti c6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+
+    <div class="claimed-streak">
+      <svg viewBox="0 0 16 16"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      <span class="num">{{ shop.reward_threshold }}/{{ shop.reward_threshold }}</span>
+      <span>ครั้งสำเร็จ</span>
+    </div>
 
     <div class="claimed-mark">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-        <polyline points="20 6 9 17 4 12"/>
+      {# Gift-box icon — replaces the small accent checkmark per the May 1
+         celebration redesign. The voucher is already in /my-gifts at this
+         point, so the mark is the visual reward, not a confirmation tick. #}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 12 20 22 4 22 4 12"/>
+        <rect x="2" y="7" width="20" height="5"/>
+        <line x1="12" y1="22" x2="12" y2="7"/>
+        <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+        <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
       </svg>
     </div>
-    <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
-    <div class="claimed-sub">ของขวัญพร้อมแล้วครับ · เก็บไว้ใช้ครั้งหน้าได้</div>
+
+    <div class="claimed-title">เก็บครบแล้ว<em>!</em></div>
+    <div class="claimed-sub">ของขวัญ <strong>{{ shop.reward_description }}</strong> เก็บไว้ใช้ครั้งหน้านะครับ</div>
   </div>
 
-  <div class="voucher{% if redemption.served_at %} served{% endif %}">
-    {% if not redemption.served_at %}
-      {# Floating particles — continuous CSS animation that a screenshot
-         can't reproduce. Per the revised reward.claim design this replaces
-         the older "0 sec ago" pulse counter. Hidden once the voucher is
-         served. #}
-      <div class="v-particles" aria-hidden="true">
-        <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      </div>
-    {% endif %}
-    {# .v-label "✦ คูปองของพี่ ✦" was retired in the May 1 design pass —
-       the .v-title + .v-id pair carries enough context, and .claimed-sub
-       above already says "ของขวัญพร้อมแล้วครับ". The served-at note
-       stays so the customer sees "✓ ใช้แล้ว HH:MM" if they happen to
-       reload the page after activating the voucher in voucher.use. #}
-    {% if redemption.served_at %}
-      <div class="v-label"><span class="v-served">✓ ใช้แล้ว {{ redemption.served_at|bkk_hms }}</span></div>
-    {% endif %}
-    <div class="v-title">{{ shop.reward_description }}</div>
-    <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · รับเมื่อ {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
-  </div>
-
-  {# C5 CTA "ดูในของขวัญของพี่" → /my-gifts. Lets the customer pin the
-     voucher to their gifts list and continue browsing without losing
-     the redemption. Hidden once the voucher is served (already in the
-     used pile by then). #}
+  {# c5-cta-gifts — primary action: pin the voucher in /my-gifts. Hidden
+     once the voucher is served (it'd just route to a greyed used row). #}
   {% if not redemption.served_at %}
     <a class="c5-cta-gifts" href="/my-gifts">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

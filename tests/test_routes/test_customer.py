@@ -659,11 +659,11 @@ async def test_my_gifts_voided_redemption_excluded(client, db, shop):
     assert "ยังไม่มีของขวัญ" in body
 
 
-async def test_reward_claim_renders_active_state_when_unserved(client, db, shop):
-    """reward.claim — fresh redemption (served_at NULL) shows the
-    celebration sub copy + particles, no served indicator. The legacy
-    "✦ คูปองของพี่ ✦" v-label was retired in the May 1 pass; the
-    .claimed-sub line above the voucher carries the same role now."""
+async def test_reward_claim_renders_celebration_with_streak_and_gift_mark(client, db, shop):
+    """reward.claim — May 1 design rev: streak ribbon + gift-box mark +
+    "เก็บครบแล้ว!" headline, with the reward name folded into the sub
+    copy. The standalone voucher card is gone (voucher auto-saves to
+    /my-gifts), so served-state styling no longer applies here."""
     from app.models import Customer, Redemption
     c = Customer(is_anonymous=True)
     db.add(c)
@@ -679,13 +679,19 @@ async def test_reward_claim_renders_active_state_when_unserved(client, db, shop)
     client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
 
     body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
-    assert "ของขวัญพร้อมแล้ว" in body  # .claimed-sub
-    assert "ใช้แล้ว" not in body
-    assert "v-particles" in body
-    # 6 confetti dots in the hero (was 4 before May 1 refresh).
-    assert body.count('class="confetti c') == 6
-    # No served class on the voucher container
-    assert "voucher served" not in body
+    # Streak ribbon shows "<threshold>/<threshold> ครั้งสำเร็จ"
+    assert "claimed-streak" in body
+    assert f"{shop.reward_threshold}/{shop.reward_threshold}" in body
+    assert "ครั้งสำเร็จ" in body
+    # New headline + reward name folded into sub copy
+    assert "เก็บครบแล้ว" in body
+    assert shop.reward_description in body
+    assert "เก็บไว้ใช้ครั้งหน้านะครับ" in body
+    # 8 confetti dots (was 6 before May 1 design rev).
+    assert body.count('class="confetti c') == 8
+    # Voucher card + its v-particles are gone — voucher lives in /my-gifts now.
+    assert "v-particles" not in body
+    assert 'class="voucher' not in body
 
 
 async def test_c5_active_voucher_offers_link_to_gifts(client, db, shop):
@@ -734,10 +740,11 @@ async def test_c5_served_voucher_hides_gifts_cta(client, db, shop):
     assert "c5-cta-gifts" not in body
 
 
-async def test_c5_voucher_swaps_to_served_state_when_served_at_set(client, db, shop):
-    """C5 — once /issue/scan flips served_at, the voucher renders the
-    'ใช้แล้ว' label, drops particles, and adds the .served container class
-    so CSS can grey it out."""
+async def test_c5_already_served_redemption_still_renders_celebration(client, db, shop):
+    """A served redemption opened from a stale URL (?r=<old>) still
+    renders the celebration — we just hide the c5-cta-gifts since the
+    voucher is already in the used pile. No more voucher card to flip
+    'served', no v-particles to drop; the page is purely celebratory now."""
     from app.models import Customer, Redemption
     from app.models.util import utcnow
     c = Customer(is_anonymous=True)
@@ -754,10 +761,42 @@ async def test_c5_voucher_swaps_to_served_state_when_served_at_set(client, db, s
     client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
 
     body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
-    assert "ใช้แล้ว" in body
-    assert "voucher served" in body
-    # Particles removed in served state
+    assert "เก็บครบแล้ว" in body
+    assert "claimed-streak" in body
+    assert "c5-cta-gifts" not in body
+    # Old voucher card markup is gone for good
     assert "v-particles" not in body
+    assert 'class="voucher' not in body
+
+
+async def test_reward_claim_renders_dock_gifts_badge_on_initial_paint(client, db, shop):
+    """The /claimed page lands right after a 303 from /redeem, so the
+    previous page's EventSource is closed before the gifts-update
+    NOTIFY arrives. Server-rendered nav_gifts_badge has to fill the gap
+    or the dock would briefly show no badge until a delta event fires."""
+    from app.models import Customer, Redemption
+    c = Customer(is_anonymous=True)
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id)
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
+    import re
+    gifts_section = re.search(
+        r'href="/my-gifts".*?aria-label="ของขวัญ".*?</a>',
+        body,
+        re.DOTALL,
+    )
+    assert gifts_section, "dock should mount the gifts tab on /claimed"
+    assert 'class="gn-badge has-count">1</span>' in gifts_section.group(0)
 
 
 async def test_c5_clears_push_prompt_cooldown_for_re_ask(client, db, shop):
