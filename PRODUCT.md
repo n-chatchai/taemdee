@@ -48,6 +48,11 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 
 The codebase routes, templates, and comments are heavily mapped to these identifiers. While the visual UX may change, these represent the constant logical views of the application.
 
+### Shared
+| # | Screen | Purpose |
+|---|---|---|
+| Role picker | **เข้าใช้งานเป็น...** | Shown at `/` when one device carries a valid shop session AND a valid customer session — two tiles ("ร้านค้า" → /shop/dashboard, "ลูกค้า" → /my-cards) so an owner who also collects points elsewhere isn't auto-shoved into the shop side. Single-cookie devices skip the picker and redirect as before. |
+
 ### Customer-facing
 | # | Screen | Purpose |
 |---|---|---|

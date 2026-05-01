@@ -49,6 +49,26 @@ async def test_home_redirects_anonymous_customer_to_my_cards(client, shop):
     assert response.headers["location"] == "/my-cards"
 
 
+async def test_home_renders_role_picker_when_both_sessions_valid(auth_client, shop):
+    """When the same device carries a valid shop session AND a valid
+    customer session (e.g. an owner who also collects points elsewhere),
+    we render a chooser instead of slamming them into /shop/dashboard."""
+    # auth_client already has the shop session cookie. /scan layers on a
+    # customer cookie for the same browser.
+    await auth_client.get(f"/scan/{shop.id}", follow_redirects=True)
+
+    response = await auth_client.get("/", follow_redirects=False)
+    assert response.status_code == 200
+    body = response.text
+    # Picker chrome + both destinations as plain links (no redirect).
+    assert "role-picker-page" in body
+    assert "เข้าใช้งานเป็น" in body
+    assert 'href="/shop/dashboard"' in body
+    assert 'href="/my-cards"' in body
+    assert ">ร้านค้า<" in body
+    assert ">ลูกค้า<" in body
+
+
 async def test_version_endpoint_returns_short_sha(client):
     """The deploy script polls /version after restart to confirm the
     new uvicorn process actually picked up the new code. Endpoint should

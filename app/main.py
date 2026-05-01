@@ -86,30 +86,47 @@ async def home(request: Request, db: AsyncSession = Depends(get_session)):
     """Marketing home for guests. Logged-in users get sent to their app —
     matters most for PWA installs (Add to Home Screen): the saved icon should
     open the user's dashboard, not the marketing pitch they've already seen.
+
+    Both cookies valid → render the role picker so the user (e.g. a shop
+    owner who also collects points elsewhere) can pick which side to enter
+    instead of always being slammed into /shop/dashboard.
     """
     from uuid import UUID
 
+    valid_shop = False
     shop_cookie = request.cookies.get(SESSION_COOKIE_NAME)
     if shop_cookie:
         payload = decode_session_token(shop_cookie)
-        # Verify the referenced shop still exists before redirecting — otherwise
-        # /shop/dashboard would just raise SessionAuthError → /shop/login, which
-        # strands an anonymous customer behind a login wall they don't need.
+        # Verify the referenced shop still exists — otherwise /shop/dashboard
+        # would raise SessionAuthError → /shop/login, stranding an anonymous
+        # customer behind a login wall they don't need.
         if payload and (shop_id := payload.get("shop_id")):
             try:
                 if await db.get(Shop, UUID(shop_id)):
-                    return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+                    valid_shop = True
             except ValueError:
-                pass  # Malformed shop_id in token — fall through to customer check.
+                pass  # Malformed shop_id in token — treat as no shop session.
 
+    valid_customer = False
     customer_cookie = request.cookies.get(CUSTOMER_COOKIE_NAME)
     if customer_cookie:
         customer_id = decode_customer_token(customer_cookie)
         if customer_id and await db.get(Customer, customer_id):
-            # Both claimed and guest customers land on /my-cards now — guests
-            # see the same list with the green signup banner pinned at the
-            # bottom (revised C7 design).
-            return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+            valid_customer = True
+
+    if valid_shop and valid_customer:
+        return templates.TemplateResponse(
+            request=request,
+            name="role_picker.html",
+            context={},
+        )
+    if valid_shop:
+        return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+    if valid_customer:
+        # Both claimed and guest customers land on /my-cards now — guests
+        # see the same list with the green signup banner pinned at the
+        # bottom (revised C7 design).
+        return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
 
     return templates.TemplateResponse(
         request=request,
