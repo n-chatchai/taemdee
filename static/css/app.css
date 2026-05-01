@@ -1583,20 +1583,25 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1.3;
 }
 .ob-rc-reward strong { font-weight: 700; }
+/* Reward icon on C2.2 — wraps the _partials/reward_svg illustration
+   (coffee_cup / latte_art / iced / card / star / gift_box / custom URL).
+   The illustration has its own background colour, so the wrapper just
+   provides the rounded square + border. */
 .ob-rc-icon {
-  width: 38px;
-  height: 38px;
-  background: var(--accent);
-  border-radius: 11px;
+  width: 52px;
+  height: 52px;
+  border-radius: 12px;
+  border: 1px solid rgba(17,17,17,0.18);
+  overflow: hidden;
+  flex-shrink: 0;
   display: flex;
   align-items: center;
   justify-content: center;
-  flex-shrink: 0;
 }
-.ob-rc-icon svg {
-  width: 22px;
-  height: 22px;
-  color: #fff;
+.ob-rc-icon .reward-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
 }
 
 .ob-icon-wrap {
