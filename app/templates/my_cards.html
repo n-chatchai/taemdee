@@ -7,93 +7,137 @@
   {% set is_guest = customer and customer.is_anonymous %}
   {% include "_partials/page_head.html" %}
 
-  <div class="c7-stats">
-    <div class="ss-row">
-      <div class="ss-big">{{ total_stamps|default(0) }}</div>
-      <div class="ss-meta">
-        <div class="label">แต้มที่ผมเก็บให้พี่</div>
-        <div class="total">จาก {{ cards|length }} ร้าน</div>
+  {# Hero — single ready-to-redeem card. Full-bleed gradient with a
+     pulsing "ครบแล้ว" tag, big 10/10, inline CTA. Tap drops into
+     /card/<shop> where the C4 redemption flow lives. #}
+  {% if hero_card %}
+    {% set logo = shop_logo(hero_card.shop) %}
+    <a class="cl-hero" href="/card/{{ hero_card.shop.id }}" style="margin-top: 4px;">
+      <div class="cl-hero-tag">
+        <span class="pulse"></span>
+        ครบแล้ว · พร้อมรับรางวัล
       </div>
-    </div>
-    {% if closest_card %}
-      {% set logo = shop_logo(closest_card.shop) %}
-      <a class="ss-bottom" href="/card/{{ closest_card.shop.id }}">
-        <div class="ssb-logo">
+      <div class="cl-hero-row">
+        <div class="cl-hero-logo">
           {% if logo %}
-            {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+            {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">
             {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
             {% endif %}
-          {% else %}{{ closest_card.shop.name[0]|upper }}{% endif %}
+          {% else %}{{ hero_card.shop.name[0]|upper }}{% endif %}
         </div>
-        <div class="ssb-text">
-          <span class="ssb-shop">{{ closest_card.shop.name }}</span> ·
-          อีก <strong>{{ closest }} ครั้ง</strong> ได้{{ closest_card.shop.reward_description }}
+        <div class="cl-hero-info">
+          <div class="cl-hero-name">{{ hero_card.shop.name }}</div>
+          <div class="cl-hero-reward">{{ hero_card.shop.reward_description }}</div>
         </div>
-      </a>
-    {% else %}
-      <div class="ss-bottom">
-        <div class="ssb-text" style="opacity:0.6;">ยังไม่มีแต้มที่ใกล้ครบครับ</div>
+        <div class="cl-hero-num">{{ hero_card.point_count }}<span class="of">/{{ hero_card.threshold }}</span></div>
       </div>
-    {% endif %}
-  </div>
-
-  <div class="c7-list-head">
-    <div class="label">
-      <svg class="star" viewBox="0 0 16 16" fill="currentColor">
-        <path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/>
-      </svg>
-      ร้านที่พี่เก็บแต้มอยู่
-    </div>
-  </div>
-
-  {% if cards %}
-    {% for c in cards %}
-      {% set ready = c.point_count >= c.shop.reward_threshold %}
-      {% set logo = shop_logo(c.shop) %}
-      <a href="/card/{{ c.shop.id }}" class="c7-card {% if ready %}featured{% endif %}">
-        {% if ready %}
-          <div class="ready-tag"><span class="dot"></span>ครบแล้ว!</div>
-        {% endif %}
-        {% if c.unread %}<span class="c7-card-unread" aria-label="ข้อความใหม่"></span>{% endif %}
-
-        <div class="logo">
-          {% if logo %}
-            {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
-            {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-            {% endif %}
-          {% else %}{{ c.shop.name[0]|upper }}{% endif %}
-        </div>
-
-        <div class="info">
-          <div class="name">
-            {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-            {% else %}{{ c.shop.name }}<span class="dot">.</span>{% endif %}
-          </div>
-          <div class="reward">{{ c.shop.reward_description }}</div>
-        </div>
-        <div class="progress">
-          <div class="num">{{ c.point_count }}<span class="of">/{{ c.shop.reward_threshold }}</span></div>
-          <div class="bar"><div class="fill" style="width: {{ (c.ratio * 100)|round }}%"></div></div>
-        </div>
-      </a>
-    {% endfor %}
-
-    <div class="c7-spacer">
-      <div class="c7-add">
-        <div class="h">อยากได้บัตรเพิ่ม?</div>
-        <div class="s">สแกน QR แต้มดี ที่ร้านไหนก็ได้</div>
+      <div class="cl-hero-cta">
+        <span>รับรางวัลตอนนี้</span>
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
       </div>
+    </a>
+  {% endif %}
+
+  {# "ใกล้แล้ว" carousel — horizontal scroll cards for shops that
+     are ≥ 50% of the way to a reward. #}
+  {% if near_cards %}
+    <div class="cl-section-h">
+      <span class="icon" style="color: var(--mint-ink);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+      </span>
+      ใกล้แล้ว
+      <span class="count">{{ near_cards|length }} ร้าน</span>
     </div>
-  {% else %}
-    <div class="c7-spacer">
-      <div class="c7-add">
-        <div class="h">ยังไม่มีบัตร</div>
-        <div class="s">สแกน QR แต้มดีที่ร้านเริ่มเก็บแต้มได้เลย</div>
+    <div class="cl-carousel-wrap">
+      <div class="cl-carousel">
+        {% for c in near_cards %}
+          {% set logo = shop_logo(c.shop) %}
+          <a class="cl-mini" href="/card/{{ c.shop.id }}" style="--shop-color: {{ c.shop_color }};">
+            <div class="cl-mini-logo">
+              {% if logo %}{% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">{% else %}{{ logo.text[0]|upper }}{% endif %}{% else %}{{ c.shop.name[0]|upper }}{% endif %}
+            </div>
+            <div class="cl-mini-name">{{ c.shop.name }}</div>
+            <div class="cl-mini-reward">{{ c.shop.reward_description }}{% if c.shop.location %} · {{ c.shop.location }}{% endif %}</div>
+            <div class="cl-mini-foot">
+              <div class="cl-mini-row">
+                <div class="cl-mini-num">{{ c.point_count }}<span class="of">/{{ c.threshold }}</span></div>
+                <div class="cl-mini-left">อีก {{ c.remaining }} ครั้ง</div>
+              </div>
+              <div class="cl-mini-bar"><div class="cl-mini-fill" style="width:{{ c.ratio_pct }}%"></div></div>
+            </div>
+          </a>
+        {% endfor %}
       </div>
     </div>
   {% endif %}
+
+  {# "เก็บแต้มอยู่" compact list with search filter. The search input
+     is a JS no-op for now — filtering is purely client-side, no
+     server round-trip. #}
+  {% if other_cards %}
+    <div class="cl-section-h" style="margin-top: 22px;">
+      <span class="icon" style="color: var(--ink-soft);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+      </span>
+      เก็บแต้มอยู่
+      <span class="count">{{ other_cards|length }} ร้าน</span>
+    </div>
+
+    {% if other_cards|length >= 3 %}
+      <div class="cl-search">
+        <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" placeholder="ค้นหาร้าน..." id="cl-search-input">
+      </div>
+    {% endif %}
+
+    <div class="cl-other" id="cl-other-list">
+      {% for c in other_cards %}
+        {% set logo = shop_logo(c.shop) %}
+        <a class="cl-other-row" href="/card/{{ c.shop.id }}" data-shop-name="{{ c.shop.name }}" style="--shop-color: {{ c.shop_color }};">
+          <div class="cl-other-logo">
+            {% if logo %}{% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">{% else %}{{ logo.text[0]|upper }}{% endif %}{% else %}{{ c.shop.name[0]|upper }}{% endif %}
+          </div>
+          <div class="cl-other-info">
+            <div class="cl-other-name">{{ c.shop.name }}</div>
+            <div class="cl-other-reward">{{ c.shop.reward_description }}{% if c.shop.location %} · {{ c.shop.location }}{% endif %}</div>
+          </div>
+          <div class="cl-other-prog">
+            <div class="cl-other-num">{{ c.point_count }}<span class="of">/{{ c.threshold }}</span></div>
+            <div class="cl-other-bar"><div class="cl-other-fill" style="width:{{ c.ratio_pct }}%;"></div></div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% endif %}
+
+  <a class="cl-add" href="/scan-shop">
+    <div class="cl-add-icon">
+      <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+    </div>
+    <div class="cl-add-h">{% if cards %}อยากได้บัตรเพิ่ม?{% else %}ยังไม่มีบัตร{% endif %}</div>
+    <div class="cl-add-s">สแกน QR แต้มดี ที่ร้านไหนก็ได้</div>
+  </a>
 
   {% if is_guest %}
     {% include "_partials/signup_picker.html" %}
   {% endif %}
+{% endblock %}
+
+{% block body_end %}
+  {# Tiny client-side filter for the "เก็บแต้มอยู่" search box. Hides
+     rows whose data-shop-name doesn't contain the typed term. #}
+  <script>
+    (function () {
+      const input = document.getElementById('cl-search-input');
+      const list = document.getElementById('cl-other-list');
+      if (!input || !list) return;
+      input.addEventListener('input', () => {
+        const q = input.value.trim().toLowerCase();
+        for (const row of list.querySelectorAll('.cl-other-row')) {
+          const name = (row.dataset.shopName || '').toLowerCase();
+          row.style.display = q && !name.includes(q) ? 'none' : '';
+        }
+      });
+    })();
+  </script>
 {% endblock %}

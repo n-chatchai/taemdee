@@ -118,6 +118,26 @@ def _mask_phone(phone: Optional[str]) -> str:
     return phone
 
 
+# cards.list — small palette swatches the .cl-mini / .cl-other tiles
+# tint themselves with via inline `--shop-color`. Picked from the
+# design mockup (warm earthy hues that work on the cream surface) and
+# rotated by hash of the shop id so the same shop keeps the same
+# colour across page loads without needing a stored field.
+_SHOP_SWATCHES = (
+    "#E87A6A",  # coral
+    "#3E6B5A",  # forest mint
+    "#C49A4D",  # mustard
+    "#7A4A8A",  # plum
+    "#3A6B7A",  # teal
+    "#B05F4A",  # brick
+    "#5C7A8A",  # slate
+)
+
+
+def _shop_swatch(shop_id: uuid.UUID) -> str:
+    return _SHOP_SWATCHES[shop_id.int % len(_SHOP_SWATCHES)]
+
+
 @router.get("/card/account", response_class=HTMLResponse)
 async def account_menu(
     request: Request,
@@ -976,28 +996,33 @@ async def my_cards(
         shop = await db.get(Shop, shop_id)
         if shop is None:
             continue
+        threshold = shop.reward_threshold or 1
+        ratio = active_count / threshold
         cards.append({
             "shop": shop,
             "point_count": active_count,
-            "ratio": active_count / shop.reward_threshold if shop.reward_threshold else 0,
+            "threshold": threshold,
+            "remaining": max(threshold - active_count, 0),
+            "ratio": ratio,
+            "ratio_pct": min(int(ratio * 100), 100),
             "unread": unread_per_shop.get(shop_id, 0),
+            "shop_color": _shop_swatch(shop_id),
         })
     cards.sort(key=lambda c: c["ratio"], reverse=True)
 
+    # Split cards into the three .cl-* zones the design lays out:
+    #   - hero: the single most-progressed ready (≥ threshold) card. Extra
+    #           ready cards still surface — they fall back to the "near"
+    #           bucket (still relevant since they're at-or-above
+    #           threshold).
+    #   - near: ratio ≥ 0.5 carousel slots ("ใกล้แล้ว").
+    #   - other: the rest, rendered as a compact list with search.
+    hero_card = next((c for c in cards if c["point_count"] >= c["threshold"]), None)
+    rest = [c for c in cards if c is not hero_card]
+    near_cards = [c for c in rest if c["ratio"] >= 0.5]
+    other_cards = [c for c in rest if c["ratio"] < 0.5]
+
     total_stamps = sum(c["point_count"] for c in cards)
-    # Closest = the card with the smallest gap-to-reward (was max = farthest,
-    # which read backwards in the C7 stats line). Pass the whole card
-    # entry through so the template can render the shop logo + reward
-    # description alongside the gap count.
-    closest_card = min(
-        (c for c in cards if c["point_count"] < c["shop"].reward_threshold),
-        key=lambda c: c["shop"].reward_threshold - c["point_count"],
-        default=None,
-    )
-    closest = (
-        closest_card["shop"].reward_threshold - closest_card["point_count"]
-        if closest_card else None
-    )
 
     from app.models.util import BKK
     from datetime import datetime, timezone
@@ -1019,9 +1044,10 @@ async def my_cards(
         context={
             "customer": customer,
             "cards": cards,
+            "hero_card": hero_card,
+            "near_cards": near_cards,
+            "other_cards": other_cards,
             "total_stamps": total_stamps,
-            "closest": closest,
-            "closest_card": closest_card,
             "weekday_th": weekday_th,
             "inbox_unread": inbox_unread,
         },

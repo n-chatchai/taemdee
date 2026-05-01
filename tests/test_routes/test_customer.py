@@ -194,49 +194,40 @@ async def test_my_cards_renders_for_guest_without_banner(client, shop):
     assert 'class="avatar"' not in body
 
 
-async def test_my_cards_shows_unread_dot_only_for_shops_with_pending_inbox(
-    client, db, shop
-):
-    """C7 per-shop unread indicator: a c7-card-unread dot renders only on
-    cards whose shop has at least one Inbox row with read_at IS NULL for
-    this customer."""
-    from app.models import Customer, Inbox, Shop
-
-    # Customer needs cards at two shops to make the per-shop scoping testable.
-    other = Shop(name="Other Shop", reward_threshold=10)
-    db.add(other)
-    await db.commit()
-    await db.refresh(other)
-
-    await client.get(f"/scan/{shop.id}", follow_redirects=True)
-    await client.get(f"/scan/{other.id}", follow_redirects=True)
-
-    customer = (await db.exec(select(Customer))).first()
-    # Unread message at `shop`, no message at `other`.
-    db.add(Inbox(customer_id=customer.id, shop_id=shop.id, body="ใหม่!"))
-    await db.commit()
-
-    body = (await client.get("/my-cards")).text
-    assert "c7-card-unread" in body
-    # And only once — `other` has no unread, so the dot should NOT appear twice.
-    assert body.count("c7-card-unread") == 1
-
-
-async def test_my_cards_no_dot_when_message_already_read(client, db, shop):
-    from app.models import Customer, Inbox
+async def test_my_cards_renders_hero_for_ready_card(client, db, shop):
+    """cards.list — single ready (≥ threshold) card renders as a
+    .cl-hero gradient tile with the "รับรางวัลตอนนี้" CTA, not a row in
+    the regular list."""
+    from app.models import Customer, Point
 
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
     customer = (await db.exec(select(Customer))).first()
-
-    from app.models.util import utcnow
-    db.add(Inbox(
-        customer_id=customer.id, shop_id=shop.id,
-        body="อ่านแล้ว", read_at=utcnow(),
-    ))
+    for _ in range(shop.reward_threshold - 1):  # already 1 from /scan
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
     await db.commit()
 
     body = (await client.get("/my-cards")).text
-    assert "c7-card-unread" not in body
+    assert "cl-hero" in body
+    assert "รับรางวัลตอนนี้" in body
+    assert "ครบแล้ว · พร้อมรับรางวัล" in body
+
+
+async def test_my_cards_renders_carousel_for_near_complete_cards(client, db, shop):
+    """Cards with ratio ≥ 0.5 land in the .cl-carousel ("ใกล้แล้ว")
+    section, not the compact .cl-other list below it."""
+    from app.models import Customer, Point
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    customer = (await db.exec(select(Customer))).first()
+    # Ratio = 6/10 → 0.6 → near bucket.
+    for _ in range(5):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    body = (await client.get("/my-cards")).text
+    assert "cl-carousel" in body
+    assert "cl-mini" in body
+    assert "ใกล้แล้ว" in body
 
 
 async def test_shop_story_renders_thanks_and_story_when_set(client, db, shop):
