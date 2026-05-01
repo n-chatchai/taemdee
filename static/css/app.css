@@ -1608,9 +1608,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 /* Same story as .reward-pill .gift — uploaded photos need real estate
    that the 52px line-art chip can't give them. */
 .ob-rc-icon:has(img) {
-  width: 96px;
-  height: 96px;
-  border-radius: 16px;
+  width: 160px;
+  height: 160px;
+  border-radius: 20px;
 }
 
 .ob-icon-wrap {
@@ -1951,10 +1951,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    blobs, so when the gift contains an <img> we bump the chip to 64px
    and drop the accent-soft tint that would show through any letterbox. */
 .reward-pill .gift:has(img) {
-  width: 64px;
-  height: 64px;
+  width: 96px;
+  height: 96px;
   background: transparent;
-  border-radius: 14px;
+  border-radius: 16px;
   overflow: hidden;
 }
 .reward-pill .rtxt { flex: 1; line-height: 1.3; }
