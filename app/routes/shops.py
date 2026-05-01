@@ -691,12 +691,36 @@ async def themes_save(
 
 
 @router.get("/events")
-async def shop_events(
-    shop: Shop = Depends(get_current_shop),
-):
-    """Server-Sent Events stream for the DeeBoard's live feed."""
+async def shop_events(request: Request):
+    """Server-Sent Events stream for the DeeBoard's live feed.
+
+    DOES NOT use Depends(get_current_shop) — that pulls a yield-based
+    DB session via Depends(get_session), which FastAPI keeps alive for
+    the entire StreamingResponse. With ~4 gunicorn workers each
+    holding a session per open dashboard tab, the asyncpg pool was
+    exhausting. Decode the session cookie + look up the shop with a
+    short-lived manual session, release it, then start the stream."""
+    from app.core.auth import SESSION_COOKIE_NAME
+    from app.core.database import SessionFactory
+    from app.services.auth import decode_session_token
+
+    cookie = request.cookies.get(SESSION_COOKIE_NAME)
+    payload = decode_session_token(cookie) if cookie else None
+    shop_id_str = payload.get("shop_id") if payload else None
+    if not shop_id_str:
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "session missing")
+    try:
+        shop_id = uuid.UUID(shop_id_str)
+    except (TypeError, ValueError):
+        raise HTTPException(status.HTTP_401_UNAUTHORIZED, "session shop id malformed")
+
+    async with SessionFactory() as db:
+        shop = await db.get(Shop, shop_id)
+        if not shop:
+            raise HTTPException(status.HTTP_401_UNAUTHORIZED, "session shop missing")
+
     return StreamingResponse(
-        event_stream(shop.id),
+        event_stream(shop_id),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )

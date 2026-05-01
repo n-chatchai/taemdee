@@ -31,23 +31,34 @@ router = APIRouter()
 @router.get("/sse/me")
 async def customer_event_stream(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
-    db: AsyncSession = Depends(get_session),
 ):
     """Per-customer SSE stream — drives the dock inbox badge live (so when
     DeeReach delivers a new message in the worker, the customer sees the
     badge bump without refreshing). Currently emits one event kind:
         inbox-update — payload is the new unread count as plain string.
     Anonymous customers get a stream too (cookie alone identifies them) so
-    inbox events still reach guest mode."""
+    inbox events still reach guest mode.
+
+    DOES NOT use Depends(get_session) — for StreamingResponse,
+    FastAPI keeps yield-based dependencies alive for the entire stream
+    lifetime, which on /sse/me is "until the customer closes the tab."
+    Each open tab would hold an asyncpg connection, exhausting the
+    pool under modest load. Open + close a short-lived session here
+    instead, then start the stream with no DB ties."""
+    from app.core.database import SessionFactory
     from app.services.events import stream_customer
-    customer, was_created = await find_or_create_customer(customer_cookie, db)
+
+    async with SessionFactory() as db:
+        customer, was_created = await find_or_create_customer(customer_cookie, db)
+        customer_id = customer.id
+
     response = StreamingResponse(
-        stream_customer(customer.id),
+        stream_customer(customer_id),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
     if was_created:
-        set_customer_cookie(response, customer.id)
+        set_customer_cookie(response, customer_id)
     return response
 
 
