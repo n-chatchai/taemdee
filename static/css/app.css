@@ -7299,7 +7299,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 
 /* Dashboard claimable items (welcome credit, future onboarding nudges).
-   Card row with accent gift-edge — tap submits the per-kind claim. */
+   Card row — tap submits the per-kind claim. */
 .s3-item-form { margin: 0 20px 8px; }
 .s3-item {
   appearance: none;
@@ -7307,7 +7307,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   width: 100%;
   background: var(--butter-soft);
   border: 1px solid rgba(17, 17, 17, 0.18);
-  border-left: 4px solid var(--accent);
   border-radius: 14px;
   padding: 12px 14px;
   cursor: pointer;
