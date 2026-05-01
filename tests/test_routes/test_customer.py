@@ -80,6 +80,59 @@ async def test_card_no_celebration_without_stamped_flag(named_client, shop):
     assert 'class="scan-cel"' not in response.text
 
 
+async def test_scan_auto_redeems_when_threshold_is_hit(client, db, shop):
+    """May 1 design — the threshold-th scan auto-creates the voucher
+    (no separate "เปิดของขวัญ" tap) and redirects straight to /claimed.
+    Threshold lives on shop.reward_threshold; nothing should be hard-coded
+    to 10, so a shop at 5 must trigger the same flow on scan #5."""
+    from app.models import Customer, Point, Redemption
+
+    shop.reward_threshold = 5
+    db.add(shop)
+    await db.commit()
+
+    # First scan + onboard so subsequent scans don't bounce to /onboard.
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post("/card/nickname", data={"name": "พี่ห้า"})
+    customer = (await db.exec(select(Customer))).first()
+    # Seed 3 more stamps (already 1 from the first /scan) — next scan = 5/5.
+    for _ in range(shop.reward_threshold - 2):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    assert response.status_code == 303
+    # Auto-redeem fired — destination is /claimed, not /card?stamped=1.
+    assert "/claimed" in response.headers["location"]
+    redemption = (await db.exec(select(Redemption))).first()
+    assert redemption is not None
+    assert redemption.customer_id == customer.id
+
+
+async def test_scan_below_threshold_keeps_card_redirect(client, db, shop):
+    """A scan that lands the customer at threshold-1 still routes to /card
+    (not /claimed) — auto-redeem only kicks in on the threshold-th hit."""
+    from app.models import Customer, Point, Redemption
+
+    shop.reward_threshold = 5
+    db.add(shop)
+    await db.commit()
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post("/card/nickname", data={"name": "พี่สี่"})
+    customer = (await db.exec(select(Customer))).first()
+    # Already 1 from the first /scan; seed 2 more so the next scan = 4/5.
+    for _ in range(2):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    assert response.status_code == 303
+    assert "/claimed" not in response.headers["location"]
+    assert response.headers["location"].startswith(f"/card/{shop.id}")
+    assert (await db.exec(select(Redemption))).first() is None
+
+
 async def test_scan_publishes_feed_row_event(client, db, shop, monkeypatch):
     """Scan publishes a feed-row event so the shop dashboard dock prepends a new row.
     Tapping that row in the dock opens the S3.detail bottom sheet, which

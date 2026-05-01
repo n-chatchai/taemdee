@@ -870,6 +870,39 @@ async def scan(
             set_customer_cookie(response, customer.id)
         return response
 
+    # Auto-redeem on the threshold-th scan per the May 1 design — the
+    # voucher creates itself + lands in /my-gifts the moment the customer
+    # hits N/N, and they go straight to the celebration page (C5) instead
+    # of pausing at C4 to tap "เปิดของขวัญ". Only fires on a fresh stamp;
+    # cooldown'd re-scans of an already-full card still show C4 so the
+    # customer can manually trigger if needed.
+    if just_stamped:
+        scope_branch = branch_obj.id if (branch_obj and shop.reward_mode == "separate") else None
+        new_count = await active_point_count(db, shop.id, customer.id, scope_branch)
+        if new_count >= shop.reward_threshold:
+            try:
+                redemption = await redeem(
+                    db, shop, customer,
+                    branch_id=branch_obj.id if (branch_obj and shop.reward_mode == "separate") else None,
+                )
+            except RedemptionError:
+                redemption = None
+            if redemption is not None:
+                publish(
+                    shop.id,
+                    "feed-row",
+                    feed_row_html("redemption", redemption.id, bkk_feed_time(redemption.created_at), customer.display_name or "ลูกค้า"),
+                )
+                from app.services.events import publish_customer
+                publish_customer(customer.id, "gifts-update", str(await _active_gifts_count(db, customer.id)))
+                response = RedirectResponse(
+                    url=f"/card/{shop_id}/claimed?r={redemption.id}",
+                    status_code=status.HTTP_303_SEE_OTHER,
+                )
+                if was_created:
+                    set_customer_cookie(response, customer.id)
+                return response
+
     params = []
     if branch_obj:
         params.append(f"branch={branch_obj.id}")
