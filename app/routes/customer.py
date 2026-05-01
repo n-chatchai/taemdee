@@ -413,18 +413,16 @@ async def view_card(
         )
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
-    point_count = await active_point_count(db, shop.id, customer.id)
-    # Resume onboarding only if there's a Point waiting — i.e. the customer
-    # scanned the QR (got the stamp) but bailed before completing C2.1.
-    # Direct /card visits with no Point yet (PWA bookmark, typed URL) just
-    # render the empty card so they can scan to start — sending them to
-    # /onboard there would land them on /my-cards with zero cards because
-    # /onboard never issues stamps itself.
-    if customer.display_name is None and point_count > 0:
+    # Anyone with display_name still NULL hasn't completed C2 onboarding —
+    # bounce them through the dedicated /onboard flow. /onboard now
+    # issues a Point inline if there isn't one yet, so the customer
+    # ends up at /my-cards with at least one card after the flow.
+    if customer.display_name is None:
         response = RedirectResponse(url=f"/onboard/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
         if was_created:
             set_customer_cookie(response, customer.id)
         return response
+    point_count = await active_point_count(db, shop.id, customer.id)
     branch_obj = await _resolve_branch(db, shop.id, branch, customer.id)
 
     # First-visit detection: no redemptions yet AND only 1 active stamp.
@@ -479,14 +477,34 @@ async def onboard(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """C2 onboarding — 3-step Alpine flow shown on the customer's first ever
-    scan (display_name IS NULL). Picks up the just-issued stamp count from
-    the DB so the C2.2 stamp screen renders accurately."""
+    """C2 onboarding — 3-step Alpine flow shown on the customer's first
+    encounter with a shop (display_name IS NULL). C2.2 needs to show
+    a non-zero stamp count, otherwise the "ผมเก็บแต้มแรกให้แล้ว" copy
+    rings false and customers land at /my-cards with no cards after
+    completing the flow. Issue a stamp inline if the customer arrived
+    here via /card (no Point yet) — same path /scan would have taken
+    if they'd hit the QR. Cooldown is silently swallowed: a returner
+    with prior stamps has nothing to issue, the existing count carries
+    onboarding through."""
     shop = await db.get(Shop, shop_id)
     if not shop:
         return RedirectResponse(url=f"/card/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     point_count = await active_point_count(db, shop.id, customer.id)
+    if point_count == 0:
+        try:
+            stamp = await issue_point(db, shop, customer, method="customer_scan")
+            publish(
+                shop.id,
+                "feed-row",
+                feed_row_html("point", stamp.id, bkk_feed_time(stamp.created_at), customer.display_name or "ลูกค้า"),
+            )
+            point_count = 1
+        except IssuanceError:
+            # Cooldown / branch-required / etc. — leave point_count at 0
+            # and let the template render the 0-stamp fallback rather
+            # than 500.
+            pass
     response = templates.TemplateResponse(
         request=request,
         name="onboard.html",
