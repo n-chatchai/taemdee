@@ -877,18 +877,9 @@ async def redeem_reward(
 
     customer, _ = await find_or_create_customer(customer_cookie, db)
 
-    # Guest redemption gate (per revised C4 design): full members only. The
-    # guest must convert to a claimed account first — anti-fraud (no replays
-    # against fresh anonymous cookies) and gives the shop a way to contact
-    # the customer about the redeemed reward. Frontend renders a different
-    # CTA for guests so they shouldn't reach this server-side branch, but
-    # we enforce it here too in case someone POSTs directly.
-    if customer.is_anonymous:
-        raise HTTPException(
-            status.HTTP_403_FORBIDDEN,
-            "ผูกบัญชีก่อนรับรางวัลนะครับพี่ — กดปุ่ม 'ผูกบัญชีรับรางวัล' เพื่อผูกบัญชีก่อน",
-        )
-
+    # Per the May 1 design: guests can redeem without forced signup. The
+    # voucher is bound to the customer cookie; the C4 page surfaces a soft
+    # "สมัครเพื่อเก็บบัตรไม่ให้หาย" link as an optional save-card pitch.
     try:
         redemption = await redeem(db, shop, customer)
     except RedemptionError as e:

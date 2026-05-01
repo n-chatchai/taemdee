@@ -56,8 +56,9 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 | C2.2 | **First scan · First stamp** | Reveal of the first point (+1/N) and the reward goal. |
 | C2.3 | **First scan · Save & signup** | Soft Wall: Offers Link LINE or Verify Phone (OTP) for permanent save, or skip. |
 | C3 | **Phone OTP** | Phone OTP form for customers who chose "Verify Phone". |
-| C4 | **Redeem state** | DeeCard at reward threshold. Primary CTA to redeem. |
-| C5 | **Reward claimed** | Celebration screen shown right after a redemption. |
+| C4 | **Redeem state (reward.almost)** | DeeCard at reward threshold. Primary "เปิดของขวัญ" CTA — open to guests; soft optional signup link below. |
+| C5 | **Reward claimed (reward.claim)** | Celebration screen — voucher saved to "ของขวัญ" tab for next visit. New blank card starts immediately. |
+| Gifts | **ของขวัญของพี่ + voucher.use** | List of earned vouchers (พร้อมใช้ / ใช้แล้ว). Tapping "ใช้" stamps it served immediately and shows a fullscreen QR for staff to scan within a 5-minute audit window. |
 | C6 | **Account menu** | Profile, preferred notification channel toggle, privacy submenu, logout, delete account (PDPA). |
 | C7 | **My Cards** | List of all DeeCards across shops. Has scan-camera button. |
 | C8 | **My QR** | Guest QR for shops that use "Shop scans customer" issuance method. |
@@ -85,12 +86,12 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 ### Customer Onboarding & Retention
 - **First Visit:** A brief, warm onboarding flow introduces "น้องแต้ม" and asks for a nickname. Points are issued instantly without forced account creation (anonymous guest mode).
 - **Return Visits:** Extremely fast (≤2 seconds). A scan updates the progress in place without re-onboarding.
-- **Identity Claim (Soft Wall):** Guests are encouraged to link their LINE account or phone number (OTP) to persist their points across devices or to redeem rewards.
+- **Identity Claim (Soft Wall):** Guests are encouraged — never required — to link their LINE account or phone number (OTP) so their points and earned vouchers survive across devices. Redemption itself is open to guests as of the May 1 design rev; the C4 redeem screen surfaces an optional "สมัครเพื่อเก็บบัตรไม่ให้หาย" link below the primary "เปิดของขวัญ" CTA.
 
 ### Shop Operations
 - **Frictionless Setup:** Phone/LINE login, minimal configuration (name, reward, logo, theme). First batch of points is free.
 - **Daily Issuance:** Staff can issue points via shop-side scanning, customer-side scanning (QR stickers), or phone entry. Configurable cooldowns prevent abuse.
-- **Redemption:** Customers initiate redemption on their phone when reaching the goal. The shop's dashboard reflects the redemption instantly with a window to void if fraudulent.
+- **Redemption:** Customers (including anonymous guests) initiate redemption on their phone when reaching the goal — the resulting voucher lands in their "ของขวัญ" tab to be used on the next visit. The shop's dashboard reflects the redemption instantly with a window to void if fraudulent.
 - **Multi-Branch:** Shops can add branches, choosing between "Shared" (one reward goal across all) or "Separate" (independent goals per branch) reward modes.
 
 ## 7. Product Principles

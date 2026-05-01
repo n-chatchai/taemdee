@@ -123,10 +123,11 @@ async def test_onboard_renders_for_first_time_guest(client, shop):
     assert "/card/save" in body  # phone OTP path
 
 
-async def test_full_card_gates_redemption_for_guests(named_client, db, shop):
-    """Guest with a full card sees the signup gate, not the redeem form —
-    revised C4: signup is required before redemption (anti-fraud + lets the
-    shop contact the customer about the reward)."""
+async def test_full_card_lets_guests_redeem_with_soft_signup_link(named_client, db, shop):
+    """Guest with a full card sees the redeem CTA + an optional signup
+    "save your card" link below — per the May 1 design rev that dropped
+    the hard gate. Soft link still opens the signup picker for any guest
+    who wants to bind their card."""
     from app.models import Customer, Point
 
     # Seed a full card via DB to skip the cooldown / scan-loop machinery.
@@ -139,28 +140,35 @@ async def test_full_card_gates_redemption_for_guests(named_client, db, shop):
     response = await named_client.get(f"/card/{shop.id}")
     assert response.status_code == 200
     body = response.text
-    # Gate copy + signup-opening CTA, NOT the bare redeem form. Wording
-    # updated per the May 1 design pass — "สมัครสมาชิก" → "ผูกบัญชี".
-    assert "ผูกบัญชีก่อนรับรางวัล" in body
-    assert "ผูกบัญชีรับรางวัล" in body
+    # Primary redeem CTA renders for guests too now.
+    assert "redeem-cta" in body
+    assert "เปิดของขวัญ" in body
+    assert f'action="/card/{shop.id}/redeem"' in body
+    # Soft signup link sits underneath, still opens the picker.
+    assert "redeem-soft-link" in body
+    assert "สมัครเพื่อเก็บบัตรไม่ให้หาย" in body
     assert 'data-open="signup-picker"' in body
-    assert "/redeem" not in body  # no plain redeem form for guests
 
 
-async def test_redeem_post_rejected_for_anonymous(client, db, shop):
-    """Even if a guest POSTs /redeem directly (bypassing the gated UI), the
-    server enforces the same membership rule — 403 with informative copy."""
-    from app.models import Customer, Point
+async def test_redeem_post_succeeds_for_anonymous_guest(client, db, shop):
+    """Guests can POST /redeem directly per the May 1 design — server no
+    longer 403s anonymous customers. The redemption is bound to the cookie
+    and the page redirects to /claimed."""
+    from app.models import Customer, Point, Redemption
 
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
     customer = (await db.exec(select(Customer))).first()
+    assert customer.is_anonymous
     for _ in range(shop.reward_threshold - 1):
         db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
     await db.commit()
 
     response = await client.post(f"/card/{shop.id}/redeem", follow_redirects=False)
-    assert response.status_code == 403
-    assert "ผูกบัญชีก่อนรับรางวัล" in response.json()["detail"]
+    assert response.status_code == 303
+    assert "/claimed" in response.headers["location"]
+    redemption = (await db.exec(select(Redemption))).first()
+    assert redemption is not None
+    assert redemption.customer_id == customer.id
 
 
 async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):

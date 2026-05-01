@@ -62,7 +62,7 @@
 
       <div class="redeem-num">
         <div class="big">{{ point_count }}</div>
-        <div class="done">บอกที่ร้านรับเลย</div>
+        <div class="done">รางวัลพร้อมเก็บแล้วครับ</div>
       </div>
     {% else %}
       <div class="hero-num-wrap">
@@ -91,28 +91,21 @@
     </div>
 
     {% if is_full %}
-      {% if is_guest %}
-        {# C4 guest gate — replace the redeem button with a signup pitch.
-           Tapping opens the picker; once the guest converts, the next
-           page load renders the real form below. #}
-        <div class="redeem-gate">
-          <div class="gate-msg">
-            <span>ผูกบัญชีก่อนรับรางวัลนะครับพี่</span>
-          </div>
-          <a href="#" class="btn-redeem" data-open="signup-picker">
-            <span>ผูกบัญชีรับรางวัล</span>
-            <span class="arrow">→</span>
+      {# May 1 design — guests can redeem too. Soft signup link sits
+         below the primary CTA for guests as an optional "save your
+         card" pitch (no longer a hard gate). #}
+      <form action="/card/{{ shop.id }}/redeem" method="POST" class="redeem-gate">
+        <button type="submit" class="redeem-cta">
+          <span>เปิดของขวัญ</span>
+          <span class="redeem-arrow">→</span>
+        </button>
+        {% if is_guest %}
+          <a href="#" class="redeem-soft-link" data-open="signup-picker">
+            <span class="rsl-spark">✦</span>
+            <span>สมัครเพื่อเก็บบัตรไม่ให้หาย</span>
           </a>
-        </div>
-      {% else %}
-        <form action="/card/{{ shop.id }}/redeem" method="POST">
-          <button type="submit" class="btn-redeem">
-            <span>รับรางวัล</span>
-            <span class="arrow">→</span>
-          </button>
-        </form>
-        <div class="counter-note">กดเมื่ออยู่ที่เคาน์เตอร์เท่านั้น</div>
-      {% endif %}
+        {% endif %}
+      </form>
     {% else %}
       <div class="reward-pill">
         {% if not is_guest and point_count * 10 >= shop.reward_threshold * 7 %}
