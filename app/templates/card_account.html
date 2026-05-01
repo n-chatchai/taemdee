@@ -1,16 +1,12 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>บัญชีของพี่ · TaemDee แต้มดี</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+{% extends "_layouts/c_base.html" %}
+{% set nav_active = 'settings' %}
+{% block title %}บัญชีของพี่ · TaemDee แต้มดี{% endblock %}
+
+{% block head_extra %}
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
+{% endblock %}
+
+{% block body_top %}
   {# Server→localStorage reconcile for the text-size picker. Lets a fresh
      device pick up the cross-device-saved value the next time the user
      opens any customer page (the pwa_head bootstrap reads localStorage). #}
@@ -24,131 +20,113 @@
       document.documentElement.classList.remove('fs-sm','fs-lg');
     }
   }catch(_){}}())</script>
-  <div class="td has-c-dock" x-data="{ armed: false }">
-    <div class="topbar"><span></span><span></span></div>
+{% endblock %}
 
-    <div class="page-head">
-      <div class="ph-text">
-        <h1>
-          {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีครับพี่{{ customer.display_name }}{% else %}สวัสดีครับ{% endif %}
-        </h1>
-        <div class="ph-sub">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</div>
-      </div>
-      <div class="ph-actions">
-        <a href="/my-id" class="ph-icon-btn" title="โชว์ QR ของพี่" aria-label="โชว์ QR">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-          </svg>
-        </a>
+{% block td_attrs %} x-data="{ armed: false }"{% endblock %}
+
+{% block content %}
+  {% set ph_action_kind = 'qr' %}
+  {% include "_partials/page_head.html" %}
+
+  {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
+  <div class="c6-profile-card">
+    <div class="avatar">{{ initial }}</div>
+    <div class="info">
+      <div class="name">{{ customer.display_name or 'ลูกค้าแต้มดี' }}</div>
+      <div class="meta">
+        {% if masked_phone %}<span>{{ masked_phone }}</span>{% endif %}
       </div>
     </div>
-
-    {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
-    <div class="c6-profile-card">
-      <div class="avatar">{{ initial }}</div>
-      <div class="info">
-        <div class="name">{{ customer.display_name or 'ลูกค้าแต้มดี' }}</div>
-        <div class="meta">
-          {% if masked_phone %}<span>{{ masked_phone }}</span>{% endif %}
-        </div>
-      </div>
-    </div>
-
-    {# "บัตรของพี่" row dropped per design — the dock's บัตร tab is the
-       primary path back. Keep "ของฉัน" as a single-row section for the
-       only thing not reachable from elsewhere (รางวัลที่รับแล้ว). #}
-    <div class="s10-section">
-      <div class="label">ของฉัน</div>
-
-      <div class="s10-row">
-        <div class="row-icon butter">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
-        </div>
-        <div class="row-info">
-          <div class="row-name">รางวัลที่รับแล้ว</div>
-        </div>
-        <div class="arrow-r">›</div>
-      </div>
-    </div>
-
-    <div class="s10-section">
-      <div class="label">ตั้งค่า</div>
-
-      {# C6 ขนาดตัวอักษร — sm/md/lg picker. Server saves customer.text_size,
-         JS mirrors choice into localStorage so the next page-load applies
-         the zoom on first paint via the bootstrap script in pwa_head. #}
-      <div class="s10-fontsize" data-text-size-current="{{ text_size }}">
-        <div class="fs-head">
-          <div class="fs-icon">Aa</div>
-          <div class="fs-info">
-            <div class="fs-name">ขนาดตัวอักษร</div>
-          </div>
-        </div>
-        <div class="fs-options">
-          <button type="button" class="fs-opt sm{% if text_size == 'sm' %} active{% endif %}" data-text-size="sm">เล็ก</button>
-          <button type="button" class="fs-opt md{% if text_size == 'md' %} active{% endif %}" data-text-size="md">กลาง</button>
-          <button type="button" class="fs-opt lg{% if text_size == 'lg' %} active{% endif %}" data-text-size="lg">ใหญ่</button>
-        </div>
-      </div>
-
-      <a href="/card/account/notifications" class="s10-row">
-        <div class="row-icon mint">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-        </div>
-        <div class="row-info">
-          <div class="row-name">การแจ้งเตือน</div>
-        </div>
-        <div class="arrow-r">›</div>
-      </a>
-
-      <div class="s10-row">
-        <div class="row-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-        </div>
-        <div class="row-info">
-          <div class="row-name">ความเป็นส่วนตัว</div>
-        </div>
-        <div class="arrow-r">›</div>
-      </div>
-
-      <div class="s10-row">
-        <div class="row-icon butter">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-        </div>
-        <div class="row-info">
-          <div class="row-name">ช่วยเหลือ</div>
-        </div>
-        <div class="arrow-r">›</div>
-      </div>
-    </div>
-
-    <form action="/card/account/logout" method="POST" style="margin:0;">
-      <button type="submit" class="s10-logout">ออกจากระบบ</button>
-    </form>
-
-    {# PDPA delete — two-tap arm/confirm pattern (no browser alert/confirm
-       per memory). First tap flips Alpine state, second tap submits. #}
-    <form action="/card/account/delete" method="POST" style="margin:0;"
-          @submit.prevent="armed ? $el.submit() : (armed = true)">
-      <button type="submit" class="c6-delete-account" :class="{ armed }">
-        <span x-show="!armed">ลบบัญชี · แต้มและข้อมูลทั้งหมดจะถูกลบ</span>
-        <span x-show="armed" x-cloak>แตะอีกครั้งเพื่อยืนยันลบบัญชี</span>
-      </button>
-    </form>
-
-    <div class="c6-version">
-      <span class="brand">taemdee<span class="dot">.</span></span> · เวอร์ชัน 1.0.2
-    </div>
-
-    {% include "_partials/footer_mark.html" %}
-
-    {% set nav_active = 'settings' %}
-    {% include "_partials/c_dock.html" %}
   </div>
 
+  {# "บัตรของพี่" row dropped per design — the dock's บัตร tab is the
+     primary path back. Keep "ของฉัน" as a single-row section for the
+     only thing not reachable from elsewhere (รางวัลที่รับแล้ว). #}
+  <div class="s10-section">
+    <div class="label">ของฉัน</div>
+
+    <div class="s10-row">
+      <div class="row-icon butter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
+      </div>
+      <div class="row-info">
+        <div class="row-name">รางวัลที่รับแล้ว</div>
+      </div>
+      <div class="arrow-r">›</div>
+    </div>
+  </div>
+
+  <div class="s10-section">
+    <div class="label">ตั้งค่า</div>
+
+    {# C6 ขนาดตัวอักษร — sm/md/lg picker. Server saves customer.text_size,
+       JS mirrors choice into localStorage so the next page-load applies
+       the zoom on first paint via the bootstrap script in pwa_head. #}
+    <div class="s10-fontsize" data-text-size-current="{{ text_size }}">
+      <div class="fs-head">
+        <div class="fs-icon">Aa</div>
+        <div class="fs-info">
+          <div class="fs-name">ขนาดตัวอักษร</div>
+        </div>
+      </div>
+      <div class="fs-options">
+        <button type="button" class="fs-opt sm{% if text_size == 'sm' %} active{% endif %}" data-text-size="sm">เล็ก</button>
+        <button type="button" class="fs-opt md{% if text_size == 'md' %} active{% endif %}" data-text-size="md">กลาง</button>
+        <button type="button" class="fs-opt lg{% if text_size == 'lg' %} active{% endif %}" data-text-size="lg">ใหญ่</button>
+      </div>
+    </div>
+
+    <a href="/card/account/notifications" class="s10-row">
+      <div class="row-icon mint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+      </div>
+      <div class="row-info">
+        <div class="row-name">การแจ้งเตือน</div>
+      </div>
+      <div class="arrow-r">›</div>
+    </a>
+
+    <div class="s10-row">
+      <div class="row-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+      </div>
+      <div class="row-info">
+        <div class="row-name">ความเป็นส่วนตัว</div>
+      </div>
+      <div class="arrow-r">›</div>
+    </div>
+
+    <div class="s10-row">
+      <div class="row-icon butter">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+      </div>
+      <div class="row-info">
+        <div class="row-name">ช่วยเหลือ</div>
+      </div>
+      <div class="arrow-r">›</div>
+    </div>
+  </div>
+
+  <form action="/card/account/logout" method="POST" style="margin:0;">
+    <button type="submit" class="s10-logout">ออกจากระบบ</button>
+  </form>
+
+  {# PDPA delete — two-tap arm/confirm pattern (no browser alert/confirm
+     per memory). First tap flips Alpine state, second tap submits. #}
+  <form action="/card/account/delete" method="POST" style="margin:0;"
+        @submit.prevent="armed ? $el.submit() : (armed = true)">
+    <button type="submit" class="c6-delete-account" :class="{ armed }">
+      <span x-show="!armed">ลบบัญชี · แต้มและข้อมูลทั้งหมดจะถูกลบ</span>
+      <span x-show="armed" x-cloak>แตะอีกครั้งเพื่อยืนยันลบบัญชี</span>
+    </button>
+  </form>
+
+  <div class="c6-version">
+    <span class="brand">taemdee<span class="dot">.</span></span> · เวอร์ชัน 1.0.2
+  </div>
+{% endblock %}
+
+{% block body_end %}
   <script>
     // C6 ขนาดตัวอักษร — wire the picker. Server is source of truth, but we
     // also mirror to localStorage so the next page-load applies the zoom on
@@ -179,5 +157,4 @@
       });
     })();
   </script>
-</body>
-</html>
+{% endblock %}
