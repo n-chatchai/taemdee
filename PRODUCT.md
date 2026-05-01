@@ -62,8 +62,8 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 | C2.3 | **First scan · Save & signup** | Soft Wall: Offers Link LINE or Verify Phone (OTP) for permanent save, or skip. |
 | C3 | **Phone OTP** | Phone OTP form for customers who chose "Verify Phone". |
 | C4 | **Redeem state (reward.almost)** | DeeCard at reward threshold. Primary "เปิดของขวัญ" CTA — open to guests; soft optional signup link below. |
-| C5 | **Reward claimed (reward.claim)** | Celebration screen — voucher saved to "ของขวัญ" tab for next visit. New blank card starts immediately. |
-| Gifts | **ของขวัญของพี่ + voucher.use** | List of earned vouchers (พร้อมใช้ / ใช้แล้ว). Tapping "ใช้" stamps it served immediately and shows a fullscreen QR for staff to scan within a 5-minute audit window. |
+| C5 | **Reward claimed (reward.claim)** | Celebration screen — voucher auto-saved to "ของขวัญ" tab for next visit. New blank card starts immediately. The dock's ของขวัญ count bumps live via SSE (`gifts-update` on `/sse/me`) so other open tabs reflect the new voucher without a refresh. |
+| Gifts | **ของขวัญของพี่ + voucher.use** | List of earned vouchers (พร้อมใช้ / ใช้แล้ว). Tapping "ใช้" stamps it served immediately, decrements the dock badge across tabs (same SSE event), and shows a fullscreen QR for staff to scan within a 5-minute audit window. |
 | C6 | **Account menu** | Profile, preferred notification channel toggle, privacy submenu, logout, delete account (PDPA). |
 | C7 | **My Cards** | List of all DeeCards across shops. Has scan-camera button. |
 | C8 | **My QR** | Guest QR for shops that use "Shop scans customer" issuance method. |

@@ -446,6 +446,90 @@ async def test_voucher_use_post_marks_served_and_redirects(client, db, shop):
     assert r.served_at is not None
 
 
+async def test_redeem_publishes_gifts_update_with_new_count(client, db, shop):
+    """A successful redeem fires gifts-update on the customer's SSE stream
+    so the dock badge bumps in real time across any open tab."""
+    import asyncio
+    from app.models import Customer, Point
+    from app.services import events
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    customer = (await db.exec(select(Customer))).first()
+    for _ in range(shop.reward_threshold - 1):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    q = events.subscribe_customer(customer.id)
+    try:
+        response = await client.post(f"/card/{shop.id}/redeem", follow_redirects=False)
+        assert response.status_code == 303
+
+        # Drain the queue until we see gifts-update (a feed-row event also
+        # fires on the shop channel — different subscriber, won't appear here).
+        name, payload = await asyncio.wait_for(q.get(), timeout=1.0)
+        assert name == "gifts-update"
+        assert payload == "1"  # one fresh active voucher
+    finally:
+        events.unsubscribe_customer(customer.id, q)
+
+
+async def test_voucher_use_publishes_gifts_update_with_decremented_count(client, db, shop):
+    """Tapping 'ใช้' moves the voucher to ใช้แล้ว → gifts-update fires
+    with the new (lower) active count so other tabs reflect the move."""
+    import asyncio
+    from app.models import Customer, Redemption
+    from app.services import events
+
+    c = Customer(is_anonymous=False, display_name="พี่ทดสอบ", phone="0877777778")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r1 = Redemption(customer_id=c.id, shop_id=shop.id)
+    r2 = Redemption(customer_id=c.id, shop_id=shop.id)
+    db.add_all([r1, r2])
+    await db.commit()
+    await db.refresh(r1)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    q = events.subscribe_customer(c.id)
+    try:
+        response = await client.post(f"/voucher/{r1.id}/use", follow_redirects=False)
+        assert response.status_code == 303
+
+        name, payload = await asyncio.wait_for(q.get(), timeout=1.0)
+        assert name == "gifts-update"
+        assert payload == "1"  # 2 active → 1 after one is served
+    finally:
+        events.unsubscribe_customer(c.id, q)
+
+
+async def test_my_cards_renders_initial_gifts_badge_from_server(client, db, shop):
+    """Server-rendered nav_gifts_badge paints the dock count on the very
+    first request — SSE only handles deltas, so this initial value matters."""
+    from app.models import Customer, Redemption
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    customer = (await db.exec(select(Customer))).first()
+    db.add(Redemption(customer_id=customer.id, shop_id=shop.id))
+    db.add(Redemption(customer_id=customer.id, shop_id=shop.id))
+    await db.commit()
+
+    body = (await client.get("/my-cards")).text
+    # Two active vouchers → the ของขวัญ tab carries a has-count badge
+    # with '2' on initial paint (no SSE delta needed).
+    import re
+    gifts_section = re.search(
+        r'href="/my-gifts".*?aria-label="ของขวัญ".*?</a>',
+        body,
+        re.DOTALL,
+    )
+    assert gifts_section, "expected gifts tab anchor in dock"
+    assert 'class="gn-badge has-count">2</span>' in gifts_section.group(0)
+
+
 async def test_voucher_use_post_is_idempotent(client, db, shop):
     """A second tap on 'ใช้' must not move served_at — once stamped, the
     voucher's used-at is the source of truth for the 5-min countdown."""

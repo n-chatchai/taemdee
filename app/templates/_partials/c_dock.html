@@ -51,23 +51,22 @@
   </a>
 </nav>
 
-{# Live inbox badge — opens an SSE stream to /sse/me and updates the dock
-   ข้อความ tab badge whenever the worker publishes inbox-update. Server-
-   rendered nav_inbox_badge handles the initial paint; this script keeps
-   it in sync without a full page refresh. #}
+{# Live dock badges — one SSE stream to /sse/me drives both the ข้อความ
+   and ของขวัญ counts. Server-rendered nav_*_badge handles the initial
+   paint; this script keeps them in sync without a full page refresh
+   (e.g. a redemption fired in another tab bumps ของขวัญ here too). #}
 <script>
   (function () {
     if (!('EventSource' in window)) return;
-    const inboxIcon = document.querySelector('.c-glass-nav .gn-tab[href="/my-inbox"] .gn-icon');
-    if (!inboxIcon) return;
 
-    function setBadge(count) {
-      let dot = inboxIcon.querySelector('.gn-badge');
+    function setBadge(iconEl, count) {
+      if (!iconEl) return;
+      let dot = iconEl.querySelector('.gn-badge');
       if (count > 0) {
         if (!dot) {
           dot = document.createElement('span');
           dot.className = 'gn-badge';
-          inboxIcon.appendChild(dot);
+          iconEl.appendChild(dot);
         }
         dot.classList.add('has-count');
         dot.textContent = String(count);
@@ -76,6 +75,10 @@
       }
     }
 
+    const inboxIcon = document.querySelector('.c-glass-nav .gn-tab[href="/my-inbox"] .gn-icon');
+    const giftsIcon = document.querySelector('.c-glass-nav .gn-tab[href="/my-gifts"] .gn-icon');
+    if (!inboxIcon && !giftsIcon) return;
+
     let es;
     let retryDelay = 30000;
     function open() {
@@ -83,7 +86,11 @@
         es = new EventSource('/sse/me');
         es.addEventListener('inbox-update', (ev) => {
           const n = parseInt(ev.data, 10);
-          if (!isNaN(n)) setBadge(n);
+          if (!isNaN(n)) setBadge(inboxIcon, n);
+        });
+        es.addEventListener('gifts-update', (ev) => {
+          const n = parseInt(ev.data, 10);
+          if (!isNaN(n)) setBadge(giftsIcon, n);
         });
         es.onerror = () => {
           // Browser auto-reconnects already; this catches the give-up case.

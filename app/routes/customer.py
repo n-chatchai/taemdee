@@ -32,12 +32,13 @@ router = APIRouter()
 async def customer_event_stream(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
 ):
-    """Per-customer SSE stream — drives the dock inbox badge live (so when
-    DeeReach delivers a new message in the worker, the customer sees the
-    badge bump without refreshing). Currently emits one event kind:
+    """Per-customer SSE stream — drives the dock badges live (a DeeReach
+    inbox drop, a fresh redemption, or a tap on "ใช้" each ripples the
+    relevant tab count without a refresh). Event kinds:
         inbox-update — payload is the new unread count as plain string.
+        gifts-update — payload is the new active-voucher count as plain string.
     Anonymous customers get a stream too (cookie alone identifies them) so
-    inbox events still reach guest mode.
+    these updates still reach guest mode.
 
     DOES NOT use Depends(get_session) — for StreamingResponse,
     FastAPI keeps yield-based dependencies alive for the entire stream
@@ -69,6 +70,21 @@ async def _inbox_unread_count(db: AsyncSession, customer_id: uuid.UUID) -> int:
         select(func.count())
         .select_from(Inbox)
         .where(Inbox.customer_id == customer_id, Inbox.read_at.is_(None))
+    )).one()
+
+
+async def _active_gifts_count(db: AsyncSession, customer_id: uuid.UUID) -> int:
+    """Active (unredeemed-by-shop, not voided) Redemption rows for this
+    customer — drives the `ของขวัญ` tab badge on the customer dock so a
+    fresh redeem (or a tap on "ใช้") updates the count without a refresh."""
+    return (await db.exec(
+        select(func.count())
+        .select_from(Redemption)
+        .where(
+            Redemption.customer_id == customer_id,
+            Redemption.served_at.is_(None),
+            Redemption.is_voided == False,  # noqa: E712
+        )
     )).one()
 
 
@@ -177,6 +193,7 @@ async def account_menu(
             "masked_phone": _mask_phone(customer.phone),
             "weekday_th": weekday_th,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
             "text_size": customer.text_size or "md",
         },
     )
@@ -233,6 +250,7 @@ async def card_account_notifications(
             "has_phone": bool(customer.phone),
             "muted": muted,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
     if was_created:
@@ -413,6 +431,7 @@ async def my_id(
             "qr_svg": qr_svg,
             "identity_url": identity_url,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
     if was_created:
@@ -539,6 +558,7 @@ async def view_card(
             "just_stamped": bool(stamped),
             "show_link_prompt": show_link_prompt,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
     if was_created:
@@ -736,6 +756,7 @@ async def shop_story(
             "shop_address": shop_address,
             "menu_items": list(menu_items),
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
     if was_created:
@@ -890,6 +911,11 @@ async def redeem_reward(
         "feed-row",
         feed_row_html("redemption", redemption.id, bkk_feed_time(redemption.created_at), customer.display_name or "ลูกค้า"),
     )
+    # Bump the customer's `ของขวัญ` dock badge in real time (other open
+    # tabs / the just-redirected /claimed page get the new count without
+    # waiting for the next page navigation).
+    from app.services.events import publish_customer
+    publish_customer(customer.id, "gifts-update", str(await _active_gifts_count(db, customer.id)))
 
     return RedirectResponse(
         url=f"/card/{shop_id}/claimed?r={redemption.id}",
@@ -931,6 +957,7 @@ async def reward_claimed(
             "shop": shop,
             "redemption": redemption,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
 
@@ -1139,6 +1166,7 @@ async def my_cards(
             "total_stamps": total_stamps,
             "weekday_th": weekday_th,
             "inbox_unread": inbox_unread,
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
     if was_created:
@@ -1279,6 +1307,11 @@ async def voucher_mark_used(
                 customer.display_name or "ลูกค้า",
             ),
         )
+        # Decrement the customer's `ของขวัญ` dock badge — this voucher
+        # just moved from "พร้อมใช้" to "ใช้แล้ว", so any other open tab
+        # (e.g. /my-cards) should reflect the lower count immediately.
+        from app.services.events import publish_customer
+        publish_customer(customer.id, "gifts-update", str(await _active_gifts_count(db, customer.id)))
     return RedirectResponse(
         url=f"/voucher/{redemption_id}",
         status_code=status.HTTP_303_SEE_OTHER,
@@ -1384,6 +1417,7 @@ async def my_inbox(
             "weekday_th": weekday_th,
             "unread_count": unread_count,
             "nav_inbox_badge": unread_count,
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
     if was_created:
@@ -1452,6 +1486,7 @@ async def my_inbox_detail(
             # Note: this row was just flipped to read above, so the count
             # already excludes it. Badge reflects the next unread, if any.
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
+            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
     )
 
