@@ -3,12 +3,9 @@
 {% block title %}ของขวัญของพี่ · TaemDee แต้มดี{% endblock %}
 
 {% block content %}
-  <div class="page-head">
-    <div class="ph-text">
-      <h1>ของขวัญของพี่</h1>
-      <div class="ph-sub">ผมเก็บไว้ให้นะครับ ใช้เมื่อพร้อม</div>
-    </div>
-  </div>
+  {% set ph_title = 'ของขวัญของพี่' %}
+  {% set ph_sub = 'ผมเก็บไว้ให้นะครับ ใช้เมื่อพร้อม' %}
+  {% include "_partials/page_head.html" %}
 
   {% if active_gifts or used_gifts %}
     {% if active_gifts %}

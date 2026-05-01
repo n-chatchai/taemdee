@@ -5,10 +5,6 @@
 
 {% block content %}
   {% set is_guest = customer and customer.is_anonymous %}
-  {# cards.list page-head — QR (my-id) + gear (settings) icons per
-     May 1 design. Both actions live here only; the dock no longer
-     carries either. #}
-  {% set ph_action_kind = 'qr_gear' %}
   {% include "_partials/page_head.html" %}
 
   <div class="c7-stats">

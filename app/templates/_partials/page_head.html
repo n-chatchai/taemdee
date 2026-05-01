@@ -1,19 +1,31 @@
-{# Customer page-head — greeting + sub + ph-actions slot. Used by C7 / C6
-   / Inbox / Gifts. Caller passes `weekday_th` (so the route picks the
-   timezone) and `customer` in context.
+{# Customer page-head — title + sub + ph-actions slot. Used by every
+   dock-anchored page (cards / inbox / gifts / settings).
+
+   Default copy is the daily greeting — "สวัสดีพี่{name}" + weekday +
+   "ขอให้เป็นวันที่ดี" — driven by `weekday_th` and `customer` in
+   context. Pages with their own copy (gifts, etc.) pass `ph_title`
+   and `ph_sub` to override.
 
    `ph_action_kind` controls the icon row in the right slot:
      'qr'      → just the QR-of-me button → /my-id
      'gear'    → just the settings cog    → /card/account
-     'qr_gear' → both, QR first then gear (cards.list)
-   Anything else (or missing) leaves the slot empty (gifts page). #}
-{% set _ph_kinds = (ph_action_kind.split('_') if ph_action_kind else []) %}
+     'qr_gear' → both, QR first then gear (default for dock-anchored
+                 pages — keeps the chrome consistent so the customer
+                 always knows where to find both).
+   Anything else (or empty) leaves the slot blank.
+
+   Pages with an .app-bar back-arrow (story / my-id / inbox detail /
+   notifications) intentionally skip this partial — the back nav owns
+   the chrome instead. #}
+{% set _ph_kinds = (ph_action_kind.split('_') if ph_action_kind else ['qr', 'gear']) %}
 <div class="page-head">
   <div class="ph-text">
     <h1>
-      {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีพี่{{ customer.display_name }}{% else %}สวัสดีครับ{% endif %}
+      {% if ph_title %}{{ ph_title }}
+      {% elif customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีพี่{{ customer.display_name }}
+      {% else %}สวัสดีครับ{% endif %}
     </h1>
-    <div class="ph-sub">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</div>
+    <div class="ph-sub">{% if ph_sub %}{{ ph_sub }}{% else %}วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี{% endif %}</div>
   </div>
   {% if _ph_kinds %}
     <div class="ph-actions">
