@@ -1,10 +1,10 @@
-{# Shared S3.* page header — brand + bell/cog actions, plus an optional
-   day-caption row underneath with greeting + smile + branch pill.
+{# Shared S3.* page header — "สวัสดี <ชื่อร้าน>" greeting + bell/cog
+   actions, plus an optional day-caption row underneath.
 
-   Per the latest design rev all S3.* pages show the SAME 'taemdee.' brand
-   in the top bar (page identity is signaled by the active glass-nav tab
-   + the content below). The day-caption row carries the friendly
-   greeting and multi-branch pill.
+   Brand mark in the hi block now carries the shop's name (with the
+   accent dot) instead of the generic "taemdee." — design rev makes
+   every S3.* page feel personal to the owner. Page identity is still
+   signaled by the active glass-nav tab + the content below.
 
    Caller sets vars before include:
      weekday_th   — string like 'วันศุกร์'; omit to hide the day row
@@ -13,7 +13,7 @@
 #}
 <div class="s3-top">
   <div class="hi">
-    <span class="td-brand">taemdee<span class="dot">.</span></span>
+    <span class="td-greet">สวัสดี <span class="td-brand">{{ shop.name }}<span class="dot">.</span></span></span>
   </div>
   <div class="actions">
     <a class="bell-btn" href="#" title="แจ้งเตือน" aria-label="แจ้งเตือน">

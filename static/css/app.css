@@ -568,18 +568,26 @@ body {
   align-items: baseline;
   gap: 8px;
 }
+.s3-top .hi .td-greet {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 500;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  color: var(--ink-soft);
+  line-height: 1.1;
+  display: inline-flex;
+  align-items: baseline;
+  gap: 6px;
+}
 .s3-top .hi .td-brand {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 28px;
-  letter-spacing: -0.025em;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
   color: var(--ink);
   line-height: 1;
-  transform: translateY(-4px);
 }
-.s3-top .hi .td-brand .dot {
-  color: var(--accent);
-}
+.s3-top .hi .td-brand .dot { color: var(--accent); }
 .s3-top .actions { display: flex; align-items: center; gap: 10px; }
 .s3-top .branch-pill {
   display: flex;
@@ -7531,30 +7539,35 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   padding: 0 4px;
 }
 .s3-issue-actions .sap-actions {
+  /* 2×2 grid per design — was 3-col with the buttons spilling onto a
+     second row below "ออกแต้มให้ลูกค้า". Each tile is a light-surface
+     card with the icon stacked above the label. */
   display: grid;
-  grid-template-columns: repeat(3, 1fr);
-  gap: 8px;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
 }
 .s3-issue-actions .sap-action {
   appearance: none;
   -webkit-appearance: none;
-  background: var(--ink);
-  color: var(--bg);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 12px;
-  padding: 10px 4px;
+  background: #fff;
+  color: var(--ink);
+  border: 1px solid rgba(17, 17, 17, 0.10);
+  border-radius: 14px;
+  padding: 16px 10px 14px;
   cursor: pointer;
   display: flex;
   flex-direction: column;
   align-items: center;
-  gap: 4px;
+  gap: 6px;
   text-decoration: none;
+  transition: transform 0.15s ease;
 }
-.s3-issue-actions .sap-action svg { width: 18px; height: 18px; }
+.s3-issue-actions .sap-action:active { transform: scale(0.98); }
+.s3-issue-actions .sap-action svg { width: 22px; height: 22px; }
 .s3-issue-actions .sap-action span {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 13px;
 }
 /* First button highlight — "ลูกค้าสแกน" gets the primary accent
    so the recommended path stands out from the row of three other
