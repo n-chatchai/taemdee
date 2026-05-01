@@ -132,36 +132,6 @@ async def account_menu(
     here regardless of claim status."""
     customer, _ = await find_or_create_customer(customer_cookie, db)
 
-    cards_count = (await db.exec(
-        select(func.count(func.distinct(Point.shop_id)))
-        .where(
-            Point.customer_id == customer.id,
-            Point.is_voided == False,  # noqa: E712
-            Point.redemption_id.is_(None),
-        )
-    )).one()
-
-    ready_count = 0
-    points_per_shop = (await db.exec(
-        select(Point.shop_id, func.count().label("active_count"))
-        .where(
-            Point.customer_id == customer.id,
-            Point.is_voided == False,  # noqa: E712
-            Point.redemption_id.is_(None),
-        )
-        .group_by(Point.shop_id)
-    )).all()
-    for shop_id, active_count in points_per_shop:
-        shop = await db.get(Shop, shop_id)
-        if shop and active_count >= shop.reward_threshold:
-            ready_count += 1
-
-    redemption_count = (await db.exec(
-        select(func.count())
-        .select_from(Redemption)
-        .where(Redemption.customer_id == customer.id)
-    )).one()
-
     from app.models.util import BKK
     from datetime import datetime, timezone
     weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[
@@ -174,12 +144,6 @@ async def account_menu(
         context={
             "customer": customer,
             "masked_phone": _mask_phone(customer.phone),
-            # cards_count / ready_count are unused by the new C6 layout (the
-            # dock cards tab covers it) — kept in the context for now so older
-            # callers/snapshots don't crash. Safe to drop in a follow-up.
-            "cards_count": cards_count,
-            "ready_count": ready_count,
-            "redemption_count": redemption_count,
             "weekday_th": weekday_th,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
             "text_size": customer.text_size or "md",
