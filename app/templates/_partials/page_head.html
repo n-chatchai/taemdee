@@ -22,7 +22,7 @@
   <div class="ph-text">
     <h1>
       {% if ph_title %}{{ ph_title }}
-      {% elif customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีพี่{{ customer.display_name }}
+      {% elif customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีพี่<span class="ph-name">{{ customer.display_name }}</span>
       {% else %}สวัสดีครับ{% endif %}
     </h1>
     <div class="ph-sub">{% if ph_sub %}{{ ph_sub }}{% else %}วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี{% endif %}</div>

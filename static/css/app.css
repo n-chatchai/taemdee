@@ -9958,6 +9958,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1.25;
   margin: 0;
 }
+.page-head h1 .ph-name { color: var(--accent); }
 .page-head .ph-sub {
   font-family: 'Prompt', sans-serif;
   font-size: var(--text-xs);
