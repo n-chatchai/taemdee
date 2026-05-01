@@ -6935,6 +6935,26 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-top: 2px;
 }
 .s3-metrics .met-trend { margin-bottom: 14px; }
+.s3-metrics .met-trend .trend-legend {
+  display: flex;
+  gap: 14px;
+  margin-bottom: 10px;
+}
+.s3-metrics .met-trend .trend-legend .lg-item {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.s3-metrics .met-trend .trend-legend .lg-dot {
+  width: 10px;
+  height: 10px;
+  border-radius: 2px;
+}
+.s3-metrics .met-trend .trend-legend .lg-dot.scan { background: var(--accent); }
+.s3-metrics .met-trend .trend-legend .lg-dot.redeem { background: var(--ink); }
 .s3-metrics .met-trend .trend-bars {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -6952,12 +6972,22 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .s3-metrics .met-trend .tb .tb-bar {
   width: 100%;
-  background: linear-gradient(180deg, var(--accent) 0%, #FF8559 100%);
-  border-radius: 6px 6px 2px 2px;
+  background: var(--accent);
+  border-radius: 4px 4px 2px 2px;
   min-height: 8px;
+  position: relative;
+  overflow: hidden;
 }
-.s3-metrics .met-trend .tb:nth-last-child(-n+2) .tb-bar {
-  background: linear-gradient(180deg, var(--ink) 0%, #333 100%);
+/* Redemption overlay sits at the bottom of the bar — its inline
+   `height` is a percentage OF the parent .tb-bar (i.e. share of that
+   day's stamps that were redemptions). Grows up from the floor. */
+.s3-metrics .met-trend .tb .tb-bar .tb-redeem {
+  position: absolute;
+  bottom: 0;
+  left: 0;
+  right: 0;
+  background: var(--ink);
+  border-radius: 0 0 2px 2px;
 }
 .s3-metrics .met-trend .tb .tb-day {
   font-family: 'Prompt', sans-serif;

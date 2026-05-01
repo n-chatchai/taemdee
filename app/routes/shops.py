@@ -180,8 +180,9 @@ async def dashboard(
     redemptions_today = redemption_stats[0]
     redemptions_total = redemption_stats[1]
 
-    # 7-day bucket — still its own query because we need each created_at
-    # to bin into a BKK calendar day.
+    # 7-day buckets for the trend chart — one query per surface (points
+    # for the orange scan bar, redemptions for the ink overlay) so we
+    # can render the design's stacked tb-bar + tb-redeem.
     point_rows = (await db.exec(
         select(Point.created_at)
         .where(
@@ -190,14 +191,44 @@ async def dashboard(
             Point.is_voided == False,  # noqa: E712
         )
     )).all()
+    redemption_rows = (await db.exec(
+        select(Redemption.created_at)
+        .where(
+            Redemption.shop_id == shop.id,
+            Redemption.created_at >= week_start_utc,
+            Redemption.is_voided == False,  # noqa: E712
+        )
+    )).all()
     daily_counts = [0] * 7
+    daily_redemptions = [0] * 7
+    today_bkk_date = today_start_bkk.date()
     for created_at in point_rows:
         bkk_date = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
-        offset_days = (today_start_bkk.date() - bkk_date).days
+        offset_days = (today_bkk_date - bkk_date).days
         if 0 <= offset_days < 7:
             daily_counts[6 - offset_days] += 1
+    for created_at in redemption_rows:
+        bkk_date = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
+        offset_days = (today_bkk_date - bkk_date).days
+        if 0 <= offset_days < 7:
+            daily_redemptions[6 - offset_days] += 1
     max_daily = max(daily_counts) or 1
     daily_pct = [int(round(100 * c / max_daily)) for c in daily_counts]
+    # Redeem overlay is a share of the same day's stamps, so percentages
+    # divide against `daily_counts[i]`, not `max_daily`. Days with zero
+    # stamps stay at 0 (no overlay).
+    daily_redeem_pct = [
+        int(round(100 * r / daily_counts[i])) if daily_counts[i] else 0
+        for i, r in enumerate(daily_redemptions)
+    ]
+    # Day labels aligned to today: the rightmost bar IS today, so offset
+    # from today's BKK weekday backward by (6 - i). Drops the broken
+    # fixed-sequence formula that ignored what day it actually was.
+    _DAY_LABELS_TH = ("จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา.")
+    today_weekday = today_bkk_date.weekday()
+    daily_labels = [
+        _DAY_LABELS_TH[(today_weekday - (6 - i)) % 7] for i in range(7)
+    ]
 
     # Branches count + first branch name in a single roundtrip via window
     # function. Most shops have 1 branch — `branch_label` only shows on
@@ -250,6 +281,9 @@ async def dashboard(
             "wow_pct": wow_pct,
             "daily_pct": daily_pct,
             "daily_counts": daily_counts,
+            "daily_redemptions": daily_redemptions,
+            "daily_redeem_pct": daily_redeem_pct,
+            "daily_labels": daily_labels,
             "points_total": points_total,
             "redemptions_total": redemptions_total,
             "feed_cap": app_settings.shop_customer_last_scan_display_number,

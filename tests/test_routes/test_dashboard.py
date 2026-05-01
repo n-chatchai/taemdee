@@ -145,3 +145,51 @@ async def test_settings_menu_signature_toggles(auth_client, db, shop):
     db.expire_all()
     await db.refresh(item)
     assert item.is_signature is False
+
+
+async def test_dashboard_trend_chart_labels_align_to_today(auth_client, db, shop):
+    """The 7 day labels under the bars must end on today's BKK weekday
+    (rightmost = today, leftmost = 6 days back). The earlier
+    fixed-sequence formula ignored what day it actually was."""
+    from datetime import datetime, timezone
+    from app.models.util import BKK
+    shop.is_onboarded = True
+    db.add(shop)
+    await db.commit()
+
+    today = datetime.now(timezone.utc).astimezone(BKK).date().weekday()
+    labels = ("จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา.")
+
+    body = (await auth_client.get("/shop/dashboard")).text
+
+    # Search for the 7 .tb-day spans in order — last one must be today.
+    import re
+    days_in_html = re.findall(r'class="tb-day">([^<]+)</span>', body)
+    assert len(days_in_html) == 7
+    assert days_in_html[-1] == labels[today]
+    assert days_in_html[0] == labels[(today - 6) % 7]
+
+
+async def test_dashboard_trend_chart_renders_legend_and_redeem_overlay(auth_client, db, shop):
+    """Trend chart now shows scan + redeem legend dots. Redeem overlay
+    appears as .tb-redeem inside .tb-bar when at least one redemption
+    happened in the 7-day window."""
+    from app.models import Customer, Redemption
+    shop.is_onboarded = True
+    db.add(shop)
+
+    c = Customer(is_anonymous=False, display_name="พี่ส้ม", phone="0822333444")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    # Seed today: 4 stamps + 1 redemption.
+    for _ in range(4):
+        db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
+    db.add(Redemption(customer_id=c.id, shop_id=shop.id))
+    await db.commit()
+
+    body = (await auth_client.get("/shop/dashboard")).text
+    assert "trend-legend" in body
+    assert 'class="lg-dot scan"' in body
+    assert 'class="lg-dot redeem"' in body
+    assert "tb-redeem" in body

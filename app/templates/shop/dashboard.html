@@ -38,12 +38,23 @@
     </div>
 
     <div class="met-trend">
+      <div class="trend-legend">
+        <span class="lg-item"><span class="lg-dot scan"></span>สแกน</span>
+        <span class="lg-item"><span class="lg-dot redeem"></span>แลกรางวัล</span>
+      </div>
       <div class="trend-bars">
-        {% set day_labels = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'] %}
+        {# Labels are server-aligned: the rightmost bar IS today, the
+           leftmost is 6 days back. Bars stack scans (orange) with a
+           redemption overlay (ink) sized as a share of that day's
+           stamps. #}
         {% for pct in daily_pct %}
           <div class="tb">
-            <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%"></div>
-            <span class="tb-day">{{ day_labels[(loop.index0 - 6 + 7) % 7] }}</span>
+            <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%">
+              {% if daily_redeem_pct[loop.index0] > 0 %}
+                <div class="tb-redeem" style="height: {{ daily_redeem_pct[loop.index0] }}%"></div>
+              {% endif %}
+            </div>
+            <span class="tb-day">{{ daily_labels[loop.index0] }}</span>
           </div>
         {% endfor %}
       </div>
