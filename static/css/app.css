@@ -2007,6 +2007,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 16px;
   overflow: hidden;
 }
+/* When the reward chip is a photo (tall), the rtxt looks adrift if
+   it's vertically centered against 96px of image. Pin it to the top
+   so "รางวัล / <name>" reads as a label paired with the photo. */
+.reward-pill:has(.gift img) {
+  align-items: flex-start;
+}
 .reward-pill .rtxt { flex: 1; line-height: 1.3; }
 .reward-pill .rlabel {
   font-family: 'JetBrains Mono', monospace;
