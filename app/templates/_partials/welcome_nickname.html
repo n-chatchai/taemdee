@@ -23,9 +23,12 @@
       <div class="signup-sub">ใช้ทักทาย · เปลี่ยนได้ตลอด</div>
     </div>
 
+    {# No autofocus — popping the keyboard on open scrolls past the
+       greeting headline before the customer reads it. They tap when
+       ready. #}
     <input type="text" name="name" id="welcome-nickname-input"
            class="welcome-nickname-input" placeholder="ลูกค้า (ค่าเริ่มต้น)" maxlength="40"
-           autocomplete="given-name" autofocus>
+           autocomplete="given-name">
 
     <button type="submit" class="signup-btn nickname-save"
             id="welcome-nickname-save">ต่อไป →</button>

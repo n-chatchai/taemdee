@@ -64,9 +64,13 @@
 
       <div class="ob-q">ให้ผมเรียกพี่ว่าอะไรดีครับ?</div>
       <div class="ob-input-wrap">
+        {# No autofocus on purpose — autofocus on mobile pops the
+           keyboard immediately + scrolls past the greeting copy before
+           the customer can read it. Per chatchai's feedback, the user
+           taps the field when they're ready. #}
         <input type="text" class="ob-input"
                placeholder="ลูกค้า (ค่าเริ่มต้น)" maxlength="40"
-               x-model="name" autocomplete="given-name" autofocus
+               x-model="name" autocomplete="given-name"
                @keydown.enter.prevent="submitName()" />
       </div>
       <div class="ob-skip-hint">ข้ามได้ — ผมจะเรียกว่า "ลูกค้า"</div>
