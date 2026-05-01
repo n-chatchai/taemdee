@@ -831,3 +831,106 @@ async def test_recover_unknown_code_returns_400_with_error(client):
     r = await client.post("/recover", data={"code": "ZZZZ-ZZZZ-ZZZZ"}, follow_redirects=False)
     assert r.status_code == 400
     assert "ไม่พบรหัส" in r.text
+
+
+# ---------------------------------------------------------------------------
+# link.prompt — soft sheet shown to ≥3-stamp anonymous customers
+# ---------------------------------------------------------------------------
+
+
+async def test_link_prompt_shows_when_anon_customer_has_three_stamps(client, db, shop):
+    """Anonymous customer with 3 active stamps and no snooze record sees
+    the link.prompt overlay on shop.daily."""
+    from app.models import Customer, Point
+
+    # Set display_name so /card doesn't bounce to /onboard.
+    await client.post("/card/nickname", data={"name": "พี่ทดสอบ"})
+    customer = (await db.exec(select(Customer))).first()
+    for _ in range(3):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert 'id="link-prompt"' in body
+    assert "ผูกบัญชีแต้มดีไหมครับ" in body
+    assert "/auth/google/customer/start" in body  # social pills wired through
+
+
+async def test_link_prompt_hidden_when_under_three_stamps(client, db, shop):
+    """Same setup with only 2 stamps — sheet should NOT render."""
+    from app.models import Customer, Point
+
+    await client.post("/card/nickname", data={"name": "พี่ทดสอบ"})
+    customer = (await db.exec(select(Customer))).first()
+    for _ in range(2):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert 'id="link-prompt"' not in body
+
+
+async def test_link_prompt_hidden_when_recently_snoozed(client, db, shop):
+    """If the customer hit the snooze endpoint within 14 days, suppress."""
+    from datetime import timedelta
+    from app.models import Customer, Point
+    from app.models.util import utcnow
+
+    await client.post("/card/nickname", data={"name": "พี่ทดสอบ"})
+    customer = (await db.exec(select(Customer))).first()
+    for _ in range(3):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    customer.last_link_prompt_snoozed_at = utcnow() - timedelta(days=3)
+    db.add(customer)
+    await db.commit()
+
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert 'id="link-prompt"' not in body
+
+
+async def test_link_prompt_shows_after_14_day_cooldown(client, db, shop):
+    """Snoozes older than 14 days no longer suppress the sheet."""
+    from datetime import timedelta
+    from app.models import Customer, Point
+    from app.models.util import utcnow
+
+    await client.post("/card/nickname", data={"name": "พี่ทดสอบ"})
+    customer = (await db.exec(select(Customer))).first()
+    for _ in range(3):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    customer.last_link_prompt_snoozed_at = utcnow() - timedelta(days=15)
+    db.add(customer)
+    await db.commit()
+
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert 'id="link-prompt"' in body
+
+
+async def test_link_prompt_hidden_for_claimed_customer(client, db, shop):
+    """Customer with a phone/line_id is no longer anonymous — never show."""
+    from app.models import Customer, Point
+
+    await client.post("/card/nickname", data={"name": "พี่ทดสอบ"})
+    customer = (await db.exec(select(Customer))).first()
+    customer.is_anonymous = False
+    customer.phone = "0855512345"
+    db.add(customer)
+    for _ in range(3):
+        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    body = (await client.get(f"/card/{shop.id}")).text
+    assert 'id="link-prompt"' not in body
+
+
+async def test_link_snooze_endpoint_stamps_timestamp(client, db, shop):
+    from app.models import Customer
+
+    await client.post("/card/nickname", data={"name": "พี่ทดสอบ"})
+
+    r = await client.post("/link/snooze", follow_redirects=False)
+    assert r.status_code == 303
+
+    db.expire_all()
+    customer = (await db.exec(select(Customer))).first()
+    assert customer.last_link_prompt_snoozed_at is not None

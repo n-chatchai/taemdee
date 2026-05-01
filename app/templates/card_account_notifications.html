@@ -9,35 +9,72 @@
     <div class="placeholder"></div>
   </div>
 
-  {# Channel preference: 'auto' (preferred_channel = None — waterfall
-     picks the cheapest reachable) or 'inbox' (pin to in-app inbox).
-     Forms POST → /card/account/notifications, server flips. #}
-  {% set channel = preferred_channel or 'auto' %}
+  {# settings.notif — 3 channel options. The route hands us:
+     - selected_channel: 'taemdee' | 'line' | 'sms' (always one of these)
+     - has_line:  bool — whether to enable the LINE row
+     - has_phone: bool — whether to enable the SMS row
+     Disabled rows still POST nothing (their form is suppressed); they
+     surface a "ผูกที่นี่" link to the matching provider start endpoint. #}
   <div class="s10-section">
     <div class="label">ช่องทางที่ใช้รับ</div>
     <div class="notif-radio-list">
+
       <form method="POST" action="/card/account/notifications" style="margin:0;">
-        <input type="hidden" name="channel" value="auto">
-        <button type="submit" class="notif-radio{% if channel == 'auto' %} selected{% endif %}"
+        <input type="hidden" name="channel" value="taemdee">
+        <button type="submit" class="notif-radio{% if selected_channel == 'taemdee' %} selected{% endif %}"
                 style="width:100%; appearance:none; -webkit-appearance:none; background:transparent; border:none; text-align:left; cursor:pointer;">
           <span class="nr-circle"></span>
           <div class="nr-text">
-            <div class="nr-name">อัตโนมัติ <span class="nr-badge">แนะนำ</span></div>
-            <div class="nr-desc">ระบบเลือกช่องที่ดีที่สุดให้พี่ — เร็ว ประหยัด</div>
+            <div class="nr-name">แต้มดี <span class="nr-badge">ค่าเริ่มต้น</span></div>
+            <div class="nr-desc">เด้งในแอป · ฟรี · ทำงานเมื่อเปิดแอปอยู่</div>
           </div>
         </button>
       </form>
-      <form method="POST" action="/card/account/notifications" style="margin:0;">
-        <input type="hidden" name="channel" value="inbox">
-        <button type="submit" class="notif-radio{% if channel == 'inbox' %} selected{% endif %}"
-                style="width:100%; appearance:none; -webkit-appearance:none; background:transparent; border:none; text-align:left; cursor:pointer;">
+
+      {% if has_line %}
+        <form method="POST" action="/card/account/notifications" style="margin:0;">
+          <input type="hidden" name="channel" value="line">
+          <button type="submit" class="notif-radio{% if selected_channel == 'line' %} selected{% endif %}"
+                  style="width:100%; appearance:none; -webkit-appearance:none; background:transparent; border:none; text-align:left; cursor:pointer;">
+            <span class="nr-circle"></span>
+            <div class="nr-text">
+              <div class="nr-name">LINE</div>
+              <div class="nr-desc">ส่งเข้า LINE ของพี่ · ผูกไลน์แล้ว ✓</div>
+            </div>
+          </button>
+        </form>
+      {% else %}
+        <div class="notif-radio disabled">
           <span class="nr-circle"></span>
           <div class="nr-text">
-            <div class="nr-name">ในแอปเท่านั้น</div>
-            <div class="nr-desc">ไม่เด้ง · ดูในกล่องเอง</div>
+            <div class="nr-name">LINE</div>
+            <div class="nr-desc">ยังไม่ได้ผูกไลน์ · <a class="nr-link" href="/auth/line/customer/start">ผูกที่นี่</a></div>
           </div>
-        </button>
-      </form>
+        </div>
+      {% endif %}
+
+      {% if has_phone %}
+        <form method="POST" action="/card/account/notifications" style="margin:0;">
+          <input type="hidden" name="channel" value="sms">
+          <button type="submit" class="notif-radio{% if selected_channel == 'sms' %} selected{% endif %}"
+                  style="width:100%; appearance:none; -webkit-appearance:none; background:transparent; border:none; text-align:left; cursor:pointer;">
+            <span class="nr-circle"></span>
+            <div class="nr-text">
+              <div class="nr-name">เบอร์โทร (SMS)</div>
+              <div class="nr-desc">ส่งเป็น SMS ไปที่เบอร์ที่พี่ผูกไว้ ✓</div>
+            </div>
+          </button>
+        </form>
+      {% else %}
+        <div class="notif-radio disabled">
+          <span class="nr-circle"></span>
+          <div class="nr-text">
+            <div class="nr-name">เบอร์โทร (SMS)</div>
+            <div class="nr-desc">ยังไม่ได้ผูกเบอร์ · <a class="nr-link" href="/card/save">ผูกที่นี่</a></div>
+          </div>
+        </div>
+      {% endif %}
+
     </div>
   </div>
 

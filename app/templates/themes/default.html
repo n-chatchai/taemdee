@@ -144,6 +144,13 @@
       {% set next_redeem = shop.id if is_full else None %}
       {% include "_partials/signup_picker.html" %}
     {% endif %}
+
+    {# link.prompt — soft sheet for ≥3-stamp guests who haven't linked.
+       Server already gated by is_anonymous + stamp count + 14d cooldown
+       in /card/<shop_id>; the partial just renders. #}
+    {% if show_link_prompt %}
+      {% include "_partials/link_prompt.html" %}
+    {% endif %}
   </div>
 </body>
 </html>

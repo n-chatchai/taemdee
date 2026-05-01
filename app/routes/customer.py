@@ -193,11 +193,22 @@ async def card_account_notifications(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """C6.notifications — channel preference + per-shop mute list. Anchors
-    only to the C6 'การแจ้งเตือน' row. preferred_channel=None means
-    waterfall (the default 'auto'); 'inbox' means deliver to in-app
-    inbox only (skip push/LINE/SMS). Muted shops live in
-    CustomerShopMute joined to Shop for the unmute list."""
+    """settings.notif — channel preference + per-shop mute list. Three
+    radio options per the May 1 design:
+
+      - "แต้มดี" (default) → preferred_channel=None, waterfall picks
+        web_push/line/sms/inbox by what's reachable + cheapest.
+      - "LINE" → preferred_channel='line'. Disabled (greyed) until the
+        customer links a LINE account; greyed row exposes a
+        "ผูกที่นี่" link to /auth/line/customer/start.
+      - "เบอร์โทร (SMS)" → preferred_channel='sms'. Same gating against
+        customer.phone, link target is /card/save (OTP page).
+
+    The legacy 'inbox' pin value is read as "แต้มดี" for display so
+    customers who picked it under the old 2-option UI still see a
+    coherent state — they keep their stored preference until they
+    explicitly change it.
+    """
     from app.models import CustomerShopMute
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     rows = (await db.exec(
@@ -208,12 +219,22 @@ async def card_account_notifications(
     )).all()
     muted = [{"shop": shop} for _mute, shop in rows]
 
+    pref = customer.preferred_channel
+    if pref == "line":
+        selected_channel = "line"
+    elif pref == "sms":
+        selected_channel = "sms"
+    else:
+        selected_channel = "taemdee"
+
     response = templates.TemplateResponse(
         request=request,
         name="card_account_notifications.html",
         context={
             "customer": customer,
-            "preferred_channel": customer.preferred_channel,
+            "selected_channel": selected_channel,
+            "has_line": bool(customer.line_id),
+            "has_phone": bool(customer.phone),
             "muted": muted,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
@@ -225,14 +246,24 @@ async def card_account_notifications(
 
 @router.post("/card/account/notifications")
 async def card_account_notifications_post(
-    channel: str = Form("auto"),
+    channel: str = Form("taemdee"),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Save the channel preference. 'auto' clears preferred_channel
-    (waterfall picks); 'inbox' pins to in-app delivery."""
+    """Save the channel preference. 'taemdee' clears preferred_channel
+    (waterfall picks cheapest reachable). 'line' / 'sms' pin to that
+    channel — silently rejected if the customer hasn't linked the
+    matching identity, since the picker UI gates the option there too."""
     customer, _ = await find_or_create_customer(customer_cookie, db)
-    customer.preferred_channel = None if channel == "auto" else channel
+    if channel == "line" and customer.line_id:
+        customer.preferred_channel = "line"
+    elif channel == "sms" and customer.phone:
+        customer.preferred_channel = "sms"
+    else:
+        # 'taemdee' (default) or attempt to pick a not-yet-linked
+        # provider — fall back to waterfall. The picker disables those
+        # options client-side, but a hand-crafted POST still lands here.
+        customer.preferred_channel = None
     db.add(customer)
     await db.commit()
     return RedirectResponse(
@@ -316,6 +347,25 @@ async def customer_logout():
     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie(CUSTOMER_COOKIE_NAME, path="/")
     return response
+
+
+@router.post("/link/snooze")
+async def link_prompt_snooze(
+    request: Request,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Stamp customer.last_link_prompt_snoozed_at = now() so link.prompt
+    stays hidden for 14 days. Bounce back to wherever the form was POSTed
+    from (Referer) so the customer keeps their place — falls back to
+    /my-cards if Referer is missing/cross-origin."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    customer.last_link_prompt_snoozed_at = utcnow()
+    db.add(customer)
+    await db.commit()
+    referer = request.headers.get("referer")
+    target = referer if referer and referer.startswith(str(request.base_url)) else "/my-cards"
+    return RedirectResponse(url=target, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/my-id", response_class=HTMLResponse)
@@ -436,6 +486,27 @@ async def view_card(
         )).one()
         is_first_visit = prior_redemptions == 0
 
+    # link.prompt — soft sheet shown on shop.daily once a still-anon
+    # customer has collected ≥3 active stamps total (across all shops)
+    # and either never snoozed or snoozed ≥14 days ago. Don't show on
+    # the celebration screen (just_stamped) — that moment is reserved
+    # for the new-stamp confetti, not a conversion ask.
+    show_link_prompt = False
+    if customer.is_anonymous and not stamped:
+        total_active_stamps = (await db.exec(
+            select(func.count())
+            .select_from(Point)
+            .where(
+                Point.customer_id == customer.id,
+                Point.is_voided == False,  # noqa: E712
+                Point.redemption_id.is_(None),
+            )
+        )).one()
+        if total_active_stamps >= 3:
+            snoozed = customer.last_link_prompt_snoozed_at
+            if snoozed is None or (utcnow() - snoozed).days >= 14:
+                show_link_prompt = True
+
     response = templates.TemplateResponse(
         request=request,
         name="themes/default.html",
@@ -450,6 +521,7 @@ async def view_card(
             # contextual "this is your first one here" note, not a substitute
             # for the confetti moment every stamp deserves.
             "just_stamped": bool(stamped),
+            "show_link_prompt": show_link_prompt,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )

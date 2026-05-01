@@ -2320,6 +2320,106 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1.2;
   text-decoration: none;
 }
+/* link.prompt + push.prompt — soft sheet overlay pattern. The page
+   underneath gets dimmed + desaturated via .pp-page-fade, the sheet
+   slides up with a backdrop. Used for link.prompt (cookie-anonymous
+   customer with ≥3 stamps) + push.prompt (PWA install moment). */
+.pp-page-fade {
+  opacity: 0.32;
+  filter: saturate(0.65);
+  pointer-events: none;
+}
+.pp-overlay {
+  position: fixed;
+  inset: 0;
+  z-index: 100;
+  display: flex;
+  flex-direction: column;
+  justify-content: flex-end;
+  pointer-events: none;
+}
+.pp-backdrop {
+  position: absolute;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.4);
+  backdrop-filter: blur(2px);
+  -webkit-backdrop-filter: blur(2px);
+  z-index: 1;
+  pointer-events: auto;
+}
+.pp-sheet {
+  position: relative;
+  z-index: 2;
+  background: var(--bg);
+  border-radius: 24px 24px 0 0;
+  padding: 12px 22px 28px;
+  box-shadow: 0 -4px 30px -8px rgba(17, 17, 17, 0.3);
+  pointer-events: auto;
+}
+.pp-handle {
+  width: 36px;
+  height: 4px;
+  background: rgba(17, 17, 17, 0.18);
+  border-radius: 999px;
+  margin: 0 auto 16px;
+}
+.pp-avatar {
+  position: relative;
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 14px;
+}
+.pp-avatar::before {
+  content: '';
+  position: absolute;
+  top: 50%; left: 50%;
+  transform: translate(-50%, -50%);
+  width: 110px; height: 110px;
+  background: radial-gradient(circle, var(--butter) 0%, transparent 65%);
+  opacity: 0.5;
+  border-radius: 50%;
+  z-index: 0;
+}
+.pp-avatar svg {
+  position: relative;
+  z-index: 1;
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.pp-headline {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-md);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.4;
+  margin-bottom: 6px;
+}
+.pp-sub {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin-bottom: 16px;
+}
+.pp-secondary {
+  display: block;
+  text-align: center;
+  padding: 10px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  text-decoration: underline;
+  text-decoration-color: rgba(17, 17, 17, 0.25);
+  text-underline-offset: 3px;
+  cursor: pointer;
+  background: transparent;
+  border: none;
+  width: 100%;
+}
+
 .signup-btn.line {
   background: #06C755;
   color: #fff;
@@ -4380,6 +4480,20 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink-soft);
   margin-top: 2px;
   line-height: 1.45;
+}
+.notif-radio.disabled {
+  opacity: 0.55;
+  cursor: not-allowed;
+}
+.notif-radio.disabled .nr-circle {
+  border-color: rgba(17, 17, 17, 0.18);
+}
+.notif-radio .nr-link {
+  color: var(--accent);
+  text-decoration: underline;
+  text-underline-offset: 2px;
+  font-weight: 600;
+  cursor: pointer;
 }
 .notif-mute-row {
   display: flex;

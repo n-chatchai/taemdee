@@ -41,6 +41,12 @@ class Customer(SQLModel, table=True):
     # 3 groups of 4 (e.g. "K7M-XQ4P-2H9R"). Stored uppercase, hyphen-included.
     recovery_code: Optional[str] = Field(default=None, unique=True, index=True)
 
+    # link.prompt cooldown — set when a still-anonymous customer taps "ไว้ก่อน"
+    # on the soft prompt that appears once they've collected ≥3 stamps. Re-show
+    # only after 14 days. NULL = never snoozed (eligible to show as soon as
+    # the stamp threshold is met).
+    last_link_prompt_snoozed_at: Optional[datetime] = Field(default=None)
+
     # C6 accessibility — "ขนาดตัวอักษร" picker. Values: "sm" | "md" | "lg".
     # NULL = "md" (default, no zoom). Drives a `.ts-{value}` class on
     # <html> via the pwa_head bootstrap script (also persisted in

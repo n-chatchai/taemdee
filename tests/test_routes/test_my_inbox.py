@@ -299,7 +299,10 @@ async def test_notifications_unmute_deletes_row(client, db, shop):
     assert rows == []
 
 
-async def test_notifications_channel_save_clears_for_auto(client, db):
+async def test_notifications_channel_save_clears_for_taemdee(client, db):
+    """settings.notif POST stores 'line' / 'sms' when the customer has
+    that identity, otherwise the route falls back to NULL (waterfall).
+    'taemdee' (the default radio) always clears preferred_channel."""
     from app.models import Customer
 
     _set_customer_cookie(client, "fake")  # no-op; route ignores invalid token
@@ -311,16 +314,42 @@ async def test_notifications_channel_save_clears_for_auto(client, db):
     )
     assert sub.status_code == 200
 
-    r1 = await client.post("/card/account/notifications", data={"channel": "inbox"}, follow_redirects=False)
+    # Give the customer a phone so 'sms' is allowed by the gating rule.
+    customer = (await db.exec(select(Customer))).first()
+    customer.phone = "0855512345"
+    db.add(customer)
+    await db.commit()
+
+    r1 = await client.post("/card/account/notifications", data={"channel": "sms"}, follow_redirects=False)
     assert r1.status_code == 303
     db.expire_all()
     rows = (await db.exec(select(Customer))).all()
-    assert any(c.preferred_channel == "inbox" for c in rows)
+    assert any(c.preferred_channel == "sms" for c in rows)
 
-    r2 = await client.post("/card/account/notifications", data={"channel": "auto"}, follow_redirects=False)
+    r2 = await client.post("/card/account/notifications", data={"channel": "taemdee"}, follow_redirects=False)
     assert r2.status_code == 303
     db.expire_all()
     rows = (await db.exec(select(Customer))).all()
+    assert all(c.preferred_channel is None for c in rows)
+
+
+async def test_notifications_rejects_provider_not_linked(client, db):
+    """POSTing 'line' for a customer with no line_id silently falls back
+    to NULL (the picker UI gates the option, but a hand-crafted POST
+    must not be able to pin a channel that won't deliver)."""
+    from app.models import Customer
+
+    sub = await client.post(
+        "/push/subscribe",
+        data={"endpoint": "https://x", "p256dh": "p", "auth": "a"},
+    )
+    assert sub.status_code == 200
+
+    r = await client.post("/card/account/notifications", data={"channel": "line"}, follow_redirects=False)
+    assert r.status_code == 303
+    db.expire_all()
+    rows = (await db.exec(select(Customer))).all()
+    # No line_id on the customer → preferred_channel stays None.
     assert all(c.preferred_channel is None for c in rows)
 
 
