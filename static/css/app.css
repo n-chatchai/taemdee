@@ -1748,6 +1748,47 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1;
   white-space: nowrap;
 }
+
+/* onboard.link_account — 4-row social pill stack (LINE / Google /
+   Facebook / phone). Replaces the 2-pill .ob-pill primary+secondary
+   layout for step 3. Vertical, 100% width, lighter visual weight than
+   .ob-pill since 4 options need to breathe. Ports verbatim from
+   design/taemdee-customer.html. */
+.ob-social-row {
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+  margin-top: 24px;
+  margin-bottom: 4px;
+  width: 100%;
+}
+.ob-social-pill {
+  appearance: none; -webkit-appearance: none;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.12);
+  border-radius: 12px;
+  padding: 8px 14px;
+  cursor: pointer;
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  text-decoration: none;
+  transition: transform 0.15s ease;
+}
+.ob-social-pill:active { transform: scale(0.98); }
+.ob-social-pill svg {
+  width: 20px;
+  height: 20px;
+  display: block;
+  flex-shrink: 0;
+}
+.ob-social-pill.line svg { color: #06C755; }
 .shop-head .side-spark {
   position: absolute;
   top: 56px;
@@ -2284,6 +2325,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: #fff;
   box-shadow: none;
 }
+.signup-btn.google,
+.signup-btn.facebook,
 .signup-btn.phone-btn {
   background: var(--surface);
   color: var(--ink);
@@ -2311,7 +2354,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   opacity: 0.85;
   margin-top: 1px;
 }
-.signup-btn.phone-btn .bn-meta { color: var(--ink-soft); opacity: 1; }
+.signup-btn.phone-btn .bn-meta,
+.signup-btn.google .bn-meta,
+.signup-btn.facebook .bn-meta { color: var(--ink-soft); opacity: 1; }
 
 /* Nickname input + save — used by the C2.welcome auto-open sheet. */
 .welcome-nickname-input {

@@ -114,9 +114,13 @@ async def test_onboard_renders_for_first_time_guest(client, shop):
     assert "ob-step-dots" in body
     # Step 1 greeting + nickname prompt
     assert "ผมเรียกพี่ว่าอะไรดี" in body
-    # Step 3 signup pills are in the markup (Alpine x-show toggles visibility)
-    assert "สมัครด้วยไลน์" in body
-    assert "สมัครด้วยเบอร์โทร" in body
+    # Step 3 social pills are in the markup (Alpine x-show toggles visibility).
+    # The new onboard.link_account row is 4 options (LINE / Google /
+    # Facebook / phone) each routing to its provider start endpoint.
+    assert "/auth/line/customer/start" in body
+    assert "/auth/google/customer/start" in body
+    assert "/auth/facebook/customer/start" in body
+    assert "/card/save" in body  # phone OTP path
 
 
 async def test_full_card_gates_redemption_for_guests(named_client, db, shop):
@@ -135,9 +139,10 @@ async def test_full_card_gates_redemption_for_guests(named_client, db, shop):
     response = await named_client.get(f"/card/{shop.id}")
     assert response.status_code == 200
     body = response.text
-    # Gate copy + signup-opening CTA, NOT the bare redeem form
-    assert "สมัครก่อนรับรางวัล" in body
-    assert "สมัครรับรางวัล" in body
+    # Gate copy + signup-opening CTA, NOT the bare redeem form. Wording
+    # updated per the May 1 design pass — "สมัครสมาชิก" → "ผูกบัญชี".
+    assert "ผูกบัญชีก่อนรับรางวัล" in body
+    assert "ผูกบัญชีรับรางวัล" in body
     assert 'data-open="signup-picker"' in body
     assert "/redeem" not in body  # no plain redeem form for guests
 
@@ -155,7 +160,7 @@ async def test_redeem_post_rejected_for_anonymous(client, db, shop):
 
     response = await client.post(f"/card/{shop.id}/redeem", follow_redirects=False)
     assert response.status_code == 403
-    assert "สมัครก่อนรับรางวัล" in response.json()["detail"]
+    assert "ผูกบัญชีก่อนรับรางวัล" in response.json()["detail"]
 
 
 async def test_scan_unknown_shop_redirects_to_friendly_card_404(client):
@@ -776,8 +781,9 @@ async def test_onboard_recovery_renders_and_persists_code(client, db, shop):
 
 
 async def test_onboard_skip_link_targets_recovery(client, shop):
-    """C2.3 'ขอบคุณแต่ยังก่อน' must point to /onboard/{shop}/recovery so
-    the customer is offered a recovery code before they leave."""
+    """onboard.link_account 'ไว้ก่อนครับ' skip must point to
+    /onboard/{shop}/recovery so the customer is offered a recovery code
+    before they leave."""
     r = await client.get(f"/scan/{shop.id}", follow_redirects=True)
     assert r.status_code == 200
     assert f"/onboard/{shop.id}/recovery" in r.text
