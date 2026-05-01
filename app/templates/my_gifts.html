@@ -15,14 +15,19 @@
           พร้อมใช้
         </div>
         {% for g in active_gifts %}
-          <div class="gift-card">
+          {# voucher.use is trust-based per the May 1 design: tapping
+             "ใช้" stamps served_at on the redemption immediately and
+             redirects to the fullscreen voucher screen the customer
+             shows to staff. POST form, not a link, so the action is
+             explicitly user-initiated. #}
+          <form class="gift-card" method="post" action="/voucher/{{ g.id }}/use" style="margin: 0 0 8px;">
             <div class="gc-icon {{ g.icon_color or 'butter' }}">{{ g.emoji or '🎁' }}</div>
             <div class="gc-info">
               <div class="gc-name">{{ g.name }}</div>
               <div class="gc-meta">{{ g.shop_name }}{% if g.expires_at %} · หมด {{ g.expires_at }}{% endif %}</div>
             </div>
-            <a class="gc-cta" href="{{ g.use_url }}">ใช้</a>
-          </div>
+            <button type="submit" class="gc-cta">ใช้</button>
+          </form>
         {% endfor %}
       </div>
     {% endif %}
@@ -34,8 +39,11 @@
             <div class="gc-icon">{{ g.emoji or '🎁' }}</div>
             <div class="gc-info">
               <div class="gc-name">{{ g.name }}</div>
-              <div class="gc-meta">{{ g.shop_name }}{% if g.used_at %} · {{ g.used_at }}{% endif %}</div>
+              <div class="gc-meta">{{ g.shop_name }}{% if g.used_at %} · ใช้เมื่อ {{ g.used_at }}{% endif %}</div>
             </div>
+            <span class="gc-used-tag" aria-label="ใช้แล้ว">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+            </span>
           </div>
         {% endfor %}
       </div>

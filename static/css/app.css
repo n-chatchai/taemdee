@@ -10756,6 +10756,117 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   text-decoration: none;
   display: inline-block;
 }
+/* Mint check tag — replaces .gc-cta on used vouchers so the row
+   reads "consumed" without a CTA the customer can re-tap. */
+.gc-used-tag {
+  width: 24px;
+  height: 24px;
+  background: var(--mint);
+  color: var(--mint-ink);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.gc-used-tag svg { width: 12px; height: 12px; }
+
+/* ============================================================
+   voucher.use — fullscreen voucher screen reached from gifts.list.
+   Trust-based: pressing "ใช้" stamps the redemption with served_at,
+   then we render this page so the customer shows it to staff. QR is
+   audit-trail (optional) — staff can verify by visual check.
+   ============================================================ */
+.voucher-screen {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: center;
+  padding: 14px 22px 22px;
+  text-align: center;
+}
+.voucher-screen .vs-shop {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  padding: 5px 14px 5px 5px;
+  background: var(--surface);
+  border-radius: 99px;
+  border: 1px solid rgba(17,17,17,0.08);
+  margin-bottom: 22px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-xs);
+  color: var(--ink);
+}
+.voucher-screen .vs-shop .vss-logo {
+  width: 22px;
+  height: 22px;
+  background: var(--ink);
+  border-radius: 6px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: var(--text-2xs);
+  color: #fff;
+  letter-spacing: -0.025em;
+  flex-shrink: 0;
+}
+.voucher-screen .vs-shop .vss-logo .dot { color: var(--accent); }
+.voucher-screen .vs-headline {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-base);
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.voucher-screen .vs-offer {
+  font-family: 'Prompt', sans-serif;
+  font-size: 28px;
+  font-weight: 700;
+  color: var(--ink);
+  line-height: 1.2;
+  margin-bottom: 24px;
+}
+.voucher-screen .vs-qr-frame {
+  width: 200px;
+  height: 200px;
+  background: var(--surface);
+  border-radius: 20px;
+  padding: 14px;
+  box-sizing: border-box;
+  margin: 0 auto 14px;
+  box-shadow: 0 4px 24px -8px rgba(17,17,17,0.18);
+}
+.voucher-screen .vs-qr-frame svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+}
+.voucher-screen .vs-instruction {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+}
+.voucher-screen .vs-countdown {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  padding: 7px 14px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  margin-bottom: 14px;
+}
+.voucher-screen .vs-countdown svg {
+  width: 12px;
+  height: 12px;
+}
 
 /* C-scan modal — fullscreen QR scanner reached from dock "สแกน" tab.
    Ported from design lines 3345-3479 (Apr 30 design refresh).

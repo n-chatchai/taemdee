@@ -1,0 +1,78 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>ใช้ของขวัญ · {{ shop.name }} · TaemDee</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  {% set logo = shop_logo(shop) %}
+  <div class="td">
+    <div class="app-bar">
+      <a class="x" aria-label="ย้อนกลับ" href="/my-gifts">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+      </a>
+      <div class="title-mid">ใช้ของขวัญ</div>
+      <div class="placeholder"></div>
+    </div>
+
+    <div class="voucher-screen">
+      <div class="vs-shop">
+        <span class="vss-logo">
+          {% if logo %}{{ logo.text[0]|upper }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}
+          {% else %}{{ shop.name[0]|upper }}{% endif %}
+        </span>
+        <span>{{ shop.name }}</span>
+      </div>
+
+      <div class="vs-headline">โชว์หน้านี้ให้ร้าน</div>
+      <div class="vs-offer">{{ shop.reward_description }}</div>
+
+      <div class="vs-qr-frame">{{ qr_svg|safe }}</div>
+
+      <div class="vs-instruction">ของขวัญถูกใช้แล้ว · โชว์หน้าจอให้ร้านดู</div>
+
+      {# 5-minute countdown anchored to served_at. Past 5 min the timer
+         just hides itself — the QR remains visible since the audit
+         record stays valid. #}
+      {% if used_at %}
+        <div class="vs-countdown" id="vs-countdown" data-used-at="{{ used_at.isoformat() }}" hidden>
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+          <span>หมดอายุใน <strong id="vs-countdown-text">5:00</strong></span>
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <script>
+    (function () {
+      const el = document.getElementById('vs-countdown');
+      const text = document.getElementById('vs-countdown-text');
+      if (!el || !text) return;
+      // served_at is naive UTC out of Postgres — append Z so Date.parse
+      // doesn't read it as local time.
+      const raw = el.dataset.usedAt;
+      const usedAtMs = Date.parse(raw.endsWith('Z') ? raw : raw + 'Z');
+      const expiresAtMs = usedAtMs + 5 * 60 * 1000;
+      function tick() {
+        const remainingMs = expiresAtMs - Date.now();
+        if (remainingMs <= 0) {
+          el.hidden = true;
+          return;
+        }
+        el.hidden = false;
+        const totalSec = Math.floor(remainingMs / 1000);
+        const m = Math.floor(totalSec / 60);
+        const s = totalSec % 60;
+        text.textContent = m + ':' + (s < 10 ? '0' + s : s);
+      }
+      tick();
+      setInterval(tick, 1000);
+    })();
+  </script>
+</body>
+</html>

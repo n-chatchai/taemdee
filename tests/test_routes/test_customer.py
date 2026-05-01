@@ -359,9 +359,10 @@ async def test_my_gifts_renders_empty_state(client):
     assert "c-glass-nav" in body
 
 
-async def test_my_gifts_lists_active_voucher_with_use_link(client, db, shop):
+async def test_my_gifts_lists_active_voucher_with_use_form(client, db, shop):
     """An unserved Redemption is the customer's active voucher → it
-    appears in 'พร้อมใช้' with the 'ใช้' link wired to /card/{shop}/claimed."""
+    appears in 'พร้อมใช้' with the 'ใช้' button submitting to
+    /voucher/<id>/use (May 1 trust-based activation flow)."""
     from app.models import Customer, Redemption
     c = Customer(is_anonymous=False, display_name="พี่ลูก", phone="0811111111")
     db.add(c)
@@ -380,8 +381,8 @@ async def test_my_gifts_lists_active_voucher_with_use_link(client, db, shop):
     assert "พร้อมใช้" in body
     assert shop.reward_description in body
     assert shop.name in body
-    # Use link points at the C5 voucher screen
-    assert f'/card/{shop.id}/claimed?r={r.id}' in body
+    assert f'/voucher/{r.id}/use' in body
+    assert 'method="post"' in body
 
 
 async def test_my_gifts_lists_used_voucher_in_used_section(client, db, shop):
@@ -402,10 +403,124 @@ async def test_my_gifts_lists_used_voucher_in_used_section(client, db, shop):
 
     body = (await client.get("/my-gifts")).text
     assert "ใช้แล้ว" in body
-    # The used row exists but has no /claimed link (it's read-only)
     assert "gift-card used" in body
     # No "use" CTA for used rows
     assert body.count('class="gc-cta"') == 0
+    # Mint check tag instead of CTA
+    assert "gc-used-tag" in body
+
+
+async def test_voucher_use_post_marks_served_and_redirects(client, db, shop):
+    """voucher.use trust-based: POST stamps served_at on the redemption
+    immediately and 303s to GET /voucher/<id> for the fullscreen QR
+    customer shows to staff."""
+    from app.models import Customer, Redemption
+    c = Customer(is_anonymous=False, display_name="พี่ส้ม", phone="0833333333")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id)
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+    assert r.served_at is None
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    response = await client.post(f"/voucher/{r.id}/use", follow_redirects=False)
+    assert response.status_code == 303
+    assert response.headers["location"] == f"/voucher/{r.id}"
+
+    db.expire_all()
+    await db.refresh(r)
+    assert r.served_at is not None
+
+
+async def test_voucher_use_post_is_idempotent(client, db, shop):
+    """A second tap on 'ใช้' must not move served_at — once stamped, the
+    voucher's used-at is the source of truth for the 5-min countdown."""
+    from datetime import timedelta
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+
+    c = Customer(is_anonymous=False, display_name="พี่กล้อง", phone="0844444445")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    earlier = utcnow() - timedelta(minutes=2)
+    r = Redemption(customer_id=c.id, shop_id=shop.id, served_at=earlier)
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    response = await client.post(f"/voucher/{r.id}/use", follow_redirects=False)
+    assert response.status_code == 303
+
+    db.expire_all()
+    await db.refresh(r)
+    assert abs((r.served_at - earlier).total_seconds()) < 1  # untouched
+
+
+async def test_voucher_use_other_customers_404(client, db, shop):
+    """Hand-crafted POST with someone else's redemption id must not
+    activate it. Returns 404 — owner check stops the attack."""
+    from app.models import Customer, Redemption
+    owner = Customer(is_anonymous=False, display_name="เจ้าของ", phone="0855555556")
+    attacker = Customer(is_anonymous=False, display_name="คนอื่น", phone="0866666667")
+    db.add_all([owner, attacker])
+    await db.commit()
+    await db.refresh(owner)
+    await db.refresh(attacker)
+    r = Redemption(customer_id=owner.id, shop_id=shop.id)
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(attacker.id))
+
+    response = await client.post(f"/voucher/{r.id}/use", follow_redirects=False)
+    assert response.status_code == 404
+
+    db.expire_all()
+    await db.refresh(r)
+    assert r.served_at is None
+
+
+async def test_voucher_view_renders_qr_and_offer(client, db, shop):
+    """GET /voucher/<id> renders the fullscreen voucher screen with the
+    shop's reward_description and the audit-trail QR."""
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+
+    c = Customer(is_anonymous=False, display_name="พี่จี้", phone="0877777778")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    r = Redemption(customer_id=c.id, shop_id=shop.id, served_at=utcnow())
+    db.add(r)
+    await db.commit()
+    await db.refresh(r)
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
+
+    response = await client.get(f"/voucher/{r.id}")
+    assert response.status_code == 200
+    body = response.text
+    assert "voucher-screen" in body
+    assert shop.reward_description in body
+    assert "vs-qr-frame" in body
+    # 5-minute countdown anchors to served_at
+    assert "vs-countdown" in body
 
 
 async def test_scan_shop_renders_design_aligned_modal(client):

@@ -1211,6 +1211,88 @@ async def my_gifts(
     return response
 
 
+@router.post("/voucher/{redemption_id}/use")
+async def voucher_mark_used(
+    redemption_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """voucher.use activation — trust-based: tapping "ใช้" in gifts.list
+    stamps the redemption's served_at right now, no shop confirmation.
+    The follow-up GET /voucher/<id> renders the fullscreen QR the
+    customer shows to staff (audit-trail only). Idempotent — second
+    POST is a no-op since served_at is already set."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    redemption = await db.get(Redemption, redemption_id)
+    if not redemption or redemption.customer_id != customer.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบของขวัญนี้")
+    if redemption.is_voided:
+        raise HTTPException(status.HTTP_410_GONE, "ของขวัญถูกยกเลิกไปแล้ว")
+    if redemption.served_at is None:
+        redemption.served_at = utcnow()
+        db.add(redemption)
+        await db.commit()
+        # Notify the shop dashboard so the activity feed shows this
+        # voucher being consumed in real time, mirroring the
+        # /shop/issue/scan publish path.
+        publish(
+            redemption.shop_id,
+            "feed-row",
+            feed_row_html(
+                "redemption",
+                redemption.id,
+                bkk_feed_time(redemption.served_at),
+                customer.display_name or "ลูกค้า",
+            ),
+        )
+    return RedirectResponse(
+        url=f"/voucher/{redemption_id}",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.get("/voucher/{redemption_id}", response_class=HTMLResponse)
+async def voucher_view(
+    request: Request,
+    redemption_id: uuid.UUID,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """voucher.use fullscreen — shop sees this on the customer's screen
+    when they walk up to claim a saved voucher. QR encodes the
+    redemption URL itself so staff with S3.scan can pull up an audit
+    record (not yet wired — scanner falls back to its existing
+    'unknown QR' flow gracefully)."""
+    import segno
+
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    redemption = await db.get(Redemption, redemption_id)
+    if not redemption or redemption.customer_id != customer.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบของขวัญนี้")
+    shop = await db.get(Shop, redemption.shop_id)
+    base_url = str(request.base_url).rstrip("/")
+    qr_url = f"{base_url}/voucher/{redemption_id}"
+    qr_svg = segno.make(qr_url, error="m").svg_inline(
+        scale=8, border=0, dark="#111"
+    )
+    response = templates.TemplateResponse(
+        request=request,
+        name="voucher_use.html",
+        context={
+            "shop": shop,
+            "redemption": redemption,
+            "qr_svg": qr_svg,
+            # Used-at is the deadline anchor for the 5-minute show-it-
+            # to-staff countdown the design specifies. Past that, the
+            # template just renders without the timer.
+            "used_at": redemption.served_at,
+        },
+    )
+    if was_created:
+        set_customer_cookie(response, customer.id)
+    return response
+
+
 @router.get("/my-inbox", response_class=HTMLResponse)
 async def my_inbox(
     request: Request,
