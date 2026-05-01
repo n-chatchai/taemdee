@@ -40,14 +40,15 @@ class DashboardItem:
 
 
 # Registry of all dashboard item kinds. Order = display order.
+# Labels are HTML-safe — the template renders them with `|safe` so the
+# inline <strong> highlight on the credit amount survives. Substitute
+# {amount} per shop on render.
 ITEMS: list[DashboardItem] = [
     DashboardItem(
         kind="welcome_credit",
-        label="รับเครดิตต้อนรับ ✦",
-        sub=(
-            "ฟรี {amount} เครดิตสำหรับร้านใหม่ — ลองส่ง DeeReach ดูได้เลย"
-        ),
-        cta="รับเลย",
+        label="รับ<strong>เครดิต {amount}</strong>เปิดบัญชี",
+        sub="ครั้งเดียว · ส่งดีรีชหาลูกค้าได้ {amount} ครั้ง",
+        cta="รับเลย →",
     ),
 ]
 
@@ -66,8 +67,13 @@ async def list_available(db: AsyncSession, shop: Shop) -> list[DashboardItem]:
         if it.kind == "welcome_credit" and settings.credit_welcome_amount <= 0:
             continue  # disabled by ops
         # Substitute {amount} for items that need to render the env value.
-        sub = it.sub.format(amount=settings.credit_welcome_amount)
-        out.append(DashboardItem(kind=it.kind, label=it.label, sub=sub, cta=it.cta))
+        amount = settings.credit_welcome_amount
+        out.append(DashboardItem(
+            kind=it.kind,
+            label=it.label.format(amount=amount),
+            sub=it.sub.format(amount=amount),
+            cta=it.cta,
+        ))
     return out
 
 

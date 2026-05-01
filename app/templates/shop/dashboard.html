@@ -61,16 +61,19 @@
   {% if items %}
     <div class="ph-section-h" style="margin-top:8px;">
       <div class="label">รายการที่ต้องทำ</div>
+      <span class="todo-count">{{ items|length }}</span>
     </div>
     {% for it in items %}
+      {# Each todo is its own POST form so the per-kind claim is one
+         tap. Label allows inline <strong> ("รับ<strong>เครดิต 100</strong>
+         เปิดบัญชี") — items.py is the source of HTML safe markup. #}
       <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
-        <button type="submit" class="s3-item">
-          <span class="s3-item-icon">✦</span>
-          <div class="s3-item-info">
-            <div class="s3-item-h">{{ it.label }}</div>
-            <div class="s3-item-s">{{ it.sub }}</div>
+        <button type="submit" class="s3-todo">
+          <div class="td-info">
+            <div class="td-h">{{ it.label|safe }}</div>
+            <div class="td-s">{{ it.sub }}</div>
           </div>
-          <span class="s3-item-cta">{{ it.cta }} ›</span>
+          <span class="td-cta">{{ it.cta }}</span>
         </button>
       </form>
     {% endfor %}

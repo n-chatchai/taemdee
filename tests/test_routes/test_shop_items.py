@@ -15,8 +15,12 @@ async def test_dashboard_shows_welcome_credit_for_new_shop(auth_client, db, shop
     assert r.status_code == 200
     body = r.text
     assert "รายการที่ต้องทำ" in body
-    assert "รับเครดิตต้อนรับ" in body
+    # Label rebuilt for the May 1 design — accent-strong amount inline.
+    assert "รับ<strong>เครดิต" in body
+    assert "เปิดบัญชี" in body
     assert f'action="/shop/items/welcome_credit/claim"' in body
+    # Section header now carries a count badge.
+    assert "todo-count" in body
 
 
 async def test_claim_welcome_credit_grants_satang_and_logs(auth_client, db, shop):
