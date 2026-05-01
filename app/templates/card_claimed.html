@@ -1,109 +1,93 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>รับรางวัลแล้ว · {{ shop.name }} · TaemDee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td c5 has-c-dock">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/c_base.html" %}
+{% set nav_active = 'cards' %}
+{% block title %}รับรางวัลแล้ว · {{ shop.name }} · TaemDee{% endblock %}
+{% block td_class %} c5{% endblock %}
 
-    <div class="claimed-hero">
-      <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+{% block content %}
+  <div class="claimed-hero">
+    <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
 
-      <div class="claimed-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
+    <div class="claimed-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
     </div>
-
-    <div class="voucher{% if redemption.served_at %} served{% endif %}">
-      {% if not redemption.served_at %}
-        {# Floating particles — continuous CSS animation that a screenshot
-           can't reproduce. Per the revised C5 design this replaces the older
-           "0 sec ago" pulse counter. Hidden once the voucher is served. #}
-        <div class="v-particles" aria-hidden="true">
-          <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        </div>
-      {% endif %}
-      <div class="v-label">
-        {% if redemption.served_at %}
-          <span class="v-served">✓ ใช้แล้ว {{ redemption.served_at|bkk_hms }}</span>
-        {% else %}
-          ✦ คูปองของพี่ ✦
-        {% endif %}
-      </div>
-      <div class="v-title">{{ shop.reward_description }}</div>
-      <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · รับเมื่อ {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
-    </div>
-
-    {# C5 CTA "ดูในของขวัญของพี่" → /my-gifts. Lets the customer pin the
-       voucher to their gifts list and continue browsing without losing
-       the redemption. Hidden once the voucher is served (already in the
-       used pile by then). #}
-    {% if not redemption.served_at %}
-      <a class="c5-cta-gifts" href="/my-gifts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 12 20 22 4 22 4 12"/>
-          <rect x="2" y="7" width="20" height="5"/>
-          <line x1="12" y1="22" x2="12" y2="7"/>
-          <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-          <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-        </svg>
-        <span>ดูในของขวัญของพี่</span>
-        <span class="arrow">→</span>
-      </a>
-    {% endif %}
-
-    <div class="reset">
-      <div class="kicker">
-        <svg class="arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <polyline points="19 12 12 19 5 12"/>
-        </svg>
-        ผมเริ่มเก็บใบใหม่ให้แล้วครับ
-      </div>
-      <a href="/card/{{ shop.id }}" class="mini-card" style="display:block; text-decoration:none; color:inherit;">
-        <div class="mini-num">0<span class="of">/{{ shop.reward_threshold }}</span></div>
-        <div class="mini-stamps">
-          {% for _ in range(shop.reward_threshold) %}
-            <div class="mini-stamp"></div>
-          {% endfor %}
-        </div>
-      </a>
-    </div>
-
-    <div class="farewell">เจอกันครั้งหน้านะ</div>
-
-    {# Per Push.prompt spec — high-intent moment after a redemption is one
-       of the two re-ask points (the other being first PWA open). Clear
-       any active dismissal cooldown so push-prompt.js will re-evaluate
-       and show the sheet if the customer is in the PWA + still on
-       Notification.permission === 'default'. Granted/denied users are
-       unaffected (push-prompt.js gates on permission === 'default'). #}
-    <script>try { localStorage.removeItem('td_push_prompt_until'); } catch (_) {}</script>
-
-    {% include "_partials/footer_mark.html" %}
-
-    {% set nav_active = 'cards' %}
-    {% include "_partials/c_dock.html" %}
+    <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
   </div>
-</body>
-</html>
+
+  <div class="voucher{% if redemption.served_at %} served{% endif %}">
+    {% if not redemption.served_at %}
+      {# Floating particles — continuous CSS animation that a screenshot
+         can't reproduce. Per the revised C5 design this replaces the older
+         "0 sec ago" pulse counter. Hidden once the voucher is served. #}
+      <div class="v-particles" aria-hidden="true">
+        <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+      </div>
+    {% endif %}
+    <div class="v-label">
+      {% if redemption.served_at %}
+        <span class="v-served">✓ ใช้แล้ว {{ redemption.served_at|bkk_hms }}</span>
+      {% else %}
+        ✦ คูปองของพี่ ✦
+      {% endif %}
+    </div>
+    <div class="v-title">{{ shop.reward_description }}</div>
+    <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · รับเมื่อ {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
+  </div>
+
+  {# C5 CTA "ดูในของขวัญของพี่" → /my-gifts. Lets the customer pin the
+     voucher to their gifts list and continue browsing without losing
+     the redemption. Hidden once the voucher is served (already in the
+     used pile by then). #}
+  {% if not redemption.served_at %}
+    <a class="c5-cta-gifts" href="/my-gifts">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 12 20 22 4 22 4 12"/>
+        <rect x="2" y="7" width="20" height="5"/>
+        <line x1="12" y1="22" x2="12" y2="7"/>
+        <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+        <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+      </svg>
+      <span>ดูในของขวัญของพี่</span>
+      <span class="arrow">→</span>
+    </a>
+  {% endif %}
+
+  <div class="reset">
+    <div class="kicker">
+      <svg class="arrow-down" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <polyline points="19 12 12 19 5 12"/>
+      </svg>
+      ผมเริ่มเก็บใบใหม่ให้แล้วครับ
+    </div>
+    <a href="/card/{{ shop.id }}" class="mini-card" style="display:block; text-decoration:none; color:inherit;">
+      <div class="mini-num">0<span class="of">/{{ shop.reward_threshold }}</span></div>
+      <div class="mini-stamps">
+        {% for _ in range(shop.reward_threshold) %}
+          <div class="mini-stamp"></div>
+        {% endfor %}
+      </div>
+    </a>
+  </div>
+
+  <div class="farewell">เจอกันครั้งหน้านะ</div>
+
+  {# Per Push.prompt spec — high-intent moment after a redemption is one
+     of the two re-ask points (the other being first PWA open). Clear
+     any active dismissal cooldown so push-prompt.js will re-evaluate
+     and show the sheet if the customer is in the PWA + still on
+     Notification.permission === 'default'. Granted/denied users are
+     unaffected (push-prompt.js gates on permission === 'default'). #}
+  <script>try { localStorage.removeItem('td_push_prompt_until'); } catch (_) {}</script>
+{% endblock %}
