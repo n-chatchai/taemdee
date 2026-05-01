@@ -46,10 +46,11 @@ class Settings(BaseSettings):
 
     # Cloudflare R2 Storage. Leave R2_ENDPOINT_URL empty to disable uploads.
     # R2_ENDPOINT_URL is the S3 API host (https://<account>.r2.cloudflarestorage.com)
-    # used for PUTs only — it serves zero public traffic. R2_PUBLIC_URL is the
-    # browser-facing host (R2.dev subdomain or custom domain) the uploaded URL
-    # is built from. If R2_PUBLIC_URL is empty we fall back to the API host,
-    # which won't actually serve images publicly — set it before going live.
+    # used for signed PUTs only. R2_PUBLIC_URL is the browser-facing host —
+    # the "Public Development URL" (pub-xxxx.r2.dev) you toggle on in the R2
+    # dashboard, or a custom domain. The API host returns
+    # `InvalidArgument: Authorization` to unsigned browser GETs, so the URL
+    # we persist must come from R2_PUBLIC_URL, not R2_ENDPOINT_URL.
     r2_endpoint_url: Optional[str] = None
     r2_access_key_id: Optional[str] = None
     r2_secret_access_key: Optional[str] = None
