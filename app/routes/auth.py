@@ -1,6 +1,6 @@
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Response, status
+from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, Response, status
 from fastapi.responses import RedirectResponse
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -13,7 +13,8 @@ from app.core.auth import (
 )
 from app.core.config import settings
 from app.core.database import get_session
-from app.models import Customer, Shop
+from app.core.templates import templates
+from app.models import Customer, CustomerShopMute, Shop
 from app.services.auth import generate_and_send_otp, issue_session_token, verify_otp
 from app.services.soft_wall import claim_by_line
 from app.services.referrals import consume_referral_on_signup, find_referral_by_code
@@ -118,12 +119,78 @@ async def line_start():
 
 @router.get("/line/customer/start")
 async def line_customer_start(next_redeem: Optional[str] = None):
-    """Customer-side LINE Login — opened from the C2.signup picker. Returns
-    the user to /my-cards on success with their guest cookie promoted to a
-    claimed account. If `next_redeem=<shop_id>` is set (the C4 gate passes
-    it), the callback fires the redemption and lands on /card/{shop}/claimed
-    instead — auto-resuming the redeem the guest was trying to do."""
+    """Customer-side LINE Login — opened from the C2.signup picker. After
+    LINE OAuth comes back, the callback hands off to /auth/line/customer/confirm
+    (C3.line) so the customer can review the bound LINE handle and toggle
+    DeeReach consent before landing on /my-cards (or /card/{shop}/claimed
+    if `next_redeem=<shop_id>` is set — auto-resumes the redeem the guest
+    was trying to do at the C4 gate)."""
     return _start_line_oauth(role="customer", next_redeem=next_redeem)
+
+
+@router.get("/line/customer/confirm")
+async def line_customer_confirm_view(
+    request: Request,
+    next_redeem: Optional[str] = None,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """C3.line — confirmation step shown after the LINE OAuth callback.
+    Renders the LINE display name + DeeReach consent toggle. Reachable
+    only with a customer cookie that already points at the just-claimed
+    Customer (the callback set it). If the cookie is missing or stale we
+    bounce back to /my-cards rather than render an empty page."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    if customer.is_anonymous:
+        return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+    return templates.TemplateResponse(
+        request=request,
+        name="c3_line.html",
+        context={
+            "display_name": customer.display_name,
+            "next_redeem": next_redeem,
+        },
+    )
+
+
+@router.post("/line/customer/confirm")
+async def line_customer_confirm_save(
+    next_redeem: Optional[str] = Form(None),
+    dr_consent: Optional[str] = Form("on"),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Persist the DeeReach consent toggle from C3.line, then land the
+    customer on /my-cards (or /card/{shop}/claimed if next_redeem points
+    at a shop with a full card waiting to be redeemed). Mirrors the same
+    consent semantics as /card/claim/phone — 'off' writes a per-shop mute
+    row for `next_redeem`, 'on' is the no-op default."""
+    import uuid as _uuid
+
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    if customer.is_anonymous:
+        return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+    target_shop_id: Optional[_uuid.UUID] = None
+    if next_redeem:
+        try:
+            target_shop_id = _uuid.UUID(next_redeem)
+        except ValueError:
+            target_shop_id = None
+
+    if dr_consent != "on" and target_shop_id:
+        existing_mute = (await db.exec(
+            select(CustomerShopMute).where(
+                CustomerShopMute.customer_id == customer.id,
+                CustomerShopMute.shop_id == target_shop_id,
+            )
+        )).first()
+        if not existing_mute:
+            db.add(CustomerShopMute(customer_id=customer.id, shop_id=target_shop_id))
+            await db.commit()
+
+    target_url = await _redeem_after_claim(db, customer, next_redeem) or "/my-cards"
+    return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.get("/line/callback")
@@ -161,7 +228,16 @@ async def line_callback(
         anon, _ = await find_or_create_customer(customer_cookie, db)
         claimed = await claim_by_line(db, anon, line_id, display_name=display_name)
 
-        target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
+        # Hand off to C3.line — design splits "LINE OAuth came back" from
+        # "decide DeeReach consent". Carry next_redeem through as a query
+        # arg so the confirm POST can still auto-resume the redeem flow.
+        # Cookie still has to be refreshed here: claim_by_line may merge
+        # the anonymous Customer into an existing claimed row (different
+        # id), and without the new cookie subsequent requests would land
+        # on a phantom anon.
+        target_url = "/auth/line/customer/confirm"
+        if next_redeem:
+            target_url += f"?next_redeem={next_redeem}"
         redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
         set_customer_cookie(redirect, claimed.id)
         redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")

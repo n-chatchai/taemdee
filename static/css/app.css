@@ -4444,6 +4444,73 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .consent-toggle.off + .consent-plea { display: block; }
 
+/* C3.line — LINE account display card. Shown after the LINE OAuth
+   callback so the customer can confirm the green-tick handle their
+   stamps will live on, plus toggle DeeReach consent before the final
+   redirect. Ports verbatim from design verbatim. */
+.line-account {
+  margin-top: 14px;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.12);
+  border-radius: 12px;
+  padding: 12px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.line-account .la-avatar {
+  width: 40px;
+  height: 40px;
+  background: #06C755;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-md);
+}
+.line-account .la-avatar svg { width: 20px; height: 20px; }
+.line-account .la-info { flex: 1; min-width: 0; }
+.line-account .la-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-2xs);
+  color: var(--ink-softer);
+  margin-bottom: 2px;
+}
+.line-account .la-name {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-base);
+  font-weight: 600;
+  color: var(--ink);
+  line-height: 1.3;
+}
+
+/* LINE-themed confirm button on C3.line. */
+.btn-line {
+  appearance: none; -webkit-appearance: none;
+  width: 100%;
+  background: #06C755;
+  color: #fff;
+  border: none;
+  border-radius: 99px;
+  padding: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-base);
+  font-weight: 600;
+  cursor: pointer;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+}
+.btn-line .arr {
+  font-size: var(--text-base);
+  font-weight: 800;
+}
+
 /* PDPA delete-account link — quiet, below logout. .armed wears the
    accent so the second tap lands on a clearly-different visual state. */
 .c6-delete-account {
