@@ -2,59 +2,143 @@
 {% set nav_active = 'cards' %}
 {% block title %}{{ shop.name }} · ทำความรู้จัก · TaemDee{% endblock %}
 
+{% block td_class %} shop-story-page{% endblock %}
+
 {% block content %}
   {% set logo = shop_logo(shop) %}
-  <div class="app-bar">
-    <a href="/card/{{ shop.id }}" class="x" aria-label="ย้อนกลับ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
-    <div class="title-mid">ทำความรู้จัก</div>
-    <div class="placeholder"></div>
+
+  {# Cover hero — gradient + decorative coffee cup + floating back FAB.
+     The headline + eyebrow are server-driven so any shop's page reads
+     coherently, even without a custom tagline column. #}
+  <div class="ss-cover">
+    <div class="ss-cover-deco">
+      <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+        <path d="M20 35 L20 65 Q20 78 33 78 L60 78 Q73 78 73 65 L73 35 Z" fill="#fff"/>
+        <path d="M73 42 L82 42 Q90 42 90 50 Q90 58 82 58 L73 58" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>
+        <path d="M30 22 Q33 16 30 12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M42 22 Q45 16 42 12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+        <path d="M54 22 Q57 16 54 12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+      </svg>
+    </div>
+
+    <div class="ss-cover-actions">
+      <a href="/card/{{ shop.id }}" class="ss-fab" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
+      <div class="ss-fab-group"></div>
+    </div>
+
+    <div class="ss-cover-text">
+      <div class="ss-cover-eyebrow">{{ cover_eyebrow }}</div>
+      <div class="ss-cover-headline">{{ cover_headline }}</div>
+    </div>
   </div>
 
-  <div class="c9-cover">
-    <div class="cover-mark">
-      {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-      {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
+  {# Shop card — overlaps the cover by 40px. Avatar uses the shop's
+     uploaded logo image (if any), then the lt-* logo styling, then the
+     shop initial as a final fallback. #}
+  <div class="ss-shop-card">
+    <div class="ss-shop-avatar">
+      {% if logo and logo.is_image %}
+        <img src="{{ logo.url }}" alt="">
+      {% elif logo %}
+        <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+      {% else %}
+        {{ shop.name[0]|upper }}
+      {% endif %}
     </div>
-    <div class="cover-meta">
-      <span>{{ age_label }}</span>
-      {% if shop.location %}
-        <span class="cover-dot">·</span>
-        <span>{{ shop.location }}</span>
+    <div class="ss-shop-info">
+      <div class="ss-shop-name">{{ shop.name }}</div>
+      {% if shop_address %}<div class="ss-shop-sub">{{ shop_address }}</div>{% endif %}
+      {% if open_status %}
+        <div class="ss-shop-meta">
+          {% if open_status.open %}
+            <span class="open-dot"></span>
+            <strong>เปิดอยู่</strong>
+            {% if open_status.until %}<span>· ปิด {{ open_status.until }}</span>{% endif %}
+          {% else %}
+            <span class="closed-dot"></span>
+            <strong>ปิดอยู่</strong>
+            {% if open_status.next %}<span>· เปิด {{ open_status.next }}</span>{% endif %}
+          {% endif %}
+        </div>
       {% endif %}
     </div>
   </div>
 
-  {% if shop.thanks_message %}
-    <div class="c9-thanks">
-      <div class="c9-thanks-avatar">
-        <svg viewBox="0 0 100 100">
-          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
-          <circle cx="36" cy="42" r="6" fill="#fff"/>
-          <circle cx="64" cy="42" r="6" fill="#fff"/>
-          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="c9-thanks-text">
-        <div class="c9-thanks-h">
-          {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}ขอบคุณพี่{{ customer.display_name }}นะครับ ✦{% else %}ขอบคุณพี่นะครับ ✦{% endif %}
+  {# Points strip — links back to /card/<shop> for the full-card view.
+     Only rendered when the customer already has stamps here. #}
+  {% if points_block %}
+    <a class="ss-points" href="/card/{{ shop.id }}">
+      <div class="ss-points-body">
+        <div class="ss-points-row">
+          <span class="ss-points-num">{{ points_block.count }}</span>
+          <span class="ss-points-of">/ {{ points_block.threshold }}</span>
+          <span class="ss-points-hint">
+            {% if points_block.ready %}ครบแล้ว · รับได้
+            {% else %}อีก {{ points_block.remaining }} ครั้ง · {{ shop.reward_description }}
+            {% endif %}
+          </span>
         </div>
-        <div class="c9-thanks-s">{{ shop.thanks_message }}</div>
+        <div class="ss-points-bar">
+          <div class="ss-points-fill" style="width: {{ points_block.ratio_pct }}%"></div>
+        </div>
       </div>
-    </div>
+      <div class="ss-points-arrow">
+        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+      </div>
+    </a>
   {% endif %}
 
   {% if shop.story_text %}
-    <div class="c9-section">
-      <div class="c9-section-h">เรื่องราวของร้าน</div>
-      <div class="c9-story">{{ shop.story_text }}</div>
-    </div>
-  {% else %}
-    <div class="c9-section">
-      <div class="c9-story" style="text-align:center; font-style:italic; color:var(--ink-softer);">
-        ทางร้านยังไม่ได้ฝากเรื่องราวเอาไว้ — แวะไปเก็บแต้มเรื่อยๆ ก่อนนะครับ
-      </div>
+    <div class="ss-section-h">เรื่องราวร้าน</div>
+    <div class="ss-story">
+      <div class="ss-story-text">{{ shop.story_text }}</div>
     </div>
   {% endif %}
+
+  {# ติดต่อร้าน — render only the rows that have data so an empty
+     contact section doesn't appear on every shop. #}
+  {% set has_phone = shop.shop_phone %}
+  {% set has_line = shop.line_id %}
+  {% set has_address = shop_address %}
+  {% if has_phone or has_line or has_address or open_status %}
+    <div class="ss-section-h">ติดต่อร้าน</div>
+    <div class="ss-info">
+      {% if open_status %}
+        <div class="ss-info-row">
+          <span class="ss-info-key">เปิด</span>
+          <span class="ss-info-val">
+            {% if open_status.open %}
+              เปิดอยู่{% if open_status.until %} · ปิด {{ open_status.until }}{% endif %}
+            {% else %}
+              ปิดอยู่{% if open_status.next %} · เปิด {{ open_status.next }}{% endif %}
+            {% endif %}
+          </span>
+        </div>
+      {% endif %}
+      {% if has_address %}
+        <div class="ss-info-row">
+          <span class="ss-info-key">ที่อยู่</span>
+          <span class="ss-info-val">{{ shop_address }}</span>
+        </div>
+      {% endif %}
+      {% if has_phone %}
+        <div class="ss-info-row">
+          <span class="ss-info-key">โทร</span>
+          <span class="ss-info-val">{{ has_phone }}</span>
+        </div>
+      {% endif %}
+      {% if has_line %}
+        <div class="ss-info-row">
+          <span class="ss-info-key">LINE</span>
+          <span class="ss-info-val">{{ has_line }}</span>
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="ss-footer">
+    <span>powered by </span><span class="accent">taemdee.</span>
+  </div>
 {% endblock %}

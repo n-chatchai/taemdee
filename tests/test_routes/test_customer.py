@@ -231,8 +231,9 @@ async def test_my_cards_renders_carousel_for_near_complete_cards(client, db, sho
 
 
 async def test_shop_story_renders_thanks_and_story_when_set(client, db, shop):
-    """C9 — when both fields are populated, the page surfaces them with
-    proper section markup."""
+    """shop.story — Robinhood-style page surfaces the cover headline
+    (drawn from thanks_message) plus the story section when story_text
+    is populated."""
     shop.thanks_message = "ดีใจที่กลับมาทุกครั้ง"
     shop.story_text = "เริ่มจากความหลงใหลในกาแฟดอยช้าง — เริ่มเปิดที่บ้านก่อนย้ายมานิมมาน"
     db.add(shop)
@@ -241,28 +242,31 @@ async def test_shop_story_renders_thanks_and_story_when_set(client, db, shop):
     r = await client.get(f"/story/{shop.id}")
     assert r.status_code == 200
     body = r.text
-    assert "ดีใจที่กลับมาทุกครั้ง" in body
-    assert "ความหลงใหลในกาแฟดอยช้าง" in body
-    assert "c9-cover" in body
-    assert "เรื่องราวของร้าน" in body
+    assert "ดีใจที่กลับมาทุกครั้ง" in body  # cover headline
+    assert "ความหลงใหลในกาแฟดอยช้าง" in body  # story body
+    assert "ss-cover" in body
+    assert "เรื่องราวร้าน" in body
 
 
-async def test_shop_story_falls_back_to_placeholder_when_empty(client, shop):
-    """Empty story_text → placeholder copy; thanks block omitted entirely."""
+async def test_shop_story_omits_story_section_when_empty(client, shop):
+    """No story_text → the entire เรื่องราวร้าน block is hidden, the
+    cover + shop card still render. Cover headline falls back to the
+    shop name."""
     r = await client.get(f"/story/{shop.id}")
     assert r.status_code == 200
     body = r.text
-    # Placeholder shows
-    assert "ทางร้านยังไม่ได้ฝากเรื่องราว" in body
-    # Thanks block hidden when thanks_message is unset
-    assert "c9-thanks" not in body
+    assert "ss-cover" in body
+    assert shop.name in body
+    # Section header must be absent without story content backing it.
+    assert "เรื่องราวร้าน" not in body
 
 
-async def test_shop_story_age_label_renders_เพิ่งเปิด_for_new_shop(client, shop):
-    """A shop fixture is brand new — `เปิดมา N ปี` is meaningless, render
-    'เพิ่งเปิด' instead so the cover meta isn't empty/awkward."""
+async def test_shop_story_cover_eyebrow_uses_buddhist_year(client, shop):
+    """Cover eyebrow reads 'ตั้งแต่ปี <BE>' — derived from shop.created_at,
+    bumped by 543 to match Thai calendar convention."""
     body = (await client.get(f"/story/{shop.id}")).text
-    assert "เพิ่งเปิด" in body
+    expected_year = shop.created_at.year + 543
+    assert f"ตั้งแต่ปี {expected_year}" in body
 
 
 async def test_shop_story_unknown_shop_404s(client):

@@ -16,7 +16,7 @@ from app.core.auth import (
 )
 from app.core.database import get_session
 from app.models import Branch, Customer, Inbox, Redemption, Shop, Point
-from app.models.util import bkk_feed_time, utcnow
+from app.models.util import BKK, bkk_feed_time, utcnow
 from app.services.auth import verify_otp
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point
@@ -611,10 +611,11 @@ async def shop_story(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """C9 — emotional shop story page. Reachable from the C1 daily card
-    wordmark or directly. Renders thanks_message + story_text + 'opened
-    N years ago' meta. Menu items + reviews are deferred until those
-    models exist."""
+    """shop.story — Robinhood-style page showing the shop the customer
+    is collecting points at. Cover hero (gradient + tagline) overlapped
+    by a shop card; below it a points strip (when they have stamps),
+    the owner's story, the contact info. Menu items deferred until the
+    shop_menu_items model exists."""
     shop = await db.get(Shop, shop_id)
     if not shop:
         return templates.TemplateResponse(
@@ -624,19 +625,73 @@ async def shop_story(
             status_code=status.HTTP_404_NOT_FOUND,
         )
     customer, was_created = await find_or_create_customer(customer_cookie, db)
-    # "เปิดมา N ปี" — derived from shop.created_at. Anything <1 year says
-    # "เพิ่งเปิด"; >=1 year shows the integer year count.
+
+    # Cover eyebrow — Buddhist year derived from shop.created_at. Reads
+    # naturally for Thai customers ("ตั้งแต่ปี 2562") even if the shop
+    # itself only started using TaemDee yesterday; close enough for the
+    # tagline strip without giving the shop owner a separate "founded
+    # year" form to fill out.
     from datetime import datetime, timezone
-    age_days = (datetime.now(timezone.utc) - shop.created_at.replace(tzinfo=timezone.utc)).days
-    years = age_days // 365
-    age_label = "เพิ่งเปิด" if years < 1 else f"เปิดมา {years} ปี"
+    cover_eyebrow = f"ตั้งแต่ปี {shop.created_at.year + 543}"
+
+    # Cover headline — short personal note from S10 onboarding, falls
+    # back to the shop name so the gradient hero doesn't look empty.
+    cover_headline = shop.thanks_message or shop.name
+
+    # Points strip — only render when there's something to show.
+    point_count = await active_point_count(db, shop.id, customer.id)
+    points_block = None
+    if point_count > 0:
+        threshold = shop.reward_threshold or 1
+        ratio = min(point_count / threshold, 1.0)
+        remaining = max(threshold - point_count, 0)
+        points_block = {
+            "count": point_count,
+            "threshold": threshold,
+            "remaining": remaining,
+            "ratio_pct": int(ratio * 100),
+            "ready": point_count >= threshold,
+        }
+
+    # Open-now badge from opening_hours JSON. Tolerant of missing data —
+    # any parse hiccup leaves open_status=None and the meta line shows
+    # the address only.
+    bkk = datetime.now(timezone.utc).astimezone(BKK)
+    day_key = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")[bkk.weekday()]
+    open_status = None
+    if shop.opening_hours:
+        today = shop.opening_hours.get(day_key) or {}
+        if today and not today.get("closed"):
+            try:
+                open_h, open_m = map(int, today.get("open", "00:00").split(":"))
+                close_h, close_m = map(int, today.get("close", "00:00").split(":"))
+                now_minutes = bkk.hour * 60 + bkk.minute
+                open_minutes = open_h * 60 + open_m
+                close_minutes = close_h * 60 + close_m
+                if open_minutes <= now_minutes < close_minutes:
+                    open_status = {"open": True, "until": today.get("close")}
+                else:
+                    open_status = {"open": False, "next": today.get("open")}
+            except (ValueError, AttributeError):
+                pass
+        elif today:
+            open_status = {"open": False, "next": None}
+
+    # Address line for the shop card sub.
+    address_parts = [p for p in (shop.district, shop.location) if p]
+    shop_address = " · ".join(address_parts) if address_parts else None
+
     response = templates.TemplateResponse(
         request=request,
         name="c9_story.html",
         context={
             "shop": shop,
             "customer": customer,
-            "age_label": age_label,
+            "cover_eyebrow": cover_eyebrow,
+            "cover_headline": cover_headline,
+            "points_block": points_block,
+            "open_status": open_status,
+            "shop_address": shop_address,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )
