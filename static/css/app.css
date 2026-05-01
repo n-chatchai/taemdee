@@ -1644,7 +1644,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 
 .ob-bottom {
-  padding: 0 22px 32px;
+  margin-top: auto;
+  padding: 0 22px 12px;
   display: flex;
   align-items: center;
   justify-content: space-between;
@@ -1656,6 +1657,29 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: stretch;
   gap: 8px;
 }
+
+.ob-footer-mark {
+  position: relative;
+  padding: 14px 20px 18px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  flex-shrink: 0;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: var(--text-base);
+  letter-spacing: -0.025em;
+  color: var(--ink);
+  line-height: 1;
+}
+.ob-footer-mark .smile-stamp {
+  flex-shrink: 0;
+  width: 16px;
+  height: 16px;
+  display: block;
+}
+.ob-footer-mark .dot { color: var(--accent); }
 .ob-skip {
   font-family: 'Prompt', sans-serif;
   font-size: var(--text-md);
