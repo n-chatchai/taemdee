@@ -193,3 +193,48 @@ async def test_dashboard_trend_chart_renders_legend_and_redeem_overlay(auth_clie
     assert 'class="lg-dot scan"' in body
     assert 'class="lg-dot redeem"' in body
     assert "tb-redeem" in body
+
+
+async def test_dashboard_period_pill_swaps_headline_metric(auth_client, db, shop, customer):
+    """?period=week / ?period=month change the big-number snapshot +
+    delta-from copy. Trend chart stays last-7-days regardless."""
+    shop.is_onboarded = True
+    db.add(shop)
+    # Stamp 3 days ago + 20 days ago — only the second one falls outside
+    # the current week, so week count = 1 stamp/customer, month count = 2.
+    for offset in [3, 20]:
+        db.add(Point(
+            shop_id=shop.id,
+            customer_id=customer.id,
+            issuance_method="customer_scan",
+            created_at=utcnow() - timedelta(days=offset),
+        ))
+    await db.commit()
+
+    today_body = (await auth_client.get("/shop/dashboard")).text
+    assert ">วันนี้</a>" in today_body
+    assert "จากเมื่อวาน" in today_body or ">0<" in today_body  # zero delta hides the line
+
+    week_body = (await auth_client.get("/shop/dashboard?period=week")).text
+    # Week pill carries .active and the delta-from copy switches.
+    assert 'class="mp active"' in week_body
+    assert ">สัปดาห์</a>" in week_body
+    # Big number reflects this-week customers (1 unique customer in last 7 days).
+    import re
+    big = re.search(r'class="num-big">(\d+)</span>', week_body)
+    assert big and int(big.group(1)) == 1
+
+    month_body = (await auth_client.get("/shop/dashboard?period=month")).text
+    big = re.search(r'class="num-big">(\d+)</span>', month_body)
+    assert big and int(big.group(1)) == 1  # still 1 unique customer in last 30d
+
+
+async def test_dashboard_unknown_period_falls_back_to_today(auth_client, db, shop):
+    """Hand-crafted ?period=junk shouldn't 500 — clamp to today."""
+    shop.is_onboarded = True
+    db.add(shop)
+    await db.commit()
+
+    body = (await auth_client.get("/shop/dashboard?period=quarter")).text
+    assert ">วันนี้</a>" in body
+    assert 'class="mp active" href="/shop/dashboard"' in body

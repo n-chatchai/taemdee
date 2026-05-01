@@ -92,15 +92,21 @@ async def register_legacy_redirect(ref: Optional[str] = None):
 @router.get("/dashboard", response_class=HTMLResponse)
 async def dashboard(
     request: Request,
+    period: str = "today",
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
     if not shop.is_onboarded:
         return RedirectResponse(url="/shop/onboard", status_code=status.HTTP_303_SEE_OTHER)
 
+    if period not in ("today", "week", "month"):
+        period = "today"
+
     now = utcnow()
     week_ago = now - timedelta(days=7)
     two_weeks_ago = now - timedelta(days=14)
+    month_ago = now - timedelta(days=30)
+    two_months_ago = now - timedelta(days=60)
 
     # Today / yesterday slices for the snapshot card. Day boundaries use
     # Bangkok local time so a 23:55 stamp doesn't get filed under "yesterday"
@@ -135,6 +141,13 @@ async def dashboard(
                 Point.created_at >= two_weeks_ago,
                 Point.created_at < week_ago,
             ).label("customers_last_week"),
+            func.count(func.distinct(Point.customer_id)).filter(
+                Point.created_at >= month_ago
+            ).label("customers_this_month"),
+            func.count(func.distinct(Point.customer_id)).filter(
+                Point.created_at >= two_months_ago,
+                Point.created_at < month_ago,
+            ).label("customers_last_month"),
             func.count().filter(
                 Point.created_at >= today_start_utc
             ).label("points_today"),
@@ -154,16 +167,35 @@ async def dashboard(
     customers_yesterday = point_stats[1]
     customers_this_week = point_stats[2]
     customers_last_week = point_stats[3]
-    points_today = point_stats[4]
-    trend_total = point_stats[5]
-    prev_week_total = point_stats[6]
-    points_total = point_stats[7]
+    customers_this_month = point_stats[4]
+    customers_last_month = point_stats[5]
+    points_today = point_stats[6]
+    trend_total = point_stats[7]
+    prev_week_total = point_stats[8]
+    points_total = point_stats[9]
     today_delta = customers_today - customers_yesterday
     wow_delta = customers_this_week - customers_last_week
+    mom_delta = customers_this_month - customers_last_month
     wow_pct = (
         int(round(100 * (trend_total - prev_week_total) / prev_week_total))
         if prev_week_total else None
     )
+
+    # Period-aware display values for the big number + delta line. The
+    # trend chart below stays "last 7 days" regardless of period — design
+    # only swaps the headline metric when the pill changes.
+    if period == "week":
+        period_count = customers_this_week
+        period_delta = wow_delta
+        period_delta_label = "จากสัปดาห์ก่อน"
+    elif period == "month":
+        period_count = customers_this_month
+        period_delta = mom_delta
+        period_delta_label = "จากเดือนก่อน"
+    else:
+        period_count = customers_today
+        period_delta = today_delta
+        period_delta_label = "จากเมื่อวาน"
 
     # ── ONE SQL roundtrip for the Redemption side: today + total in a
     # single scan. Same FILTER pattern as the points aggregate above.
@@ -272,6 +304,10 @@ async def dashboard(
         name="shop/dashboard.html",
         context={
             "shop": shop,
+            "period": period,
+            "period_count": period_count,
+            "period_delta": period_delta,
+            "period_delta_label": period_delta_label,
             "customers_today": customers_today,
             "today_delta": today_delta,
             "points_today": points_today,

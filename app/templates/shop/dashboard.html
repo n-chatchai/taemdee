@@ -17,22 +17,22 @@
     <div class="met-head">
       <span class="met-title">ลูกค้า</span>
       <span class="met-pills">
-        <a class="mp active" href="/shop/dashboard">วันนี้</a>
-        <a class="mp" href="/shop/dashboard?period=week" aria-disabled="true" tabindex="-1">สัปดาห์</a>
-        <a class="mp" href="/shop/dashboard?period=month" aria-disabled="true" tabindex="-1">เดือน</a>
+        <a class="mp{% if period == 'today' %} active{% endif %}" href="/shop/dashboard">วันนี้</a>
+        <a class="mp{% if period == 'week' %} active{% endif %}" href="/shop/dashboard?period=week">สัปดาห์</a>
+        <a class="mp{% if period == 'month' %} active{% endif %}" href="/shop/dashboard?period=month">เดือน</a>
       </span>
     </div>
 
     <div class="met-num-row">
       <div class="met-num">
-        <span class="num-big">{{ customers_today }}</span>
+        <span class="num-big">{{ period_count }}</span>
         <span class="num-unit">คน</span>
       </div>
-      {% if today_delta != 0 %}
-        <div class="met-delta {% if today_delta > 0 %}up{% else %}down{% endif %}">
-          <span class="delta-arr">{% if today_delta > 0 %}↑{% else %}↓{% endif %}</span>
-          <span class="delta-num">{% if today_delta > 0 %}+{% endif %}{{ today_delta }}</span>
-          <span class="delta-from">จากเมื่อวาน</span>
+      {% if period_delta != 0 %}
+        <div class="met-delta {% if period_delta > 0 %}up{% else %}down{% endif %}">
+          <span class="delta-arr">{% if period_delta > 0 %}↑{% else %}↓{% endif %}</span>
+          <span class="delta-num">{% if period_delta > 0 %}+{% endif %}{{ period_delta }}</span>
+          <span class="delta-from">{{ period_delta_label }}</span>
         </div>
       {% endif %}
     </div>
