@@ -1605,6 +1605,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   height: 100%;
   display: block;
 }
+/* Same story as .reward-pill .gift — uploaded photos need real estate
+   that the 52px line-art chip can't give them. */
+.ob-rc-icon:has(img) {
+  width: 96px;
+  height: 96px;
+  border-radius: 16px;
+}
 
 .ob-icon-wrap {
   width: 56px; height: 56px;
@@ -1939,6 +1946,17 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
 }
 .reward-pill .gift svg { width: 16px; height: 16px; }
+/* Built-in SVG illustrations are decorative line art that read fine in
+   the 34px chip. Uploaded photos in the same chip just look like tiny
+   blobs, so when the gift contains an <img> we bump the chip to 64px
+   and drop the accent-soft tint that would show through any letterbox. */
+.reward-pill .gift:has(img) {
+  width: 64px;
+  height: 64px;
+  background: transparent;
+  border-radius: 14px;
+  overflow: hidden;
+}
 .reward-pill .rtxt { flex: 1; line-height: 1.3; }
 .reward-pill .rlabel {
   font-family: 'JetBrains Mono', monospace;
