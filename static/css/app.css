@@ -7364,7 +7364,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    <strong>เครดิต 100</strong>เปิดบัญชี"). */
 .s3-item-form { margin: 0 20px 8px; }
 .s3-todo {
-  margin: 0 20px 8px;
+  /* No horizontal margin — wrapping <form class="s3-item-form"> already
+     supplies the 20px inset. The s10-fontsize tile had the same
+     double-inset bug; same fix here. */
+  margin: 0;
   padding: 14px 16px;
   background: var(--butter-soft);
   border: 1px solid rgba(17, 17, 17, 0.10);
