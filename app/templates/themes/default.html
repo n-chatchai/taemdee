@@ -143,12 +143,6 @@
          taps the picker auto-resumes the redemption after signup. #}
       {% set next_redeem = shop.id if is_full else None %}
       {% include "_partials/signup_picker.html" %}
-      {# Welcome sheet only when we still need to ask — server state, not
-         localStorage. After save (real name) or skip ("คุณลูกค้า"), the
-         next page load won't include this. #}
-      {% if not customer.display_name %}
-        {% include "_partials/welcome_nickname.html" %}
-      {% endif %}
     {% endif %}
   </div>
 </body>

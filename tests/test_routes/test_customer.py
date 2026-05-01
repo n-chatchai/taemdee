@@ -57,25 +57,25 @@ async def test_scan_blocked_silently_when_cooldown_set(client, db, shop):
     assert len(list(result.all())) == 1
 
 
-async def test_card_renders(client, shop):
-    await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    response = await client.get(f"/card/{shop.id}")
+async def test_card_renders(named_client, shop):
+    await named_client.get(f"/scan/{shop.id}", follow_redirects=False)
+    response = await named_client.get(f"/card/{shop.id}")
     assert response.status_code == 200
     assert shop.name in response.text
 
 
-async def test_card_renders_celebration_with_stamped_flag(client, shop):
+async def test_card_renders_celebration_with_stamped_flag(named_client, shop):
     """?stamped=1 triggers the one-shot scan celebration overlay."""
-    response = await client.get(f"/card/{shop.id}?stamped=1")
+    response = await named_client.get(f"/card/{shop.id}?stamped=1")
     assert response.status_code == 200
     body = response.text
     assert 'class="scan-cel"' in body
     assert "scan-cel-badge" in body
 
 
-async def test_card_no_celebration_without_stamped_flag(client, shop):
+async def test_card_no_celebration_without_stamped_flag(named_client, shop):
     """Plain card view (no ?stamped=1) does NOT include the overlay."""
-    response = await client.get(f"/card/{shop.id}")
+    response = await named_client.get(f"/card/{shop.id}")
     assert response.status_code == 200
     assert 'class="scan-cel"' not in response.text
 
@@ -119,20 +119,20 @@ async def test_onboard_renders_for_first_time_guest(client, shop):
     assert "สมัครด้วยเบอร์โทร" in body
 
 
-async def test_full_card_gates_redemption_for_guests(client, db, shop):
+async def test_full_card_gates_redemption_for_guests(named_client, db, shop):
     """Guest with a full card sees the signup gate, not the redeem form —
     revised C4: signup is required before redemption (anti-fraud + lets the
     shop contact the customer about the reward)."""
     from app.models import Customer, Point
 
     # Seed a full card via DB to skip the cooldown / scan-loop machinery.
-    await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    customer = (await db.exec(select(Customer))).first()
+    await named_client.get(f"/scan/{shop.id}", follow_redirects=False)
+    customer = (await db.exec(select(Customer).where(Customer.display_name == "พี่เทส"))).first()
     for _ in range(shop.reward_threshold - 1):
         db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
     await db.commit()
 
-    response = await client.get(f"/card/{shop.id}")
+    response = await named_client.get(f"/card/{shop.id}")
     assert response.status_code == 200
     body = response.text
     # Gate copy + signup-opening CTA, NOT the bare redeem form
@@ -275,10 +275,10 @@ async def test_shop_story_unknown_shop_404s(client):
     assert r.status_code == 404
 
 
-async def test_card_shop_head_links_to_story(client, shop):
+async def test_card_shop_head_links_to_story(named_client, shop):
     """C1 daily card — wordmark/shop-head is now a link to /story/{id}
     so customers can tap to learn about the shop (per design)."""
-    body = (await client.get(f"/card/{shop.id}")).text
+    body = (await named_client.get(f"/card/{shop.id}")).text
     assert f'href="/story/{shop.id}"' in body
 
 
@@ -312,21 +312,21 @@ async def test_dock_inbox_badge_lights_up_on_every_dock_page_when_unread(client,
         assert "gn-badge" in body, f"missing dock badge on {url}"
 
 
-async def test_customer_dock_renders_on_main_pages(client, shop):
+async def test_customer_dock_renders_on_main_pages(named_client, shop):
     """Customer 4-tab dock (c-glass-nav) is mounted on every main customer
     page per design. Onboarding screens (C2/C3) don't have it."""
     # Card view (C1)
-    body = (await client.get(f"/card/{shop.id}")).text
+    body = (await named_client.get(f"/card/{shop.id}")).text
     assert "c-glass-nav" in body
     assert 'href="/my-cards"' in body and 'href="/my-inbox"' in body
     # /my-cards (C7)
-    assert "c-glass-nav" in (await client.get("/my-cards")).text
+    assert "c-glass-nav" in (await named_client.get("/my-cards")).text
     # /my-inbox (Inbox)
-    assert "c-glass-nav" in (await client.get("/my-inbox")).text
+    assert "c-glass-nav" in (await named_client.get("/my-inbox")).text
     # /story/{id} (C9)
-    assert "c-glass-nav" in (await client.get(f"/story/{shop.id}")).text
+    assert "c-glass-nav" in (await named_client.get(f"/story/{shop.id}")).text
     # Onboarding C3 (Soft Wall) does NOT have the dock
-    assert "c-glass-nav" not in (await client.get("/card/save")).text
+    assert "c-glass-nav" not in (await named_client.get("/card/save")).text
 
 
 async def test_dock_has_4_tabs_with_gifts_replacing_settings(client):
@@ -622,12 +622,12 @@ async def test_text_size_post_persists_and_normalises_md_to_null(client, db, sho
     assert r.status_code == 400
 
 
-async def test_text_size_bootstrap_script_in_pwa_head(client, shop):
+async def test_text_size_bootstrap_script_in_pwa_head(named_client, shop):
     """The pwa_head bootstrap (sets fs-* on <html> from localStorage) must
     ship on every customer page for instant first-paint sizing — drives
     root font-size via html.fs-sm/fs-lg so any rule using --text-* rem
     tokens scales accordingly."""
-    body = (await client.get(f"/card/{shop.id}")).text
+    body = (await named_client.get(f"/card/{shop.id}")).text
     assert "td_text_size" in body
     assert "classList.add('fs-'" in body
 

@@ -108,6 +108,15 @@ async def client(app_for_test):
 
 
 @pytest.fixture
+async def named_client(client):
+    """Client whose customer cookie already has a display_name set, so
+    /card/{shop_id} and /my-cards render directly instead of bouncing
+    through the /onboard redirect that fires for null display_names."""
+    await client.post("/card/nickname", data={"name": "พี่เทส"})
+    return client
+
+
+@pytest.fixture
 async def auth_client(client, shop):
     """Client with a session cookie for the shop owner."""
     client.cookies.set(SESSION_COOKIE_NAME, issue_session_token(shop.id))
