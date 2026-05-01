@@ -212,6 +212,36 @@ async def test_issue_scan_rejects_qr_without_customer_path(auth_client):
     assert "ไม่ใช่บัตรลูกค้าแต้มดี" in response.json()["detail"]
 
 
+async def test_issue_scan_publishes_stamped_event_to_customer(auth_client, db, shop):
+    """When the shop scans the customer's QR and a stamp is issued, the
+    customer's SSE channel receives a 'stamped' event with the shop id
+    as the payload — the customer's /my-id page listens for this and
+    redirects to /card/<shop>?stamped=1 so the scan transitions
+    automatically to the celebration view."""
+    import asyncio
+    from app.models import Customer
+    from app.services import events
+
+    c = Customer(is_anonymous=False, display_name="พี่ส้ม", phone="0812345678")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+
+    q = events.subscribe_customer(c.id)
+    try:
+        response = await auth_client.post(
+            "/shop/issue/scan",
+            data={"scanned_value": f"https://taemdee.com/c/{c.id}"},
+        )
+        assert response.status_code == 200
+
+        name, payload = await asyncio.wait_for(q.get(), timeout=1.0)
+        assert name == "stamped"
+        assert payload == str(shop.id)
+    finally:
+        events.unsubscribe_customer(c.id, q)
+
+
 async def test_issue_scan_rejects_garbage_uuid(auth_client):
     response = await auth_client.post(
         "/shop/issue/scan",

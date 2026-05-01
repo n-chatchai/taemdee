@@ -206,6 +206,13 @@ async def issue_scan_grant(
         "feed-row",
         feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
     )
+    # Nudge the customer's device — if they're on /my-id showing the
+    # QR they just got scanned, the listener in that page will redirect
+    # them to /card/<shop>?stamped=1 so the celebration overlay fires
+    # without the customer having to manually navigate. Payload is the
+    # shop id; the client builds the target URL.
+    from app.services.events import publish_customer
+    publish_customer(customer.id, "stamped", str(shop.id))
     return {
         "point_id": str(point.id),
         "customer_id": str(customer.id),

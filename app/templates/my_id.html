@@ -61,4 +61,27 @@
       setInterval(tick, 1000);
     })();
   </script>
+
+  {# Auto-redirect when the shop scans this QR. The shop's /shop/issue/scan
+     POST publishes a 'stamped' event on the customer's SSE channel with
+     the shop id as the payload — bounce the customer straight to
+     /card/<shop>?stamped=1 so the celebration overlay fires without the
+     customer having to navigate manually. #}
+  <script>
+    (function () {
+      if (!('EventSource' in window)) return;
+      let es;
+      try {
+        es = new EventSource('/sse/me');
+        es.addEventListener('stamped', (ev) => {
+          const shopId = (ev.data || '').trim();
+          if (!shopId) return;
+          // Stop the scanner-camera-anti-screenshot reload by redirecting
+          // first.
+          window.location.href = '/card/' + shopId + '?stamped=1';
+        });
+      } catch (_) { /* fall through — the staff still saw success on their end */ }
+      window.addEventListener('pagehide', () => { try { es && es.close(); } catch (_) {} }, { once: true });
+    })();
+  </script>
 {% endblock %}
