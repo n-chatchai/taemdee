@@ -5,16 +5,15 @@
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
-  <div class="ph-section-h" style="margin-top:8px;">
-    <div class="label">ลูกค้าล่าสุด</div>
-    <span class="met-pills issue-feed-pills">
-      <a class="mp active" aria-disabled="true" tabindex="-1">ทั้งหมด</a>
-      <a class="mp" aria-disabled="true" tabindex="-1">สแกน</a>
-      <a class="mp" aria-disabled="true" tabindex="-1">แลก</a>
-    </span>
-  </div>
-
   <div class="s3-issue-feed">
+    <div class="if-head">
+      <div class="if-label">ลูกค้าล่าสุด</div>
+      <span class="met-pills issue-feed-pills">
+        <a class="mp active" aria-disabled="true" tabindex="-1">ทั้งหมด</a>
+        <a class="mp" aria-disabled="true" tabindex="-1">สแกน</a>
+        <a class="mp" aria-disabled="true" tabindex="-1">แลก</a>
+      </span>
+    </div>
     <table class="sap-table" id="sap-table">
       <tbody id="sap-tbody">
         {% for kind, item, customer_name in feed[:feed_cap] %}
@@ -40,9 +39,13 @@
 
   <div class="s3-issue-actions">
     <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
+    {# 4-method order per design: ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ ·
+       ค้นชื่อ. First button gets the .primary accent treatment as the
+       recommended path. Method gates dropped — owner controls on
+       /shop/settings still flip the underlying flags but the design's
+       2x2 grid always shows all four. #}
     <div class="sap-actions">
-      {# S3.qr — show rotating on-screen QR for the customer's camera. #}
-      <a class="sap-action" href="/shop/qr/live">
+      <a class="sap-action primary" href="/shop/qr/live">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="3" y="3" width="7" height="7" rx="1"/>
           <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -51,35 +54,27 @@
         </svg>
         <span>ลูกค้าสแกน</span>
       </a>
-      {% if shop.issue_method_phone_entry %}
-        <a class="sap-action" href="/shop/issue/phone">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="5" y="2" width="14" height="20" rx="2"/>
-            <line x1="12" y1="18" x2="12.01" y2="18"/>
-          </svg>
-          <span>กรอกเบอร์</span>
-        </a>
-      {% endif %}
-      {% if shop.issue_method_shop_scan %}
-        <a class="sap-action" href="/shop/issue/scan">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="3" y="3" width="7" height="7" rx="1"/>
-            <rect x="14" y="3" width="7" height="7" rx="1"/>
-            <rect x="3" y="14" width="7" height="7" rx="1"/>
-            <rect x="14" y="14" width="7" height="7" rx="1"/>
-          </svg>
-          <span>สแกน QR</span>
-        </a>
-      {% endif %}
-      {% if shop.issue_method_grant %}
-        <a class="sap-action" href="/shop/issue/grant">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="8"/>
-            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-          </svg>
-          <span>ค้นชื่อ</span>
-        </a>
-      {% endif %}
+      <a class="sap-action" href="/shop/issue/scan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <span>ร้านสแกน</span>
+      </a>
+      <a class="sap-action" href="/shop/issue/phone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+        <span>กรอกเบอร์</span>
+      </a>
+      <a class="sap-action" href="/shop/issue/grant">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span>ค้นชื่อ</span>
+      </a>
     </div>
   </div>
 

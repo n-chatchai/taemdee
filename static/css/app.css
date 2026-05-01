@@ -7445,6 +7445,25 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 16px;
   padding: 8px 14px;
 }
+/* Inline header inside the feed card — "ลูกค้าล่าสุด" label on the
+   left, ทั้งหมด/สแกน/แลก pills on the right, hairline separator below.
+   Replaces the older standalone .ph-section-h pattern that left the
+   pills outside the card. */
+.s3-issue-feed .if-head {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 6px 2px 10px;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+  margin-bottom: 4px;
+}
+.s3-issue-feed .if-head .if-label {
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink);
+}
 .s3-issue-feed .sap-table {
   width: 100%;
   border-collapse: collapse;
@@ -7537,6 +7556,17 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 700;
   font-size: 12px;
 }
+/* First button highlight — "ลูกค้าสแกน" gets the primary accent
+   so the recommended path stands out from the row of three other
+   ink-colored options. */
+.s3-issue-actions .sap-action.primary {
+  background: var(--accent);
+  border-color: var(--accent);
+  color: #fff;
+  box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.45);
+}
+.s3-issue-actions .sap-action.primary svg,
+.s3-issue-actions .sap-action.primary span { color: #fff; }
 
 /* ==========================================================
    S3.insights — Brief 30-day metrics card (suggestions view) +
