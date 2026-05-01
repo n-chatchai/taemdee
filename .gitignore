@@ -30,3 +30,7 @@ htmlcov/
 
 # graphify
 graphify-out/
+
+# personal scratch / one-off secrets that shouldn't ride into commits
+note.txt
+note*.txt
