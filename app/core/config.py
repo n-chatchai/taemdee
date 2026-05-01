@@ -44,11 +44,11 @@ class Settings(BaseSettings):
     # shop-facing — converted to satang internally when applied.
     credit_welcome_amount: int = 50
 
-    # Cloudflare R2 Storage
+    # Cloudflare R2 Storage. Bucket name is hardcoded to "taemdee-assets" in
+    # app/services/storage.py — flip there if you need a different bucket.
     r2_account_id: Optional[str] = None
     r2_access_key_id: Optional[str] = None
     r2_secret_access_key: Optional[str] = None
-    r2_bucket_name: Optional[str] = "taemdee-assets"
     r2_public_domain: Optional[str] = None  # e.g., https://pub-xxx.r2.dev or custom domain
 
 

@@ -1308,7 +1308,7 @@ async def upload_reward_image(
         content,
         file.filename,
         file.content_type,
-        folder=f"shops/{shop.id}/rewards",
+        folder="reward_images",
         is_image=True
     )
     if not url:

@@ -9,6 +9,8 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
+R2_BUCKET = "taemdee-assets"
+
 def process_image_to_square(file_data: bytes) -> bytes:
     """Center-crops an image to 1:1 ratio and resizes to max 800x800."""
     img = Image.open(io.BytesIO(file_data))
@@ -43,7 +45,7 @@ async def upload_to_r2(
     is_image: bool = False
 ) -> Optional[str]:
     """Uploads a file to Cloudflare R2 and returns the public URL."""
-    if not all([settings.r2_account_id, settings.r2_access_key_id, settings.r2_secret_access_key, settings.r2_bucket_name]):
+    if not all([settings.r2_account_id, settings.r2_access_key_id, settings.r2_secret_access_key]):
         logger.warning("R2 storage is not configured. Skipping upload.")
         return None
 
@@ -74,19 +76,19 @@ async def upload_to_r2(
             region_name="auto",
         ) as s3:
             await s3.put_object(
-                Bucket=settings.r2_bucket_name,
+                Bucket=R2_BUCKET,
                 Key=key,
                 Body=file_data,
                 ContentType=content_type,
             )
-            
+
             if settings.r2_public_domain:
                 # Remove trailing slash if present
                 domain = settings.r2_public_domain.rstrip("/")
                 return f"{domain}/{key}"
             else:
                 # Fallback if no public domain is set (though R2 needs one for public access)
-                return f"{endpoint_url}/{settings.r2_bucket_name}/{key}"
+                return f"{endpoint_url}/{R2_BUCKET}/{key}"
     except Exception as e:
         logger.error(f"Failed to upload to R2: {e}")
         return None
