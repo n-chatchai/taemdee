@@ -1799,7 +1799,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .shop-head .side-spark.l { left: 30px; transform: rotate(-15deg); }
 .shop-head .side-spark.r { right: 30px; transform: rotate(15deg); color: var(--butter); stroke: #141414; }
 .shop-logo-mark {
-  display: inline-block;
+  /* block (not inline-block) so .shop-sub always wraps below it on
+     wider viewports — design's text-align centering makes the wordmark
+     and sub look stacked on phone width, but they collapse onto one
+     line on desktop unless we force a row break. */
+  display: block;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
   /* Hero wordmark — kept px so it stays bold at the design size
@@ -1820,7 +1824,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 400;
   font-size: var(--text-base);
   color: var(--ink-soft);
-  display: inline-flex;
+  /* flex (centered) instead of inline-flex — same reason as
+     .shop-logo-mark above, so the sub line never sidles up next to
+     the wordmark on a wide viewport. */
+  display: flex;
+  justify-content: center;
   align-items: center;
   gap: 6px;
 }
