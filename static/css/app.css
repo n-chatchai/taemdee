@@ -6960,7 +6960,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   grid-template-columns: repeat(7, 1fr);
   gap: 6px;
   align-items: end;
-  height: 64px;
+  /* Taller than design's 64px because the top-of-bar number labels
+     ("5/2") need vertical room above the orange/ink bar. The actual
+     bar still draws on the bottom 64px slice via flex-end. */
+  height: 84px;
 }
 .s3-metrics .met-trend .tb {
   display: flex;
@@ -6969,6 +6972,20 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   gap: 4px;
   height: 100%;
   justify-content: flex-end;
+}
+.s3-metrics .met-trend .tb-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  letter-spacing: -0.02em;
+  color: var(--accent);
+  line-height: 1;
+}
+.s3-metrics .met-trend .tb-num.muted { color: var(--ink-softer); }
+.s3-metrics .met-trend .tb-num-redeem {
+  color: var(--ink);
+  font-weight: 700;
+  margin-left: 1px;
 }
 .s3-metrics .met-trend .tb .tb-bar {
   width: 100%;

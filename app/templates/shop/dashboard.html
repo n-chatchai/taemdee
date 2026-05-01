@@ -44,11 +44,18 @@
       </div>
       <div class="trend-bars">
         {# Labels are server-aligned: the rightmost bar IS today, the
-           leftmost is 6 days back. Bars stack scans (orange) with a
-           redemption overlay (ink) sized as a share of that day's
-           stamps. #}
+           leftmost is 6 days back. Bars stack scans (orange height
+           proportional to weekly max) with a redemption overlay (ink,
+           sized as a share of that day's stamps so it never overflows).
+           Top-of-bar number shows scan count, with "/N" suffix when at
+           least one redemption happened that day. #}
         {% for pct in daily_pct %}
+          {% set scans = daily_counts[loop.index0] %}
+          {% set redeems = daily_redemptions[loop.index0] %}
           <div class="tb">
+            <span class="tb-num{% if scans == 0 %} muted{% endif %}">
+              {{ scans }}{% if redeems > 0 %}<span class="tb-num-redeem">/{{ redeems }}</span>{% endif %}
+            </span>
             <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%">
               {% if daily_redeem_pct[loop.index0] > 0 %}
                 <div class="tb-redeem" style="height: {{ daily_redeem_pct[loop.index0] }}%"></div>
