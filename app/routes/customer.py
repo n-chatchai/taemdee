@@ -1159,17 +1159,35 @@ async def my_cards(
         })
     cards.sort(key=lambda c: c["ratio"], reverse=True)
 
-    # Split cards into the three .cl-* zones the design lays out:
-    #   - hero: the single most-progressed ready (≥ threshold) card. Extra
-    #           ready cards still surface — they fall back to the "near"
-    #           bucket (still relevant since they're at-or-above
-    #           threshold).
-    #   - near: ratio ≥ 0.5 carousel slots ("ใกล้แล้ว").
-    #   - other: the rest, rendered as a compact list with search.
-    hero_card = next((c for c in cards if c["point_count"] >= c["threshold"]), None)
-    rest = [c for c in cards if c is not hero_card]
-    near_cards = [c for c in rest if c["ratio"] >= 0.5]
-    other_cards = [c for c in rest if c["ratio"] < 0.5]
+    # Hero now points at the most recent unused voucher (Redemption
+    # served_at IS NULL · is_voided = False) instead of a card-at-threshold.
+    # Auto-redeem on /scan means the threshold-hit moment immediately
+    # collapses into a Redemption row — by the time the customer lands on
+    # /my-cards there's a voucher waiting in /my-gifts, not a full unredeemed
+    # card. The hero surfaces "ของขวัญรอพี่อยู่" with a tap-through to use it.
+    hero_redemption = (await db.exec(
+        select(Redemption)
+        .where(
+            Redemption.customer_id == customer.id,
+            Redemption.served_at.is_(None),
+            Redemption.is_voided == False,  # noqa: E712
+        )
+        .order_by(Redemption.created_at.desc())
+        .limit(1)
+    )).first()
+    hero_voucher = None
+    if hero_redemption is not None:
+        hero_shop = await db.get(Shop, hero_redemption.shop_id)
+        if hero_shop is not None:
+            hero_voucher = {
+                "redemption": hero_redemption,
+                "shop": hero_shop,
+            }
+
+    # near + other zones still come from the points view since they're about
+    # accumulation progress, not active vouchers.
+    near_cards = [c for c in cards if c["ratio"] >= 0.5]
+    other_cards = [c for c in cards if c["ratio"] < 0.5]
 
     total_stamps = sum(c["point_count"] for c in cards)
 
@@ -1193,7 +1211,7 @@ async def my_cards(
         context={
             "customer": customer,
             "cards": cards,
-            "hero_card": hero_card,
+            "hero_voucher": hero_voucher,
             "near_cards": near_cards,
             "other_cards": other_cards,
             "total_stamps": total_stamps,

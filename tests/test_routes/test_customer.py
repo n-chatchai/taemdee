@@ -255,22 +255,72 @@ async def test_my_cards_renders_for_guest_without_banner(client, shop):
     assert 'class="avatar"' not in body
 
 
-async def test_my_cards_renders_hero_for_ready_card(client, db, shop):
-    """cards.list — single ready (≥ threshold) card renders as a
-    .cl-hero gradient tile with the "รับรางวัลตอนนี้" CTA, not a row in
-    the regular list."""
-    from app.models import Customer, Point
+async def test_my_cards_renders_hero_for_unused_voucher(client, db, shop):
+    """cards.list hero now surfaces the most-recent unused Redemption
+    (not a card-at-threshold) — auto-redeem on /scan means the threshold
+    moment collapses straight into a Redemption row, so by the time the
+    customer lands on /my-cards there's a voucher waiting in /my-gifts.
+    Tap drops them there to hit "ใช้"."""
+    from app.models import Customer, Redemption
 
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
     customer = (await db.exec(select(Customer))).first()
-    for _ in range(shop.reward_threshold - 1):  # already 1 from /scan
-        db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    db.add(Redemption(customer_id=customer.id, shop_id=shop.id))
     await db.commit()
 
     body = (await client.get("/my-cards")).text
     assert "cl-hero" in body
-    assert "รับรางวัลตอนนี้" in body
-    assert "ครบแล้ว · พร้อมรับรางวัล" in body
+    assert "พร้อมใช้ · ของขวัญรอพี่อยู่" in body
+    assert "ใช้ของขวัญตอนนี้" in body
+    assert 'href="/my-gifts"' in body
+    assert shop.reward_description in body
+
+
+async def test_my_cards_hero_picks_latest_redemption(client, db, shop):
+    """When the customer has multiple unused vouchers, the hero shows
+    the most-recently-created one (older ones still surface in
+    /my-gifts)."""
+    from datetime import timedelta
+    from app.models import Customer, Redemption, Shop
+    from app.models.util import utcnow
+
+    other_shop = Shop(name="ร้านที่สอง", reward_description="โดนัทฟรี", reward_threshold=10)
+    db.add(other_shop)
+    await db.commit()
+    await db.refresh(other_shop)
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    customer = (await db.exec(select(Customer))).first()
+    older = Redemption(customer_id=customer.id, shop_id=shop.id, created_at=utcnow() - timedelta(days=2))
+    newer = Redemption(customer_id=customer.id, shop_id=other_shop.id, created_at=utcnow())
+    db.add_all([older, newer])
+    await db.commit()
+
+    body = (await client.get("/my-cards")).text
+    # Hero pulls the latest — other_shop's name + reward should appear in
+    # the .cl-hero block. The older shop is still listed below but not as hero.
+    import re
+    hero_block = re.search(r'class="cl-hero".*?</a>', body, re.DOTALL)
+    assert hero_block, "expected a .cl-hero tile"
+    assert "ร้านที่สอง" in hero_block.group(0)
+    assert "โดนัทฟรี" in hero_block.group(0)
+
+
+async def test_my_cards_no_hero_when_all_vouchers_used(client, db, shop):
+    """A served (used) voucher must not surface as the hero — once
+    served_at is set the voucher is in the "ใช้แล้ว" pile and the
+    customer doesn't need a CTA for it."""
+    from app.models import Customer, Redemption
+    from app.models.util import utcnow
+
+    await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    customer = (await db.exec(select(Customer))).first()
+    db.add(Redemption(customer_id=customer.id, shop_id=shop.id, served_at=utcnow()))
+    await db.commit()
+
+    body = (await client.get("/my-cards")).text
+    assert "cl-hero" not in body
+    assert "พร้อมใช้ · ของขวัญรอพี่อยู่" not in body
 
 
 async def test_my_cards_renders_carousel_for_near_complete_cards(client, db, shop):
