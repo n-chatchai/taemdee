@@ -93,6 +93,15 @@ async def upload_to_r2(
                 Body=file_data,
                 ContentType=content_type,
             )
+            # PUT goes to the S3 API host; GET goes to the browser-facing
+            # public host (r2.dev subdomain or custom domain). The two
+            # are different — the API host doesn't serve unsigned reads.
+            if settings.r2_public_url:
+                public_root = settings.r2_public_url.rstrip("/")
+                return f"{public_root}/{key}"
+            logger.warning("R2_PUBLIC_URL is unset — returning API host URL "
+                           "which will reject browser GETs. Set R2_PUBLIC_URL "
+                           "to your r2.dev subdomain or custom domain.")
             return f"{endpoint_url}/{settings.r2_bucket}/{key}"
     except Exception as e:
         logger.error(f"Failed to upload to R2: {e}")
