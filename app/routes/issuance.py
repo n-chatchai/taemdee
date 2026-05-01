@@ -208,30 +208,7 @@ async def issue_scan_grant(
     )
     from app.services.events import publish_customer
     if auto_redemption is not None:
-        # This stamp tipped the customer to threshold — fire the redemption
-        # feed-row for the dashboard, bump the customer's gifts dock badge,
-        # and tell the customer's /my-id page to land on /claimed (not /card)
-        # so the celebration page is what they see, mirroring /scan.
-        publish(
-            shop.id,
-            "feed-row",
-            feed_row_html(
-                "redemption", auto_redemption.id,
-                bkk_feed_time(auto_redemption.created_at),
-                customer.display_name or "ลูกค้า",
-            ),
-        )
-        gifts_count = (await db.exec(
-            select(func.count())
-            .select_from(Redemption)
-            .where(
-                Redemption.customer_id == customer.id,
-                Redemption.served_at.is_(None),
-                Redemption.is_voided == False,  # noqa: E712
-            )
-        )).one()
-        publish_customer(customer.id, "gifts-update", str(gifts_count))
-        publish_customer(customer.id, "redeemed", f"{shop.id}:{auto_redemption.id}")
+        await _publish_auto_redeem_events(db, shop, customer, auto_redemption, also_redirect=True)
     else:
         # Plain stamp — bounce the customer to /card/<shop>?stamped=1 for
         # the +1 celebration overlay.
@@ -242,6 +219,51 @@ async def issue_scan_grant(
         "customer_name": customer.display_name or "ลูกค้า",
         "auto_redemption_id": str(auto_redemption.id) if auto_redemption else None,
     }
+
+
+async def _publish_auto_redeem_events(
+    db: AsyncSession,
+    shop: Shop,
+    customer: Customer,
+    redemption: Redemption,
+    *,
+    also_redirect: bool = False,
+) -> None:
+    """Fan out the events that should follow an auto-redeem on the staff
+    side: a `redemption` feed-row for the shop dashboard, and a
+    `gifts-update` for the customer's dock badge. When `also_redirect` is
+    True (only the /shop/issue/scan path — the customer is actively on
+    /my-id watching for the redirect), additionally publish a `redeemed`
+    event so the customer lands on /claimed instead of /card?stamped=1.
+
+    Other staff-side paths (/issue/grant, /issue, /issue/manual) skip the
+    redirect because the customer typically isn't watching a redirectable
+    page; they'll see the new voucher next time they open the app via the
+    server-rendered nav_gifts_badge + my-cards hero.
+    """
+    from app.services.events import publish_customer
+
+    publish(
+        shop.id,
+        "feed-row",
+        feed_row_html(
+            "redemption", redemption.id,
+            bkk_feed_time(redemption.created_at),
+            customer.display_name or "ลูกค้า",
+        ),
+    )
+    gifts_count = (await db.exec(
+        select(func.count())
+        .select_from(Redemption)
+        .where(
+            Redemption.customer_id == customer.id,
+            Redemption.served_at.is_(None),
+            Redemption.is_voided == False,  # noqa: E712
+        )
+    )).one()
+    publish_customer(customer.id, "gifts-update", str(gifts_count))
+    if also_redirect:
+        publish_customer(customer.id, "redeemed", f"{shop.id}:{redemption.id}")
 
 
 @router.get("/issue/grant", response_class=HTMLResponse)
@@ -324,9 +346,10 @@ async def issue_grant_action(
     points = max(1, min(int(points or 1), 10))
 
     issued_ids = []
+    auto_redemption = None
     for _ in range(points):
         try:
-            point, _ = await issue_point(
+            point, redemption = await issue_point(
                 db, shop, customer,
                 method="system",
                 staff_id=staff.id if staff else None,
@@ -339,7 +362,20 @@ async def issue_grant_action(
             "feed-row",
             feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
         )
-    return {"granted": points, "point_ids": issued_ids, "customer_id": str(customer.id)}
+        # A grant of N can in principle trip the threshold partway
+        # through; capture the latest auto-redemption that fired so we
+        # only fan out events once (the customer's dock badge will reflect
+        # the final count anyway).
+        if redemption is not None:
+            auto_redemption = redemption
+    if auto_redemption is not None:
+        await _publish_auto_redeem_events(db, shop, customer, auto_redemption)
+    return {
+        "granted": points,
+        "point_ids": issued_ids,
+        "customer_id": str(customer.id),
+        "auto_redemption_id": str(auto_redemption.id) if auto_redemption else None,
+    }
 
 
 @router.post("/issue/methods")
@@ -398,7 +434,7 @@ async def staff_issue_point(
         )
 
     try:
-        point, _ = await issue_point(
+        point, auto_redemption = await issue_point(
             db, shop, customer,
             method=method,
             branch_id=branch_id,
@@ -412,7 +448,13 @@ async def staff_issue_point(
         "feed-row",
         feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
     )
-    return {"point_id": str(point.id), "customer_id": str(customer.id)}
+    if auto_redemption is not None:
+        await _publish_auto_redeem_events(db, shop, customer, auto_redemption)
+    return {
+        "point_id": str(point.id),
+        "customer_id": str(customer.id),
+        "auto_redemption_id": str(auto_redemption.id) if auto_redemption else None,
+    }
 
 
 @router.post("/issue/manual")

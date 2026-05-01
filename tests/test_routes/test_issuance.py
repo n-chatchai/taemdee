@@ -298,6 +298,96 @@ async def test_issue_scan_publishes_redeemed_event_when_threshold_hit(auth_clien
         events.unsubscribe_customer(c.id, q)
 
 
+async def test_issue_phone_entry_publishes_gifts_update_when_threshold_hit(auth_client, db, shop):
+    """Phone-entry issuance is the staff filling in a customer's number at
+    the counter — the customer typically isn't on /my-id watching for a
+    redirect, but if they have any other tab open the dock's ของขวัญ
+    badge should still bump live via gifts-update."""
+    import asyncio
+    from app.models import Customer, Point
+    from app.services import events
+
+    shop.reward_threshold = 3
+    shop.issue_method_phone_entry = True
+    db.add(shop)
+    await db.commit()
+
+    c = Customer(is_anonymous=False, phone="0866677788")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    for _ in range(2):
+        db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="phone_entry"))
+    await db.commit()
+
+    q = events.subscribe_customer(c.id)
+    received = []
+    try:
+        response = await auth_client.post(
+            "/shop/issue",
+            data={"method": "phone_entry", "phone": "0866677788"},
+        )
+        assert response.status_code == 200
+        assert response.json()["auto_redemption_id"] is not None
+        for _ in range(2):
+            try:
+                received.append(await asyncio.wait_for(q.get(), timeout=0.5))
+            except asyncio.TimeoutError:
+                break
+        names = [name for name, _ in received]
+        assert "gifts-update" in names
+        # No 'redeemed' redirect on phone_entry — customer isn't on /my-id.
+        assert "redeemed" not in names
+    finally:
+        events.unsubscribe_customer(c.id, q)
+
+
+async def test_issue_grant_publishes_gifts_update_when_threshold_hit(auth_client, db, shop):
+    """Bulk grant of N points can trip the threshold mid-loop. The badge
+    update fires once at the end with the final active-voucher count."""
+    import asyncio
+    from app.models import Customer, Point
+    from app.services import events
+
+    shop.reward_threshold = 5
+    shop.issue_method_grant = True
+    db.add(shop)
+    await db.commit()
+
+    c = Customer(is_anonymous=False, phone="0877788899")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    # Already at 4/5; granting 3 more pushes through threshold (5 consumed,
+    # 2 stay as the next card's progress).
+    for _ in range(4):
+        db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    q = events.subscribe_customer(c.id)
+    received = []
+    try:
+        response = await auth_client.post(
+            "/shop/issue/grant",
+            data={"customer_id": str(c.id), "points": "3"},
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["granted"] == 3
+        assert body["auto_redemption_id"] is not None
+        for _ in range(4):
+            try:
+                received.append(await asyncio.wait_for(q.get(), timeout=0.5))
+            except asyncio.TimeoutError:
+                break
+        names = [name for name, _ in received]
+        assert "gifts-update" in names
+        # Customer is at the counter, not on /my-id — no redirect event.
+        assert "redeemed" not in names
+    finally:
+        events.unsubscribe_customer(c.id, q)
+
+
 async def test_issue_scan_rejects_garbage_uuid(auth_client):
     response = await auth_client.post(
         "/shop/issue/scan",
