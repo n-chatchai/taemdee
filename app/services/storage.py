@@ -9,7 +9,6 @@ from PIL import Image
 
 logger = logging.getLogger(__name__)
 
-R2_BUCKET = "taemdee-assets"
 
 def process_image_to_square(file_data: bytes) -> bytes:
     """Center-crops an image to 1:1 ratio and resizes to max 800x800."""
@@ -45,7 +44,7 @@ async def upload_to_r2(
     is_image: bool = False
 ) -> Optional[str]:
     """Uploads a file to Cloudflare R2 and returns the public URL."""
-    if not all([settings.r2_account_id, settings.r2_access_key_id, settings.r2_secret_access_key]):
+    if not all([settings.r2_endpoint_url, settings.r2_access_key_id, settings.r2_secret_access_key]):
         logger.warning("R2 storage is not configured. Skipping upload.")
         return None
 
@@ -60,8 +59,8 @@ async def upload_to_r2(
             return None
 
     session = aioboto3.Session()
-    endpoint_url = f"https://{settings.r2_account_id}.r2.cloudflarestorage.com"
-    
+    endpoint_url = settings.r2_endpoint_url.rstrip("/")
+
     # Generate a unique key
     ext = file_name.split(".")[-1] if "." in file_name else "bin"
     key = f"{folder}/{uuid.uuid4()}.{ext}"
@@ -76,19 +75,12 @@ async def upload_to_r2(
             region_name="auto",
         ) as s3:
             await s3.put_object(
-                Bucket=R2_BUCKET,
+                Bucket=settings.r2_bucket,
                 Key=key,
                 Body=file_data,
                 ContentType=content_type,
             )
-
-            if settings.r2_public_domain:
-                # Remove trailing slash if present
-                domain = settings.r2_public_domain.rstrip("/")
-                return f"{domain}/{key}"
-            else:
-                # Fallback if no public domain is set (though R2 needs one for public access)
-                return f"{endpoint_url}/{R2_BUCKET}/{key}"
+            return f"{endpoint_url}/{settings.r2_bucket}/{key}"
     except Exception as e:
         logger.error(f"Failed to upload to R2: {e}")
         return None
