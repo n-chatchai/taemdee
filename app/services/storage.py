@@ -104,5 +104,19 @@ async def upload_to_r2(
                            "to your r2.dev subdomain or custom domain.")
             return f"{endpoint_url}/{settings.r2_bucket}/{key}"
     except Exception as e:
-        logger.error(f"Failed to upload to R2: {e}")
+        # boto3's ClientError.__str__ collapses to "An error occurred ()"
+        # when error_code/message parsed off the response are empty, which
+        # hides whatever R2 actually returned. Log the parsed response and
+        # the full traceback so the next failure mode is debuggable.
+        from botocore.exceptions import ClientError
+        if isinstance(e, ClientError):
+            logger.exception(
+                "R2 PutObject failed — endpoint=%s bucket=%s key=%s response=%r",
+                endpoint_url, settings.r2_bucket, key, e.response,
+            )
+        else:
+            logger.exception(
+                "R2 PutObject failed — endpoint=%s bucket=%s key=%s",
+                endpoint_url, settings.r2_bucket, key,
+            )
         return None
