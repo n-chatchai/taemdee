@@ -648,10 +648,13 @@ async def scan(
         # Cooldown or other constraint — silently swallow; redirect lands on card.
         pass
 
-    # First-ever scan (display_name still NULL) → C2 onboarding flow
-    # (3-step welcome + reward preview + signup). Returners with display_name
-    # set fall through to the regular card view celebration.
-    if just_stamped and customer.display_name is None:
+    # display_name still NULL → C2 onboarding flow (3-step welcome +
+    # reward preview + signup). Don't gate on just_stamped — a customer
+    # whose first stamp was swallowed by the cooldown still hasn't seen
+    # onboarding, and falling through to /card would only surface the
+    # tiny welcome_nickname fallback sheet instead. Returners with a
+    # display_name set ("คุณลูกค้า" included) skip onboarding regardless.
+    if customer.display_name is None:
         redirect_url = f"/onboard/{shop_id}"
         if branch_obj:
             redirect_url += f"?branch={branch_obj.id}"
