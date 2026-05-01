@@ -1148,19 +1148,19 @@
     margin-bottom: 100px;
   }
 
-  /* S3.issue — Action buttons container — pushed to bottom */
+  /* issue — Action buttons container — pushed to bottom */
   .s3-issue-actions {
-    margin: auto 20px 12px;
-    padding: 14px;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.18);
-    border-radius: 16px;
+    margin: auto 16px 12px;
+    padding: 4px 0 0;
+    background: transparent;
+    border: none;
+    border-radius: 0;
   }
   .s3-issue-actions .sap-actions-h {
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
 
-  /* S3.issue — Issue methods (large buttons) */
+  /* issue — Issue methods (large buttons) */
   .s3-issue-methods {
     margin: 0 20px 20px;
     display: flex;
@@ -1214,7 +1214,7 @@
     background: var(--surface-hover, var(--surface));
   }
 
-  /* S3.issue — Recent feed (full width, scrolling) */
+  /* issue — Recent feed (full width, scrolling) */
   .s3-issue-feed {
     margin: 8px 20px 0;
     background: var(--surface);
@@ -1335,12 +1335,144 @@
     cursor: pointer;
     text-decoration: none;
     white-space: nowrap;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+  }
+  .s3-filter-chips .fc .fc-count {
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--ink-softer);
+    letter-spacing: -0.01em;
   }
   .s3-filter-chips .fc.active {
     background: var(--ink);
     color: var(--bg);
     border-color: var(--ink);
     font-weight: 600;
+  }
+  .s3-filter-chips .fc.active .fc-count {
+    color: rgba(255,255,255,0.7);
+  }
+
+  /* customers · stats band (4-up) */
+  .s3-cust-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 6px;
+    margin: 0 16px 14px;
+  }
+  .s3-cust-stat {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 12px;
+    padding: 10px 6px 8px;
+    text-align: center;
+  }
+  .s3-cust-stat .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .s3-cust-stat.accent .num { color: var(--accent); }
+  .s3-cust-stat.warn .num { color: #C44523; }
+  .s3-cust-stat.mint .num { color: #5BA670; }
+  .s3-cust-stat .lab {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 5px;
+    letter-spacing: -0.005em;
+  }
+
+  /* customers · attention section (น่าสนใจวันนี้) */
+  .s3-cust-attn {
+    margin: 0 16px 14px;
+  }
+  .s3-cust-attn-h {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+  .s3-cust-attn-h .lab {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .s3-cust-attn-h .all {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-decoration: none;
+    cursor: pointer;
+  }
+  .s3-cust-attn-list {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .s3-attn-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 12px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+    text-decoration: none;
+  }
+  .s3-attn-row .icon {
+    flex-shrink: 0;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+  }
+  .s3-attn-row .icon.gift {
+    background: var(--butter-soft, #FFF7DA);
+    color: var(--accent);
+  }
+  .s3-attn-row .icon.away {
+    background: rgba(196, 69, 35, 0.12);
+    color: #C44523;
+  }
+  .s3-attn-row .info {
+    flex: 1;
+    min-width: 0;
+  }
+  .s3-attn-row .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.3;
+  }
+  .s3-attn-row .reason {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .s3-attn-row .cta {
+    flex-shrink: 0;
+    padding: 6px 12px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 11.5px;
+    letter-spacing: -0.005em;
   }
 
   /* S3.customers — Count label */
@@ -1631,19 +1763,61 @@
     gap: 3px;
     box-shadow: none;
   }
-  /* S3.issue · 4 buttons (lookup all 4 issue methods) */
+  /* issue · 4 buttons (lookup all 4 issue methods) */
+  .s3-issue-actions .sap-actions-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.005em;
+    text-transform: none;
+    color: var(--ink);
+    margin-bottom: 12px;
+    padding: 0 2px;
+  }
   .s3-issue-actions .sap-actions {
     grid-template-columns: repeat(2, 1fr);
-    gap: 8px;
+    gap: 10px;
   }
   .s3-issue-actions .sap-action {
-    padding: 14px 8px;
+    background: #fff;
+    color: var(--ink);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+    padding: 16px 10px 14px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 6px;
+    cursor: pointer;
+    transition: transform 0.15s ease;
+  }
+  .s3-issue-actions .sap-action:active {
+    transform: scale(0.97);
   }
   .s3-issue-actions .sap-action svg {
-    width: 22px; height: 22px;
+    width: 24px;
+    height: 24px;
+    color: var(--accent);
+    stroke: currentColor;
   }
   .s3-issue-actions .sap-action span {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
     font-size: 13px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  /* Recommended primary button · first one (ลูกค้าสแกน) */
+  .s3-issue-actions .sap-action.primary {
+    background: var(--accent);
+    border-color: var(--accent);
+    box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.45);
+  }
+  .s3-issue-actions .sap-action.primary svg {
+    color: #fff;
+  }
+  .s3-issue-actions .sap-action.primary span {
+    color: #fff;
   }
   .s3-action-panel .sap-action svg, .s3-dock .sap-action svg, .s3-issue-actions .sap-action svg {
     width: 16px; height: 16px;
@@ -2056,7 +2230,7 @@
     width: 16px; height: 16px;
   }
 
-  /* Method picker (S3.choose) */  .method-row {
+  /* Method picker (issue) */  .method-row {
     display: flex; align-items: center; gap: 12px;
     padding: 12px 14px;
     background: var(--surface);
@@ -2817,6 +2991,174 @@
   }
 
   /* Install bottom sheet — only visible in mockup with .show class */
+  /* reach.confirm · single-customer reach quick-confirm sheet */
+  .rc-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(17,17,17,0.45);
+    z-index: 10;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .rc-sheet {
+    background: var(--bg);
+    border-top: 1px solid rgba(17,17,17,0.18);
+    border-top-left-radius: 22px;
+    border-top-right-radius: 22px;
+    padding: 18px 18px 18px;
+    width: 100%;
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.25);
+    position: relative;
+  }
+  .rc-sheet .sheet-handle {
+    width: 36px; height: 4px;
+    border-radius: 999px;
+    background: var(--ink-softer);
+    margin: 0 auto 14px;
+    opacity: 0.4;
+  }
+  .rc-cust {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    margin-bottom: 14px;
+  }
+  .rc-cust .avatar {
+    width: 44px; height: 44px;
+    border-radius: 50%;
+    background: var(--butter-soft, #FFF7DA);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+  }
+  .rc-cust .info {
+    flex: 1;
+    min-width: 0;
+  }
+  .rc-cust .name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .rc-cust .reason {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .rc-tag {
+    background: var(--accent);
+    color: #fff;
+    padding: 4px 10px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .rc-preview {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 12px;
+  }
+  .rc-preview .preview-h {
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700;
+    font-size: 9.5px;
+    letter-spacing: 0.1em;
+    color: var(--ink-softer);
+    text-transform: uppercase;
+    margin-bottom: 8px;
+  }
+  .rc-preview .msg {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.4;
+    letter-spacing: -0.005em;
+  }
+  .rc-channel {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 14px;
+    background: rgba(255, 217, 82, 0.18);
+    border: 1px solid rgba(255, 217, 82, 0.45);
+    border-radius: 12px;
+    margin-bottom: 14px;
+  }
+  .rc-channel .icon {
+    width: 28px; height: 28px;
+    border-radius: 8px;
+    background: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .rc-channel .ch-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .rc-channel .ch-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .rc-channel .ch-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .rc-channel .cost {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--accent);
+    letter-spacing: -0.01em;
+    flex-shrink: 0;
+  }
+  .rc-actions {
+    display: flex;
+    gap: 8px;
+  }
+  .rc-actions button {
+    appearance: none; -webkit-appearance: none;
+    flex: 1;
+    padding: 14px;
+    border-radius: 14px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    letter-spacing: -0.005em;
+  }
+  .rc-actions .cancel {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    color: var(--ink-soft);
+  }
+  .rc-actions .send {
+    background: var(--accent);
+    border: none;
+    color: #fff;
+    flex: 1.6;
+    box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.5);
+  }
+
   .install-sheet-overlay {
     position: absolute;
     inset: 0;
@@ -4191,6 +4533,120 @@
     line-height: 1.5;
   }
 
+  /* staff.add · permission toggles */
+  .ssf-perm-section {
+    margin-top: 18px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(17,17,17,0.10);
+  }
+  .ssf-perm-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: -0.005em;
+  }
+  .ssf-perm-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 14px;
+    line-height: 1.4;
+  }
+  .ssf-perm-list {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .ssf-perm-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 13px 14px;
+  }
+  .ssf-perm-row + .ssf-perm-row {
+    border-top: 1px solid rgba(17,17,17,0.06);
+  }
+  .ssf-perm-row .icon {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: var(--butter-soft, #FFF7DA);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+    flex-shrink: 0;
+  }
+  .ssf-perm-row .icon svg {
+    width: 16px; height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ssf-perm-row .info {
+    flex: 1;
+    min-width: 0;
+  }
+  .ssf-perm-row .perm-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .ssf-perm-row .perm-desc {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+    line-height: 1.3;
+  }
+  .ssf-perm-row .perm-locked {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-softer);
+    flex-shrink: 0;
+  }
+  /* Toggle switch */
+  .ssf-toggle {
+    flex-shrink: 0;
+    width: 40px;
+    height: 24px;
+    background: rgba(17,17,17,0.18);
+    border-radius: 99px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .ssf-toggle::after {
+    content: '';
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 20px; height: 20px;
+    background: #fff;
+    border-radius: 50%;
+    transition: left 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+  }
+  .ssf-toggle.on {
+    background: var(--accent);
+  }
+  .ssf-toggle.on::after {
+    left: 18px;
+  }
+  .ssf-toggle.locked {
+    background: var(--accent);
+    opacity: 0.5;
+    cursor: not-allowed;
+  }
+  .ssf-toggle.locked::after {
+    left: 18px;
+  }
+
   .ssi-stage { padding: 18px; text-align: center; }
   .ssi-greet {
     font-family: 'Prompt', sans-serif;
@@ -4531,7 +4987,7 @@
   .s2-logos {
     padding: 22px 20px 0;
     display: grid;
-    grid-template-columns: repeat(3, 1fr);
+    grid-template-columns: repeat(2, 1fr);
     gap: 10px;
   }
   .s2-logo {
@@ -4545,93 +5001,68 @@
     position: relative;
     overflow: hidden;
   }
-  .s2-logo.selected { background: var(--butter); transform: translateY(-2px); }
   .s2-logo.selected::after {
     content: '✓';
     position: absolute;
-    top: 6px; right: 6px;
-    width: 20px; height: 20px;
+    top: 8px; right: 8px;
+    width: 22px; height: 22px;
     background: var(--accent); color: #fff;
     border-radius: 50%;
     display: flex; align-items: center; justify-content: center;
-    font-size: 11px; font-weight: 700;
+    font-size: 12px; font-weight: 700;
     border: 1px solid rgba(17,17,17,0.18);
-  }
-  /* Edit indicator on selected tile (bottom-left) */
-  .s2-logo.selected .edit-hint {
-    position: absolute;
-    bottom: 6px; left: 6px;
-    width: 18px; height: 18px;
-    background: rgba(17,17,17,0.12);
-    border-radius: 50%;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink);
-    pointer-events: none;
-  }
-  .s2-logo .edit-hint {
-    display: none;
-  }
-  .s2-logo.selected .edit-hint {
-    display: flex;
-  }
-  .s2-logo.selected .edit-hint svg {
-    width: 10px; height: 10px;
-  }
-  /* Editable input — replaces text on selected tile */
-  .s2-logo input.lt-edit {
-    border: none; outline: none; background: transparent;
-    width: 80%; text-align: center;
-    cursor: text;
-  }
-  .s2-logo input.lt-edit.lt-1 {
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 28px;
-    letter-spacing: -0.04em;
-    color: var(--ink);
-  }
-  .s2-logo input.lt-edit.lt-2 {
-    font-family: 'Prompt', sans-serif;
-    font-style: italic; font-weight: 700;
-    font-size: 22px; letter-spacing: -0.02em;
-    color: var(--ink);
-  }
-  .s2-logo input.lt-edit.lt-3 {
-    font-family: 'Prompt', sans-serif;
-    font-weight: 800; font-size: 26px;
-    letter-spacing: -0.03em;
-    color: var(--ink);
+    z-index: 2;
   }
 
+  /* Variant 1 · lowercase + dot wordmark */
   .s2-logo .lt-1 {
     font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800; font-size: 28px;
+    font-weight: 800; font-size: 38px;
     letter-spacing: -0.04em;
+    color: var(--ink);
   }
   .s2-logo .lt-1 .dot { color: var(--accent); }
+
+  /* Variant 2 · UPPERCASE block */
   .s2-logo .lt-2 {
-    font-family: 'Prompt', sans-serif;
-    font-style: italic; font-weight: 700;
-    font-size: 22px; letter-spacing: -0.02em;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 30px;
+    letter-spacing: -0.02em;
+    color: var(--ink);
+    text-transform: uppercase;
+  }
+
+  /* Variant 3 · Initial on colored tile */
+  .s2-logo.v-tile {
+    background: var(--accent);
+    border-color: var(--accent);
   }
   .s2-logo .lt-3 {
-    font-family: 'Prompt', sans-serif;
-    font-weight: 800; font-size: 26px;
-    letter-spacing: -0.03em;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800; font-size: 46px;
+    letter-spacing: -0.04em;
+    color: #fff;
   }
+  .s2-logo .lt-3 .dot { color: var(--butter); margin-left: 2px; }
+
+  /* Variant 4 · Thai script + dot */
+  .s2-logo .lt-4 {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 28px;
+    letter-spacing: -0.005em;
+    color: var(--ink);
+  }
+  .s2-logo .lt-4 .dot { color: var(--accent); }
+
   .s2-helper {
     padding: 14px 20px 0;
     font-family: 'Prompt', sans-serif;
-    font-style: italic; font-weight: 500;
     font-size: 12px;
     color: var(--ink-soft);
     text-align: center;
   }
-  .s2-helper .reroll {
-    color: var(--accent); font-weight: 600;
-    text-decoration: underline;
-    text-decoration-color: rgba(255,94,58,0.4);
-    text-underline-offset: 2px;
-    cursor: pointer;
+  .s2-helper em {
+    color: var(--ink); font-style: normal; font-weight: 600;
   }
   .s2-upload {
     margin: 18px 20px 0;
@@ -5194,7 +5625,7 @@
     color: var(--ink);
   }
 
-  /* S3.insights — Brief metrics card (links to full history) */
+  /* insights — Brief metrics card (links to full history) */
   .s3-ins-brief {
     display: block;
     margin: 0 20px 16px;
@@ -5668,7 +6099,7 @@
     font-size: 18px;
   }
 
-  /* S5 — Issuance                                               */
+  /* setup.theme — Issuance                                               */
   /* ========================================================== */
   .s5-top {
     padding: 14px 20px 0;
@@ -6973,9 +7404,9 @@
     .end { page-break-before: always; padding-top: 40px; }
   }
   /* ========================================================== */
-  /* S13 — แต้มดีแนะนำ                                           */
+  /* reach — แต้มดีแนะนำ                                           */
   /* ============================================================ */
-  /* S3.insights — Toggle pills (คำแนะนำ | ผลงาน) */
+  /* insights — Toggle pills (คำแนะนำ | ผลงาน) */
   .s3-ins-toggle {
     margin: 0 20px 18px;
     padding: 4px;
@@ -7004,7 +7435,7 @@
     font-weight: 700;
   }
 
-  /* S3.insights — Overview funnel (ผลงาน view) */
+  /* insights — Overview funnel (ผลงาน view) */
   .s3-ins-overview {
     margin: 0 20px 18px;
     padding: 16px 18px;
@@ -7060,7 +7491,7 @@
     padding-bottom: 28px;
   }
 
-  /* S3.insights — Campaign performance card */
+  /* insights — Campaign performance card */
   .s3-camp {
     display: block;
     margin: 0 20px 10px;
@@ -7180,7 +7611,7 @@
   }
 
   /* ============================================================ */
-  /* S13 (insights list — keep existing styles below)             */
+  /* reach (insights list — keep existing styles below)             */
   /* ========================================================== */
   .s13-intro {
     padding: 22px 22px 0;
@@ -7298,7 +7729,7 @@
   }
 
   /* ========================================================== */
-  /* S13.detail — campaign detail page                          */
+  /* reach.send — campaign detail page                          */
   /* ========================================================== */
   .s13d-section {
     padding: 14px 20px 0;
@@ -7429,7 +7860,7 @@
     color: var(--ink-softer);
   }
 
-  /* S13.detail · search + clear bar (inside customer box) */
+  /* reach.send · search + clear bar (inside customer box) */
   .s13d-search-row {
     display: flex;
     gap: 6px;
@@ -7533,7 +7964,7 @@
     cursor: pointer;
   }
 
-  /* S13.create · attached offer/voucher */
+  /* reach.create · attached offer/voucher */
   .s13d-h .s13d-opt {
     color: var(--ink-soft);
     font-weight: 500;
@@ -7969,7 +8400,7 @@
     box-shadow: 0 0 0 2px var(--ink);
   }
 
-  /* S13.create textarea */
+  /* reach.create textarea */
   .s13c-textarea {
     width: 100%;
     margin-top: 4px;
@@ -8048,7 +8479,7 @@
   }
 
   /* ========================================================== */
-  /* S13.sent — confirmation                                     */
+  /* reach.sent — confirmation                                     */
   /* ========================================================== */
   .s13s-stage {
     padding: 36px 24px 24px;
@@ -8220,7 +8651,7 @@
     <!-- HM — Homepage Mobile (shop discovery) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">HM</span>หน้าแรก · มือถือ</div>
+        <div class="kicker"><span class="n">landing</span>หน้าแรก · มือถือ</div>
         <h3>เจ้าของร้านพบเรา</h3>
         <p>หน้าแรก taemdee.com เปิดบนมือถือ — เจ้าของร้านเลือก "สำหรับร้าน" ที่เป็น CTA หลัก ลูกค้าทั่วไปไม่ต้องเข้ามาที่นี่</p>
       </div>
@@ -8291,7 +8722,7 @@
     <!-- S1 — Shop login -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S1</span>ร้านค้า · เข้าสู่ระบบ</div>
+        <div class="kicker"><span class="n">login</span>ร้านค้า · เข้าสู่ระบบ</div>
         <h3>เข้าสู่ระบบด้วย LINE หรือเบอร์</h3>
         <p>หลังกด "สำหรับร้าน" จากหน้าแรก — เจ้าของร้านล็อกอินด้วย LINE OAuth (1 tap) หรือเบอร์โทร (OTP)</p>
       </div>
@@ -8366,7 +8797,7 @@
     <!-- S2.1 — Shop identity (name + logo + district) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S2.1</span>ตั้งค่าร้าน · 1/4</div>
+        <div class="kicker"><span class="n">setup.shop</span>ตั้งค่าร้าน · 1/4</div>
         <h3>ชื่อร้าน + โลโก้ + เขต/อำเภอ</h3>
         <p>ขั้นแรก ใส่ชื่อร้าน เลือกโลโก้ และเลือกเขต/อำเภอ — AI สร้าง 3 แบบจากชื่อให้เลือก หรืออัปโหลดเอง · เลือกเขต → จังหวัด auto-fill · collision check ที่ district level (เขตเดียวกัน = block · เขตต่างกัน = OK + auto-suffix)</p>
       </div>
@@ -8413,23 +8844,22 @@
             </div>
 
             <div class="s2-logos">
-              <div class="s2-logo">
-                <span class="lt-1">m<span class="dot">.</span></span>
-              </div>
               <div class="s2-logo selected">
-                <input class="lt-edit lt-2" value="Mhee" />
-                <span class="edit-hint">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </span>
+                <span class="lt-1">mhee<span class="dot">.</span></span>
               </div>
               <div class="s2-logo">
-                <span class="lt-3">หมี</span>
+                <span class="lt-2">Mhee</span>
+              </div>
+              <div class="s2-logo v-tile">
+                <span class="lt-3">M<span class="dot">.</span></span>
+              </div>
+              <div class="s2-logo">
+                <span class="lt-4">หมี<span class="dot">.</span></span>
               </div>
             </div>
 
             <div class="s2-helper">
-              AI สร้างจากชื่อ <em>"ร้านกาแฟลุงหมี"</em> · แตะที่เลือกเพื่อแก้ข้อความ<br>
-              <span class="reroll">↻ สร้างใหม่อีก 3 แบบ</span>
+              เลือกแบบที่ใช่ · ปรับได้ใน <em>ตั้งค่า</em> ทีหลัง
             </div>
 
             <div class="s2-upload">
@@ -8451,7 +8881,7 @@
     <!-- S2.1.warn — Inline collision warning (district-level) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S2.1.warn</span>ชื่อซ้ำในเขตเดียวกัน</div>
+        <div class="kicker"><span class="n">setup.shop.warn</span>ชื่อซ้ำในเขตเดียวกัน</div>
         <h3>Inline warning · ไม่ต้องไปหน้าใหม่</h3>
         <p>ถ้า owner เลือกเขตที่มีชื่อร้านนี้แล้ว — field ชื่อร้านมี orange border + cursor focus + warning ใต้ field พร้อม suggestion · CTA "ถัดไป" disabled จนกว่าจะแก้ชื่อ · ถ้าเขตต่างกัน · จังหวัดเดียวกัน = auto-suffix district ผ่านเลย</p>
       </div>
@@ -8503,17 +8933,17 @@
             </div>
 
             <div class="s2-logos">
-              <div class="s2-logo">
-                <span class="lt-1">m<span class="dot">.</span></span>
-              </div>
               <div class="s2-logo selected">
-                <input class="lt-edit lt-2" value="Mhee" />
-                <span class="edit-hint">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </span>
+                <span class="lt-1">mhee<span class="dot">.</span></span>
               </div>
               <div class="s2-logo">
-                <span class="lt-3">หมี</span>
+                <span class="lt-2">Mhee</span>
+              </div>
+              <div class="s2-logo v-tile">
+                <span class="lt-3">M<span class="dot">.</span></span>
+              </div>
+              <div class="s2-logo">
+                <span class="lt-4">หมี<span class="dot">.</span></span>
               </div>
             </div>
 
@@ -8531,7 +8961,7 @@
     <!-- S2.2 — Reward (text + image + points) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S2.2</span>ตั้งค่าร้าน · 2/4</div>
+        <div class="kicker"><span class="n">setup.reward</span>ตั้งค่าร้าน · 2/4</div>
         <h3>รางวัล + แต้ม</h3>
         <p>ใส่ชื่อรางวัล AI สร้างรูป 3 แบบให้เลือก (หรืออัปโหลดเอง) และเลือกจำนวนแต้มที่ต้องสะสม 5/10/20 หรือกำหนดเอง</p>
       </div>
@@ -8643,7 +9073,7 @@
     <!-- S2.3 — Theme -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S2.3</span>ตั้งค่าร้าน · 3/4</div>
+        <div class="kicker"><span class="n">setup.theme</span>ตั้งค่าร้าน · 3/4</div>
         <h3>เลือกธีม</h3>
         <p>มุมมองลูกค้าบนมือถือ — เลือกธีมแล้วเปลี่ยนสีทันที (1 แต้ม, ตรงกับสิ่งที่ลูกค้าจะเห็นจริงตอน C2)</p>
       </div>
@@ -8768,7 +9198,7 @@
     <!-- S2.4 — Done -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S2.4</span>ตั้งค่าร้าน · 4/4</div>
+        <div class="kicker"><span class="n">setup.done</span>ตั้งค่าร้าน · 4/4</div>
         <h3>คิวอาร์ร้านพร้อมแล้ว</h3>
         <p>ขั้นสุดท้าย — โชว์ คิวอาร์ร้าน + ปุ่มโหลด PDF ให้พิมพ์ติดที่เคาน์เตอร์ · ก่อนเข้าแดชบอร์ด</p>
       </div>
@@ -9184,7 +9614,7 @@
     <!-- S3 DeeBoard -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3</span>หน้าแรก</div>
+        <div class="kicker"><span class="n">home</span>หน้าแรก</div>
         <h3>หน้าหลักของร้าน</h3>
         <p>3 sections: today snapshot (ลูกค้าวันนี้ + delta), trend chart (7-day bars + %), need attention (urgent + opportunities) · time period pills (วันนี้/สัปดาห์/เดือน) เปลี่ยนทั้งหน้า · liquid glass nav มี badge ที่ "ออกแต้ม"</p>
       </div>
@@ -9272,7 +9702,7 @@
             <a class="s3-todo" href="#">
               <div class="td-info">
                 <div class="td-h">รับ<strong>เครดิต 100</strong>เปิดบัญชี</div>
-                <div class="td-s">ครั้งเดียว · ส่งดีรีชหาลูกค้าได้ 2 ครั้ง</div>
+                <div class="td-s">ครั้งเดียว · ส่งข้อความหาลูกค้าได้ 2 ครั้ง</div>
               </div>
               <span class="td-cta">รับเลย →</span>
             </a>
@@ -9370,12 +9800,12 @@
       </div>
     </div>
 
-    <!-- S3.issue — ออกแต้มให้ลูกค้า (full page) -->
+    <!-- issue — ออกแต้มให้ลูกค้า (full page) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.issue</span>ออกแต้ม</div>
+        <div class="kicker"><span class="n">issue</span>ออกแต้ม</div>
         <h3>4 วิธีออกแต้ม · ลูกค้าล่าสุด</h3>
-        <p>เปิดจาก tab "ออกแต้ม" ใน liquid glass nav — 4 ปุ่มออกแต้ม (ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ · ค้นชื่อ) + ลูกค้าล่าสุด full list scroll · เปิดวิธีไหนได้ปุ่มนั้น (config ใน S5)</p>
+        <p>เปิดจาก tab "ออกแต้ม" ใน liquid glass nav — 4 ปุ่มออกแต้ม (ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ · ค้นชื่อ) + ลูกค้าล่าสุด full list scroll · เปิดวิธีไหนได้ปุ่มนั้น (config ใน setup.theme)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -9451,7 +9881,7 @@
             <div class="s3-issue-actions">
               <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
               <div class="sap-actions">
-                <button class="sap-action">
+                <button class="sap-action primary">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7" rx="1"/>
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
@@ -9530,9 +9960,9 @@
     <!-- S3.qr — Dynamic QR display for customer to scan -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.qr</span>ลูกค้าสแกน</div>
+        <div class="kicker"><span class="n">issue.qr</span>ลูกค้าสแกน</div>
         <h3>หันจอให้ลูกค้าสแกน · QR หมุนทุก 15 วิ</h3>
-        <p>เปิดเมื่อ shop กดปุ่ม "ลูกค้าสแกน" ใน S3.issue — โชว์ dynamic QR ของร้านพร้อม shop logo center · countdown timer (rolling 15s) · ป้องกัน screenshot fraud · ลูกค้าเปิดกล้องสแกน → +1 stamp ทันที · ลูกค้าไม่ต้องโหลดแอป</p>
+        <p>เปิดเมื่อ shop กดปุ่ม "ลูกค้าสแกน" ใน issue — โชว์ dynamic QR ของร้านพร้อม shop logo center · countdown timer (rolling 15s) · ป้องกัน screenshot fraud · ลูกค้าเปิดกล้องสแกน → +1 stamp ทันที · ลูกค้าไม่ต้องโหลดแอป</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -9601,9 +10031,9 @@
     <!-- S3.scan — Manual point issuing modal (ร้านสแกน) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.scan</span>ออกแต้ม · สแกน QR ลูกค้า</div>
+        <div class="kicker"><span class="n">issue.scan</span>ออกแต้ม · สแกน QR ลูกค้า</div>
         <h3>โหมดร้านสแกน</h3>
-        <p>เปิดเมื่อกดปุ่ม "ออกแต้มลูกค้า" ใน S3v ถ้า config = ร้านสแกน — bottom sheet เปิดกล้อง viewfinder พร้อม corner markers + animated scan line + fallback "กรอกเบอร์แทน"</p>
+        <p>เปิดเมื่อกดปุ่ม "ออกแต้มลูกค้า" ใน home ถ้า config = ร้านสแกน — bottom sheet เปิดกล้อง viewfinder พร้อม corner markers + animated scan line + fallback "กรอกเบอร์แทน"</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -9673,7 +10103,7 @@
     <!-- S3.phone — Manual point issuing modal (กรอกเบอร์) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.phone</span>ออกแต้ม · กรอกเบอร์</div>
+        <div class="kicker"><span class="n">issue.phone</span>ออกแต้ม · กรอกเบอร์</div>
         <h3>ลูกค้าใหม่ · สร้างบัตรอัตโนมัติ</h3>
         <p>เปิดเมื่อกด "กรอกเบอร์" จาก dock — กรอกครบ 10 หลักแล้วถ้าเบอร์ยังไม่มีในระบบ โชว์ banner เหลือง "ลูกค้าใหม่" + ปุ่ม "ออกแต้ม · สร้างบัตรใหม่" สร้างให้อัตโนมัติพร้อมออกแต้มแรก ลูกค้าไม่ต้องสมัครก่อน</p>
       </div>
@@ -9750,7 +10180,7 @@
     <!-- S3.search — Manual point issuing · search customer + give points -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.search</span>ออกแต้ม · ให้แต้มลูกค้า</div>
+        <div class="kicker"><span class="n">issue.search</span>ออกแต้ม · ให้แต้มลูกค้า</div>
         <h3>ค้นลูกค้าแล้วให้คะแนน</h3>
         <p>เปิดเมื่อกด "ค้นชื่อ" จาก dock — ค้นจากชื่อหรือเบอร์ → เลือกลูกค้า → ระบุจำนวนแต้ม → ยืนยัน · ใช้กับเคสลูกค้าเก่าที่ลืมโทรศัพท์</p>
       </div>
@@ -9849,7 +10279,7 @@
     <!-- S3.detail — Activity row detail modal (tap on feed row) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.detail</span>รายละเอียดกิจกรรม</div>
+        <div class="kicker"><span class="n">customer.detail</span>รายละเอียดกิจกรรม</div>
         <h3>ดูรายละเอียด · ยกเลิกได้</h3>
         <p>เปิดเมื่อร้านแตะแถวใน "ลูกค้าล่าสุด" ของ dock — bottom sheet โชว์รายละเอียดธุรกรรม + ปุ่มยกเลิก (ใช้ได้ภายใน 60 วินาที)</p>
       </div>
@@ -9953,7 +10383,7 @@
     <!-- S3.customers — ลูกค้า (full page list) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.customers</span>ลูกค้า</div>
+        <div class="kicker"><span class="n">customers</span>ลูกค้า</div>
         <h3>รายการลูกค้าทั้งหมด</h3>
         <p>หน้าค้นหา + รายการลูกค้าทั้งหมด · filter chips (ทั้งหมด/ประจำ/ใกล้รับ/หายไป) · แต่ละ row แสดง progress + last visit · แตะดู profile + history · เปิดจาก tab "ลูกค้า"</p>
       </div>
@@ -9990,6 +10420,50 @@
               <div class="branch-pill">นิมมาน</div>
             </div>
 
+            <div class="s3-cust-stats">
+              <div class="s3-cust-stat">
+                <div class="num">412</div>
+                <div class="lab">ทั้งหมด</div>
+              </div>
+              <div class="s3-cust-stat accent">
+                <div class="num">23</div>
+                <div class="lab">ใกล้รับ</div>
+              </div>
+              <div class="s3-cust-stat warn">
+                <div class="num">47</div>
+                <div class="lab">หายไป</div>
+              </div>
+              <div class="s3-cust-stat mint">
+                <div class="num">18</div>
+                <div class="lab">ใหม่</div>
+              </div>
+            </div>
+
+            <div class="s3-cust-attn">
+              <div class="s3-cust-attn-h">
+                <span class="lab">น่าสนใจวันนี้</span>
+                <a class="all">ดูทั้งหมด →</a>
+              </div>
+              <div class="s3-cust-attn-list">
+                <a class="s3-attn-row">
+                  <div class="icon gift">🎁</div>
+                  <div class="info">
+                    <div class="name">ก้อง · เกือบรับรางวัล</div>
+                    <div class="reason">9/10 · มาบ่อย 12 ครั้ง</div>
+                  </div>
+                  <div class="cta">ส่งเตือน</div>
+                </a>
+                <a class="s3-attn-row">
+                  <div class="icon away">👋</div>
+                  <div class="info">
+                    <div class="name">ปาน · หายไป 14 วัน</div>
+                    <div class="reason">เหลือ 6/10 · เคยมา 4 ครั้ง</div>
+                  </div>
+                  <div class="cta">ชวนกลับ</div>
+                </a>
+              </div>
+            </div>
+
             <div class="s3-search-bar">
               <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                 <circle cx="11" cy="11" r="8"/>
@@ -9999,10 +10473,10 @@
             </div>
 
             <div class="s3-filter-chips">
-              <a class="fc active">ทั้งหมด</a>
-              <a class="fc">ลูกค้าประจำ</a>
-              <a class="fc">ใกล้รับ</a>
-              <a class="fc">หายไป</a>
+              <a class="fc active">ทั้งหมด <span class="fc-count">412</span></a>
+              <a class="fc">ลูกค้าประจำ <span class="fc-count">86</span></a>
+              <a class="fc">ใกล้รับ <span class="fc-count">23</span></a>
+              <a class="fc">หายไป <span class="fc-count">47</span></a>
             </div>
 
             <div class="s3-cust-list">
@@ -10126,10 +10600,95 @@
       </div>
     </div>
 
-    <!-- S3.insights — แต้มดีแนะนำ (full page) -->
+    <!-- reach.confirm — single-customer quick-confirm sheet (over customers list) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.insights</span>แนะนำ</div>
+        <div class="kicker"><span class="n">reach.confirm</span>ส่งเตือน · 1 คน</div>
+        <h3>กดส่งเตือน → confirm sheet เปิด</h3>
+        <p>เปิดเมื่อ shop กดปุ่ม "ส่งเตือน" หรือ "ชวนกลับ" ใน customers (น่าสนใจวันนี้) — bottom sheet โผล่ขึ้น · preview ข้อความ + channel + cost · 1 tap ส่งเลย ไม่ต้องเข้าหน้า reach.send · ใช้ template auto-pick ตาม reason (ใกล้รับ → ชวนกลับ → ขอบคุณ ฯลฯ)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <!-- Faded background · customers page peeking through -->
+            <div class="s3-top" style="opacity:0.5;">
+              <div class="hi">
+                <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
+              </div>
+              <div class="actions">
+                <a class="bell-btn"></a>
+                <a class="settings-btn"></a>
+              </div>
+            </div>
+
+            <div class="s3-cust-stats" style="opacity:0.5;">
+              <div class="s3-cust-stat"><div class="num">412</div><div class="lab">ทั้งหมด</div></div>
+              <div class="s3-cust-stat accent"><div class="num">23</div><div class="lab">ใกล้รับ</div></div>
+              <div class="s3-cust-stat warn"><div class="num">47</div><div class="lab">หายไป</div></div>
+              <div class="s3-cust-stat mint"><div class="num">18</div><div class="lab">ใหม่</div></div>
+            </div>
+
+            <div class="s3-cust-attn" style="opacity:0.5;">
+              <div class="s3-cust-attn-h">
+                <span class="lab">น่าสนใจวันนี้</span>
+              </div>
+              <div class="s3-cust-attn-list">
+                <a class="s3-attn-row">
+                  <div class="icon gift">🎁</div>
+                  <div class="info">
+                    <div class="name">ก้อง · เกือบรับรางวัล</div>
+                    <div class="reason">9/10 · มาบ่อย 12 ครั้ง</div>
+                  </div>
+                  <div class="cta">ส่งเตือน</div>
+                </a>
+              </div>
+            </div>
+
+            <!-- Confirm sheet overlay -->
+            <div class="rc-overlay">
+              <div class="rc-sheet">
+                <div class="sheet-handle"></div>
+
+                <div class="rc-cust">
+                  <div class="avatar">ก</div>
+                  <div class="info">
+                    <div class="name">ก้อง</div>
+                    <div class="reason">9/10 · เกือบรับรางวัล</div>
+                  </div>
+                  <span class="rc-tag">ส่งเตือน</span>
+                </div>
+
+                <div class="rc-preview">
+                  <div class="preview-h">ข้อความที่จะส่ง</div>
+                  <div class="msg">พี่ก้อง อีก 1 ครั้งได้กาแฟ Signature ฟรี 🎁 มาเจอกันที่ร้านนะครับ</div>
+                </div>
+
+                <div class="rc-channel">
+                  <div class="icon">📲</div>
+                  <div class="ch-info">
+                    <div class="ch-name">Web Push · ลูกค้ารับได้</div>
+                    <div class="ch-sub">ส่งเข้า DeeCard บนมือถือทันที</div>
+                  </div>
+                  <div class="cost">0.5 เครดิต</div>
+                </div>
+
+                <div class="rc-actions">
+                  <button class="cancel">ยกเลิก</button>
+                  <button class="send">ส่งเลย · 0.5</button>
+                </div>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- insights — แต้มดีแนะนำ (full page) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">insights</span>แนะนำ</div>
         <h3>แต้มดีแนะนำ ✦</h3>
         <p>tab "แนะนำ" — list ของ template campaigns พร้อมจำนวนลูกค้าที่ระบบเลือก + ปุ่มสร้างเอง · brief metrics card ล่างสุด ที่ link ไปหน้า full performance</p>
       </div>
@@ -10290,12 +10849,12 @@
       </div>
     </div>
 
-    <!-- S3.insights.history — ผลงานแคมเปญ (analytics view) -->
+    <!-- insights.history — ผลงานแคมเปญ (analytics view) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S3.insights.history</span>ผลงาน</div>
+        <div class="kicker"><span class="n">insights.history</span>ผลงาน</div>
         <h3>ผลงานที่ส่งไป</h3>
-        <p>เปิดเมื่อกด brief metrics card จาก S3.insights — back nav (←) ที่ top, full performance: overview funnel, แคมเปญที่กำลังดำเนินการ, แคมเปญเสร็จแล้ว (ROI + ทำซ้ำได้)</p>
+        <p>เปิดเมื่อกด brief metrics card จาก insights — back nav (←) ที่ top, full performance: overview funnel, แคมเปญที่กำลังดำเนินการ, แคมเปญเสร็จแล้ว (ROI + ทำซ้ำได้)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -10420,12 +10979,12 @@
       </div>
     </div>
 
-    <!-- S13.detail — แคมเปญ detail (winback example) -->
+    <!-- reach.send — แคมเปญ detail (winback example) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S13.detail</span>ปรับข้อความ · ส่ง</div>
+        <div class="kicker"><span class="n">reach.send</span>ปรับข้อความ · ส่ง</div>
         <h3>เลือกลูกค้า + แก้ข้อความ</h3>
-        <p>เปิดเมื่อกดแคมเปญใน S13 — ลูกค้า list (เลือกได้ทั้งหมด default), ตัวแก้ข้อความที่มี $name $points, preview ที่ลูกค้าจะเห็น, ปุ่มส่ง · ใช้ N เครดิต</p>
+        <p>เปิดเมื่อกดแคมเปญใน reach — ลูกค้า list (เลือกได้ทั้งหมด default), ตัวแก้ข้อความที่มี $name $points, preview ที่ลูกค้าจะเห็น, ปุ่มส่ง · ใช้ N เครดิต</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -10554,12 +11113,12 @@
       </div>
     </div>
 
-    <!-- S13.create — สร้างเอง (custom message, no template) -->
+    <!-- reach.create — สร้างเอง (custom message, no template) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S13.create</span>สร้างเอง</div>
+        <div class="kicker"><span class="n">reach.create</span>สร้างเอง</div>
         <h3>เขียนข้อความเอง · ส่งให้ใครก็ได้</h3>
-        <p>เปิดจากปุ่ม "+ สร้างเอง" ใน S3.insights — ไม่มี template preset · shop เลือก segment + เขียนข้อความเอง · มี variable chips + preview · ใช้สำหรับโปรพิเศษหรือ announcement ที่ระบบยังไม่แนะนำ</p>
+        <p>เปิดจากปุ่ม "+ สร้างเอง" ใน insights — ไม่มี template preset · shop เลือก segment + เขียนข้อความเอง · มี variable chips + preview · ใช้สำหรับโปรพิเศษหรือ announcement ที่ระบบยังไม่แนะนำ</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -10664,12 +11223,12 @@
       </div>
     </div>
 
-    <!-- S13.create.empty — Variant: empty offer state -->
+    <!-- reach.create.empty — Variant: empty offer state -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S13.create.empty</span>สร้างเอง · ไม่ใส่ของฝาก</div>
+        <div class="kicker"><span class="n">reach.empty</span>สร้างเอง · ไม่ใส่ของฝาก</div>
         <h3>Empty state · ของฝาก ไม่ใส่ก็ได้</h3>
-        <p>Variant ของ S13.create — text-only message ไม่มีของฝาก · ใช้สำหรับ announcement ทั่วไป · "หายไป 14 วัน" · "วันแม่ปิด" ฯลฯ · empty state ของ "แถมของฝาก" section แสดงเป็น dashed button ให้กดเพิ่มทีหลัง</p>
+        <p>Variant ของ reach.create — text-only message ไม่มีของฝาก · ใช้สำหรับ announcement ทั่วไป · "หายไป 14 วัน" · "วันแม่ปิด" ฯลฯ · empty state ของ "แถมของฝาก" section แสดงเป็น dashed button ให้กดเพิ่มทีหลัง</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -10762,12 +11321,12 @@
       </div>
     </div>
 
-    <!-- S-offer.create — Create offer/voucher (sheet from S13.create "+ ของฝาก") -->
+    <!-- S-offer.create — Create offer/voucher (sheet from reach.create "+ ของฝาก") -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S-offer.create</span>สร้างของฝาก · ของฟรี</div>
+        <div class="kicker"><span class="n">offer.create</span>สร้างของฝาก · ของฟรี</div>
         <h3>Default state · ของฟรี (text + icon picker + อัปโหลด)</h3>
-        <p>เปิดเมื่อ shop กด "+ ของฝาก" ใน S13.create — default = "ของฟรี" (use case ส่วนใหญ่) · text input ชื่อของฟรี + 4 icon presets · helper "เลือกรูปที่ใช่ หรือ อัปโหลดของคุณเอง" + ปุ่ม "ใช้รูปของฉันเอง" · datetime range · preview · บันทึกกลับ S13.create</p>
+        <p>เปิดเมื่อ shop กด "+ ของฝาก" ใน reach.create — default = "ของฟรี" (use case ส่วนใหญ่) · text input ชื่อของฟรี + 4 icon presets · helper "เลือกรูปที่ใช่ หรือ อัปโหลดของคุณเอง" + ปุ่ม "ใช้รูปของฉันเอง" · datetime range · preview · บันทึกกลับ reach.create</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -10862,7 +11421,7 @@
     <!-- S-offer.create.discount — Variant: ลดราคา state -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S-offer.create.discount</span>สร้างของฝาก · ลดราคา</div>
+        <div class="kicker"><span class="n">offer.discount</span>สร้างของฝาก · ลดราคา</div>
         <h3>Variant · ลดราคา (text input + บาท/%)</h3>
         <p>เมื่อ shop เลือก type "ลดราคา" — field รายละเอียดเปลี่ยนเป็น "ลด [textbox] [บาท/%]" tab toggle · simpler than free type · keep date range + preview เหมือนเดิม</p>
       </div>
@@ -10940,10 +11499,10 @@
       </div>
     </div>
 
-    <!-- S13.sent — confirmation -->
+    <!-- reach.sent — confirmation -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S13.sent</span>ส่งสำเร็จ</div>
+        <div class="kicker"><span class="n">reach.sent</span>ส่งสำเร็จ</div>
         <h3>ส่งแล้ว · รอผล</h3>
         <p>หลังกด "ส่ง" — confirmation พร้อมเครดิตคงเหลือ + ประมาณการณ์ลูกค้าจะกลับมา (จาก historical conversion rate)</p>
       </div>
@@ -11007,7 +11566,7 @@
     <!-- S10 Settings home -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S10</span>ตั้งค่าหลัก</div>
+        <div class="kicker"><span class="n">settings</span>ตั้งค่าหลัก</div>
         <h3>หน้าตั้งค่า</h3>
         <p>การ์ดดำด้านบนเป็นข้อมูลร้าน หมวดหมู่ตั้งค่า — ร้าน · ทีมงาน · บิล &amp; เครดิต ปุ่มออกจากระบบเป็นเส้นประ</p>
       </div>
@@ -11197,7 +11756,7 @@
     <!-- S10.identity — ข้อมูลร้าน (ชื่อ + โลโก้) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S10.identity</span>ข้อมูลร้าน</div>
+        <div class="kicker"><span class="n">settings.identity</span>ข้อมูลร้าน</div>
         <h3>แก้ชื่อ + โลโก้</h3>
         <p>เข้าจาก Settings → ข้อมูลร้าน — แก้ชื่อร้าน เปลี่ยนโลโก้ที่ลูกค้าเห็นบนบัตรสะสมแต้ม</p>
       </div>
@@ -11230,22 +11789,18 @@
             </div>
 
             <div class="s2-logos">
-              <div class="s2-logo">
-                <span class="lt-1">m<span class="dot">.</span></span>
-              </div>
               <div class="s2-logo selected">
-                <input class="lt-edit lt-2" value="Mhee" />
-                <span class="edit-hint">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
-                </span>
+                <span class="lt-1">mhee<span class="dot">.</span></span>
               </div>
               <div class="s2-logo">
-                <span class="lt-3">หมี</span>
+                <span class="lt-2">Mhee</span>
               </div>
-            </div>
-
-            <div class="s2-helper">
-              แตะที่เลือกเพื่อแก้ข้อความ · <span class="reroll">↻ สร้างใหม่อีก 3 แบบ</span>
+              <div class="s2-logo v-tile">
+                <span class="lt-3">M<span class="dot">.</span></span>
+              </div>
+              <div class="s2-logo">
+                <span class="lt-4">หมี<span class="dot">.</span></span>
+              </div>
             </div>
 
             <div class="s2-upload">
@@ -11267,7 +11822,7 @@
     <!-- S10.location — ที่อยู่ (จังหวัด/อำเภอ/ที่อยู่) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S10.location</span>ที่อยู่</div>
+        <div class="kicker"><span class="n">settings.location</span>ที่อยู่</div>
         <h3>แก้จังหวัด · อำเภอ · ที่อยู่</h3>
         <p>เข้าจาก Settings → ที่อยู่ — กำหนดจังหวัด อำเภอ และรายละเอียดที่อยู่ของร้าน · ลูกค้าจะเห็นใน C9 Shop Story</p>
       </div>
@@ -11334,7 +11889,7 @@
     <!-- S10.contact — ติดต่อ (เบอร์โทร + เวลาเปิด-ปิด) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S10.contact</span>ติดต่อ</div>
+        <div class="kicker"><span class="n">settings.contact</span>ติดต่อ</div>
         <h3>เบอร์โทร · เวลาเปิด-ปิด</h3>
         <p>เข้าจาก Settings → ติดต่อ — ใส่เบอร์โทรและเวลาเปิด-ปิดร้าน · ลูกค้าจะเห็นใน C9 Shop Story</p>
       </div>
@@ -11415,12 +11970,12 @@
       </div>
     </div>
 
-    <!-- S5 Issuance method config -->
+    <!-- setup.theme Issuance method config -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S5</span>วิธีออกแต้ม</div>
+        <div class="kicker"><span class="n">point.notify</span>วิธีออกแต้ม</div>
         <h3>เปิด/ปิดวิธีออกแต้ม</h3>
-        <p>เข้าจาก Settings → "วิธีออกแต้ม" — toggle เปิดปิดแต่ละวิธีได้อิสระ · เปิดได้หลายวิธีพร้อมกัน · วิธีที่เปิดจะปรากฏใน FAB sheet หน้า S3.choose</p>
+        <p>เข้าจาก Settings → "วิธีออกแต้ม" — toggle เปิดปิดแต่ละวิธีได้อิสระ · เปิดได้หลายวิธีพร้อมกัน · วิธีที่เปิดจะปรากฏใน FAB sheet หน้า issue</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -11523,9 +12078,9 @@
     <!-- S7 Top-up -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S7</span>เติมเครดิต · เลือกแพ็คเกจ</div>
+        <div class="kicker"><span class="n">topup</span>เติมเครดิต · เลือกแพ็คเกจ</div>
         <h3>เติมเครดิต</h3>
-        <p>ตอนนี้มี 412 เครดิต ส่งดีรีชได้ 8 ครั้ง 3 แพ็คเกจให้เลือก ตรงกลาง "แนะนำ"</p>
+        <p>ตอนนี้มี 412 เครดิต ส่งข้อความได้ 8 ครั้ง 3 แพ็คเกจให้เลือก ตรงกลาง "แนะนำ"</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -11545,7 +12100,7 @@
                 <span class="unit">เครดิต</span>
               </div>
               <div class="est">
-                ≈ <strong>ส่งดีรีชได้ 8 ครั้ง</strong> ครั้งละ 50 เครดิต
+                ≈ <strong>ส่งข้อความได้ 8 ครั้ง</strong> ครั้งละ 50 เครดิต
               </div>
             </div>
 
@@ -11558,7 +12113,7 @@
               <div class="s7-pkg">
                 <div class="left">
                   <div class="credits">100<span class="unit">เครดิต</span></div>
-                  <div class="sub">≈ ส่งดีรีชได้ 2 ครั้ง</div>
+                  <div class="sub">≈ ส่งข้อความได้ 2 ครั้ง</div>
                 </div>
                 <div class="right">
                   <div class="price"><span class="currency">฿</span>100</div>
@@ -11568,7 +12123,7 @@
               <div class="s7-pkg popular">
                 <div class="left">
                   <div class="credits">220<span class="unit">เครดิต</span></div>
-                  <div class="sub">≈ ส่งดีรีชได้ 4 ครั้ง · เหมาะกับร้านใหม่</div>
+                  <div class="sub">≈ ส่งข้อความได้ 4 ครั้ง · เหมาะกับร้านใหม่</div>
                 </div>
                 <div class="right">
                   <div class="price"><span class="currency">฿</span>200</div>
@@ -11579,7 +12134,7 @@
               <div class="s7-pkg">
                 <div class="left">
                   <div class="credits">1,200<span class="unit">เครดิต</span></div>
-                  <div class="sub">≈ ส่งดีรีชได้ 24 ครั้ง</div>
+                  <div class="sub">≈ ส่งข้อความได้ 24 ครั้ง</div>
                 </div>
                 <div class="right">
                   <div class="price"><span class="currency">฿</span>1,000</div>
@@ -11608,7 +12163,7 @@
     <!-- S7 confirm -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S7.2</span>เติมเครดิต · จ่าย</div>
+        <div class="kicker"><span class="n">topup.pay</span>เติมเครดิต · จ่าย</div>
         <h3>สแกน PromptPay</h3>
         <p>เลือกแพ็คเกจแล้ว โชว์ QR PromptPay สำหรับสแกนจ่าย ขั้นต่อไปคืออัปโหลดสลิป</p>
       </div>
@@ -11988,7 +12543,7 @@
     <!-- S8 Shop QR print -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S8</span>คิวอาร์ร้าน · สำหรับพิมพ์</div>
+        <div class="kicker"><span class="n">print.qr</span>คิวอาร์ร้าน · สำหรับพิมพ์</div>
         <h3>พิมพ์ QR</h3>
         <p>ปุ่มพิมพ์/บันทึก/แชร์ ด้านบน การ์ดด้านล่างมีเครื่องหมายตัด QR เงาส้ม โลโก้ตรงกลาง ป้ายเหลืองรางวัล</p>
       </div>
@@ -12362,7 +12917,7 @@
     <!-- S-staff — Staff list (Settings → พนักงาน) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S-staff</span>พนักงาน</div>
+        <div class="kicker"><span class="n">staff</span>พนักงาน</div>
         <h3>คนที่ออกแต้มได้</h3>
         <p>เข้าจาก Settings → "พนักงาน" — list ของ staff ที่เพิ่มไว้ · status online (มี green dot) / pending (ยังไม่ scan invite) · กดแถวเพื่อดูรายละเอียด/ลบ · ปุ่ม "เพิ่มพนักงาน" ด้านบน</p>
       </div>
@@ -12417,7 +12972,7 @@
     <!-- S-staff.add — Add staff form -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S-staff.add</span>เพิ่มพนักงาน</div>
+        <div class="kicker"><span class="n">staff.add</span>เพิ่มพนักงาน</div>
         <h3>กรอกชื่อ · ไม่ต้องเบอร์/อีเมล</h3>
         <p>กรอกแค่ชื่อเล่น (e.g., "น้องบี") · system สร้าง invite QR + link ใน step ถัดไป · staff ใช้มือถือตัวเอง · device-bound · ไม่ต้องตั้งรหัส · simplified UX</p>
       </div>
@@ -12440,7 +12995,69 @@
                 <div class="ssf-helper">ลูกค้าจะเห็นชื่อนี้ใน feed · เปลี่ยนได้ทีหลัง</div>
               </div>
 
-              <button class="s2-cta-final" style="width:100%;">
+              <div class="ssf-perm-section">
+                <div class="ssf-perm-h">สิทธิ์การใช้งาน</div>
+                <div class="ssf-perm-sub">เลือกสิ่งที่น้องบีทำได้ · ปรับได้ทีหลังในตั้งค่า</div>
+
+                <div class="ssf-perm-list">
+                  <div class="ssf-perm-row">
+                    <div class="icon">
+                      <svg viewBox="0 0 24 24"><polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/></svg>
+                    </div>
+                    <div class="info">
+                      <div class="perm-name">ออกแต้ม</div>
+                      <div class="perm-desc">สแกน · กรอกเบอร์ · ค้นชื่อ</div>
+                    </div>
+                    <span class="perm-locked">เปิดเสมอ</span>
+                  </div>
+
+                  <div class="ssf-perm-row">
+                    <div class="icon">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+                    </div>
+                    <div class="info">
+                      <div class="perm-name">ยกเลิกแต้ม</div>
+                      <div class="perm-desc">void แต้มที่ออกผิด ภายใน 5 นาที</div>
+                    </div>
+                    <div class="ssf-toggle on"></div>
+                  </div>
+
+                  <div class="ssf-perm-row">
+                    <div class="icon">
+                      <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+                    </div>
+                    <div class="info">
+                      <div class="perm-name">ส่งข้อความ</div>
+                      <div class="perm-desc">ส่งข้อความหาลูกค้า · ใช้เครดิต</div>
+                    </div>
+                    <div class="ssf-toggle"></div>
+                  </div>
+
+                  <div class="ssf-perm-row">
+                    <div class="icon">
+                      <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+                    </div>
+                    <div class="info">
+                      <div class="perm-name">เติมเครดิต</div>
+                      <div class="perm-desc">เติม PromptPay · จ่ายเงิน</div>
+                    </div>
+                    <div class="ssf-toggle"></div>
+                  </div>
+
+                  <div class="ssf-perm-row">
+                    <div class="icon">
+                      <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+                    </div>
+                    <div class="info">
+                      <div class="perm-name">ตั้งค่าร้าน</div>
+                      <div class="perm-desc">แก้รางวัล · ธีม · ทีม · สาขา</div>
+                    </div>
+                    <div class="ssf-toggle"></div>
+                  </div>
+                </div>
+              </div>
+
+              <button class="s2-cta-final" style="width:100%; margin-top:18px;">
                 <span>สร้าง invite</span>
                 <span class="arrow">→</span>
               </button>
@@ -12454,7 +13071,7 @@
     <!-- S-staff.invite — Invite QR + share -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S-staff.invite</span>เชิญเข้าร่วม</div>
+        <div class="kicker"><span class="n">staff.invite</span>เชิญเข้าร่วม</div>
         <h3>โชว์ QR ให้น้องบี · หรือส่งลิงก์</h3>
         <p>ระบบสร้าง QR + invite link · expire 24 ชม. · 2 ทาง: QR ให้สแกนตรงนั้นเลย · หรือกด "ส่งลิงก์" → native share sheet → LINE/SMS/copy · staff scan/click → Staff.join screen</p>
       </div>
@@ -12525,7 +13142,7 @@
     <!-- Staff.join — Staff confirms join (mobile · staff side) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Staff.join</span>เข้าร่วมร้าน</div>
+        <div class="kicker"><span class="n">staff.join</span>เข้าร่วมร้าน</div>
         <h3>Login ก่อนเริ่ม · LINE หรือเบอร์</h3>
         <p>Staff scan QR (หรือกดลิงก์) → เปิด TaemDee → บังคับ login ด้วย LINE (primary) หรือเบอร์โทร + OTP (fallback) · identity-bound · เปลี่ยนเครื่องได้โดยไม่ต้อง re-invite · audit trail ชัดเจน · owner เห็นเบอร์ contact</p>
       </div>
@@ -12562,7 +13179,7 @@
     <!-- S9 Theme picker -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S9</span>เปลี่ยนธีม</div>
+        <div class="kicker"><span class="n">themes</span>เปลี่ยนธีม</div>
         <h3>เลือกธีม + มุมมองลูกค้า</h3>
         <p>เข้าจาก Settings → ธีม — preview คือ <strong>มุมมองลูกค้าจริง</strong>ที่เห็นบนมือถือ ไม่ใช่ mockup เลือกธีมแล้วเปลี่ยนสีทันที (ใช้ pattern เดียวกับ S2.3 ใน onboarding)</p>
       </div>
@@ -12663,7 +13280,7 @@
     <!-- S11 Team -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S11</span>ทีมงาน</div>
+        <div class="kicker"><span class="n">settings.team</span>ทีมงาน</div>
         <h3>จัดการทีม</h3>
         <p>การ์ดเหลือง "เชิญทีม" มีป้าย + เอียง ๆ เจ้าของร้านอยู่แถวมิ้นต์ พนักงานคนอื่น ๆ มีสิทธิ์ต่างกัน</p>
       </div>
@@ -12707,7 +13324,7 @@
                 <div class="av">น</div>
                 <div class="info">
                   <div class="name">น้อย</div>
-                  <div class="role"><span class="dot"></span><span>พนักงาน · ยกเลิก · ดีรีช</span></div>
+                  <div class="role"><span class="dot"></span><span>พนักงาน · ยกเลิก · ข้อความ</span></div>
                 </div>
                 <div class="more">⋯</div>
               </div>
@@ -12727,7 +13344,7 @@
     <!-- S12 Branches -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">S12</span>สาขา</div>
+        <div class="kicker"><span class="n">settings.branches</span>สาขา</div>
         <h3>จัดการสาขา</h3>
         <p>โหมดรางวัลล็อก "รวม" — บัตรเดียวเก็บแต้มได้ทุกสาขา การ์ดเหลืองเพิ่มสาขาใหม่ ปัจจุบันมี 3 สาขา</p>
       </div>
@@ -12816,7 +13433,7 @@
   </svg>
   <h3>ครบ 20 หน้าจอร้าน <span class="accent">·</span> Design v1</h3>
   <p>
-    เริ่มจาก HM (หน้าแรกบนมือถือ) → S1 (เข้าสู่ระบบ) → S2.1-S2.4 (ตั้งค่าร้านไม่กี่นาที) ใช้งานประจำวันที่ S3/S5/S6/S7 และจัดการตั้งค่าที่ S10/S8/S9/S11/S12 — ทำหลังจากฝั่งลูกค้าเสร็จ
+    เริ่มจาก HM (หน้าแรกบนมือถือ) → S1 (เข้าสู่ระบบ) → S2.1-S2.4 (ตั้งค่าร้านไม่กี่นาที) ใช้งานประจำวันที่ S3/setup.theme/S6/S7 และจัดการตั้งค่าที่ S10/S8/S9/S11/S12 — ทำหลังจากฝั่งลูกค้าเสร็จ
   </p>
 </div>
 

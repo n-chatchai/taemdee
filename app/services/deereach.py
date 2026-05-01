@@ -1,7 +1,7 @@
 """DeeReach — suggestion engine + send pipeline.
 
 This module owns the logic that decides what DeeReach campaign cards to show
-on the DeeBoard. The shop owner taps Send on a suggestion → that triggers
+on the shop dashboard. The shop owner taps Send on a suggestion → that triggers
 `send_campaign`.
 
 Unit convention:  1 Credit == 100 satang.
@@ -72,7 +72,7 @@ NEW_CUSTOMER_DAYS = 7
 
 @dataclass
 class Suggestion:
-    """One DeeReach suggestion card on the DeeBoard."""
+    """One DeeReach suggestion card on the shop dashboard."""
 
     kind: str               # win_back | almost_there | unredeemed_reward | ...
     label: str              # ชวนกลับ · ใกล้ครบ · รับรางวัลซะที

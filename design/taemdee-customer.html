@@ -407,7 +407,7 @@
     color: var(--ink-soft);
   }
 
-  /* Common shop head used in C1/C2/C4 */
+  /* Common shop head used in shop.daily/C2/reward.almost */
   .shop-head {
     padding: 48px 20px 0;
     text-align: center;
@@ -455,7 +455,7 @@
   }
   .c1-back svg { width: 18px; height: 18px; }
 
-  /* C1.guest — bottom upgrade banner removed (Option A — respect customer choice) */
+  /* shop.daily.guest — bottom upgrade banner removed (Option A — respect customer choice) */
   .signup-head {
     text-align: center;
     margin-bottom: 14px;
@@ -534,7 +534,7 @@
   }
 
   /* ========================================================== */
-  /* Onboarding canvas (C2.1 / C2.2 / C2.3)                      */
+  /* Onboarding canvas (onboard.greet / onboard.first_stamp / onboard.link_account)                      */
   /* Distinct from daily app screens — vertical centered layout  */
   /* ========================================================== */
   .td.onboarding {
@@ -596,6 +596,37 @@
     font-size: var(--text-md);
     color: var(--ink-soft);
     letter-spacing: 0.01em;
+  }
+  /* Compact context strip · used when shop-head.hero is too heavy */
+  .ob-shop-strip {
+    padding: 36px 20px 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    flex-shrink: 0;
+  }
+  .ob-shop-strip .strip-logo {
+    width: 32px; height: 32px;
+    border-radius: 9px;
+    background: var(--ink);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: -0.04em;
+  }
+  .ob-shop-strip .strip-name {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-md);
+    color: var(--ink-soft);
+  }
+  .ob-shop-strip .strip-name strong {
+    color: var(--ink);
+    font-weight: 700;
   }
   .ob-step-dots {
     display: flex; justify-content: center; align-items: center; gap: 8px;
@@ -693,7 +724,7 @@
     50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
   }
 
-  /* C2.1 greeting */
+  /* onboard.greet greeting */
   .ob-greet {
     font-family: 'Prompt', sans-serif;
     font-size: 17.5px;
@@ -733,7 +764,7 @@
     box-shadow: 0 0 0 3px var(--accent-soft);
   }
 
-  /* C2.x / C3 / C8 — Simplified bottom mark (no install link, just brand) */
+  /* C2.x / verify.phone / my.qr — Simplified bottom mark (no install link, just brand) */
   .ob-footer-mark {
     position: relative;
     padding: 14px 20px 18px;
@@ -849,7 +880,7 @@
     100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
   }
 
-  /* ───────── Page head · top-level system page header (Inbox, C7) ───────── */
+  /* ───────── Page head · top-level system page header (Inbox, cards.list) ───────── */
   .page-head {
     padding: 14px 22px 14px;
     display: flex;
@@ -1201,9 +1232,16 @@
   .inbox-detail-offer .ido-label {
     font-family: 'Prompt', sans-serif;
     font-size: 10.5px;
-    color: var(--ink-softer);
-    font-weight: 500;
-    letter-spacing: 0.04em;
+    color: var(--mint-ink);
+    font-weight: 600;
+    letter-spacing: 0.02em;
+    display: flex;
+    align-items: center;
+    gap: 4px;
+  }
+  .inbox-detail-offer .ido-check {
+    width: 12px; height: 12px;
+    color: var(--mint-ink);
   }
   .inbox-detail-offer .ido-name {
     font-family: 'Prompt', sans-serif;
@@ -1218,59 +1256,61 @@
     color: var(--ink-soft);
     margin-top: 2px;
   }
-  .inbox-detail-offer .ido-claim {
-    appearance: none; -webkit-appearance: none;
+  .inbox-detail-offer .ido-link {
+    display: block;
     width: 100%;
-    background: var(--accent);
-    color: #fff;
-    border: none;
+    background: var(--ink);
+    color: var(--butter);
+    text-align: center;
     border-radius: 99px;
     padding: 12px;
     font-family: 'Prompt', sans-serif;
-    font-size: var(--text-base);
+    font-size: var(--text-sm);
     font-weight: 600;
+    text-decoration: none;
     cursor: pointer;
+    margin-top: 4px;
+  }
+  .inbox-detail-offer .ido-link strong {
+    font-weight: 700;
+    color: var(--butter);
   }
 
   .inbox-detail-cta {
     padding: 0 22px 8px;
     flex-shrink: 0;
-  }
-  .inbox-detail-cta .idc-primary {
-    appearance: none; -webkit-appearance: none;
-    display: flex;
-    align-items: center;
-    justify-content: center;
+    display: grid;
+    grid-template-columns: 1fr 1fr;
     gap: 8px;
-    width: 100%;
-    background: var(--ink);
-    color: var(--surface);
-    border: none;
-    border-radius: 99px;
-    padding: 13px;
-    font-family: 'Prompt', sans-serif;
-    font-size: var(--text-base);
-    font-weight: 600;
-    cursor: pointer;
   }
-  .inbox-detail-cta .idc-secondary {
+  .inbox-detail-cta.single {
+    grid-template-columns: 1fr;
+  }
+  .inbox-detail-cta .idc-btn {
     display: flex;
     align-items: center;
     justify-content: center;
     gap: 6px;
-    padding: 10px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 12px;
+    padding: 12px;
     font-family: 'Prompt', sans-serif;
-    font-size: 13.5px;
+    font-size: var(--text-sm);
+    font-weight: 600;
     color: var(--ink);
-    font-weight: 500;
-    text-decoration: underline;
-    text-decoration-color: rgba(17,17,17,0.25);
-    text-underline-offset: 4px;
+    text-decoration: none;
     cursor: pointer;
   }
-  .inbox-detail-cta .idc-secondary svg {
-    width: 13px;
-    height: 13px;
+  .inbox-detail-cta .idc-btn.primary {
+    background: var(--ink);
+    color: var(--butter);
+    border-color: var(--ink);
+  }
+  .inbox-detail-cta .idc-btn svg {
+    width: 16px;
+    height: 16px;
+    flex-shrink: 0;
   }
 
   .inbox-detail-mute {
@@ -1386,6 +1426,26 @@
     color: var(--ink-soft);
     margin-bottom: 14px;
   }
+  .voucher-screen .vs-confirm-btn {
+    appearance: none; -webkit-appearance: none;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    padding: 12px 18px;
+    border-radius: 99px;
+    background: var(--ink);
+    color: var(--butter);
+    border: 2px solid var(--ink);
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    cursor: pointer;
+    margin-bottom: 14px;
+  }
+  .voucher-screen .vs-confirm-btn svg {
+    width: 14px; height: 14px;
+  }
   .voucher-screen .vs-countdown {
     display: inline-flex;
     align-items: center;
@@ -1411,7 +1471,7 @@
     max-width: 220px;
   }
 
-  /* ───────── C6.notifications · notification preferences ───────── */
+  /* ───────── settings.notifications · notification preferences ───────── */
   .notif-radio-list {
     display: flex;
     flex-direction: column;
@@ -1483,6 +1543,20 @@
     color: var(--ink-soft);
     margin-top: 2px;
     line-height: 1.45;
+  }
+  .notif-radio.disabled {
+    opacity: 0.55;
+    cursor: not-allowed;
+  }
+  .notif-radio.disabled .nr-circle {
+    border-color: rgba(17,17,17,0.18);
+  }
+  .notif-radio .nr-link {
+    color: var(--accent);
+    text-decoration: underline;
+    text-underline-offset: 2px;
+    font-weight: 600;
+    cursor: pointer;
   }
 
   /* Muted shop row */
@@ -1666,7 +1740,7 @@
     cursor: pointer;
   }
 
-  /* C2.1 — Speech bubble for greeting (surface, borderless, distinguished by tail) */
+  /* onboard.greet — Speech bubble for greeting (surface, borderless, distinguished by tail) */
   .ob-bubble {
     position: relative;
     background: var(--surface);
@@ -1696,7 +1770,7 @@
   }
   .ob-bubble strong { font-weight: 700; color: var(--ink); }
 
-  /* C2.1 — Skip hint below input */
+  /* onboard.greet — Skip hint below input */
   .ob-skip-hint {
     text-align: center;
     font-family: 'Prompt', sans-serif;
@@ -1706,7 +1780,7 @@
     font-style: italic;
   }
 
-  /* C2.4 — Recovery code (post-skip path) */
+  /* onboard.recovery — Recovery code (post-skip path) */
   .ob-recovery-avatar {
     width: 50px;
     height: 50px;
@@ -1798,7 +1872,7 @@
     margin-bottom: 6px;
   }
 
-  /* C2.2 stamp + reward */
+  /* onboard.first_stamp stamp + reward */
   .ob-thanks-line {
     font-family: 'Prompt', sans-serif;
     font-size: 15px;
@@ -1859,7 +1933,7 @@
     font-weight: 700;
     color: var(--ink);
   }
-  /* Reward card (used in C2.2) */
+  /* Reward card (used in onboard.first_stamp) */
   .ob-reward-card {
     padding: 12px 14px;
     display: flex;
@@ -1903,7 +1977,7 @@
     color: #fff;
   }
 
-  /* C2.3 save warning */
+  /* onboard.link_account save warning */
   .ob-icon-wrap {
     width: 56px; height: 56px;
     margin: 0 auto 16px;
@@ -1926,6 +2000,7 @@
     font-size: var(--text-md);
     line-height: 1.5;
     color: var(--ink-soft);
+    margin-top: 32px;
     margin-bottom: 18px;
   }
   .ob-protect-card {
@@ -1934,6 +2009,7 @@
     border: 1px dashed rgba(17,17,17,0.18);
     border-radius: 14px;
     text-align: center;
+    margin-bottom: 16px;
   }
   .ob-pc-h {
     font-family: 'Prompt', sans-serif;
@@ -2013,30 +2089,81 @@
   .ob-next.primary .arrow { color: #fff; }
   .ob-next.secondary .arrow { color: var(--butter); }
 
-  /* Pill-style auth buttons (C2.3) — full rounded with icon */
+  /* Pill-style auth buttons (onboard.link_account) — full rounded with icon */
   .ob-pill {
     appearance: none; -webkit-appearance: none;
     width: 100%;
-    padding: 18px 22px;
+    padding: 9px 18px;
     border-radius: 999px;
     border: 1px solid rgba(17,17,17,0.18);
     cursor: pointer;
     display: flex; align-items: center; justify-content: center;
-    gap: 12px;
+    gap: 8px;
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 17.5px;
+    font-size: 14px;
     letter-spacing: -0.01em;
     transition: transform 0.15s ease;
   }
   .ob-pill:active { transform: scale(0.98); }
   .ob-pill.primary {
-    background: var(--line-green);
-    color: #fff;
+    background: var(--ink);
+    color: var(--surface);
   }
   .ob-pill.secondary {
-    background: var(--ink);
-    color: #fff;
+    background: var(--surface);
+    color: var(--ink);
+    border-color: rgba(17,17,17,0.18);
+  }
+
+  /* Social row · 4 logo+text pills · vertical stack */
+  .ob-social-row {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    margin-top: 24px;
+    margin-bottom: 4px;
+    width: 100%;
+  }
+  .ob-social-pill {
+    appearance: none; -webkit-appearance: none;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 14px;
+    padding: 14px 18px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: row;
+    align-items: center;
+    justify-content: center;
+    gap: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    transition: transform 0.15s ease;
+  }
+  .ob-social-pill:active { transform: scale(0.98); }
+  .ob-social-pill svg {
+    width: 22px; height: 22px;
+    display: block;
+    flex-shrink: 0;
+  }
+  .ob-social-pill.line svg { color: #06C755; }
+
+  /* Phone link · text only · underlined center */
+  .ob-phone-link {
+    display: block;
+    text-align: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+    text-decoration: underline;
+    text-decoration-color: rgba(17,17,17,0.3);
+    text-underline-offset: 4px;
+    margin-top: 12px;
+    cursor: pointer;
   }
   .ob-pill .ob-pill-icon {
     flex-shrink: 0;
@@ -2045,7 +2172,7 @@
     justify-content: center;
   }
   .ob-pill .ob-pill-icon svg {
-    width: 18px; height: 18px;
+    width: 16px; height: 16px;
     display: block;
   }
   .ob-pill .ob-pill-text {
@@ -2115,7 +2242,7 @@
   .stamp.on.butter { background: var(--butter); }
   .stamp.on.butter::after { background: rgba(17,17,17,0.5); }
 
-  /* C1 greeting line — น้องแต้ม welcomes returning customer */
+  /* shop.daily greeting line — น้องแต้ม welcomes returning customer */
   .c1-greet-bubble {
     margin: 12px 18px 4px;
     padding: 8px 12px;
@@ -2178,6 +2305,1036 @@
   }
   .reward-pill .gift svg { width: 22px; height: 22px; }
   .reward-pill .rtxt { flex: 1; line-height: 1.3; min-width: 0; }
+
+  /* shop.story · Shop story section */
+  .c9-story {
+    margin: 14px 22px 0;
+    padding: 14px 16px;
+    background: var(--accent-soft);
+    border-radius: 14px;
+  }
+  .c9-story-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-xs);
+    color: var(--accent);
+    margin-bottom: 4px;
+    letter-spacing: 0.02em;
+  }
+  .c9-story-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    line-height: 1.5;
+  }
+
+  /* shop.story · Featured menu */
+  .c9-menu {
+    margin: 14px 22px 0;
+  }
+  .c9-menu-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-xs);
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+  .c9-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr 1fr;
+    gap: 8px;
+  }
+  .c9-menu-item {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 12px;
+    padding: 10px 6px;
+    text-align: center;
+    line-height: 1.3;
+  }
+  .c9-menu-item .cmi-emoji {
+    font-size: 28px;
+    margin-bottom: 4px;
+  }
+  .c9-menu-item .cmi-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-2xs);
+    color: var(--ink);
+  }
+  .c9-menu-item .cmi-price {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  /* shop.story · Info rows · เปิด/ที่อยู่/ติดต่อ */
+  .c9-info {
+    margin: 14px 22px 100px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+    padding: 14px 16px;
+  }
+  .c9-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 6px 0;
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-sm);
+  }
+  .c9-info-row + .c9-info-row {
+    border-top: 1px dashed rgba(17,17,17,0.10);
+  }
+  .c9-info-key {
+    color: var(--ink-soft);
+  }
+  .c9-info-val {
+    color: var(--ink);
+    font-weight: 600;
+    text-align: right;
+  }
+
+  /* ============================================================== */
+  /* cards.list · WOW redesign · hero + carousel + list             */
+  /* ============================================================== */
+
+  /* Stat band · 3 chips below greeting */
+  .cl-stats {
+    display: flex;
+    gap: 8px;
+    margin: 4px 14px 18px;
+  }
+  .cl-stat {
+    flex: 1;
+    background: var(--surface);
+    border-radius: 14px;
+    padding: 10px 8px;
+    border: 1px solid var(--line);
+    text-align: center;
+  }
+  .cl-stat .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .cl-stat .num.accent { color: var(--accent); }
+  .cl-stat .label {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* Section header */
+  .cl-section-h {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    margin: 22px 22px 12px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-md);
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .cl-section-h .icon {
+    width: 18px; height: 18px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+  }
+  .cl-section-h .icon svg { width: 100%; height: 100%; fill: currentColor; }
+  .cl-section-h .count {
+    margin-left: auto;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 12px;
+    color: var(--ink-soft);
+    letter-spacing: 0.02em;
+  }
+
+  /* Hero featured card · ครบแล้ว · full bleed gradient */
+  .cl-hero {
+    margin: 0 14px;
+    position: relative;
+    border-radius: 22px;
+    padding: 20px;
+    background: linear-gradient(135deg, #FF8A5C 0%, #FF5E3A 55%, #E04020 100%);
+    color: #fff;
+    overflow: hidden;
+    box-shadow: 0 12px 28px -10px rgba(255, 94, 58, 0.55);
+  }
+  .cl-hero::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 18% 30%, rgba(255,255,255,0.22) 0, transparent 8%),
+      radial-gradient(circle at 82% 18%, rgba(255,255,255,0.18) 0, transparent 12%),
+      radial-gradient(circle at 60% 85%, rgba(255,255,255,0.20) 0, transparent 9%),
+      radial-gradient(circle at 30% 75%, rgba(255,255,255,0.15) 0, transparent 8%),
+      radial-gradient(circle at 90% 60%, rgba(255,217,82,0.30) 0, transparent 14%);
+    pointer-events: none;
+  }
+  .cl-hero > * { position: relative; z-index: 1; }
+
+  .cl-hero-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    background: rgba(255,255,255,0.22);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    padding: 5px 11px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    font-weight: 600;
+    margin-bottom: 14px;
+    color: #fff;
+  }
+  .cl-hero-tag .pulse {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: var(--butter);
+    animation: cl-pulse 1.5s infinite;
+    box-shadow: 0 0 0 0 rgba(255,217,82,0.6);
+  }
+  @keyframes cl-pulse {
+    0% { box-shadow: 0 0 0 0 rgba(255,217,82,0.7); }
+    70% { box-shadow: 0 0 0 8px rgba(255,217,82,0); }
+    100% { box-shadow: 0 0 0 0 rgba(255,217,82,0); }
+  }
+
+  .cl-hero-row {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    margin-bottom: 16px;
+  }
+  .cl-hero-logo {
+    width: 50px;
+    height: 50px;
+    border-radius: 14px;
+    background: rgba(255,255,255,0.95);
+    color: var(--ink);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.04em;
+    flex-shrink: 0;
+  }
+  .cl-hero-logo .dot { color: var(--accent); margin-left: 1px; }
+  .cl-hero-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .cl-hero-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-md);
+    color: #fff;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cl-hero-reward {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-xs);
+    color: rgba(255,255,255,0.94);
+    line-height: 1.3;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cl-hero-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 26px;
+    color: #fff;
+    letter-spacing: -0.03em;
+    line-height: 1;
+    text-align: right;
+    flex-shrink: 0;
+  }
+  .cl-hero-num .of {
+    font-size: 13px;
+    opacity: 0.7;
+    font-weight: 600;
+  }
+  .cl-hero-cta {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    background: rgba(0,0,0,0.18);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    border-radius: 14px;
+    padding: 11px 16px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: #fff;
+    cursor: pointer;
+    border: 1px solid rgba(255,255,255,0.20);
+  }
+  .cl-hero-cta svg {
+    width: 16px; height: 16px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* Almost-there carousel · richer cards */
+  .cl-carousel-wrap {
+    /* invisible wrapper · no bg / border / padding · structural only */
+  }
+  .cl-carousel {
+    display: flex;
+    gap: 10px;
+    padding-left: 14px;
+    padding-right: 14px;
+    padding-bottom: 4px;
+    overflow-x: auto;
+    scroll-snap-type: x mandatory;
+    scroll-padding-left: 14px;
+    -webkit-overflow-scrolling: touch;
+    scrollbar-width: none;
+  }
+  .cl-carousel::-webkit-scrollbar { display: none; }
+
+  .cl-mini {
+    flex: 0 0 165px;
+    scroll-snap-align: start;
+    background: var(--surface);
+    border-radius: 18px;
+    border: 1px solid var(--line);
+    padding: 14px;
+    position: relative;
+    overflow: hidden;
+    min-height: 158px;
+    display: flex;
+    flex-direction: column;
+  }
+  .cl-mini::before {
+    content: '';
+    position: absolute;
+    right: -32px;
+    top: -32px;
+    width: 92px;
+    height: 92px;
+    border-radius: 50%;
+    background: var(--shop-color, var(--accent));
+    opacity: 0.10;
+  }
+  .cl-mini > * { position: relative; z-index: 1; }
+  .cl-mini-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 12px;
+    background: var(--shop-color, var(--ink));
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.04em;
+    margin-bottom: 10px;
+  }
+  .cl-mini-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    margin-bottom: 2px;
+    letter-spacing: -0.005em;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cl-mini-reward {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--ink-soft);
+    margin-bottom: 12px;
+    line-height: 1.3;
+    display: -webkit-box;
+    -webkit-line-clamp: 1;
+    -webkit-box-orient: vertical;
+    overflow: hidden;
+  }
+  .cl-mini-foot {
+    margin-top: auto;
+  }
+  .cl-mini-row {
+    display: flex;
+    align-items: baseline;
+    justify-content: space-between;
+    margin-bottom: 6px;
+  }
+  .cl-mini-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    line-height: 1;
+  }
+  .cl-mini-num .of {
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 600;
+  }
+  .cl-mini-left {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .cl-mini-bar {
+    height: 4px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .cl-mini-fill {
+    height: 100%;
+    background: var(--shop-color, var(--accent));
+    border-radius: 99px;
+  }
+
+  /* Other shops · compact list */
+  .cl-search {
+    margin: 0 14px 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 12px;
+    padding: 10px 14px;
+  }
+  .cl-search svg {
+    width: 16px;
+    height: 16px;
+    color: var(--ink-soft);
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+    flex-shrink: 0;
+  }
+  .cl-search input {
+    flex: 1;
+    border: none;
+    background: transparent;
+    outline: none;
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    padding: 0;
+    min-width: 0;
+  }
+  .cl-search input::placeholder {
+    color: var(--ink-softer);
+  }
+
+  .cl-other {
+    margin: 0 14px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--line);
+    overflow: hidden;
+  }
+  .cl-other-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+  }
+  .cl-other-row + .cl-other-row {
+    border-top: 1px solid var(--line);
+  }
+  .cl-other-logo {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: var(--shop-color, var(--ink));
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 13px;
+    letter-spacing: -0.04em;
+    flex-shrink: 0;
+  }
+  .cl-other-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .cl-other-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    line-height: 1.2;
+    margin-bottom: 2px;
+  }
+  .cl-other-reward {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--ink-soft);
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+  }
+  .cl-other-prog {
+    flex-shrink: 0;
+    text-align: right;
+  }
+  .cl-other-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin-bottom: 4px;
+    line-height: 1;
+  }
+  .cl-other-num .of { color: var(--ink-soft); font-weight: 500; }
+  .cl-other-bar {
+    width: 50px;
+    height: 3px;
+    background: rgba(0,0,0,0.06);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .cl-other-fill {
+    height: 100%;
+    background: var(--shop-color, var(--accent));
+  }
+
+  /* Add card CTA */
+  .cl-add {
+    margin: 18px 14px 100px;
+    padding: 18px;
+    border-radius: 16px;
+    border: 1.5px dashed rgba(17,17,17,0.18);
+    text-align: center;
+    background: transparent;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+  }
+  .cl-add-icon {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--accent-soft);
+    color: var(--accent);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    margin-bottom: 8px;
+  }
+  .cl-add-icon svg {
+    width: 18px; height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.5;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .cl-add-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    margin-bottom: 2px;
+  }
+  .cl-add-s {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--ink-soft);
+  }
+
+  /* ============================================================== */
+  /* shop.story · Robinhood-style stand-alone page                  */
+  /* Cover hero · shop card overlap · points · story · menu · info  */
+  /* ============================================================== */
+
+  /* shop.story page · disable .td bg patterns (cover takes over)  */
+  .td.shop-story-page::before,
+  .td.shop-story-page::after {
+    display: none;
+  }
+  .td.shop-story-page {
+    background: var(--bg);
+  }
+  /* GLOBAL FIX: .td is flex-column · without this, fixed-height children
+     get squeezed when content overflows (esp. ss-cover, cl-hero, etc.) */
+  .td > * {
+    flex-shrink: 0;
+  }
+
+  /* ===== Cover hero — full-bleed image area ===== */
+  .ss-cover {
+    position: relative;
+    height: 220px;
+    background: linear-gradient(160deg, #FFE8B3 0%, #FFCB7A 50%, #E8965A 100%);
+    overflow: hidden;
+    z-index: 1;
+  }
+  /* Decorative coffee bean pattern · subtle */
+  .ss-cover::before {
+    content: '';
+    position: absolute;
+    inset: 0;
+    background-image:
+      radial-gradient(circle at 85% 70%, rgba(255,255,255,0.25) 0%, transparent 50%),
+      radial-gradient(circle at 15% 30%, rgba(255,217,82,0.4) 0%, transparent 45%);
+    pointer-events: none;
+  }
+  /* Big watermark coffee illustration (CSS only) */
+  .ss-cover-deco {
+    position: absolute;
+    right: -30px;
+    bottom: -30px;
+    width: 220px;
+    height: 220px;
+    opacity: 0.22;
+    transform: rotate(-12deg);
+    pointer-events: none;
+  }
+  .ss-cover-deco svg { width: 100%; height: 100%; display: block; }
+
+  /* Floating action buttons · top row */
+  .ss-cover-actions {
+    position: absolute;
+    top: 14px; left: 14px; right: 14px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    z-index: 3;
+  }
+  .ss-fab {
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: rgba(255,255,255,0.92);
+    backdrop-filter: blur(8px);
+    -webkit-backdrop-filter: blur(8px);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--ink);
+    box-shadow: 0 2px 6px rgba(0,0,0,0.10);
+    border: none;
+    cursor: pointer;
+  }
+  .ss-fab svg {
+    width: 18px; height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  .ss-fab-group {
+    display: flex; gap: 8px;
+  }
+
+  /* Cover text overlay · shop tagline */
+  .ss-cover-text {
+    position: absolute;
+    left: 22px;
+    bottom: 60px;
+    z-index: 2;
+    max-width: 65%;
+  }
+  .ss-cover-eyebrow {
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: rgba(255,255,255,0.95);
+    margin-bottom: 6px;
+    text-shadow: 0 1px 2px rgba(0,0,0,0.10);
+  }
+  .ss-cover-headline {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    line-height: 1.15;
+    color: #fff;
+    letter-spacing: -0.015em;
+    text-shadow: 0 1px 4px rgba(0,0,0,0.15);
+  }
+
+  /* ===== Shop card · overlaps cover by ~40px ===== */
+  .ss-shop-card {
+    position: relative;
+    margin: -40px 14px 0;
+    background: var(--surface);
+    border-radius: 18px;
+    box-shadow: 0 6px 18px rgba(0,0,0,0.08);
+    padding: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    z-index: 2;
+  }
+  .ss-shop-avatar {
+    flex-shrink: 0;
+    width: 56px; height: 56px;
+    border-radius: 14px;
+    background: linear-gradient(135deg, #2a2622 0%, #4a3f33 100%);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 18px;
+    letter-spacing: -0.04em;
+  }
+  .ss-shop-avatar .dot {
+    color: var(--accent);
+    margin-left: 1px;
+  }
+  .ss-shop-info {
+    flex: 1;
+    min-width: 0;
+  }
+  .ss-shop-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-md);
+    color: var(--ink);
+    line-height: 1.2;
+    letter-spacing: -0.01em;
+    margin-bottom: 2px;
+  }
+  .ss-shop-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--ink-soft);
+    margin-bottom: 4px;
+  }
+  .ss-shop-meta {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--ink-soft);
+  }
+  .ss-shop-meta .open-dot {
+    width: 6px; height: 6px;
+    border-radius: 50%;
+    background: #06C755;
+    display: inline-block;
+  }
+  .ss-shop-meta strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  /* Trophy/crown badge · returning customer or featured */
+  .ss-shop-badge {
+    flex-shrink: 0;
+    width: 38px; height: 38px;
+    border-radius: 50%;
+    background: var(--butter-soft);
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--accent);
+  }
+  .ss-shop-badge svg {
+    width: 20px; height: 20px;
+  }
+
+  /* ===== Quick actions row · share chip ===== */
+  .ss-actions {
+    display: flex;
+    gap: 8px;
+    padding: 14px 14px 0;
+  }
+  .ss-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 8px 14px;
+    background: var(--surface);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-xs);
+    font-weight: 500;
+    color: var(--ink);
+    border: 1px solid var(--line);
+    cursor: pointer;
+  }
+  .ss-chip svg {
+    width: 14px; height: 14px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ===== Points card · highlighted block (links to shop.daily) ===== */
+  .ss-points {
+    margin: 14px 14px 0;
+    padding: 14px 16px;
+    background: var(--butter-soft);
+    border-radius: 16px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: pointer;
+    border: 1px solid rgba(255, 217, 82, 0.4);
+  }
+  .ss-points-icon {
+    flex-shrink: 0;
+    width: 40px; height: 40px;
+    border-radius: 50%;
+    background: var(--accent);
+    color: #fff;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ss-points-icon svg {
+    width: 20px; height: 20px;
+    fill: currentColor;
+  }
+  .ss-points-body {
+    flex: 1;
+    min-width: 0;
+  }
+  .ss-points-row {
+    display: flex;
+    align-items: baseline;
+    gap: 4px;
+    margin-bottom: 6px;
+  }
+  .ss-points-num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    color: var(--ink);
+    line-height: 1;
+    letter-spacing: -0.02em;
+  }
+  .ss-points-of {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .ss-points-hint {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-sm);
+    font-weight: 600;
+    color: var(--accent);
+    margin-left: auto;
+  }
+  .ss-points-bar {
+    height: 5px;
+    background: rgba(17,17,17,0.08);
+    border-radius: 99px;
+    overflow: hidden;
+  }
+  .ss-points-fill {
+    height: 100%;
+    background: var(--accent);
+    border-radius: 99px;
+  }
+  .ss-points-arrow {
+    flex-shrink: 0;
+    color: var(--ink-soft);
+    margin-left: 4px;
+  }
+  .ss-points-arrow svg {
+    width: 18px; height: 18px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+
+  /* ===== Section header (consistent across blocks) ===== */
+  .ss-section-h {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-lg);
+    color: var(--ink);
+    letter-spacing: -0.01em;
+    margin: 28px 22px 12px;
+  }
+
+  /* ===== Story · italic quote + signature ===== */
+  .ss-story {
+    margin: 0 14px;
+    padding: 16px 18px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--line);
+  }
+  .ss-story-text {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-weight: 400;
+    font-size: var(--text-sm);
+    line-height: 1.65;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .ss-story-sign {
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-2xs);
+    color: var(--ink-soft);
+    margin-top: 12px;
+    font-weight: 500;
+  }
+
+  /* ===== Menu · 2-column grid (Robinhood style) ===== */
+  .ss-menu-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px;
+    padding: 0 14px;
+  }
+  .ss-menu-item {
+    background: var(--surface);
+    border-radius: 16px;
+    overflow: hidden;
+    border: 1px solid var(--line);
+    position: relative;
+    display: flex;
+    flex-direction: column;
+  }
+  .ss-menu-img {
+    aspect-ratio: 1 / 1;
+    background: linear-gradient(135deg, #FFF7DA 0%, #FFE8B3 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 56px;
+    line-height: 1;
+    position: relative;
+  }
+  /* Variant backgrounds for visual variety (like Robinhood) */
+  .ss-menu-item:nth-child(2) .ss-menu-img {
+    background: linear-gradient(135deg, #FFEDD8 0%, #FFD2A8 100%);
+  }
+  .ss-menu-item:nth-child(3) .ss-menu-img {
+    background: linear-gradient(135deg, #FFE0E0 0%, #FFC2C2 100%);
+  }
+  .ss-menu-item:nth-child(4) .ss-menu-img {
+    background: linear-gradient(135deg, #E8F5E0 0%, #C8E8B8 100%);
+  }
+  .ss-menu-tag {
+    position: absolute;
+    top: 8px;
+    left: 8px;
+    padding: 4px 10px;
+    background: var(--mint-ink);
+    color: #fff;
+    font-family: 'Prompt', sans-serif;
+    font-size: 9.5px;
+    font-weight: 600;
+    border-radius: 99px;
+    letter-spacing: 0.01em;
+    line-height: 1.2;
+    z-index: 1;
+  }
+  .ss-menu-info {
+    padding: 10px 12px 12px;
+  }
+  .ss-menu-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-sm);
+    color: var(--ink);
+    line-height: 1.25;
+    margin-bottom: 4px;
+  }
+  .ss-menu-price {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    letter-spacing: -0.01em;
+  }
+  .ss-menu-price .baht {
+    color: var(--ink-soft);
+    font-weight: 500;
+    margin-right: 1px;
+  }
+
+  /* ===== Info · key/value rows ===== */
+  .ss-info {
+    margin: 0 14px 24px;
+    padding: 4px 18px;
+    background: var(--surface);
+    border-radius: 16px;
+    border: 1px solid var(--line);
+  }
+  .ss-info-row {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    padding: 12px 0;
+    font-family: 'Prompt', sans-serif;
+    font-size: var(--text-sm);
+  }
+  .ss-info-row + .ss-info-row {
+    border-top: 1px dashed rgba(17,17,17,0.10);
+  }
+  .ss-info-key {
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .ss-info-val {
+    color: var(--ink);
+    font-weight: 600;
+  }
+
+  /* ===== Footer brand mark · subtle "powered by" ===== */
+  .ss-footer {
+    text-align: center;
+    padding: 8px 0 80px;
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 10px;
+    font-weight: 600;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: var(--ink-softer);
+  }
+  .ss-footer .accent { color: var(--accent); }
+
   .reward-pill .rlabel {
     font-family: 'Prompt', sans-serif;
     font-size: var(--text-2xs);
@@ -2269,7 +3426,7 @@
   }
   /* C2 benefits + CTA — explain WHY before asking to save */
   /* ========================================================== */
-  /* C3 — Soft Wall                                              */
+  /* verify.phone — Soft Wall                                              */
   /* ========================================================== */
   .c3 { --bg: #E8E0CE; }
   .c3 .close-x {
@@ -2392,7 +3549,7 @@
     color: var(--accent); font-weight: 700;
   }
 
-  /* C3 — Phone-OTP form (refactored from soft wall) */
+  /* verify.phone — Phone-OTP form (refactored from soft wall) */
   .c3 .c3-bar {
     display: flex; align-items: center; gap: 12px;
     padding: 40px 20px 0;
@@ -2459,7 +3616,7 @@
     cursor: pointer;
   }
 
-  /* DeeReach consent toggle · used in C3 (phone signup) + C3.line (LINE confirm) */
+  /* DeeReach consent toggle · used in verify.phone (phone signup) + verify.line (LINE confirm) */
   .consent-toggle {
     margin-top: 16px;
     margin-bottom: 14px;
@@ -2532,7 +3689,7 @@
     display: block;
   }
 
-  /* C3.line — LINE account display card */
+  /* verify.line — LINE account display card */
   .line-account {
     margin-top: 14px;
     background: var(--surface);
@@ -2576,7 +3733,7 @@
     line-height: 1.3;
   }
 
-  /* LINE-themed primary button (for C3.line) */
+  /* LINE-themed primary button (for verify.line) */
   .btn-line {
     appearance: none; -webkit-appearance: none;
     width: 100%;
@@ -2601,7 +3758,7 @@
 
   /* ========================================================== */
   /* Install pill + sheet (persistent install affordance)        */
-  /* Used in: C1, C2, C5, C7 (customer) + S3 (shop)              */
+  /* Used in: shop.daily, C2, reward.claim, cards.list (customer) + S3 (shop)              */
   /* ========================================================== */
   /* Install bottom sheet — only visible in mockup with .show class */
   .install-sheet-overlay {
@@ -2819,7 +3976,7 @@
   }
 
   /* ========================================================== */
-  /* C4 — Ready to redeem                                        */
+  /* reward.almost — Ready to redeem                                        */
   /* ========================================================== */
   .c4 .ready-banner {
     display: flex; justify-content: center;
@@ -2914,7 +4071,7 @@
     font-style: italic;
   }
 
-  /* C4 — Redeem gate (guest can redeem; signup is optional) */
+  /* reward.almost — Redeem gate (guest can redeem; signup is optional) */
   .c4 .redeem-gate {
     margin: 18px 20px 0;
     padding: 0;
@@ -2973,7 +4130,7 @@
   }
 
   /* ========================================================== */
-  /* C5 — Reward claimed                                         */
+  /* reward.claim — Reward claimed                                         */
   /* ========================================================== */
   .c5 .claimed-hero {
     padding: 32px 22px 22px;
@@ -3057,15 +4214,15 @@
     position: relative;
     z-index: 1;
   }
-  .c5 
-  .c5 
+
   @keyframes blink-dot {
     0%, 100% { transform: scale(1); box-shadow: 0 0 0 0 rgba(255,94,58,0.6); }
     50% { transform: scale(1.3); box-shadow: 0 0 0 6px rgba(255,94,58,0); }
   }
   .c5 .voucher {
     margin: 8px 22px 0;
-    padding: 22px 18px;
+    padding: 32px 22px 28px;
+    min-height: 140px;
     background: var(--butter);
     border: 1px solid rgba(17,17,17,0.18);
     border-radius: 14px;
@@ -3074,6 +4231,9 @@
     transform: rotate(-1.5deg);
     overflow: hidden;
     isolation: isolate;
+    display: flex;
+    flex-direction: column;
+    justify-content: center;
   }
   /* Conic gradient sweep border — paints behind everything */
   .c5 .voucher::before {
@@ -3215,7 +4375,7 @@
     font-style: italic; font-weight: 500;
     font-size: var(--text-base); color: var(--ink);
   }
-  /* C5 · CTA "ดูในของขวัญ" · ทาง gentle to gifts page */
+  /* reward.claim · CTA "ดูในของขวัญ" · ทาง gentle to gifts page */
   .c5 .c5-cta-gifts {
     display: flex;
     align-items: center;
@@ -3242,7 +4402,7 @@
   }
 
   /* ========================================================== */
-  /* C-gifts — Gift list page                                    */
+  /* gifts.list — Gift list page                                    */
   /* ========================================================== */
   .c-gifts-section {
     padding: 14px 20px 0;
@@ -3327,6 +4487,19 @@
   .gift-card.used .gc-meta {
     font-size: var(--text-2xs);
   }
+  .gc-used-tag {
+    width: 24px; height: 24px;
+    background: var(--mint);
+    color: var(--mint-ink);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+  }
+  .gc-used-tag svg {
+    width: 12px; height: 12px;
+  }
   .gift-card .gc-cta {
     background: var(--accent);
     color: #fff;
@@ -3341,7 +4514,7 @@
   }
 
   /* ========================================================== */
-  /* C-scan — Fullscreen scan modal                              */
+  /* scan.camera — Fullscreen scan modal                              */
   .c-scan-modal {
     background: #0a0a0a;
     color: #fff;
@@ -3478,7 +4651,7 @@
     width: 18px; height: 18px;
   }
   /* ========================================================== */
-  /* C8 — Guest QR display                                       */
+  /* my.qr — Guest QR display                                       */
   /* ========================================================== */
   .c8-stage {
     padding: 32px 24px 0;
@@ -3596,7 +4769,7 @@
   }
 
   /* ========================================================== */
-  /* C6 — Account menu                                           */
+  /* settings — Account menu                                           */
   /* ========================================================== */
   .c6-profile-card {
     margin: 22px 20px 0;
@@ -3715,7 +4888,7 @@
   .c6-version .brand .dot { color: var(--accent); }
 
   /* ========================================================== */
-  /* C7 — My Cards                                               */
+  /* cards.list — My Cards                                               */
   /* ========================================================== */
   /* Guest banner — shown to non-registered users */
   .guest-banner {
@@ -5798,7 +6971,7 @@
 
   /* ========================================================== */
   /* ========================================================== */
-  /* C9 — Shop Story · ทำความรู้จักร้าน                          */
+  /* shop.story — Shop Story · ทำความรู้จักร้าน                          */
   /* ========================================================== */
   .c9-cover {
     position: relative;
@@ -6100,7 +7273,7 @@
     font-weight: 700; font-size: var(--text-xs);
   }
 
-  /* Font-size picker (C6 settings) */
+  /* Font-size picker (settings settings) */
   .s10-fontsize {
     background: var(--surface);
     border: 1px solid rgba(17,17,17,0.18);
@@ -6524,15 +7697,15 @@
       <div class="num">01</div>
       <h2>ลูกค้า · <em>ครั้งแรกที่เจอกัน</em></h2>
     </div>
-    <div class="desc">3 ขั้น onboarding — ผมแนะนำตัว+ถามชื่อ → เก็บแต้มแรก+โชว์รางวัล → เตือนเรื่องเก็บแต้ม+ชวนสมัคร · จบด้วย OTP สำหรับคนสมัครด้วยเบอร์</div>
+    <div class="desc">3 ขั้น onboarding — ผมแนะนำตัว+ถามชื่อ → เก็บแต้มแรก+โชว์รางวัล → เตือนเรื่องเก็บแต้ม+ชวนผูกบัญชี (LINE/เบอร์/Google/Facebook) · จบด้วย OTP ถ้าผูกด้วยเบอร์</div>
   </div>
 
   <div class="grid">
 
-    <!-- C2.1 — Onboarding Step 1: Greeting + Nickname -->
+    <!-- onboard.greet — Onboarding Step 1: Greeting + Nickname -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C2.1</span>เริ่มต้น · ขั้นที่ 1</div>
+        <div class="kicker"><span class="n">onboard.greet</span>เริ่มต้น · ขั้นที่ 1</div>
         <h3>ผมแนะนำตัวและถามชื่อพี่</h3>
         <p>First impression — speech bubble (avatar เป็น speaker, รู้สึกคุยจริง) · skip hint บอกข้ามได้ใช้ค่าเริ่มต้น · taemdee. mark ที่ bottom (consistent ทุก onboarding)</p>
       </div>
@@ -6590,10 +7763,10 @@
       </div>
     </div>
 
-    <!-- C2.2 — Onboarding Step 2: Stamp + Reward -->
+    <!-- onboard.first_stamp — Onboarding Step 2: Stamp + Reward -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C2.2</span>เริ่มต้น · ขั้นที่ 2</div>
+        <div class="kicker"><span class="n">onboard.first_stamp</span>เริ่มต้น · ขั้นที่ 2</div>
         <h3>ผมเก็บแต้มแรกให้แล้ว</h3>
         <p>หลังใส่ชื่อ น้องแต้มขอบคุณและโชว์แต้มแรก พร้อมรางวัลที่ร้านฝากบอกมา</p>
       </div>
@@ -6668,20 +7841,20 @@
       </div>
     </div>
 
-    <!-- C2.3 — Onboarding Step 3: Save warning + Signup CTA -->
+    <!-- onboard.link_account — Onboarding Step 3: Save warning + Link account CTA -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C2.3</span>เริ่มต้น · ขั้นที่ 3</div>
+        <div class="kicker"><span class="n">onboard.link_account</span>เริ่มต้น · ขั้นที่ 3</div>
         <h3>ผมเตือนเรื่องเก็บแต้ม</h3>
-        <p>น้องแต้มอธิบายว่าบัตรอยู่ในเครื่องนี้เท่านั้น ถ้าอยากให้ปลอดภัยให้สมัครสมาชิก — ข้ามได้</p>
+        <p>น้องแต้มอธิบายว่าบัตรอยู่ในเครื่องนี้เท่านั้น ถ้าอยากให้ปลอดภัยให้ผูกบัญชี — ข้ามได้ · 4 options: LINE / เบอร์โทร / Google / Facebook · ลูกค้ามี account แต้มดีอยู่แล้ว · แค่ผูก identity</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td onboarding step-3">
 
-            <div class="shop-head hero">
-              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-              <div class="shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+            <div class="ob-shop-strip">
+              <span class="strip-logo">M</span>
+              <span class="strip-name">ที่ <strong>ร้านกาแฟลุงหมี</strong></span>
             </div>
 
             <div class="ob-step-dots">
@@ -6691,39 +7864,44 @@
             </div>
 
             <div class="ob-canvas">
-              <div class="ob-icon-wrap">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <rect x="5" y="2" width="14" height="20" rx="2"/>
-                  <line x1="12" y1="18" x2="12.01" y2="18"/>
-                </svg>
-              </div>
-
               <div class="ob-warn-s">บัตรพี่จะถูกเก็บในเครื่องนี้นะครับ ถ้าเปลี่ยนเครื่องแต้มจะหาย</div>
 
               <div class="ob-protect-card">
                 <div class="ob-pc-text">
-                  <div class="ob-pc-h">สมัครสมาชิก<strong>แต้มดี</strong></div>
-                  <div class="ob-pc-s">เก็บแต้มไว้ให้ตลอด · เปลี่ยนเครื่องก็ใช้ต่อได้</div>
+                  <div class="ob-pc-h">ผูกบัญชี<strong>แต้มดี</strong></div>
+                  <div class="ob-pc-s">เก็บแต้มไว้ตลอด · เปลี่ยนเครื่องก็ไม่หาย</div>
                 </div>
               </div>
             </div>
 
             <div class="ob-bottom stack">
-              <button class="ob-pill primary">
-                <span class="ob-pill-icon">
+              <div class="ob-social-row">
+                <button class="ob-social-pill line">
                   <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
-                </span>
-                <span class="ob-pill-text">สมัครด้วยไลน์</span>
-              </button>
-              <button class="ob-pill secondary">
-                <span class="ob-pill-icon">
+                  <span>LINE</span>
+                </button>
+                <button class="ob-social-pill">
+                  <svg viewBox="0 0 24 24" fill="none">
+                    <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                    <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                    <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                    <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                  </svg>
+                  <span>Google</span>
+                </button>
+                <button class="ob-social-pill">
+                  <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                  <span>Facebook</span>
+                </button>
+                <button class="ob-social-pill">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="5" y="2" width="14" height="20" rx="2"/>
                     <line x1="12" y1="18" x2="12.01" y2="18"/>
                   </svg>
-                </span>
-                <span class="ob-pill-text">สมัครด้วยเบอร์โทร</span>
-              </button>
+                  <span>เบอร์โทร</span>
+                </button>
+              </div>
+
               <a class="ob-skip center">ไว้ก่อนครับ</a>
             </div>
 
@@ -6736,20 +7914,20 @@
       </div>
     </div>
 
-    <!-- C2.4 — Recovery code (post-skip path from C2.3) -->
+    <!-- onboard.recovery — Recovery code (post-skip path from onboard.link_account) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C2.4</span>เริ่มต้น · ทางเลือกเมื่อข้าม signup</div>
+        <div class="kicker"><span class="n">onboard.recovery</span>เริ่มต้น · ทางเลือกเมื่อข้าม signup</div>
         <h3>รหัสกู้คืนสำหรับคนไม่สมัคร</h3>
-        <p>เปิดเมื่อกด "ไว้ก่อนครับ" จาก C2.3 — น้องแต้มเสนอรหัสส่วนตัวให้จด/cap หน้าจอ ใช้กู้แต้มถ้าเครื่องหาย</p>
+        <p>เปิดเมื่อกด "ไว้ก่อนครับ" จาก onboard.link_account — น้องแต้มเสนอรหัสส่วนตัวให้จด/cap หน้าจอ ใช้กู้แต้มถ้าเครื่องหาย</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td onboarding">
 
-            <div class="shop-head hero">
-              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-              <div class="shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+            <div class="ob-shop-strip">
+              <span class="strip-logo">M</span>
+              <span class="strip-name">ที่ <strong>ร้านกาแฟลุงหมี</strong></span>
             </div>
 
             <div class="ob-canvas">
@@ -6762,7 +7940,7 @@
                 </svg>
               </div>
 
-              <div class="ob-recovery-h">ไม่สะดวกสมัครสมาชิกใช่ไหมครับ</div>
+              <div class="ob-recovery-h">ไม่สะดวกผูกบัญชีใช่ไหมครับ</div>
               <div class="ob-recovery-s">งั้นพี่จดรหัสส่วนตัวเอาไว้ — กรณีแต้มหาย</div>
 
               <div class="ob-recovery-card">
@@ -6796,12 +7974,12 @@
       </div>
     </div>
 
-    <!-- C3 — Soft Wall -->
+    <!-- verify.phone — Soft Wall -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C3</span>ยืนยันเบอร์ของพี่</div>
+        <div class="kicker"><span class="n">verify.phone</span>ยืนยันเบอร์ของพี่</div>
         <h3>ใส่เบอร์ ผมจะส่ง OTP</h3>
-        <p>เปิดเมื่อลูกค้ากด "สมัครด้วยเบอร์โทร" จาก C2.3 — น้องแต้มเก็บแต้มไว้กับเบอร์ที่ยืนยันแล้ว</p>
+        <p>เปิดเมื่อลูกค้ากด "ผูกกับเบอร์โทร" จาก onboard.link_account — น้องแต้มเก็บแต้มไว้กับเบอร์ที่ยืนยันแล้ว</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -6854,10 +8032,10 @@
       </div>
     </div>
 
-    <!-- C3.line — LINE login confirmation + DeeReach consent -->
+    <!-- verify.line — LINE login confirmation + DeeReach consent -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C3.line</span>ยืนยันด้วยไลน์</div>
+        <div class="kicker"><span class="n">verify.line</span>ยืนยันด้วยไลน์</div>
         <h3>เข้าด้วยไลน์ + toggle OFF state</h3>
         <p>หน้านี้แสดง <strong>state เมื่อปิด toggle</strong> — น้องแต้มขึ้นข้อความอ้อนใน butter-soft surface · ลูกค้ายัง signup ต่อได้ · ข้อความจะยังเก็บไว้ในกล่องเสมอ (ไม่หาย)</p>
       </div>
@@ -6930,12 +8108,12 @@
 
   <div class="grid">
 
-    <!-- C1 — Daily 7/10 -->
+    <!-- shop.daily — Daily 7/10 -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C1</span>วันที่พี่กลับมา</div>
+        <div class="kicker"><span class="n">shop.daily</span>วันที่พี่กลับมา</div>
         <h3>เก็บไว้ 7 แต้มแล้วนะครับ</h3>
-        <p>ทุกครั้งที่ลูกค้ากลับมาร้านเดิม น้องแต้มเก็บแต้มต่อให้ — avatar ขวาบนกลับไปดูบัตรทั้งหมด (C7)</p>
+        <p>ทุกครั้งที่ลูกค้ากลับมาร้านเดิม น้องแต้มเก็บแต้มต่อให้ — เปิดจาก dock "บัตร" หรือจาก inbox.message "ดูร้าน"</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -6999,30 +8177,30 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
             </nav>
           </div>
         </div>
       </div>
     </div>
-    <!-- Push.prompt — Web Push consent (bottom sheet overlay on C1) -->
+    <!-- Push.prompt — Web Push consent (bottom sheet overlay on shop.daily) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Push.prompt</span>ขอสิทธิ์แจ้งเตือน</div>
+        <div class="kicker"><span class="n">push.prompt</span>ขอสิทธิ์แจ้งเตือน</div>
         <h3>Soft prompt · ขอตอนเปิดจาก icon ครั้งแรก</h3>
-        <p><strong>Trigger:</strong> <code>isPWA && Notification.permission==='default' && first_pwa_open</code> — เปิดจาก home screen icon ครั้งแรก (ไม่ใช่ browser tab) · ลูกค้า invested ใน install แล้ว = high intent moment · กด primary → trigger native browser permission · กด "ไว้ก่อน" → re-ask cooldown 14 วัน · re-ask อีกหลัง C5 redemption</p>
+        <p><strong>Trigger:</strong> <code>isPWA && Notification.permission==='default' && first_pwa_open</code> — เปิดจาก home screen icon ครั้งแรก (ไม่ใช่ browser tab) · ลูกค้า invested ใน install แล้ว = high intent moment · กด primary → trigger native browser permission · กด "ไว้ก่อน" → re-ask cooldown 14 วัน · re-ask อีกหลัง reward.claim redemption</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
-            <!-- Faded C1 background -->
+            <!-- Faded shop.daily background -->
             <div class="pp-page-fade">
                 <div class="shop-head">
                 <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
@@ -7094,99 +8272,109 @@
                 <a class="pp-secondary">ไว้ก่อน</a>
               </div>
             </div>
+
           </div>
         </div>
       </div>
     </div>
 
-    <!-- C1.guest — Daily card · guest mode (single shop) -->
+    <!-- link.prompt — Soft prompt to link account (similar to push.prompt) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C1.guest</span>พี่ยังไม่ได้เป็นสมาชิก</div>
-        <h3>เก็บแต้มได้เลย ไม่ต้องสมัครก่อน</h3>
-        <p>หลัง onboarding ที่กด "ขอบคุณแต่ยังก่อน" ใน C2.3 — เห็นบัตรร้านนั้น เก็บแต้มได้ทันที โดยไม่ต้องสมัคร · มี QR มุมขวาบนสำหรับให้ร้านสแกน · ลูกค้าสมัครภายหลังได้ที่ Settings (C6) หรือเมื่อครบ 10 แต้ม (C4)</p>
+        <div class="kicker"><span class="n">link.prompt</span>ชวนผูกบัญชี</div>
+        <h3>Soft prompt · ผูกบัญชีกันแต้มหาย</h3>
+        <p><strong>Trigger:</strong> หลังเก็บแต้มได้ 3-5 ครั้ง · ลูกค้ายังไม่ผูกบัญชี · ระบบเตือนเบาๆ ผ่าน sheet overlay บน shop.daily · กด primary → ไป onboard.link_account · กด "ไว้ก่อน" → re-ask cooldown 14 วัน · pattern เดียวกับ push.prompt</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
-            <div class="shop-head hero">
-              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-              <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
-            </div>
-
-            <div class="c1-greet-bubble">
-              <span class="cgb-text">สวัสดีครับ<strong>พี่สมศรี</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ</span>
-            </div>
-
-            <div class="hero-num-wrap">
-              <div class="hero-label">แต้มของพี่ที่ร้านลุงหมี</div>
-              <div class="hero-num">
-                3
-                <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+            <!-- Faded shop.daily background -->
+            <div class="pp-page-fade">
+              <div class="shop-head">
+                <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
+                <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
               </div>
-              <div class="hero-num-sub">
-                <em>อีก 7 ครั้ง!</em> <span class="of">/ ได้กาแฟฟรี</span>
-              </div>
-            </div>
 
-            <div class="stamps-wrap">
-              <div class="stamps">
-                <div class="stamp on"></div>
-                <div class="stamp on"></div>
-                <div class="stamp on butter"></div>
-                <div class="stamp"></div>
-                <div class="stamp"></div>
-                <div class="stamp"></div>
-                <div class="stamp"></div>
-                <div class="stamp"></div>
-                <div class="stamp"></div>
-                <div class="stamp"></div>
+              <div class="hero-num-wrap">
+                <div class="hero-label">แต้มของพี่ที่ร้านลุงหมี</div>
+                <div class="hero-num">
+                  4
+                  <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                </div>
+                <div class="hero-num-sub">
+                  <em>อีก 6 ครั้ง!</em> <span class="of">/ ได้กาแฟฟรี</span>
+                </div>
+              </div>
+
+              <div class="stamps-wrap">
+                <div class="stamps">
+                  <div class="stamp on"></div>
+                  <div class="stamp on"></div>
+                  <div class="stamp on"></div>
+                  <div class="stamp on"></div>
+                  <div class="stamp"></div><div class="stamp"></div>
+                  <div class="stamp"></div><div class="stamp"></div>
+                  <div class="stamp"></div><div class="stamp"></div>
+                </div>
               </div>
             </div>
 
-            <div class="reward-pill">
-              <div class="gift">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 12 20 22 4 22 4 12"/>
-                  <rect x="2" y="7" width="20" height="5"/>
-                  <line x1="12" y1="22" x2="12" y2="7"/>
-                  <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-                  <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
-                </svg>
-              </div>
-              <div class="rtxt">
-                <div class="rlabel">รางวัล</div>
-                <div class="rname">กาแฟ Signature ฟรี 1 แก้ว</div>
+            <!-- Link prompt overlay -->
+            <div class="pp-overlay">
+              <div class="pp-backdrop"></div>
+              <div class="pp-sheet">
+                <div class="pp-handle"></div>
+
+                <div class="pp-avatar">
+                  <svg viewBox="0 0 100 100">
+                    <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+                    <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+                    <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+                    <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+                  </svg>
+                </div>
+
+                <div class="pp-headline">ผูกบัญชีแต้มดีไหมครับ?</div>
+                <div class="pp-sub">เก็บแต้มไว้ให้ตลอด · เปลี่ยนเครื่องก็ใช้ต่อได้</div>
+
+                <div class="ob-social-row" style="margin: 14px 0 8px;">
+                  <button class="ob-social-pill line">
+                    <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+                    <span>LINE</span>
+                  </button>
+                  <button class="ob-social-pill">
+                    <svg viewBox="0 0 24 24" fill="none">
+                      <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
+                      <path d="M12 23c2.97 0 5.46-.98 7.28-2.66l-3.57-2.77c-.98.66-2.23 1.06-3.71 1.06-2.86 0-5.29-1.93-6.16-4.53H2.18v2.84C3.99 20.53 7.7 23 12 23z" fill="#34A853"/>
+                      <path d="M5.84 14.09c-.22-.66-.35-1.36-.35-2.09s.13-1.43.35-2.09V7.07H2.18C1.43 8.55 1 10.22 1 12s.43 3.45 1.18 4.93l2.85-2.22.81-.62z" fill="#FBBC05"/>
+                      <path d="M12 5.38c1.62 0 3.06.56 4.21 1.64l3.15-3.15C17.45 2.09 14.97 1 12 1 7.7 1 3.99 3.47 2.18 7.07l3.66 2.84c.87-2.6 3.3-4.53 6.16-4.53z" fill="#EA4335"/>
+                    </svg>
+                    <span>Google</span>
+                  </button>
+                  <button class="ob-social-pill">
+                    <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
+                    <span>Facebook</span>
+                  </button>
+                  <button class="ob-social-pill">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <rect x="5" y="2" width="14" height="20" rx="2"/>
+                      <line x1="12" y1="18" x2="12.01" y2="18"/>
+                    </svg>
+                    <span>เบอร์โทร</span>
+                  </button>
+                </div>
+
+                <a class="pp-secondary">ไว้ก่อน</a>
               </div>
             </div>
-
-                        <nav class="c-glass-nav" aria-label="Main navigation">
-              <a class="gn-tab active" aria-label="บัตรของฉัน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
-                <span class="gn-label">บัตร</span>
-              </a>
-              <a class="gn-tab gn-scan" aria-label="สแกน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-                <span class="gn-label">สแกน</span>
-              </a>
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
-              <a class="gn-tab" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ข้อความ</span>
-              </a>
-            </nav>
           </div>
         </div>
       </div>
     </div>
-
-    <!-- C4 — Ready to redeem -->
+    <!-- reward.almost — Ready to redeem -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C4</span>พี่ครบ 10 แต้มแล้ว</div>
+        <div class="kicker"><span class="n">reward.almost</span>พี่ครบ 10 แต้มแล้ว</div>
         <h3>พร้อมรับรางวัลแล้ว</h3>
         <p>ลูกค้าครบ 10 แต้ม — กดรับรางวัลได้เลย ไม่ต้องสมัคร · soft link ชวนสมัคร "เก็บบัตรไม่ให้หาย" ใต้ปุ่ม (optional)</p>
       </div>
@@ -7214,7 +8402,7 @@
 
             <div class="redeem-num">
               <div class="big">10</div>
-              <div class="done">กดเพื่อรับ แล้วโชว์ที่ร้าน</div>
+              <div class="done">รางวัลพร้อมเก็บแล้วครับ</div>
             </div>
 
             <div class="stamps-wrap">
@@ -7234,7 +8422,7 @@
 
             <div class="redeem-gate">
               <button class="redeem-cta">
-                <span>รับรางวัลตอนนี้</span>
+                <span>เปิดของขวัญ</span>
                 <span class="redeem-arrow">→</span>
               </button>
               <a class="redeem-soft-link">
@@ -7252,23 +8440,23 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
             </nav>
           </div>
         </div>
       </div>
     </div>
-    <!-- C5 — Reward claimed -->
+    <!-- reward.claim — Reward claimed -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C5</span>ขอบคุณที่กลับมาบ่อยๆ</div>
+        <div class="kicker"><span class="n">reward.claim</span>ขอบคุณที่กลับมาบ่อยๆ</div>
         <h3>เก็บไว้ใช้ครั้งหน้านะครับ</h3>
         <p>ลูกค้าครบ 10 แต้ม → เห็นหน้านี้ทันที · voucher ผมเก็บไว้ในของขวัญ ใช้เมื่อกลับมาร้านครั้งหน้า · CTA "ดูในของขวัญ" + บัตรใหม่เริ่ม 0/10 ทันที · ลูกค้าไม่ต้องรู้สึกบังคับใช้เลย</p>
       </div>
@@ -7338,13 +8526,13 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
             </nav>
           </div>
@@ -7369,10 +8557,10 @@
 
   <div class="grid">
 
-    <!-- C7 — My Cards (guest mode) -->
+    <!-- cards.list — My Cards (guest mode) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C7</span>ทุกร้านที่ผมดูแลให้พี่</div>
+        <div class="kicker"><span class="n">cards.list</span>ทุกร้านที่ผมดูแลให้พี่</div>
         <h3>6 ร้านที่พี่เก็บแต้มอยู่</h3>
         <p>หน้ารวมบัตรทุกร้านในที่เดียว — มีกล้องสแกนสำหรับสแกนร้านใหม่ (PWA-friendly · ไม่ต้องออกไปเปิด camera app) + QR ของพี่สำหรับให้ร้านสแกนออกแต้ม</p>
       </div>
@@ -7382,10 +8570,18 @@
 
             <div class="page-head">
               <div class="ph-text">
-                <h1>สวัสดีครับพี่สมศรี</h1>
+                <h1>สวัสดีพี่สมศรี</h1>
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
+                <a class="ph-icon-btn" title="QR ของฉัน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7395,110 +8591,125 @@
               </div>
             </div>
 
-            <div class="c7-stats">
-              <div class="ss-row">
-                <div class="ss-big">47</div>
-                <div class="ss-meta">
-                  <div class="label">แต้มที่ผมเก็บให้พี่</div>
-                  <div class="total">จาก 6 ร้าน</div>
+            <!-- Hero featured · 10/10 ครบแล้ว -->
+            <div class="cl-hero" style="margin-top: 4px;">
+              <div class="cl-hero-tag">
+                <span class="pulse"></span>
+                ครบแล้ว · พร้อมรับรางวัล
+              </div>
+              <div class="cl-hero-row">
+                <div class="cl-hero-logo">M<span class="dot">.</span></div>
+                <div class="cl-hero-info">
+                  <div class="cl-hero-name">ร้านกาแฟลุงหมี</div>
+                  <div class="cl-hero-reward">กาแฟ Signature ฟรี 1 แก้ว</div>
+                </div>
+                <div class="cl-hero-num">10<span class="of">/10</span></div>
+              </div>
+              <div class="cl-hero-cta">
+                <span>รับรางวัลตอนนี้</span>
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+            <!-- Section · ใกล้แล้ว (carousel) -->
+            <div class="cl-section-h">
+              <span class="icon" style="color: var(--mint-ink);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+              </span>
+              ใกล้แล้ว
+              <span class="count">3 ร้าน</span>
+            </div>
+
+            <div class="cl-carousel-wrap">
+              <div class="cl-carousel">
+                <div class="cl-mini" style="--shop-color: #E87A6A;">
+                  <div class="cl-mini-logo">O</div>
+                  <div class="cl-mini-name">Orchid &amp; Oat</div>
+                  <div class="cl-mini-reward">โอ๊ตลาเต้ฟรี · ทองหล่อ</div>
+                  <div class="cl-mini-foot">
+                    <div class="cl-mini-row">
+                      <div class="cl-mini-num">8<span class="of">/10</span></div>
+                      <div class="cl-mini-left">อีก 2 ครั้ง</div>
+                    </div>
+                    <div class="cl-mini-bar"><div class="cl-mini-fill" style="width:80%"></div></div>
+                  </div>
+                </div>
+
+                <div class="cl-mini" style="--shop-color: #3E6B5A;">
+                  <div class="cl-mini-logo">B</div>
+                  <div class="cl-mini-name">บ้านซอย 5</div>
+                  <div class="cl-mini-reward">ผัดกะเพราฟรี · อารีย์</div>
+                  <div class="cl-mini-foot">
+                    <div class="cl-mini-row">
+                      <div class="cl-mini-num">6<span class="of">/8</span></div>
+                      <div class="cl-mini-left">อีก 2 ครั้ง</div>
+                    </div>
+                    <div class="cl-mini-bar"><div class="cl-mini-fill" style="width:75%"></div></div>
+                  </div>
+                </div>
+
+                <div class="cl-mini" style="--shop-color: #C49A4D;">
+                  <div class="cl-mini-logo">ก</div>
+                  <div class="cl-mini-name">ก๋วยเตี๋ยวลุงตี๋</div>
+                  <div class="cl-mini-reward">ก๋วยเตี๋ยวฟรี · บางรัก</div>
+                  <div class="cl-mini-foot">
+                    <div class="cl-mini-row">
+                      <div class="cl-mini-num">5<span class="of">/10</span></div>
+                      <div class="cl-mini-left">อีก 5 ครั้ง</div>
+                    </div>
+                    <div class="cl-mini-bar"><div class="cl-mini-fill" style="width:50%"></div></div>
+                  </div>
                 </div>
               </div>
-              <div class="ss-bottom">
-                <div class="ssb-logo lg-orchid">o<span class="dot">.</span></div>
-                <div class="ssb-text">
-                  <span class="ssb-shop">Orchid &amp; Oat</span> · อีก <strong>2 ครั้ง</strong> ได้โอ๊ตลาเต้ฟรี
+            </div>
+
+            <!-- Section · ร้านอื่น (compact list) -->
+            <div class="cl-section-h">
+              <span class="icon" style="color: var(--ink-soft);">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/></svg>
+              </span>
+              เก็บแต้มอยู่
+              <span class="count">2 ร้าน</span>
+            </div>
+
+            <div class="cl-search">
+              <svg viewBox="0 0 24 24"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+              <input type="text" placeholder="ค้นหาร้าน...">
+            </div>
+
+            <div class="cl-other">
+              <div class="cl-other-row">
+                <div class="cl-other-logo" style="--shop-color: #7A4A8A;">SP</div>
+                <div class="cl-other-info">
+                  <div class="cl-other-name">Salon Petite</div>
+                  <div class="cl-other-reward">ส่วนลดตัดผม 10% · เอกมัย</div>
+                </div>
+                <div class="cl-other-prog">
+                  <div class="cl-other-num">3<span class="of">/8</span></div>
+                  <div class="cl-other-bar"><div class="cl-other-fill" style="width:38%; background:#7A4A8A;"></div></div>
+                </div>
+              </div>
+
+              <div class="cl-other-row">
+                <div class="cl-other-logo" style="--shop-color: #3A6B7A;">N</div>
+                <div class="cl-other-info">
+                  <div class="cl-other-name">Noodle Co<span class="dot" style="color:var(--accent);">.</span></div>
+                  <div class="cl-other-reward">ไข่เพิ่มฟรี · ราชเทวี</div>
+                </div>
+                <div class="cl-other-prog">
+                  <div class="cl-other-num">2<span class="of">/10</span></div>
+                  <div class="cl-other-bar"><div class="cl-other-fill" style="width:20%; background:#3A6B7A;"></div></div>
                 </div>
               </div>
             </div>
 
-            <div class="c7-list-head">
-              <div class="label">
-                <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                ร้านที่พี่เก็บแต้มอยู่
+            <!-- + บัตรเพิ่ม -->
+            <div class="cl-add">
+              <div class="cl-add-icon">
+                <svg viewBox="0 0 24 24"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
               </div>
-            </div>
-
-            <div class="c7-card featured">
-              <div class="ready-tag">
-                <span class="dot"></span>
-                ครบแล้ว!
-              </div>
-              <div class="logo">M</div>
-              <div class="info">
-                <div class="name">mhee<span class="dot">.</span></div>
-                <div class="reward">กาแฟ Signature ฟรี</div>
-              </div>
-              <div class="progress">
-                <div class="num">10<span class="of">/10</span></div>
-                <div class="bar"><div class="fill" style="width:100%;"></div></div>
-              </div>
-            </div>
-
-            <div class="c7-card">
-              <div class="logo" style="background:#E87A6A;border-color:#E87A6A;">O</div>
-              <div class="info">
-                <div class="name">Orchid &amp; Oat<span class="dot">.</span></div>
-                <div class="reward">โอ๊ตลาเต้ฟรี · ทองหล่อ</div>
-              </div>
-              <div class="progress">
-                <div class="num">8<span class="of">/10</span></div>
-                <div class="bar"><div class="fill" style="width:80%;"></div></div>
-              </div>
-            </div>
-
-            <div class="c7-card">
-              <div class="logo" style="background:#3E6B5A;border-color:#3E6B5A;">B</div>
-              <div class="info">
-                <div class="name">บ้านซอย 5<span class="dot">.</span></div>
-                <div class="reward">ผัดกะเพราฟรี · อารีย์</div>
-              </div>
-              <div class="progress">
-                <div class="num">6<span class="of">/8</span></div>
-                <div class="bar"><div class="fill" style="width:75%;"></div></div>
-              </div>
-            </div>
-
-            <div class="c7-card">
-              <div class="logo" style="background:#C49A4D;border-color:#C49A4D;">ก</div>
-              <div class="info">
-                <div class="name">ก๋วยเตี๋ยวลุงตี๋<span class="dot">.</span></div>
-                <div class="reward">ก๋วยเตี๋ยวฟรี 1 ชาม · บางรัก</div>
-              </div>
-              <div class="progress">
-                <div class="num">5<span class="of">/10</span></div>
-                <div class="bar"><div class="fill" style="width:50%;"></div></div>
-              </div>
-            </div>
-
-            <div class="c7-card">
-              <div class="logo" style="background:#7A4A8A;border-color:#7A4A8A;">SP</div>
-              <div class="info">
-                <div class="name">Salon Petite<span class="dot">.</span></div>
-                <div class="reward">ส่วนลดตัดผม 10% · เอกมัย</div>
-              </div>
-              <div class="progress">
-                <div class="num">3<span class="of">/8</span></div>
-                <div class="bar"><div class="fill" style="width:38%;"></div></div>
-              </div>
-            </div>
-
-            <div class="c7-card">
-              <div class="logo" style="background:#3A6B7A;border-color:#3A6B7A;">N</div>
-              <div class="info">
-                <div class="name">Noodle Co<span class="dot">.</span></div>
-                <div class="reward">ไข่เพิ่มฟรี · ราชเทวี</div>
-              </div>
-              <div class="progress">
-                <div class="num">2<span class="of">/10</span></div>
-                <div class="bar"><div class="fill" style="width:20%;"></div></div>
-              </div>
-            </div>
-
-            <div class="c7-spacer">
-              <div class="c7-add">
-                <div class="h">อยากได้บัตรเพิ่ม?</div>
-                <div class="s">สแกน QR แต้มดี ที่ร้านไหนก็ได้</div>
-              </div>
+              <div class="cl-add-h">อยากได้บัตรเพิ่ม?</div>
+              <div class="cl-add-s">สแกน QR แต้มดี ที่ร้านไหนก็ได้</div>
             </div>
 
                         <nav class="c-glass-nav" aria-label="Main navigation">
@@ -7510,23 +8721,23 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
             </nav>
           </div>
         </div>
       </div>
     </div>
-    <!-- Inbox — DeeReach message list (global, all shops) -->
+    <!-- inbox.list — DeeReach message list (global, all shops) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Inbox</span>กล่องข้อความ · DeeReach</div>
+        <div class="kicker"><span class="n">inbox.list</span>กล่องข้อความ</div>
         <h3>ข้อความจากร้านทุกร้าน</h3>
         <p>เปิดจาก dock "กล่อง" tab — ข้อความจากร้านที่พี่เก็บแต้ม. Reverse chronological · 90-day retention · มี filter pills (ทั้งหมด / ยังไม่อ่าน / มีของฝาก)</p>
       </div>
@@ -7535,10 +8746,18 @@
           <div class="td">
             <div class="page-head">
               <div class="ph-text">
-                <h1>สวัสดีครับพี่สมศรี</h1>
+                <h1>สวัสดีพี่สมศรี</h1>
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
+                <a class="ph-icon-btn" title="QR ของฉัน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7623,14 +8842,14 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
 
               <a class="gn-tab" aria-label="ของขวัญ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ของขวัญ</span>
-              </a>
-              <a class="gn-tab active" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <span class="gn-label">ข้อความ</span>
               </a>
             </nav>
           </div>
@@ -7638,10 +8857,10 @@
       </div>
     </div>
 
-    <!-- Inbox.empty — Empty state for new users -->
+    <!-- inbox.empty — Empty state for new users -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Inbox.empty</span>กล่องข้อความ · ว่าง</div>
+        <div class="kicker"><span class="n">inbox.empty</span>กล่องข้อความ · ว่าง</div>
         <h3>ยังไม่มีข้อความ</h3>
         <p>Empty state — น้องแต้ม voice อธิบายว่ายังไม่มีข้อความเข้ามา และจะเริ่มได้ยังไง</p>
       </div>
@@ -7650,10 +8869,18 @@
           <div class="td">
             <div class="page-head">
               <div class="ph-text">
-                <h1>สวัสดีครับพี่สมศรี</h1>
+                <h1>สวัสดีพี่สมศรี</h1>
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
+                <a class="ph-icon-btn" title="QR ของฉัน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -7687,14 +8914,14 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
 
               <a class="gn-tab" aria-label="ของขวัญ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ของขวัญ</span>
-              </a>
-              <a class="gn-tab active" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <span class="gn-label">ข้อความ</span>
               </a>
             </nav>
           </div>
@@ -7702,12 +8929,12 @@
       </div>
     </div>
 
-    <!-- Inbox.detail — Message detail with offer (win-back) -->
+    <!-- inbox.message — Message detail with offer (auto-saved to gifts) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Inbox.detail</span>ข้อความ · มีของฝาก</div>
-        <h3>เปิดข้อความ DeeReach</h3>
-        <p>เปิดจาก inbox card · shop logo + name · image hero · message body (shop voice) · offer card with claim button (primary) · เปิดบัตรของร้าน (link, secondary) · ปิดเสียงร้าน</p>
+        <div class="kicker"><span class="n">inbox.message</span>ข้อความ · มีของฝาก (auto-saved)</div>
+        <h3>เปิดข้อความ · ของฝากเก็บอัตโนมัติ</h3>
+        <p>เปิดจาก inbox card · shop logo + name · image hero · message body · <strong>ของฝาก auto-receive</strong> (ไม่ต้องกดรับ · เก็บใน gifts.list ทันที) · check icon + "เก็บไว้ให้แล้ว" · link "ดูใน ของขวัญของพี่ →" · ลด friction</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -7751,23 +8978,22 @@
                   </svg>
                 </div>
                 <div class="ido-text">
-                  <div class="ido-label">ของฝากจากร้าน</div>
+                  <div class="ido-label">
+                    <svg class="ido-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                    ของฝากจากร้าน · เก็บไว้ให้แล้ว
+                  </div>
                   <div class="ido-name">ลด ฿20 เมื่อซื้อกาแฟ</div>
-                  <div class="ido-condition">ใช้ก่อน 30 พ.ค. · โชว์หน้านี้ที่ร้าน</div>
+                  <div class="ido-condition">ใช้ก่อน 30 พ.ค.</div>
                 </div>
               </div>
-              <button class="ido-claim">รับของฝาก</button>
+              <a class="ido-link">ดูใน <strong>ของขวัญของพี่</strong> →</a>
             </div>
 
-            <div class="inbox-detail-cta">
-              <a class="idc-secondary">
-                เปิดบัตรของร้าน
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+            <div class="inbox-detail-cta single">
+              <a class="idc-btn primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/></svg>
+                ดูร้าน
               </a>
-            </div>
-
-            <div class="inbox-detail-mute">
-              <a>ปิดเสียงร้านนี้</a>
             </div>
 
             <nav class="c-glass-nav" aria-label="Main navigation">
@@ -7779,14 +9005,14 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
 
               <a class="gn-tab" aria-label="ของขวัญ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ของขวัญ</span>
-              </a>
-              <a class="gn-tab active" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <span class="gn-label">ข้อความ</span>
               </a>
             </nav>
           </div>
@@ -7794,10 +9020,10 @@
       </div>
     </div>
 
-    <!-- Inbox.detail.no-offer — Message detail without offer (almost-there) -->
+    <!-- inbox.message.no-offer — Message detail without offer (almost-there) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Inbox.detail</span>ข้อความ · ไม่มีของฝาก</div>
+        <div class="kicker"><span class="n">inbox.message</span>ข้อความ · ไม่มีของฝาก</div>
         <h3>ข้อความที่ไม่มีของฝาก</h3>
         <p>ตัวอย่าง almost-there nudge — ไม่มี offer card · "เปิดบัตรของร้าน" ขึ้นเป็น primary CTA สีดำเต็ม (adaptive layout)</p>
       </div>
@@ -7827,15 +9053,11 @@
               <p>คิดถึงพี่สมศรีค่ะ — รอพี่อยู่นะ มา 2 ครั้งจะได้นวดฟรีแล้ว ครั้งหน้าแม่หม่อนจะรอบริการเองค่ะ</p>
             </div>
 
-            <div class="inbox-detail-cta">
-              <button class="idc-primary">
-                เปิดบัตรของร้าน
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-              </button>
-            </div>
-
-            <div class="inbox-detail-mute">
-              <a>ปิดเสียงร้านนี้</a>
+            <div class="inbox-detail-cta single">
+              <a class="idc-btn primary">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/></svg>
+                ดูร้าน
+              </a>
             </div>
 
             <nav class="c-glass-nav" aria-label="Main navigation">
@@ -7847,14 +9069,14 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
+              <a class="gn-tab active" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
 
               <a class="gn-tab" aria-label="ของขวัญ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ของขวัญ</span>
-              </a>
-              <a class="gn-tab active" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <span class="gn-label">ข้อความ</span>
               </a>
             </nav>
           </div>
@@ -7862,77 +9084,10 @@
       </div>
     </div>
 
-    <!-- Inbox.voucher — Voucher activated full screen with QR -->
+    <!-- gifts.list — ของขวัญ (vouchers earned, ready to use) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Inbox.voucher</span>ของฝาก · เปิดใช้</div>
-        <h3>ของฝากเปิดใช้แล้ว · ให้ร้านสแกน QR</h3>
-        <p>หลังกด "รับของฝาก" → full-screen voucher with large QR · 5-min countdown · same celebration pattern as C5 (reward claimed)</p>
-      </div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="td">
-            <div class="app-bar">
-              <a class="x" aria-label="ย้อนกลับ">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              </a>
-              <div class="title-mid">ของฝาก</div>
-              <a class="more" aria-label="เพิ่มเติม">
-                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
-              </a>
-            </div>
-
-            <div class="voucher-screen">
-              <div class="vs-shop">
-                <span class="vss-logo">m<span class="dot">.</span></span>
-                <span>ร้านกาแฟลุงหมี</span>
-              </div>
-
-              <div class="vs-headline">ของฝากของพี่สมศรี</div>
-              <div class="vs-offer">ลด ฿20</div>
-
-              <div class="vs-qr-frame">
-                <div class="vs-qr-pattern"></div>
-              </div>
-
-              <div class="vs-instruction">ให้พนักงานสแกน QR นี้</div>
-
-              <div class="vs-countdown">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
-                หมดใน 4:52
-              </div>
-
-              <div class="vs-condition">เมื่อซื้อกาแฟทุกชนิด · ใช้ได้ครั้งเดียว</div>
-            </div>
-
-            <nav class="c-glass-nav" aria-label="Main navigation">
-              <a class="gn-tab" aria-label="บัตรของฉัน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
-                <span class="gn-label">บัตร</span>
-              </a>
-              <a class="gn-tab gn-scan" aria-label="สแกน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-                <span class="gn-label">สแกน</span>
-              </a>
-
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
-              <a class="gn-tab active" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <span class="gn-label">ข้อความ</span>
-              </a>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- C-gifts — ของขวัญ (vouchers earned, ready to use) -->
-    <div class="mockup">
-      <div class="mockup-caption">
-        <div class="kicker"><span class="n">C-gifts</span>ของขวัญของพี่</div>
+        <div class="kicker"><span class="n">gifts.list</span>ของขวัญของพี่</div>
         <h3>เก็บไว้ใช้ครั้งหน้า · ไม่บังคับใช้ทันที</h3>
         <p>เปิดจากปุ่ม "ของขวัญ" ใน liquid glass dock — list ของรางวัลที่ลูกค้าได้แล้ว · พร้อมใช้ + ใช้แล้ว · ลูกค้าใช้เมื่อกลับมาร้านครั้งหน้า · กด "ใช้" → โชว์ voucher QR ให้ร้านสแกน</p>
       </div>
@@ -7942,8 +9097,24 @@
 
             <div class="page-head">
               <div class="ph-text">
-                <h1>ของขวัญของพี่</h1>
-                <div class="ph-sub">ผมเก็บไว้ให้นะครับ ใช้เมื่อพร้อม</div>
+                <h1>สวัสดีพี่สมศรี</h1>
+                <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
+              </div>
+              <div class="ph-actions">
+                <a class="ph-icon-btn" title="QR ของฉัน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+                <a class="ph-icon-btn" title="ตั้งค่า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <circle cx="12" cy="12" r="3"/>
+                    <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+                  </svg>
+                </a>
               </div>
             </div>
 
@@ -7988,16 +9159,22 @@
                 <div class="gc-icon">🍩</div>
                 <div class="gc-info">
                   <div class="gc-name">โดนัทฟรี 1 ชิ้น</div>
-                  <div class="gc-meta">Sweet Co. · 14 ก.พ.</div>
+                  <div class="gc-meta">Sweet Co. · ใช้เมื่อ 14 ก.พ. 14:32</div>
                 </div>
+                <span class="gc-used-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
               </div>
 
               <div class="gift-card used">
                 <div class="gc-icon">☕</div>
                 <div class="gc-info">
                   <div class="gc-name">ลาเต้ฟรี 1 แก้ว</div>
-                  <div class="gc-meta">ลุงหมี · 8 ม.ค.</div>
+                  <div class="gc-meta">ลุงหมี · ใช้เมื่อ 8 ม.ค. 09:15</div>
                 </div>
+                <span class="gc-used-tag">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
+                </span>
               </div>
             </div>
 
@@ -8010,13 +9187,13 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
-              <a class="gn-tab active" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab active" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
             </nav>
 
@@ -8025,12 +9202,56 @@
       </div>
     </div>
 
-    <!-- C-scan — Fullscreen scan modal (opened from dock สแกน button) -->
+    <!-- voucher.use — กด "ใช้" ใน gifts.list → fullscreen QR · mark used ทันที -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C-scan</span>สแกน QR ของร้าน</div>
+        <div class="kicker"><span class="n">voucher.use</span>กด "ใช้" จาก gifts.list</div>
+        <h3>โชว์หน้าจอให้ร้านดู · 5 นาที</h3>
+        <p>เปิดเมื่อ ลูกค้ากด "ใช้" ใน gifts.list — voucher ถูก mark "ใช้แล้ว" ทันที (trust-based · ลูกค้ายืนยันเอง) · ลูกค้าโชว์หน้าจอนี้ให้ร้านดู · QR + countdown 5 นาที · ร้านสแกน QR ด้วย S3.scan ก็ได้ (audit trail · optional)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </a>
+              <div class="title-mid">ใช้ของขวัญ</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="voucher-screen">
+              <div class="vs-shop">
+                <span class="vss-logo">m<span class="dot">.</span></span>
+                <span>ร้านกาแฟลุงหมี</span>
+              </div>
+
+              <div class="vs-headline">โชว์หน้านี้ให้ร้าน</div>
+              <div class="vs-offer">กาแฟ Signature ฟรี<br>1 แก้ว</div>
+
+              <div class="vs-qr-frame">
+                <div class="vs-qr-pattern"></div>
+              </div>
+
+              <div class="vs-instruction">ของขวัญถูกใช้แล้ว · โชว์หน้าจอให้ร้านดู</div>
+
+              <div class="vs-countdown">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;"><circle cx="12" cy="12" r="10"/><polyline points="12 6 12 12 16 14"/></svg>
+                <span>หมดอายุใน <strong>4:32</strong></span>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- scan.camera — Fullscreen scan modal (opened from dock สแกน button) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">scan.camera</span>สแกน QR ของร้าน</div>
         <h3>Fullscreen camera · 1-tap จาก dock</h3>
-        <p>เปิดเมื่อกด tab "สแกน" ใน liquid glass dock — fullscreen camera พร้อม viewfinder · ปุ่มล่างสลับไป QR display ของลูกค้า (กรณีร้านสแกนลูกค้าแทน · 20% case) · auto-detect QR → เด้งไป C5 (claim reward) หรือ +1 stamp animation</p>
+        <p>เปิดเมื่อกด tab "สแกน" ใน liquid glass dock — fullscreen camera พร้อม viewfinder · auto-detect QR → เด้งไป reward.claim (claim reward) หรือ +1 stamp animation · ถ้าร้านสแกน QR ลูกค้าแทน → ใช้ QR icon ที่ top right แทน (ไม่อยู่ใน modal นี้)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -8055,24 +9276,17 @@
               <div class="csm-helper">วาง QR ของร้านในกรอบ<br>ผมจะเก็บแต้มให้เลยครับ</div>
             </div>
 
-            <div class="csm-bottom">
-              <button class="csm-toggle">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
-                ให้ร้านสแกน QR ของพี่
-              </button>
-            </div>
-
           </div>
         </div>
       </div>
     </div>
 
-    <!-- C8 — Guest QR display (show to shop for scanning) -->
+    <!-- my.qr — Guest QR display (show to shop for scanning) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C8</span>QR ของพี่</div>
+        <div class="kicker"><span class="n">my.qr</span>QR ของพี่</div>
         <h3>โชว์ให้พนักงานสแกนนะครับ</h3>
-        <p>เปิดเมื่อกดปุ่ม QR มุมขวาบนของ C7 — ใช้กรณีร้านเปิด method "สแกนบัตรลูกค้า" · QR ใหญ่อ่านง่าย พร้อม ID guest อ่านได้ด้วยตา (สำรอง) + auto-refresh ทุก 60 วินาที (กันคนเก็บภาพไปใช้)</p>
+        <p>เปิดเมื่อกดปุ่ม QR มุมขวาบนของ cards.list — ใช้กรณีร้านเปิด method "สแกนบัตรลูกค้า" · QR ใหญ่อ่านง่าย พร้อม ID guest อ่านได้ด้วยตา (สำรอง) + auto-refresh ทุก 60 วินาที (กันคนเก็บภาพไปใช้)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -8181,13 +9395,13 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ข้อความ</span>
+              </a>
+              <a class="gn-tab" aria-label="ของขวัญ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ของขวัญ</span>
               </a>
             </nav>
           </div>
@@ -8195,12 +9409,12 @@
       </div>
     </div>
 
-    <!-- C6 — Account menu -->
+    <!-- settings — Account menu -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C6</span>ตั้งค่าบัญชี</div>
+        <div class="kicker"><span class="n">settings</span>ตั้งค่าบัญชี</div>
         <h3>โปรไฟล์และตัวเลือกของพี่</h3>
-        <p>หน้าตั้งค่าของลูกค้า เข้าจาก avatar ใน C7 — โปรไฟล์ + รับโปรจากร้านไหม + ออกระบบ</p>
+        <p>หน้าตั้งค่าของลูกค้า เข้าจาก avatar ใน cards.list — โปรไฟล์ + รับโปรจากร้านไหม + ออกระบบ</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -8208,10 +9422,18 @@
 
             <div class="page-head">
               <div class="ph-text">
-                <h1>สวัสดีครับพี่สมศรี</h1>
+                <h1>สวัสดีพี่สมศรี</h1>
                 <div class="ph-sub">วันศุกร์ · ขอให้เป็นวันที่ดี</div>
               </div>
               <div class="ph-actions">
+                <a class="ph-icon-btn" title="QR ของฉัน">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="3" y="3" width="7" height="7" rx="1"/>
+                    <rect x="14" y="3" width="7" height="7" rx="1"/>
+                    <rect x="3" y="14" width="7" height="7" rx="1"/>
+                    <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -8228,20 +9450,6 @@
                 <div class="meta">
                   <span>+66 89 ••• 4523</span>
                 </div>
-              </div>
-            </div>
-
-            <div class="s10-section">
-              <div class="label">ของฉัน</div>
-
-              <div class="s10-row">
-                <div class="row-icon butter">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M6 9H4.5a2.5 2.5 0 010-5H6"/><path d="M18 9h1.5a2.5 2.5 0 000-5H18"/><path d="M4 22h16"/><path d="M10 14.66V17c0 .55-.47.98-.97 1.21C7.85 18.75 7 20.24 7 22"/><path d="M14 14.66V17c0 .55.47.98.97 1.21C16.15 18.75 17 20.24 17 22"/><path d="M18 2H6v7a6 6 0 0012 0V2z"/></svg>
-                </div>
-                <div class="row-info">
-                  <div class="row-name">รางวัลที่รับแล้ว</div>
-                </div>
-                <div class="arrow-r">›</div>
               </div>
             </div>
 
@@ -8310,14 +9518,14 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
+              <a class="gn-tab" aria-label="กล่องข้อความ">
+                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
+                <span class="gn-label">ข้อความ</span>
+              </a>
 
               <a class="gn-tab" aria-label="ของขวัญ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ของขวัญ</span>
-              </a>
-              <a class="gn-tab" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ข้อความ</span>
               </a>
             </nav>
           </div>
@@ -8325,12 +9533,12 @@
       </div>
     </div>
 
-    <!-- C6.notifications — Notification preferences (channel + muted shops) -->
+    <!-- settings.notifications — Notification preferences (channel + muted shops) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">C6.notif</span>การแจ้งเตือน</div>
+        <div class="kicker"><span class="n">settings.notif</span>การแจ้งเตือน</div>
         <h3>ตั้งค่าการแจ้งเตือน</h3>
-        <p>เปิดจาก C6 row "การแจ้งเตือน" — master toggle · ช่องทางที่ใช้รับ (Auto / In-app only) · ร้านที่ปิดเสียง</p>
+        <p>เปิดจาก settings row "การแจ้งเตือน" — master toggle · ช่องทางที่ใช้รับ (Auto / In-app only) · ร้านที่ปิดเสียง</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -8366,16 +9574,24 @@
                 <div class="notif-radio selected">
                   <span class="nr-circle"></span>
                   <div class="nr-text">
-                    <div class="nr-name">อัตโนมัติ <span class="nr-badge">แนะนำ</span></div>
-                    <div class="nr-desc">ระบบเลือกช่องที่ดีที่สุดให้พี่ — เร็ว ประหยัด</div>
+                    <div class="nr-name">แต้มดี <span class="nr-badge">ค่าเริ่มต้น</span></div>
+                    <div class="nr-desc">เด้งในแอป · ฟรี · ทำงานเมื่อเปิดแอปอยู่</div>
                   </div>
                 </div>
 
                 <div class="notif-radio">
                   <span class="nr-circle"></span>
                   <div class="nr-text">
-                    <div class="nr-name">ในแอปเท่านั้น</div>
-                    <div class="nr-desc">ไม่เด้ง · ดูในกล่องเอง</div>
+                    <div class="nr-name">LINE</div>
+                    <div class="nr-desc">ส่งเข้า LINE ของพี่ · ผูกไลน์แล้ว ✓</div>
+                  </div>
+                </div>
+
+                <div class="notif-radio disabled">
+                  <span class="nr-circle"></span>
+                  <div class="nr-text">
+                    <div class="nr-name">เบอร์โทร (SMS)</div>
+                    <div class="nr-desc">ยังไม่ได้ผูกเบอร์ · <a class="nr-link">ผูกที่นี่</a></div>
                   </div>
                 </div>
 
@@ -8401,140 +9617,171 @@
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
                 <span class="gn-label">สแกน</span>
               </a>
-
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
               <a class="gn-tab" aria-label="กล่องข้อความ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
                 <span class="gn-label">ข้อความ</span>
               </a>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
 
-    <!-- C9 — Shop Story · ทำความรู้จักร้าน -->
-    <div class="mockup">
-      <div class="mockup-caption">
-        <div class="kicker"><span class="n">C9</span>ทำความรู้จักร้าน</div>
-        <h3>ร้านขอบคุณ · ลูกค้ารีวิว</h3>
-        <p>เปิดจาก C2.2 (ดูร้าน) หรือ C7 (tap card) — ลูกค้าเห็นเรื่องราวของร้าน, ข้อความขอบคุณส่วนตัว, เมนูเด็ด และรีวิวจากลูกค้า · เน้น emotional connection มากกว่าการสะสมแต้ม</p>
-      </div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="td">
-
-            <div class="app-bar">
-              <a class="x" aria-label="ย้อนกลับ">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              </a>
-              <div class="title-mid">ทำความรู้จัก</div>
-              <div class="placeholder"></div>
-            </div>
-
-            <div class="c9-cover">
-              <div class="cover-mark">mhee<span class="dot">.</span></div>
-              <div class="cover-meta">
-                <span>เปิดมา 5 ปี</span>
-                <span class="cover-dot">·</span>
-                <span>เชียงใหม่</span>
-              </div>
-            </div>
-
-            <div class="c9-thanks">
-              <div class="c9-thanks-avatar">
-                <svg viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-              </div>
-              <div class="c9-thanks-text">
-                <div class="c9-thanks-h">ขอบคุณคุณสมศรีนะครับ ✦</div>
-                <div class="c9-thanks-s">ดีใจที่กลับมาทุกครั้ง · ทางร้านฝากบอก</div>
-              </div>
-            </div>
-
-            <div class="c9-section">
-              <div class="c9-section-h">เรื่องราวของร้าน</div>
-              <div class="c9-story">
-                ร้านกาแฟลุงหมีเริ่มจากความหลงใหลในกาแฟดอยช้าง — เริ่มเปิดที่บ้านก่อนย้ายมานิมมาน · ทุกแก้วคั่วเองทุกวัน
-              </div>
-            </div>
-
-            <div class="c9-section">
-              <div class="c9-section-h">เมนูเด็ดของร้าน</div>
-              <div class="c9-menu">
-                <div class="c9-menu-item">
-                  <div class="c9-menu-img" style="background: linear-gradient(135deg, #6B4423, #3E2716);">
-                    <span class="c9-menu-emoji">☕</span>
-                  </div>
-                  <div class="c9-menu-name">Signature Latte</div>
-                  <div class="c9-menu-price">75฿</div>
-                </div>
-                <div class="c9-menu-item">
-                  <div class="c9-menu-img" style="background: linear-gradient(135deg, #C99B5E, #8E5A2A);">
-                    <span class="c9-menu-emoji">🥐</span>
-                  </div>
-                  <div class="c9-menu-name">ครัวซองต์</div>
-                  <div class="c9-menu-price">45฿</div>
-                </div>
-                <div class="c9-menu-item">
-                  <div class="c9-menu-img" style="background: linear-gradient(135deg, #E8B4B0, #B86A6A);">
-                    <span class="c9-menu-emoji">🍰</span>
-                  </div>
-                  <div class="c9-menu-name">เค้กส้ม</div>
-                  <div class="c9-menu-price">85฿</div>
-                </div>
-              </div>
-            </div>
-
-            <div class="c9-section">
-              <div class="c9-section-h">
-                <span>รีวิวจากลูกค้า</span>
-                <span class="c9-rating">★ 4.8</span>
-              </div>
-              <div class="c9-review">
-                <div class="c9-review-stars">★★★★★</div>
-                <div class="c9-review-text">"กาแฟอร่อยมาก เจ้าของร้านน่ารัก จำหน้าได้ตลอด · บรรยากาศร้านดี"</div>
-                <div class="c9-review-meta">— คุณน้อย · ลูกค้าประจำ 2 ปี</div>
-              </div>
-              <div class="c9-review">
-                <div class="c9-review-stars">★★★★★</div>
-                <div class="c9-review-text">"ครัวซองต์เนื้อนุ่ม กาแฟ Signature ฟินสุดๆ"</div>
-                <div class="c9-review-meta">— คุณก้อง · เก็บแต้มอยู่</div>
-              </div>
-
-              <button class="c9-write-review">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/>
-                  <path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
-                </svg>
-                <span>เขียนรีวิวให้ร้าน</span>
-              </button>
-            </div>
-
-                        <nav class="c-glass-nav" aria-label="Main navigation">
-              <a class="gn-tab active" aria-label="บัตรของฉัน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
-                <span class="gn-label">บัตร</span>
-              </a>
-              <a class="gn-tab gn-scan" aria-label="สแกน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-                <span class="gn-label">สแกน</span>
-              </a>
               <a class="gn-tab" aria-label="ของขวัญ">
                 <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
                 <span class="gn-label">ของขวัญ</span>
               </a>
-              <a class="gn-tab" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ข้อความ</span>
-              </a>
             </nav>
           </div>
         </div>
       </div>
     </div>
+
+    <!-- shop.story — ทำความรู้จักร้าน (Robinhood-style · cover + shop card overlap) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">shop.story</span>ทำความรู้จักร้าน</div>
+        <h3>หน้าร้านแบบเต็มสูบ · cover + shop card</h3>
+        <p>เปิดเมื่อกด "ดูร้าน" จาก inbox.message — <strong>Robinhood-style hero</strong> · cover image (ร้านกำหนดเองได้) + shop card overlap + แต้มไฮไลต์ (mint card · กดไปดูบัตรเต็มได้) + story · menu 2-col · contact</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td shop-story-page">
+
+            <!-- ===== Cover hero · gradient + tagline + floating buttons ===== -->
+            <div class="ss-cover">
+              <!-- Decorative coffee cup illustration · subtle watermark -->
+              <div class="ss-cover-deco">
+                <svg viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <path d="M20 35 L20 65 Q20 78 33 78 L60 78 Q73 78 73 65 L73 35 Z" fill="#fff"/>
+                  <path d="M73 42 L82 42 Q90 42 90 50 Q90 58 82 58 L73 58" stroke="#fff" stroke-width="4" fill="none" stroke-linecap="round"/>
+                  <path d="M30 22 Q33 16 30 12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                  <path d="M42 22 Q45 16 42 12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                  <path d="M54 22 Q57 16 54 12" stroke="#fff" stroke-width="3.5" fill="none" stroke-linecap="round"/>
+                </svg>
+              </div>
+
+              <!-- Floating action row -->
+              <div class="ss-cover-actions">
+                <button class="ss-fab" aria-label="ย้อนกลับ">
+                  <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+                </button>
+                <div class="ss-fab-group">
+                  <button class="ss-fab" aria-label="บันทึกร้านนี้">
+                    <svg viewBox="0 0 24 24"><path d="M20.84 4.61a5.5 5.5 0 00-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 00-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 000-7.78z"/></svg>
+                  </button>
+                  <button class="ss-fab" aria-label="แชร์">
+                    <svg viewBox="0 0 24 24"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  </button>
+                </div>
+              </div>
+
+              <!-- Cover tagline · ร้านกำหนดเอง -->
+              <div class="ss-cover-text">
+                <div class="ss-cover-eyebrow">ตั้งแต่ปี 2562</div>
+                <div class="ss-cover-headline">กาแฟดอยช้าง<br>คั่วเอง ทุกเช้า</div>
+              </div>
+            </div>
+
+            <!-- ===== Shop card · overlaps cover ===== -->
+            <div class="ss-shop-card">
+              <div class="ss-shop-avatar">mhee<span class="dot">.</span></div>
+              <div class="ss-shop-info">
+                <div class="ss-shop-name">ร้านกาแฟลุงหมี</div>
+                <div class="ss-shop-sub">นิมมาน · เชียงใหม่</div>
+                <div class="ss-shop-meta">
+                  <span class="open-dot"></span>
+                  <strong>เปิดอยู่</strong>
+                  <span>· ปิด 18:00</span>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== Points highlight card · กดไปดูบัตรเต็ม ===== -->
+            <div class="ss-points">
+              <div class="ss-points-body">
+                <div class="ss-points-row">
+                  <span class="ss-points-num">7</span>
+                  <span class="ss-points-of">/ 10</span>
+                  <span class="ss-points-hint">อีก 3 ครั้ง · ฟรีกาแฟ</span>
+                </div>
+                <div class="ss-points-bar">
+                  <div class="ss-points-fill" style="width: 70%"></div>
+                </div>
+              </div>
+              <div class="ss-points-arrow">
+                <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+              </div>
+            </div>
+
+            <!-- ===== Story · เรื่องราวร้าน ===== -->
+            <div class="ss-section-h">เรื่องราวร้าน</div>
+            <div class="ss-story">
+              <div class="ss-story-text">เริ่มต้นจากความรักในการชงกาแฟ ตั้งแต่ปี 2562 ใช้เมล็ดดอยช้างคั่วเอง · มาเจอกันที่ร้านนะครับ ขอบคุณพี่สมศรีที่แวะมาเสมอ</div>
+              <div class="ss-story-sign">— ลุงหมี</div>
+            </div>
+
+            <!-- ===== Menu · 2-col grid ===== -->
+            <div class="ss-section-h">เมนูเด็ด</div>
+            <div class="ss-menu-grid">
+              <div class="ss-menu-item">
+                <div class="ss-menu-img">
+                  <span class="ss-menu-tag">ขายดีที่สุด</span>
+                  ☕
+                </div>
+                <div class="ss-menu-info">
+                  <div class="ss-menu-name">ลาเต้ดอยช้าง</div>
+                  <div class="ss-menu-price"><span class="baht">฿</span>65</div>
+                </div>
+              </div>
+              <div class="ss-menu-item">
+                <div class="ss-menu-img">
+                  <span class="ss-menu-tag">ขายดีที่สุด</span>
+                  🥐
+                </div>
+                <div class="ss-menu-info">
+                  <div class="ss-menu-name">ครัวซองต์เนยสด</div>
+                  <div class="ss-menu-price"><span class="baht">฿</span>55</div>
+                </div>
+              </div>
+              <div class="ss-menu-item">
+                <div class="ss-menu-img">🍰</div>
+                <div class="ss-menu-info">
+                  <div class="ss-menu-name">เค้กส้ม</div>
+                  <div class="ss-menu-price"><span class="baht">฿</span>85</div>
+                </div>
+              </div>
+              <div class="ss-menu-item">
+                <div class="ss-menu-img">🍩</div>
+                <div class="ss-menu-info">
+                  <div class="ss-menu-name">โดนัทช็อกโกแลต</div>
+                  <div class="ss-menu-price"><span class="baht">฿</span>45</div>
+                </div>
+              </div>
+            </div>
+
+            <!-- ===== Info · เปิด/ที่อยู่/ติดต่อ ===== -->
+            <div class="ss-section-h">ติดต่อร้าน</div>
+            <div class="ss-info">
+              <div class="ss-info-row">
+                <span class="ss-info-key">เปิด</span>
+                <span class="ss-info-val">7:00 – 18:00 ทุกวัน</span>
+              </div>
+              <div class="ss-info-row">
+                <span class="ss-info-key">ที่อยู่</span>
+                <span class="ss-info-val">นิมมาน เชียงใหม่</span>
+              </div>
+              <div class="ss-info-row">
+                <span class="ss-info-key">LINE</span>
+                <span class="ss-info-val">@mhee</span>
+              </div>
+            </div>
+
+            <!-- ===== Footer brand mark ===== -->
+            <div class="ss-footer">
+              <span>powered by </span><span class="accent">taemdee.</span>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
 
   </div>
 </section>
@@ -8556,7 +9803,7 @@
     <!-- Install sheet · Android variant (default with native install API) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Install</span>เพิ่มลงหน้าจอ · Android</div>
+        <div class="kicker"><span class="n">install.android</span>เพิ่มลงหน้าจอ · Android</div>
         <h3>เพิ่มผมลงหน้าจอพี่</h3>
         <p><strong>Trigger:</strong> <code>!isPWA && stamps >= 2</code> — auto-prompt หลังเก็บแต้มที่ 2 · <strong>Stage 1 ของ DeeReach push setup</strong>. Hero เน้น <strong>home screen mock-up</strong> ที่ TaemDee icon spotlit · Android Chrome: กด CTA → trigger <code>beforeinstallprompt</code> (native dialog)</p>
       </div>
@@ -8625,7 +9872,7 @@
     <!-- Install sheet · iOS variant (with instruction steps) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">Install.iOS</span>เพิ่มลงหน้าจอ · iPhone</div>
+        <div class="kicker"><span class="n">install.ios</span>เพิ่มลงหน้าจอ · iPhone</div>
         <h3>iOS Safari · มี step-by-step</h3>
         <p>หน้าเดียวกัน · เนื้อหาเปลี่ยนเมื่อ <code>userAgent.includes('iPhone')</code> · iOS Safari ไม่มี <code>beforeinstallprompt</code> API · ต้องสอนวิธี · sub เปลี่ยนเป็น "ทำตาม 2 ขั้น ↓" · เพิ่ม 2 step rows · CTA เปลี่ยนเป็น "เข้าใจแล้ว" สีดำ</p>
       </div>
@@ -8727,7 +9974,7 @@
   </svg>
   <h3>ครบ 23 หน้าจอลูกค้า <span class="accent">·</span> Design v1</h3>
   <p>
-    เริ่มจาก C2 (สแกนครั้งแรก) ผ่าน C3 (ยืนยันเบอร์) ใช้งานประจำที่ C1/C4/C5 จัดการบัตรที่ C7/C6 และเพิ่มลงหน้าจอด้วย bottom sheet — ทำเสร็จก่อนค่อยขยับไปฝั่งร้าน
+    เริ่มจาก C2 (สแกนครั้งแรก) ผ่าน verify.phone (ยืนยันเบอร์) ใช้งานประจำที่ shop.daily/reward.almost/reward.claim จัดการบัตรที่ cards.list/settings และเพิ่มลงหน้าจอด้วย bottom sheet — ทำเสร็จก่อนค่อยขยับไปฝั่งร้าน
   </p>
 </div>
 

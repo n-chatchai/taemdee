@@ -9,8 +9,8 @@ Last updated: 2026-04-25 · Spec: [PRODUCT.md](PRODUCT.md) · Deploy runbook: [R
 - ✅ All 22 designer screens ported into Jinja templates (Thai-first)
 - ✅ Customer flow: scan → first-stamp celebration → DeeCard → redeem → claim screen
 - ✅ Soft Wall + My Cards (claimed customer's cross-shop list)
-- ✅ Shop flow: phone-OTP/LINE login → onboarding → DeeBoard with SSE live feed → settings (team, branches, refer-a-shop) → QR print
-- ✅ Live SSE feed on DeeBoard with 60-sec [Void] window per row
+- ✅ Shop flow: phone-OTP/LINE login → onboarding → แดชบอร์ด with SSE live feed → settings (team, branches, refer-a-shop) → QR print
+- ✅ Live SSE feed on แดชบอร์ด with 60-sec [Void] window per row
 - ✅ Multi-staff with per-staff permissions
 - ✅ Multi-branch with reward-mode picker (locked at 2nd branch)
 - ✅ DeeReach: suggestion engine + send pipeline + credit deduction (R6a + R6b)
@@ -26,13 +26,13 @@ Last updated: 2026-04-25 · Spec: [PRODUCT.md](PRODUCT.md) · Deploy runbook: [R
 
 ### R1 — Shop login + onboarding
 
-**Demo:** open URL → sign up by phone or LINE → set shop name + reward → land on DeeBoard → download QR PDF.
+**Demo:** open URL → sign up by phone or LINE → set shop name + reward → land on แดชบอร์ด → download QR PDF.
 
 - [ ] Port S1 Login from `taemdee-final-thai.html` (replaces current register.html)
 - [ ] New `/shop/onboard` route + S2.1 template (shop name + reward)
 - [x] S2.2 logo — typography-based AI gen with regenerate (per PRD §6.E). Upload escape hatch still deferred.
 - [ ] Skip S2.3 theme picker for R1 — default theme used
-- [ ] Port S3 DeeBoard *minimal* — headline number, static feed from DB, DeeReach card as placeholder (no live updates yet)
+- [ ] Port S3 แดชบอร์ด *minimal* — headline number, static feed from DB, DeeReach card as placeholder (no live updates yet)
 - [ ] Port S8 Shop QR print page — add `segno` dep, render QR for `/scan/<shop_id>`
 - [ ] Extract designer CSS into `static/css/app.css`
 
@@ -45,7 +45,7 @@ Last updated: 2026-04-25 · Spec: [PRODUCT.md](PRODUCT.md) · Deploy runbook: [R
 
 ### R3 — Redemption + void
 
-**Demo:** customer taps Redeem at 10/10 → "Reward claimed!" → shop's DeeBoard live feed shows redemption with [Void] for 60 sec.
+**Demo:** customer taps Redeem at 10/10 → "Reward claimed!" → shop's แดชบอร์ด live feed shows redemption with [Void] for 60 sec.
 
 - [ ] Port C4 Redeem state (button on full DeeCard)
 - [ ] Port C5 Reward claimed
@@ -63,7 +63,7 @@ Last updated: 2026-04-25 · Spec: [PRODUCT.md](PRODUCT.md) · Deploy runbook: [R
 
 ### R5 — Multi-staff + branches
 
-**Demo:** invite a friend's phone as Void-only staff. Add a 2nd branch, pick reward mode, branch selector appears in DeeBoard.
+**Demo:** invite a friend's phone as Void-only staff. Add a 2nd branch, pick reward mode, branch selector appears in แดชบอร์ด.
 
 - [ ] Port S5 Issuance — 3 buttons + branch picker
 - [ ] Port S7 Top-up + confirm screens (UI only — Slip2Go integration is R7)
@@ -75,7 +75,7 @@ Last updated: 2026-04-25 · Spec: [PRODUCT.md](PRODUCT.md) · Deploy runbook: [R
 
 ### R6 — DeeReach (revenue) — partial ✅✅⬜
 
-**Demo (dev):** lapsed customers seed → DeeBoard shows suggestion cards → tap → "send" logged to journal → credits drop.
+**Demo (dev):** lapsed customers seed → แดชบอร์ด shows suggestion cards → tap → "send" logged to journal → credits drop.
 
 - [x] Model: `DeeReachCampaign`
 - [x] Suggestion engine — win-back, almost-there, unredeemed-reward

@@ -762,7 +762,7 @@ async def themes_save(
 
 @router.get("/events")
 async def shop_events(request: Request):
-    """Server-Sent Events stream for the DeeBoard's live feed.
+    """Server-Sent Events stream for the shop dashboard's live feed.
 
     DOES NOT use Depends(get_current_shop) — that pulls a yield-based
     DB session via Depends(get_session), which FastAPI keeps alive for

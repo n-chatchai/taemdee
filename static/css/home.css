@@ -1139,7 +1139,7 @@ img { max-width: 100%; }
 .hero-phone .wallet-card.featured .wc-num { color: var(--ink); }
 .hero-phone .wallet-card.featured .wc-num .of { color: var(--ink); opacity: 0.6; }
 
-/* DeeBoard preview screen (back phone — shop view) */
+/* Shop dashboard preview screen (back phone — shop view) */
 .hero-phone .screen-shop {
   background: var(--bg);
 }

@@ -10,7 +10,7 @@ Here is the best way to visualize and present the architecture to engineering an
 
 ```mermaid
 flowchart TD
-    subgraph DeeBoard [Shop Dashboard]
+    subgraph Dashboard [แดชบอร์ด · Shop Dashboard]
         S3[S3: Feed & Suggestions]
         Action[Shop Taps 'Yes']
     end
@@ -52,7 +52,7 @@ flowchart TD
    - Generates a pending `CampaignSuggestion` record for the shop.
 
 2. **Pricing Engine (Estimator)**
-   - When the shop loads DeeBoard, this engine evaluates the target segment for the suggestion.
+   - When the shop loads แดชบอร์ด, this engine evaluates the target segment for the suggestion.
    - It checks the `UserProfile` for each targeted customer.
    - **Logic:** `User.preferred_channel` ? Use it : Fallback to Waterfall (Web Push > LINE > SMS > Inbox).
    - Outputs a single aggregate `estimated_cost` to display on the `[Yes]` button.
@@ -86,7 +86,7 @@ sequenceDiagram
     participant Ext as External APIs
 
     Note over Shop, Backend: 1. Estimation Phase
-    Shop->>Backend: Loads DeeBoard
+    Shop->>Backend: Loads แดชบอร์ด
     Backend->>Backend: Pricing Engine calculates cost based on User Preferences
     Backend-->>Shop: Shows "Send to 10 users? [Yes · 12 Credits]"
 

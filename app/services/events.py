@@ -1,4 +1,4 @@
-"""Cross-worker event broker for live DeeBoard updates.
+"""Cross-worker event broker for live shop dashboard updates.
 
 Runs over Postgres LISTEN/NOTIFY so events fan out across all gunicorn
 workers. Each worker on startup:
@@ -177,7 +177,7 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
 
 
 def feed_row_html(kind: str, item_id: UUID, when_label: str, customer_name: str = "ลูกค้า") -> str:
-    """Render one feed row for the DeeBoard live feed (S3 dock) and SSE
+    """Render one feed row for the shop dashboard live feed (S3 dock) and SSE
     stream. Emits a `<tr class="feed-row">` carrying data-detail-url so a
     tap opens the S3.detail bottom sheet (where the void button lives now)."""
     label = '<span class="icon-mini">+</span><strong>1 แต้ม</strong>' if kind == "point" else "<strong>รับรางวัล</strong>"

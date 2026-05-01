@@ -550,7 +550,7 @@ body {
 }
 
 /* ==========================================================
-   S3 — DeeBoard home (most-used shop screen)
+   S3 — shop dashboard (most-used shop screen)
    ========================================================== */
 
 .s3-top {
@@ -8524,7 +8524,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .topup-soon-note[hidden] { display: none; }
 
 /* ==========================================================
-   Manual-issue FAB — one-tap walk-in stamp on the DeeBoard
+   Manual-issue FAB — one-tap walk-in stamp on the shop dashboard
    ========================================================== */
 
 .manual-fab {

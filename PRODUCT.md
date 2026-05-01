@@ -41,7 +41,7 @@ We earn only when a shop taps "Send" on an outbound, system-generated message we
 | Term | Meaning |
 |---|---|
 | **DeeCard™** | The customer's digital point card |
-| **DeeBoard™** | The shop's dashboard |
+| **แดชบอร์ด** | The shop's dashboard (formerly "DeeBoard™" — dropped the brand prefix in favour of the plain Thai term) |
 | **DeeReach™** | An outbound message the shop sends (win-back, birthday, new-product, almost-there) |
 
 ## 5. Screen Inventory (Route Identifiers)
@@ -75,7 +75,7 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 |---|---|---|
 | S1 | **Login** | Mobile OTP or LINE Login. |
 | S2 | **Onboarding** | Shop name + reward goal → logo → pick a theme → print QR. |
-| S3 | **DeeBoard home** | One big number + live notification feed + DeeReach suggestion cards. |
+| S3 | **แดชบอร์ด home** | One big number + live notification feed + DeeReach suggestion cards. |
 | S4 | **DeeReach suggestion card** | Inline in feed: one-tap outbound message approval. |
 | S5 | **Issuance** | Issuance methods (Customer Scans / Shop Scans / Phone Entry). |
 | S6 | **Point notification** | Guest ID + [Void] button. |
@@ -122,7 +122,7 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 
 ## 10. Monetization (DeeReach)
 
-TaemDee operates on a **freemium** model. The core loyalty engine (DeeCard, DeeBoard, point issuance, voiding, redemption, themes) is completely free for shops to use. 
+TaemDee operates on a **freemium** model. The core loyalty engine (DeeCard, แดชบอร์ด, point issuance, voiding, redemption, themes) is completely free for shops to use. 
 
 Our sole revenue stream is **DeeReach™** — outbound, system-generated marketing messages that shops send to their customers (e.g., win-back campaigns, birthday rewards, almost-there nudges). 
 
@@ -156,7 +156,7 @@ The platform routes messages based on the customer's **Preferred Channel**. If t
 
 **Critical UX requirement:** The shop owner must never be surprised by a cost, and they only pay for successful deliveries.
 
-When a DeeReach suggestion card appears on the DeeBoard, the system pre-calculates the maximum estimated cost.
+When a DeeReach suggestion card appears on the แดชบอร์ด, the system pre-calculates the maximum estimated cost.
 
 - **Example:** *"Send birthday wishes to 10 customers? [Yes · Est. 15 Credit]"*
   *(Calculation breakdown hidden from user: 5 on Web Push @ 0.5 + 3 on LINE @ 1.5 + 2 on SMS @ 4.0 = 15.0 Credits)*
@@ -173,7 +173,7 @@ To protect the platform's reputation and prevent customers from mass-blocking th
 
 | Feature | Status | Description |
 |---|---|---|
-| Analytics dashboards | Future | Currently, DeeBoard focuses on a single core metric. |
+| Analytics dashboards | Future | Currently, the แดชบอร์ด focuses on a single core metric. |
 | Advanced Offer Kinds | Future | `point_multiplier`, `free_reward`, `free_gift`, `discount` (requires more complex cashier UX). |
 | Customer Discovery | Future | System → Customer offers (DeeWelcome). |
 | Cross-Shop Wallet (DeePass) | Future | Customer → Customer offers and referrals. |

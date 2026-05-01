@@ -81,7 +81,7 @@ async def test_card_no_celebration_without_stamped_flag(named_client, shop):
 
 
 async def test_scan_publishes_feed_row_event(client, db, shop, monkeypatch):
-    """Scan publishes a feed-row event so the DeeBoard dock prepends a new row.
+    """Scan publishes a feed-row event so the shop dashboard dock prepends a new row.
     Tapping that row in the dock opens the S3.detail bottom sheet, which
     fetches /shop/feed/point/<id> for full activity meta + the void button."""
     from app.routes import customer as customer_routes
