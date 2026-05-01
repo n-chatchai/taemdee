@@ -1,0 +1,40 @@
+{# Customer-side base layout — extended by every page that ships the
+   c-dock + footer_mark chrome (C5 / C6* / C7 / C8 / C9 / Inbox / Gifts).
+
+   Child templates fill these blocks:
+     · {% block title %} ... {% endblock %}      page <title>
+     · {% block head_extra %} ... {% endblock %} extra <head> tags
+                                                 (Alpine, htmx scripts)
+     · {% block body_top %} ... {% endblock %}   top-of-body inline
+                                                 scripts (run before paint)
+     · {% block td_class %} ... {% endblock %}   extra .td classes (c5 etc.)
+     · {% block td_attrs %} ... {% endblock %}   extra attrs on .td root
+                                                 (Alpine x-data="{...}")
+     · {% block content %} ... {% endblock %}    page body
+     · {% block body_end %} ... {% endblock %}   inline scripts after dock
+
+   Set `nav_active` at the top of the child (outside any block) so
+   the included c_dock partial highlights the right tab. #}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}TaemDee แต้มดี{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  {% block body_top %}{% endblock %}
+  <div class="td has-c-dock{% block td_class %}{% endblock %}"{% block td_attrs %}{% endblock %}>
+    <div class="topbar"><span></span><span></span></div>
+    {% block content %}{% endblock %}
+    {% include "_partials/footer_mark.html" %}
+    {% include "_partials/c_dock.html" %}
+  </div>
+  {% block body_end %}{% endblock %}
+</body>
+</html>

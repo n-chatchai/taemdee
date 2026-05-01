@@ -1,79 +1,62 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ของขวัญของพี่ · TaemDee แต้มดี</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td has-c-dock">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/c_base.html" %}
+{% set nav_active = 'gifts' %}
+{% block title %}ของขวัญของพี่ · TaemDee แต้มดี{% endblock %}
 
-    <div class="page-head">
-      <div class="ph-text">
-        <h1>ของขวัญของพี่</h1>
-        <div class="ph-sub">ผมเก็บไว้ให้นะครับ ใช้เมื่อพร้อม</div>
-      </div>
+{% block content %}
+  <div class="page-head">
+    <div class="ph-text">
+      <h1>ของขวัญของพี่</h1>
+      <div class="ph-sub">ผมเก็บไว้ให้นะครับ ใช้เมื่อพร้อม</div>
     </div>
+  </div>
 
-    {% if active_gifts or used_gifts %}
-      {% if active_gifts %}
-        <div class="c-gifts-section">
-          <div class="c-gifts-label">
-            <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-            พร้อมใช้
+  {% if active_gifts or used_gifts %}
+    {% if active_gifts %}
+      <div class="c-gifts-section">
+        <div class="c-gifts-label">
+          <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+          พร้อมใช้
+        </div>
+        {% for g in active_gifts %}
+          <div class="gift-card">
+            <div class="gc-icon {{ g.icon_color or 'butter' }}">{{ g.emoji or '🎁' }}</div>
+            <div class="gc-info">
+              <div class="gc-name">{{ g.name }}</div>
+              <div class="gc-meta">{{ g.shop_name }}{% if g.expires_at %} · หมด {{ g.expires_at }}{% endif %}</div>
+            </div>
+            <a class="gc-cta" href="{{ g.use_url }}">ใช้</a>
           </div>
-          {% for g in active_gifts %}
-            <div class="gift-card">
-              <div class="gc-icon {{ g.icon_color or 'butter' }}">{{ g.emoji or '🎁' }}</div>
-              <div class="gc-info">
-                <div class="gc-name">{{ g.name }}</div>
-                <div class="gc-meta">{{ g.shop_name }}{% if g.expires_at %} · หมด {{ g.expires_at }}{% endif %}</div>
-              </div>
-              <a class="gc-cta" href="{{ g.use_url }}">ใช้</a>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-      {% if used_gifts %}
-        <div class="c-gifts-section last">
-          <div class="c-gifts-label muted">ใช้แล้ว</div>
-          {% for g in used_gifts %}
-            <div class="gift-card used">
-              <div class="gc-icon">{{ g.emoji or '🎁' }}</div>
-              <div class="gc-info">
-                <div class="gc-name">{{ g.name }}</div>
-                <div class="gc-meta">{{ g.shop_name }}{% if g.used_at %} · {{ g.used_at }}{% endif %}</div>
-              </div>
-            </div>
-          {% endfor %}
-        </div>
-      {% endif %}
-    {% else %}
-      <div class="inbox-empty">
-        <div class="ie-avatar">
-          <svg viewBox="0 0 100 100">
-            <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
-            <circle cx="36" cy="42" r="9" fill="#FFD952"/>
-            <circle cx="64" cy="42" r="9" fill="#FFD952"/>
-            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
-          </svg>
-        </div>
-        <div class="ie-msg">
-          <strong>ยังไม่มีของขวัญนะครับ</strong><br>
-          เก็บแต้มที่ร้านโปรดให้ครบ ผมจะเก็บของขวัญไว้ให้ที่นี่
-        </div>
+        {% endfor %}
       </div>
     {% endif %}
-
-    {% include "_partials/footer_mark.html" %}
-
-    {% set nav_active = 'gifts' %}
-    {% include "_partials/c_dock.html" %}
-  </div>
-</body>
-</html>
+    {% if used_gifts %}
+      <div class="c-gifts-section last">
+        <div class="c-gifts-label muted">ใช้แล้ว</div>
+        {% for g in used_gifts %}
+          <div class="gift-card used">
+            <div class="gc-icon">{{ g.emoji or '🎁' }}</div>
+            <div class="gc-info">
+              <div class="gc-name">{{ g.name }}</div>
+              <div class="gc-meta">{{ g.shop_name }}{% if g.used_at %} · {{ g.used_at }}{% endif %}</div>
+            </div>
+          </div>
+        {% endfor %}
+      </div>
+    {% endif %}
+  {% else %}
+    <div class="inbox-empty">
+      <div class="ie-avatar">
+        <svg viewBox="0 0 100 100">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+          <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+          <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="ie-msg">
+        <strong>ยังไม่มีของขวัญนะครับ</strong><br>
+        เก็บแต้มที่ร้านโปรดให้ครบ ผมจะเก็บของขวัญไว้ให้ที่นี่
+      </div>
+    </div>
+  {% endif %}
+{% endblock %}
