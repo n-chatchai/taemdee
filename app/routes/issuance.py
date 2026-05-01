@@ -193,7 +193,7 @@ async def issue_scan_grant(
         }
 
     try:
-        point = await issue_point(
+        point, _ = await issue_point(
             db, shop, customer,
             method="shop_scan",
             staff_id=staff.id if staff else None,
@@ -302,7 +302,7 @@ async def issue_grant_action(
     issued_ids = []
     for _ in range(points):
         try:
-            point = await issue_point(
+            point, _ = await issue_point(
                 db, shop, customer,
                 method="system",
                 staff_id=staff.id if staff else None,
@@ -374,7 +374,7 @@ async def staff_issue_point(
         )
 
     try:
-        point = await issue_point(
+        point, _ = await issue_point(
             db, shop, customer,
             method=method,
             branch_id=branch_id,
@@ -411,7 +411,7 @@ async def staff_issue_manual_point(
     await db.refresh(customer)
 
     try:
-        point = await issue_point(
+        point, _ = await issue_point(
             db, shop, customer,
             method="shop_scan",
             branch_id=branch_id,

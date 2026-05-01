@@ -5,15 +5,18 @@ cooldown). When > 0, a customer must wait that many minutes between stamps at
 the same shop. Geofence + pattern alerts are deferred.
 """
 
+import logging
 from datetime import timedelta
-from typing import Optional
+from typing import Optional, Tuple
 from uuid import UUID
 
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Customer, Shop, Point
+from app.models import Customer, Redemption, Shop, Point
 from app.models.util import utcnow
+
+log = logging.getLogger(__name__)
 
 VALID_METHODS = {"customer_scan", "shop_scan", "phone_entry", "system"}
 
@@ -47,11 +50,22 @@ async def issue_point(
     *,
     branch_id: Optional[UUID] = None,
     staff_id: Optional[UUID] = None,
-) -> Point:
-    """Issue a stamp. Enforces the per-shop scan cooldown.
+) -> Tuple[Point, Optional[Redemption]]:
+    """Issue a stamp; auto-redeem if it brings the customer to threshold.
 
     `method`: customer_scan | shop_scan | phone_entry | system.
     `system` bypasses the cooldown (bonus/birthday/admin stamps).
+
+    Returns `(stamp, redemption)`. `redemption` is None unless this stamp
+    pushed the customer's active count to ≥ `shop.reward_threshold` and the
+    inline `redeem()` call succeeded; if the redemption attempt hit a
+    RedemptionError (e.g. a transient race), the stamp is still committed
+    and the caller gets None — the next issuance attempt will retry.
+
+    Auto-redeem lives here (not in routes) so every issuance entry point —
+    customer scan, shop-side scan, phone entry, manual insert, DeeReach
+    bonus_stamp_count grants — is covered by a single source of truth. A
+    new caller can't accidentally skip the threshold check.
 
     Raises IssuanceError on cooldown violation or invalid branch context.
     """
@@ -80,7 +94,39 @@ async def issue_point(
     db.add(stamp)
     await db.commit()
     await db.refresh(stamp)
-    return stamp
+
+    redemption = await _maybe_auto_redeem(db, shop, customer, branch_id)
+    return stamp, redemption
+
+
+async def _maybe_auto_redeem(
+    db: AsyncSession,
+    shop: Shop,
+    customer: Customer,
+    branch_id: Optional[UUID],
+) -> Optional[Redemption]:
+    """Fire `redeem()` if the customer just crossed the threshold. Returns
+    None when there's nothing to redeem yet, or when the inline redeem
+    failed (logged for visibility — the next issuance retries)."""
+    # Local import to avoid a circular at module load time
+    # (services/redemption may import issuance helpers in the future).
+    from app.services.redemption import RedemptionError, active_point_count, redeem
+
+    scope_branch = branch_id if shop.reward_mode == "separate" else None
+    count = await active_point_count(db, shop.id, customer.id, scope_branch)
+    if count < shop.reward_threshold:
+        return None
+    try:
+        return await redeem(
+            db, shop, customer,
+            branch_id=branch_id if shop.reward_mode == "separate" else None,
+        )
+    except RedemptionError as e:
+        log.warning(
+            "auto-redeem failed for shop=%s customer=%s: %s",
+            shop.id, customer.id, e,
+        )
+        return None
 
 
 async def void_point(
