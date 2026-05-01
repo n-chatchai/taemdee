@@ -10658,7 +10658,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17,17,17,0.18);
   border-radius: 14px;
   padding: 14px 14px 12px;
-  margin: 0 20px 8px;
+  /* Match .s10-row's flush-left layout — the parent .s10-section
+     already provides the 20px horizontal inset, and a second 20px
+     margin here was making this card narrower than its neighbours. */
+  margin: 0 0 8px;
 }
 .s10-fontsize .fs-head {
   display: flex;
