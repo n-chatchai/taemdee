@@ -2,19 +2,22 @@
    / Inbox / Gifts. Caller passes `weekday_th` (so the route picks the
    timezone) and `customer` in context.
 
-   Optional: include a {% block ph_action %} or pass `gear_action=True`
-   to render the gear icon → /card/account in the right slot. Otherwise
-   the slot is empty (gifts page has no action). #}
+   `ph_action_kind` controls the icon row in the right slot:
+     'qr'      → just the QR-of-me button → /my-id
+     'gear'    → just the settings cog    → /card/account
+     'qr_gear' → both, QR first then gear (cards.list)
+   Anything else (or missing) leaves the slot empty (gifts page). #}
+{% set _ph_kinds = (ph_action_kind.split('_') if ph_action_kind else []) %}
 <div class="page-head">
   <div class="ph-text">
     <h1>
-      {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีครับพี่{{ customer.display_name }}{% else %}สวัสดีครับ{% endif %}
+      {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีพี่{{ customer.display_name }}{% else %}สวัสดีครับ{% endif %}
     </h1>
     <div class="ph-sub">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</div>
   </div>
-  {% if ph_action_kind %}
+  {% if _ph_kinds %}
     <div class="ph-actions">
-      {% if ph_action_kind == 'qr' %}
+      {% if 'qr' in _ph_kinds %}
         <a href="/my-id" class="ph-icon-btn" title="โชว์ QR ของพี่" aria-label="โชว์ QR">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -23,7 +26,8 @@
             <rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </a>
-      {% elif ph_action_kind == 'gear' %}
+      {% endif %}
+      {% if 'gear' in _ph_kinds %}
         {# Gear → C6 settings. Replaces the dock's old "ตั้งค่า" tab per
            the Apr 30 design (settings is no longer a top-level destination
            — gear in the page-head is the only way in). #}
