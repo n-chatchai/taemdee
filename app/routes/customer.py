@@ -410,15 +410,18 @@ async def view_card(
         )
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
-    # Anyone with display_name still NULL hasn't completed C2 onboarding —
-    # bounce them through the dedicated /onboard flow rather than rendering
-    # the card with a degraded inline nickname sheet on top.
-    if customer.display_name is None:
+    point_count = await active_point_count(db, shop.id, customer.id)
+    # Resume onboarding only if there's a Point waiting — i.e. the customer
+    # scanned the QR (got the stamp) but bailed before completing C2.1.
+    # Direct /card visits with no Point yet (PWA bookmark, typed URL) just
+    # render the empty card so they can scan to start — sending them to
+    # /onboard there would land them on /my-cards with zero cards because
+    # /onboard never issues stamps itself.
+    if customer.display_name is None and point_count > 0:
         response = RedirectResponse(url=f"/onboard/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
         if was_created:
             set_customer_cookie(response, customer.id)
         return response
-    point_count = await active_point_count(db, shop.id, customer.id)
     branch_obj = await _resolve_branch(db, shop.id, branch, customer.id)
 
     # First-visit detection: no redemptions yet AND only 1 active stamp.
@@ -656,14 +659,13 @@ async def scan(
         # Cooldown or other constraint — silently swallow; redirect lands on card.
         pass
 
-    # display_name still NULL → C2 onboarding flow (3-step welcome +
-    # reward preview + signup). Don't gate on just_stamped — a customer
-    # whose first stamp was swallowed by the cooldown still hasn't seen
-    # onboarding, and /card now bounces null display_names to /onboard
-    # anyway, so falling through here would just mean an extra hop.
-    # Returners with display_name set ("คุณลูกค้า" included) skip
-    # onboarding regardless.
-    if customer.display_name is None:
+    # First-ever stamp lands the customer in the C2 onboarding flow
+    # (3-step welcome + reward preview + signup). Gate on just_stamped:
+    # a cooldown'd re-scan from a customer who hasn't named themselves
+    # yet shouldn't reset them through onboarding when they likely
+    # already have stamps to view. Returners with display_name set
+    # ("คุณลูกค้า" included) skip onboarding regardless.
+    if just_stamped and customer.display_name is None:
         redirect_url = f"/onboard/{shop_id}"
         if branch_obj:
             redirect_url += f"?branch={branch_obj.id}"
