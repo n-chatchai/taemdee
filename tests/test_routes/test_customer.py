@@ -697,10 +697,17 @@ async def test_claim_phone_with_valid_otp(client, db, shop):
     assert response.json()["claimed"] is True
 
 
-async def test_account_anonymous_redirects_to_claim(client):
+async def test_account_renders_for_anonymous_guest(client):
+    """C6 used to bounce anonymous customers straight to /card/save, which
+    made the gear icon useless for guests — the controls they DO need
+    (text size, notifications) live on this screen regardless of claim
+    status. The page now renders for everyone, falling back to the
+    'ลูกค้าแต้มดี' placeholder when display_name is empty."""
     response = await client.get("/card/account", follow_redirects=False)
-    assert response.status_code == 303
-    assert response.headers["location"] == "/card/save"
+    assert response.status_code == 200
+    body = response.text
+    assert "บัญชีของพี่" in body
+    assert "ลูกค้าแต้มดี" in body  # the anon fallback display name
 
 
 async def test_account_renders_for_claimed_customer(client, db, shop):
@@ -736,10 +743,12 @@ async def test_account_logout_clears_cookie(client, db, shop):
     response = await client.post("/card/account/logout", follow_redirects=False)
     assert response.status_code == 303
     assert response.headers["location"] == "/"
-    # Logout clears the cookie — next /card/account should redirect to /card/save again
+    # Logout clears the cookie — the next /card/account spawns a fresh
+    # anon (no Customer row found for the cleared cookie) and renders
+    # the guest version of the page rather than redirecting elsewhere.
     follow = await client.get("/card/account", follow_redirects=False)
-    assert follow.status_code == 303
-    assert follow.headers["location"] == "/card/save"
+    assert follow.status_code == 200
+    assert "ลูกค้าแต้มดี" in follow.text
 
 
 # ---------------------------------------------------------------------------

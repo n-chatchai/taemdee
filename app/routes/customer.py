@@ -124,10 +124,13 @@ async def account_menu(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """C6 — customer account menu (profile, my-stuff, settings, logout, delete)."""
+    """C6 — customer account menu (profile, my-stuff, settings, logout, delete).
+    Anonymous customers see the same screen — the template degrades to "ลูกค้า
+    แต้มดี" without phone/LINE meta. Forcing them to /card/save instead made
+    the gear icon unusable for guests who hadn't signed up yet, even though
+    the only personal control they need (text size, notifications) lives
+    here regardless of claim status."""
     customer, _ = await find_or_create_customer(customer_cookie, db)
-    if customer.is_anonymous:
-        return RedirectResponse(url="/card/save", status_code=status.HTTP_303_SEE_OTHER)
 
     cards_count = (await db.exec(
         select(func.count(func.distinct(Point.shop_id)))
