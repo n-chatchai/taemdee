@@ -25,7 +25,10 @@
 {% block td_attrs %} x-data="{ armed: false }"{% endblock %}
 
 {% block content %}
-  {% set ph_action_kind = 'qr' %}
+  {# Falls back to the page_head default 'qr_gear' — design treats the
+     gear as part of the consistent dock-anchored chrome even on the
+     settings page itself (the icon links back to /card/account, no-op
+     when you're already here). #}
   {% include "_partials/page_head.html" %}
 
   {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
