@@ -1046,3 +1046,45 @@ async def test_link_snooze_endpoint_stamps_timestamp(client, db, shop):
     db.expire_all()
     customer = (await db.exec(select(Customer))).first()
     assert customer.last_link_prompt_snoozed_at is not None
+
+
+# ---------------------------------------------------------------------------
+# shop.story menu items — render the .ss-menu-grid when ShopMenuItem rows
+# exist for the shop.
+# ---------------------------------------------------------------------------
+
+
+async def test_shop_story_renders_menu_grid_when_items_exist(client, db, shop):
+    from app.models import ShopMenuItem
+
+    db.add_all([
+        ShopMenuItem(
+            shop_id=shop.id, name="ลาเต้ดอยช้าง", price=65,
+            emoji="☕", is_signature=True, sort_order=0,
+        ),
+        ShopMenuItem(
+            shop_id=shop.id, name="ครัวซองต์", price=55,
+            emoji="🥐", sort_order=1,
+        ),
+    ])
+    await db.commit()
+
+    body = (await client.get(f"/story/{shop.id}")).text
+    assert "เมนูเด็ด" in body
+    assert "ss-menu-grid" in body
+    assert "ลาเต้ดอยช้าง" in body
+    assert "ครัวซองต์" in body
+    # Price renders inside a .ss-menu-price block — ฿ and 65 are
+    # separated by a <span class="baht"> wrapper.
+    assert "฿" in body
+    assert ">65<" in body
+    # Signature flag → mint tag overlay
+    assert "ss-menu-tag" in body
+    assert "ขายดีที่สุด" in body
+
+
+async def test_shop_story_omits_menu_grid_when_empty(client, shop):
+    body = (await client.get(f"/story/{shop.id}")).text
+    assert "ss-menu-grid" not in body
+    # Section header only renders alongside the grid
+    assert "เมนูเด็ด" not in body

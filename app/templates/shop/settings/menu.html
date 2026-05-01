@@ -1,0 +1,116 @@
+{% extends "_layouts/s_base.html" %}
+{% block title %}เมนูเด็ด · {{ shop.name }} · TaemDee{% endblock %}
+
+{% block content %}
+  <div class="app-bar">
+    <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
+    <div class="title-mid">เมนูเด็ด</div>
+    <div class="placeholder"></div>
+  </div>
+
+  <div class="s2-q" style="padding: 12px 20px 16px;">
+    <div class="ask">เมนู<em>โปรดของลูกค้า.</em></div>
+    <div class="sub">ลูกค้าจะเห็นที่หน้า "ทำความรู้จัก" — ใส่ 4–6 อันที่ขายดีก็พอ</div>
+  </div>
+
+  {# Existing items list — each row has its own POST form for delete +
+     signature toggle. Inline forms keep this page JS-free; consistent
+     with the other shop settings pages. #}
+  <div style="padding: 0 20px;">
+    {% if items %}
+      {% for item in items %}
+        <div class="s10-row" style="background: var(--surface); border: 1px solid var(--line); border-radius: 14px; margin-bottom: 8px; padding: 12px 14px; display: flex; align-items: center; gap: 12px;">
+          <div style="width: 44px; height: 44px; background: var(--butter-soft); border-radius: 11px; display: flex; align-items: center; justify-content: center; font-size: 26px; flex-shrink: 0;">
+            {{ item.emoji or '🍽' }}
+          </div>
+          <div style="flex: 1; min-width: 0;">
+            <div style="font-family: 'Prompt', sans-serif; font-weight: 600; font-size: var(--text-sm); color: var(--ink); line-height: 1.25;">
+              {{ item.name }}
+              {% if item.is_signature %}
+                <span style="display: inline-block; margin-left: 6px; padding: 2px 8px; background: var(--mint-ink); color: #fff; border-radius: 99px; font-size: 9.5px; font-weight: 600;">ขายดีที่สุด</span>
+              {% endif %}
+            </div>
+            {% if item.price is not none %}
+              <div style="font-family: 'Host Grotesk', sans-serif; font-weight: 700; font-size: 13px; color: var(--ink-soft); margin-top: 2px;">฿{{ item.price }}</div>
+            {% endif %}
+          </div>
+          <form method="POST" action="/shop/settings/menu/{{ item.id }}/signature" style="margin: 0;">
+            <button type="submit" title="สลับ ขายดี" style="appearance: none; background: transparent; border: 1px solid var(--line); border-radius: 8px; padding: 6px 10px; font-size: 11px; color: var(--ink-soft); cursor: pointer; font-family: inherit;">
+              {% if item.is_signature %}เลิกเด่น{% else %}เด่น{% endif %}
+            </button>
+          </form>
+          <form method="POST" action="/shop/settings/menu/{{ item.id }}/delete" style="margin: 0;">
+            <button type="submit" title="ลบ" style="appearance: none; background: transparent; border: none; padding: 6px; cursor: pointer; color: var(--ink-softer);">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width: 16px; height: 16px;"><polyline points="3 6 5 6 21 6"/><path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6"/><path d="M10 11v6M14 11v6"/></svg>
+            </button>
+          </form>
+        </div>
+      {% endfor %}
+    {% else %}
+      <div style="padding: 18px; text-align: center; font-family: 'Prompt', sans-serif; font-style: italic; font-size: var(--text-xs); color: var(--ink-soft);">
+        ยังไม่มีเมนู — เพิ่มอันแรกข้างล่าง
+      </div>
+    {% endif %}
+  </div>
+
+  {# Add form — emoji palette is single-tap, name/price are simple
+     text. New items always append at the end (route bumps sort_order). #}
+  <form method="POST" action="/shop/settings/menu" style="padding: 18px 20px 0;">
+    <div style="font-family: 'Prompt', sans-serif; font-weight: 600; font-size: var(--text-sm); color: var(--ink); margin-bottom: 10px;">
+      เพิ่มเมนูใหม่
+    </div>
+
+    <div class="s2-field">
+      <label class="label" for="menu-name">ชื่อเมนู</label>
+      <input type="text" id="menu-name" name="name" required maxlength="60"
+             placeholder="เช่น ลาเต้ดอยช้าง"
+             class="s2-input" style="padding: 10px 12px;">
+    </div>
+
+    <div class="s2-field" style="margin-top: 14px;">
+      <label class="label" for="menu-price">ราคา (บาท)</label>
+      <input type="number" id="menu-price" name="price" min="0" max="100000"
+             placeholder="เช่น 65"
+             class="s2-input" style="padding: 10px 12px;">
+    </div>
+
+    {# Emoji palette — radio list, single-pick. Uses inline labels for
+       a tap-friendly grid. #}
+    <div class="s2-field" style="margin-top: 14px;">
+      <label class="label">รูปประกอบ</label>
+      <div style="display: flex; flex-wrap: wrap; gap: 6px; margin-top: 6px;">
+        {% for ch in emoji_palette %}
+          <label style="cursor: pointer;">
+            <input type="radio" name="emoji" value="{{ ch }}" style="position: absolute; opacity: 0; pointer-events: none;">
+            <span style="display: inline-flex; align-items: center; justify-content: center; width: 44px; height: 44px; border-radius: 12px; border: 1px solid var(--line); background: var(--surface); font-size: 24px; transition: transform 0.15s ease;">{{ ch }}</span>
+          </label>
+        {% endfor %}
+      </div>
+    </div>
+
+    <div class="s2-field" style="margin-top: 14px;">
+      <label style="display: flex; align-items: center; gap: 8px; cursor: pointer; font-family: 'Prompt', sans-serif; font-size: var(--text-sm);">
+        <input type="checkbox" name="is_signature" value="on">
+        ขายดีที่สุด · โชว์แท็ก mint บนการ์ด
+      </label>
+    </div>
+
+    <div class="s2-foot">
+      <button type="submit" class="next" style="flex: 1;">
+        <span>เพิ่มเมนู</span>
+        <span class="arrow">→</span>
+      </button>
+    </div>
+  </form>
+
+  <style>
+    /* Highlight selected emoji radio. */
+    label:has(input[type="radio"]:checked) > span {
+      border-color: var(--accent) !important;
+      background: var(--accent-soft) !important;
+      transform: scale(1.05);
+    }
+  </style>
+{% endblock %}

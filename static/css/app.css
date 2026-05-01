@@ -10197,6 +10197,83 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 500;
 }
 
+/* Menu — 2-col grid (Robinhood-style) of shop menu items. Each tile
+   is a 1:1 aspect-ratio gradient image area + name + price below.
+   `:nth-child` cycles four palette gradients so visiting a shop with
+   ≥4 items reads as variety even though all images are emoji. */
+.ss-menu-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr;
+  gap: 10px;
+  padding: 0 14px;
+}
+.ss-menu-item {
+  background: var(--surface);
+  border-radius: 16px;
+  overflow: hidden;
+  border: 1px solid var(--line);
+  position: relative;
+  display: flex;
+  flex-direction: column;
+}
+.ss-menu-img {
+  aspect-ratio: 1 / 1;
+  background: linear-gradient(135deg, #FFF7DA 0%, #FFE8B3 100%);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 56px;
+  line-height: 1;
+  position: relative;
+}
+.ss-menu-item:nth-child(4n+2) .ss-menu-img {
+  background: linear-gradient(135deg, #FFEDD8 0%, #FFD2A8 100%);
+}
+.ss-menu-item:nth-child(4n+3) .ss-menu-img {
+  background: linear-gradient(135deg, #FFE0E0 0%, #FFC2C2 100%);
+}
+.ss-menu-item:nth-child(4n+4) .ss-menu-img {
+  background: linear-gradient(135deg, #E8F5E0 0%, #C8E8B8 100%);
+}
+.ss-menu-tag {
+  position: absolute;
+  top: 8px;
+  left: 8px;
+  padding: 4px 10px;
+  background: var(--mint-ink);
+  color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-size: 9.5px;
+  font-weight: 600;
+  border-radius: 99px;
+  letter-spacing: 0.01em;
+  line-height: 1.2;
+  z-index: 1;
+}
+.ss-menu-info {
+  padding: 10px 12px 12px;
+}
+.ss-menu-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: var(--ink);
+  line-height: 1.25;
+  margin-bottom: 4px;
+}
+.ss-menu-price {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.ss-menu-price .baht {
+  color: var(--ink-soft);
+  font-weight: 500;
+  margin-right: 1px;
+}
+
 /* Info — key/value rows with dashed dividers */
 .ss-info {
   margin: 0 14px 24px;

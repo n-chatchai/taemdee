@@ -10,6 +10,7 @@ from app.models.point import Point
 from app.models.redemption import Redemption
 from app.models.shop import Shop
 from app.models.shop_item import ShopItem
+from app.models.shop_menu_item import ShopMenuItem
 from app.models.staff import StaffMember
 
 __all__ = [
@@ -28,6 +29,7 @@ __all__ = [
     "Referral",
     "Shop",
     "ShopItem",
+    "ShopMenuItem",
     "StaffMember",
     "TopupSlip",
 ]

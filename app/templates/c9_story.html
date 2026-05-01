@@ -97,6 +97,30 @@
     </div>
   {% endif %}
 
+  {# เมนูเด็ด — 2-col grid of shop menu items. Hidden if the owner
+     hasn't added any yet. #}
+  {% if menu_items %}
+    <div class="ss-section-h">เมนูเด็ด</div>
+    <div class="ss-menu-grid">
+      {% for item in menu_items %}
+        <div class="ss-menu-item">
+          <div class="ss-menu-img">
+            {% if item.is_signature %}
+              <span class="ss-menu-tag">ขายดีที่สุด</span>
+            {% endif %}
+            {{ item.emoji or '🍽' }}
+          </div>
+          <div class="ss-menu-info">
+            <div class="ss-menu-name">{{ item.name }}</div>
+            {% if item.price is not none %}
+              <div class="ss-menu-price"><span class="baht">฿</span>{{ item.price }}</div>
+            {% endif %}
+          </div>
+        </div>
+      {% endfor %}
+    </div>
+  {% endif %}
+
   {# ติดต่อร้าน — render only the rows that have data so an empty
      contact section doesn't appear on every shop. #}
   {% set has_phone = shop.shop_phone %}

@@ -681,6 +681,16 @@ async def shop_story(
     address_parts = [p for p in (shop.district, shop.location) if p]
     shop_address = " · ".join(address_parts) if address_parts else None
 
+    # เมนูเด็ด — surface up to 6 items, sort_order asc. Owner manages
+    # the list at /shop/settings/menu.
+    from app.models import ShopMenuItem
+    menu_items = (await db.exec(
+        select(ShopMenuItem)
+        .where(ShopMenuItem.shop_id == shop.id)
+        .order_by(ShopMenuItem.sort_order, ShopMenuItem.created_at)
+        .limit(6)
+    )).all()
+
     response = templates.TemplateResponse(
         request=request,
         name="c9_story.html",
@@ -692,6 +702,7 @@ async def shop_story(
             "points_block": points_block,
             "open_status": open_status,
             "shop_address": shop_address,
+            "menu_items": list(menu_items),
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
         },
     )

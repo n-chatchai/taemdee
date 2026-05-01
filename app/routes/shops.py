@@ -1,4 +1,5 @@
 import io
+import uuid
 from datetime import timedelta, timezone
 from typing import Optional
 
@@ -707,11 +708,17 @@ async def settings_page(
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
+    from app.models import ShopMenuItem
     await db.refresh(shop, ["branches"])
+    menu_count = (await db.exec(
+        select(func.count())
+        .select_from(ShopMenuItem)
+        .where(ShopMenuItem.shop_id == shop.id)
+    )).one()
     return templates.TemplateResponse(
         request=request,
         name="shop/settings.html",
-        context={"shop": shop},
+        context={"shop": shop, "menu_count": menu_count},
     )
 
 
@@ -1172,6 +1179,122 @@ async def settings_story_post(
     db.add(shop)
     await db.commit()
     return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
+
+
+# Menu emoji palette — small curated set so the form stays a one-tap
+# picker. Aligned with Thai SME categories (food, drink, dessert).
+_MENU_EMOJI_PALETTE = (
+    "☕", "🍵", "🧋", "🥐",
+    "🍰", "🍩", "🍞", "🥗",
+    "🍜", "🍚", "🍕", "🌮",
+    "🍔", "🍦", "🍪", "🥟",
+)
+
+
+@router.get("/settings/menu", response_class=HTMLResponse)
+async def settings_menu_get(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """S10.menu — owner editor for เมนูเด็ด. Lists existing items in
+    sort_order, plus a single add form. Edit/delete are inline POST
+    forms per row (consistent with the other shop settings pages —
+    no JS-driven CRUD)."""
+    from app.models import ShopMenuItem
+    rows = (await db.exec(
+        select(ShopMenuItem)
+        .where(ShopMenuItem.shop_id == shop.id)
+        .order_by(ShopMenuItem.sort_order, ShopMenuItem.created_at)
+    )).all()
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/settings/menu.html",
+        context={
+            "shop": shop,
+            "items": list(rows),
+            "emoji_palette": _MENU_EMOJI_PALETTE,
+        },
+    )
+
+
+@router.post("/settings/menu")
+async def settings_menu_create(
+    name: str = Form(...),
+    price: Optional[str] = Form(None),
+    emoji: Optional[str] = Form(None),
+    is_signature: Optional[str] = Form(None),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Add a new menu item. New items append at the end (sort_order =
+    max + 1) so the form stays a single bottom add — no drag-to-reorder
+    yet."""
+    from app.models import ShopMenuItem
+    name = (name or "").strip()
+    if not name:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "ชื่อเมนูห้ามว่าง")
+    parsed_price: Optional[int] = None
+    if price and (s := price.strip()):
+        try:
+            parsed_price = max(0, int(s))
+        except ValueError:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "ราคาต้องเป็นตัวเลข")
+    next_order = (await db.exec(
+        select(func.coalesce(func.max(ShopMenuItem.sort_order), -1) + 1)
+        .where(ShopMenuItem.shop_id == shop.id)
+    )).one()
+    item = ShopMenuItem(
+        shop_id=shop.id,
+        name=name,
+        price=parsed_price,
+        emoji=(emoji or "").strip() or None,
+        is_signature=is_signature == "on",
+        sort_order=int(next_order),
+    )
+    db.add(item)
+    await db.commit()
+    return RedirectResponse(
+        url="/shop/settings/menu", status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.post("/settings/menu/{item_id}/delete")
+async def settings_menu_delete(
+    item_id: uuid.UUID,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    from app.models import ShopMenuItem
+    item = await db.get(ShopMenuItem, item_id)
+    if not item or item.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบเมนูนี้")
+    await db.delete(item)
+    await db.commit()
+    return RedirectResponse(
+        url="/shop/settings/menu", status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.post("/settings/menu/{item_id}/signature")
+async def settings_menu_toggle_signature(
+    item_id: uuid.UUID,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Flip is_signature for one item. The "ขายดีที่สุด" tag in
+    shop.story has no per-shop limit yet — the design just paints the
+    overlay on whichever items are flagged."""
+    from app.models import ShopMenuItem
+    item = await db.get(ShopMenuItem, item_id)
+    if not item or item.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบเมนูนี้")
+    item.is_signature = not item.is_signature
+    db.add(item)
+    await db.commit()
+    return RedirectResponse(
+        url="/shop/settings/menu", status_code=status.HTTP_303_SEE_OTHER,
+    )
 
 
 @router.get("/refer", response_class=HTMLResponse)
