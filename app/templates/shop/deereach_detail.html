@@ -1,19 +1,11 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ suggestion.label }} · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
-  {# Alpine state lives in a <script> block instead of inline x-data so
-     the audience map + Thai message text can include double-quote
-     characters without breaking the surrounding x-data="..." attribute. #}
+{% extends "_layouts/s_base.html" %}
+{% block title %}{{ suggestion.label }} · {{ shop.name }} · TaemDee{% endblock %}
+
+{% block td_attrs %}
+  x-data="deereachEditorState()"
+{% endblock %}
+
+{% block body_end %}
   <script>
     function deereachEditorState() {
       const defaultMessage = {{ message|tojson }};
@@ -23,10 +15,6 @@
         {% for c in audience %}{{ c.id|string|tojson }}{% if not loop.last %},{% endif %}
         {% endfor %}
       ];
-      // Per-customer name + phone for the search filter, keyed by id.
-      // Lives inside the <script> so JSON's double quotes don't have to
-      // survive HTML-attribute escaping (the previous inline approach
-      // tripped Alpine on Thai display names).
       const customerMeta = {
         {% for c in audience %}{{ c.id|string|tojson }}: {
           name: {{ (c.display_name or '')|tojson }},
@@ -44,7 +32,6 @@
         countSelected() {
           return Object.values(this.selected).filter(Boolean).length;
         },
-        // Sum of per-customer satang costs across only the ticked rows.
         costSatang() {
           let s = 0;
           for (const [id, on] of Object.entries(this.selected)) {
@@ -52,7 +39,6 @@
           }
           return s;
         },
-        // Display credits with one decimal — 1 Cr = 100 satang.
         costCredits() {
           return (this.costSatang() / 100).toFixed(1).replace(/\.0$/, '');
         },
@@ -66,9 +52,6 @@
         canAfford() {
           return this.costSatang() <= this.balanceSatang;
         },
-        // Toggle every audience id between on and off — basis is the
-        // "is anyone currently selected?" check, so the button reads
-        // "ปลดทั้งหมด" when ≥1 is on and "เลือกทั้งหมด" when all are off.
         allOn() {
           return this.countSelected() === audienceIds.length;
         },
@@ -76,10 +59,6 @@
           const target = !this.allOn();
           for (const id of audienceIds) this.selected[id] = target;
         },
-        // Substring match on display name OR phone — used by the row's
-        // x-show so search hides non-matching rows but keeps their
-        // selected state (untick a row, search, untick another, clear
-        // search → both stay unchecked).
         matchesSearchById(id) {
           if (!this.searchQuery) return true;
           const q = this.searchQuery.toLowerCase();
@@ -93,130 +72,116 @@
       };
     }
   </script>
-  <div class="td" x-data="deereachEditorState()">
-    <div class="topbar"><span></span><span></span></div>
+{% endblock %}
 
-    <div class="app-bar">
-      <a href="/shop/deereach" class="x" aria-label="ย้อนกลับ">←</a>
-      <div class="title-mid">{{ suggestion.label }}</div>
-      <div class="placeholder"></div>
+{% block content %}
+  <div class="app-bar">
+    <a href="/shop/deereach" class="x" aria-label="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
+    <div class="title-mid">{{ suggestion.label }}</div>
+    <div class="placeholder"></div>
+  </div>
+
+  <div class="s13d-section">
+    <div class="s13d-h">
+      <span class="s13d-title">ลูกค้าที่เลือก</span>
+      <span class="s13d-count" x-text="countSelected() + ' / {{ audience_total }}'"></span>
+      <button type="button" class="s13d-opt" @click="toggleAll()"
+              x-text="allOn() ? 'ปลดทั้งหมด' : 'เลือกทั้งหมด'"></button>
     </div>
 
-    <div class="s13d-section">
-      <div class="s13d-h">
-        <span class="s13d-title">ลูกค้าที่เลือก</span>
-        <span class="s13d-count"
-              x-text="countSelected() + ' / {{ audience_total }}'"></span>
+    <div class="s13d-search-row">
+      <div class="s13d-search">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+        <input type="text" x-model="searchQuery" placeholder="ค้นจากชื่อหรือเบอร์โทร">
       </div>
+    </div>
 
-      <div class="s13d-toolbar">
-        <input type="search" class="s13d-search"
-               x-model="searchQuery"
-               placeholder="ค้นชื่อหรือเบอร์...">
-        <button type="button" class="s13d-select-all"
-                @click="toggleAll()"
-                x-text="allOn() ? 'ปลดทั้งหมด' : 'เลือกทั้งหมด'"></button>
-      </div>
-
-      <div class="s13d-customers">
-        {% for c in audience %}
-          {% set ch = audience_channels[c.id|string] %}
-          <div class="customer-row"
-               x-show="matchesSearchById('{{ c.id }}')"
-               :class="{ off: !selected['{{ c.id }}'] }"
-               @click="selected['{{ c.id }}'] = !selected['{{ c.id }}']">
-            <div class="cr-check"
-                 :class="{ on: selected['{{ c.id }}'] }"
-                 x-text="selected['{{ c.id }}'] ? '✓' : '○'"></div>
-            <div class="cr-avatar">{{ (c.display_name[0] if c.display_name else '?')|upper }}</div>
-            <div class="cr-info">
-              <div class="cr-name">{{ c.display_name or 'ลูกค้า' }}</div>
-              {# Channel badges — every channel rendered; the waterfall-
-                 chosen one wears .active, available-but-not-chosen wear
-                 .available, unsubscribed wear .unavailable (dim). #}
-              <div class="cr-channels">
-                {% for ch_id, ch_label, ch_cost in [
-                  ('web_push', 'Web Push', '0.5'),
-                  ('line', 'LINE', '1'),
-                  ('sms', 'SMS', '3'),
-                ] %}
-                  <span class="ch-badge
-                    {%- if ch.chosen == ch_id %} active
-                    {%- elif ch.available[ch_id] %} available
-                    {%- else %} unavailable{% endif %}">
-                    {{ ch_label }} <em>{{ ch_cost }}</em>
-                  </span>
-                {% endfor %}
-              </div>
+    <div class="s13d-customers">
+      {% for c in audience %}
+        {% set ch = audience_channels[c.id|string] %}
+        <div class="customer-row"
+             x-show="matchesSearchById('{{ c.id }}')"
+             :class="{ off: !selected['{{ c.id }}'] }"
+             @click="selected['{{ c.id }}'] = !selected['{{ c.id }}']">
+          <div class="cr-check" :class="{ on: selected['{{ c.id }}'] }">
+            <template x-if="selected['{{ c.id }}']"><span>✓</span></template>
+            <template x-if="!selected['{{ c.id }}']"><span></span></template>
+          </div>
+          <div class="cr-avatar">{{ (c.display_name[0] if c.display_name else '?')|upper }}</div>
+          <div class="cr-info">
+            <div class="cr-name">{{ c.display_name or 'ลูกค้า' }}</div>
+            <div class="cr-channels">
+              {% for ch_id, ch_label, ch_cost in [
+                ('web_push', 'Web Push', '0.5'),
+                ('line', 'LINE', '1'),
+                ('sms', 'SMS', '3'),
+              ] %}
+                <span class="ch-badge
+                  {%- if ch.chosen == ch_id %} active
+                  {%- elif ch.available[ch_id] %} available
+                  {%- else %} unavailable{% endif %}">
+                  {{ ch_label }} <em>{{ ch_cost }}</em>
+                </span>
+              {% endfor %}
             </div>
           </div>
-        {% endfor %}
-        {% if audience_total == 0 %}
-          <div class="s13d-empty">{{ suggestion.body }}</div>
-        {% elif audience_total > audience|length %}
-          <div class="customer-more">+ อีก {{ audience_total - audience|length }} คน · ส่งเลย / แก้ใน v2</div>
-        {% endif %}
-      </div>
+        </div>
+      {% endfor %}
+      {% if audience_total == 0 %}
+        <div class="s13d-empty">{{ suggestion.body }}</div>
+      {% elif audience_total > audience|length %}
+        <div class="customer-more">+ อีก {{ audience_total - audience|length }} คน · ส่งเลย / แก้ใน v2</div>
+      {% endif %}
     </div>
-
-    <div class="s13d-section">
-      <div class="s13d-h">
-        <span class="s13d-title">ข้อความ</span>
-        <span class="s13d-edit" @click="resetMessage()"
-              title="คืนค่าข้อความเริ่มต้น">รีเซ็ต</span>
-      </div>
-      <textarea class="s13d-message s13d-message-edit"
-                x-model="message"
-                rows="4"
-                maxlength="500"
-                placeholder="พิมพ์ข้อความที่อยากส่งให้ลูกค้า..."></textarea>
-      <div class="s13d-msg-count" x-text="message.length + ' / 500 ตัวอักษร'"></div>
-    </div>
-
-    <div class="s13d-section">
-      <div class="s13d-h">
-        <span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span>
-      </div>
-      <div class="s13d-preview">
-        <div class="prev-line" x-text="message || 'ใส่ข้อความเพื่อดูตัวอย่าง'"></div>
-      </div>
-    </div>
-
-    <div class="s13d-shortfall" x-show="!canAfford() && countSelected() > 0" x-cloak>
-      เครดิตไม่พอ — ต้องการ <strong x-text="costCredits()"></strong> Cr
-      มี <strong x-text="balanceCredits()"></strong> Cr ·
-      ขาดอีก <strong x-text="shortfallCredits()"></strong> Cr
-      <a href="/shop/topup" class="s13d-shortfall-cta">เติมเครดิต →</a>
-    </div>
-
-    <form method="POST" action="/shop/deereach/send"
-          @submit.prevent="
-            const fd = new FormData();
-            fd.append('kind', '{{ suggestion.kind }}');
-            fd.append('message', message);
-            for (const [cid, on] of Object.entries(selected)) {
-              if (on) fd.append('customer_ids', cid);
-            }
-            const r = await fetch('/shop/deereach/send', { method: 'POST', body: fd, redirect: 'manual' });
-            if (r.type === 'opaqueredirect' || r.ok) {
-              window.location.href = r.url || ('/shop/deereach/sent?campaign_id=__redirect__');
-            } else {
-              const j = await r.json().catch(() => ({}));
-              flash = j.detail || (r.status + ' — ส่งไม่สำเร็จ');
-            }
-          ">
-      <input type="hidden" name="kind" value="{{ suggestion.kind }}">
-      <button class="s13d-send" type="submit"
-              :disabled="!message.trim() || countSelected() === 0 || !canAfford()">
-        <span x-text="'ส่งให้ ' + countSelected() + ' คน'"></span>
-        <span class="s13d-cost" x-text="costCredits() + ' เครดิต'"></span>
-      </button>
-    </form>
-
-    <div class="dash-flash is-error" x-show="flash" x-cloak x-text="flash"
-         style="margin: 12px 20px 0;"></div>
-
-    {% include "_partials/footer_mark.html" %}
   </div>
-</body>
-</html>
+
+  <div class="s13d-section">
+    <div class="s13d-h">
+      <span class="s13d-title">ข้อความ</span>
+      <span class="s13d-edit" @click="resetMessage()" title="คืนค่าข้อความเริ่มต้น">รีเซ็ต</span>
+    </div>
+    <textarea class="s13d-message" x-model="message" rows="4" maxlength="500" placeholder="พิมพ์ข้อความที่อยากส่งให้ลูกค้า..."></textarea>
+    <div class="s13d-vars">
+      <div class="var-chip" @click="message += '{name}'">ชื่อลูกค้า</div>
+      <div class="var-chip" @click="message += '{points}'">แต้มสะสม</div>
+    </div>
+  </div>
+
+  <div class="s13d-section">
+    <div class="s13d-h"><span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span></div>
+    <div class="s13d-preview">
+      <div class="prev-line" x-text="message || 'ใส่ข้อความเพื่อดูตัวอย่าง'"></div>
+    </div>
+  </div>
+
+  <div class="s13d-shortfall" x-show="!canAfford() && countSelected() > 0" x-cloak>
+    เครดิตไม่พอ — ต้องการ <strong x-text="costCredits()"></strong> Cr มี <strong x-text="balanceCredits()"></strong> Cr
+    <a href="/shop/topup" class="s13d-shortfall-cta">เติมเงิน →</a>
+  </div>
+
+  <form method="POST" action="/shop/deereach/send"
+        @submit.prevent="
+          const fd = new FormData();
+          fd.append('kind', '{{ suggestion.kind }}');
+          fd.append('message', message);
+          for (const [cid, on] of Object.entries(selected)) {
+            if (on) fd.append('customer_ids', cid);
+          }
+          const r = await fetch('/shop/deereach/send', { method: 'POST', body: fd, redirect: 'manual' });
+          if (r.type === 'opaqueredirect' || r.ok) {
+            window.location.href = r.url || ('/shop/deereach/sent?campaign_id=__redirect__');
+          } else {
+            const j = await r.json().catch(() => ({}));
+            flash = j.detail || (r.status + ' — ส่งไม่สำเร็จ');
+          }
+        ">
+    <button class="s13d-send" type="submit" :disabled="!message.trim() || countSelected() === 0 || !canAfford()">
+      <span x-text="'ส่งให้ ' + countSelected() + ' คน'"></span>
+      <span class="s13d-cost" x-text="costCredits() + ' เครดิต'"></span>
+    </button>
+  </form>
+
+  <div class="dash-flash is-error" x-show="flash" x-cloak x-text="flash" style="margin: 12px 20px 0;"></div>
+{% endblock %}

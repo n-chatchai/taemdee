@@ -1,48 +1,42 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>รางวัล · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
-  {% set picked_image = shop.reward_image or 'coffee_cup' %}
-  <form method="POST" action="/shop/reward" class="td"
-        x-data="{
-          rewardImage: '{{ picked_image }}',
-          goal: {{ shop.reward_threshold }},
-          customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }},
-          isUploading: false,
-          customRewardUrl: '{{ shop.reward_image if shop.reward_image.startswith('http') else '' }}',
-          async handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            this.isUploading = true;
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-              const res = await fetch('/shop/upload/reward', { method: 'POST', body: formData });
-              const data = await res.json();
-              if (data.url) {
-                this.customRewardUrl = data.url;
-                this.rewardImage = data.url;
-              }
-            } catch (err) {
-              console.error('Upload failed', err);
-            } finally {
-              this.isUploading = false;
-            }
-          }
-        }">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}รางวัล · {{ shop.name }} · TaemDee{% endblock %}
 
+{% block td_attrs %}
+  {% set picked_image = shop.reward_image or 'coffee_cup' %}
+  x-data="{
+    rewardImage: '{{ picked_image }}',
+    goal: {{ shop.reward_threshold }},
+    customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }},
+    isUploading: false,
+    customRewardUrl: '{{ shop.reward_image if shop.reward_image.startswith('http') else '' }}',
+    async handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      this.isUploading = true;
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/shop/upload/reward', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.url) {
+          this.customRewardUrl = data.url;
+          this.rewardImage = data.url;
+        }
+      } catch (err) {
+        console.error('Upload failed', err);
+      } finally {
+        this.isUploading = false;
+      }
+    }
+  }"
+{% endblock %}
+
+{% block content %}
+  <form method="POST" action="/shop/reward">
     <div class="app-bar">
-      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">←</a>
+      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
       <div class="title-mid">รางวัล</div>
       <div class="placeholder"></div>
     </div>
@@ -52,19 +46,18 @@
       <div class="sub">ลูกค้าได้อะไรเมื่อสะสมครบ</div>
     </div>
 
-    <div class="s2-field">
-      <label class="label" for="reward-desc">รางวัลที่ลูกค้าจะได้รับ</label>
-      <input id="reward-desc" name="reward_description" type="text" required
+    <div class="s2-field" style="padding: 0 20px;">
+      <div class="s2-label">รางวัลที่ลูกค้าจะได้รับ</div>
+      <input class="s2-input" id="reward-desc" name="reward_description" type="text" required
              value="{% if shop.reward_description != 'Free Coffee' %}{{ shop.reward_description }}{% endif %}"
-             placeholder="เช่น กาแฟ Signature ฟรี 1 แก้ว"
-             style="width:100%;padding:14px 16px;border-radius:14px;border:1.5px solid var(--ink);background:var(--surface);box-shadow:2px 2px 0 var(--ink);font:inherit;font-weight:600;font-size:16px;letter-spacing:-0.01em;color:var(--ink);">
+             placeholder="เช่น กาแฟ Signature ฟรี 1 แก้ว">
     </div>
 
-    <div class="s2-field" style="margin-top:14px;">
-      <div class="label">รูปรางวัล</div>
+    <div class="s2-field" style="margin-top:18px; padding: 0 20px;">
+      <div class="s2-label">รูปรางวัล</div>
     </div>
 
-    <div class="s2-rewards">
+    <div class="s2-rewards" style="padding: 0 20px; margin-top:8px;">
       {% for img_id in reward_images %}
         <button type="button" class="s2-reward" :class="{ selected: rewardImage === '{{ img_id }}' }" @click="rewardImage = '{{ img_id }}'">
           {% include "_partials/reward_svg.html" %}
@@ -75,7 +68,7 @@
     <div class="s2-upload" @click="$refs.rewardFileInput.click()" :class="{ uploading: isUploading }" style="margin: 12px 20px 0;">
       <input type="file" x-ref="rewardFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
       <template x-if="!isUploading">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="17 8 12 3 7 8"/>
           <line x1="12" y1="3" x2="12" y2="15"/>
@@ -90,19 +83,17 @@
     </div>
 
     <template x-if="customRewardUrl">
-      <div class="s2-rewards" style="margin-top: 10px;">
-        <button type="button" class="s2-reward"
-                :class="{ selected: rewardImage === customRewardUrl }"
-                @click="rewardImage = customRewardUrl">
+      <div class="s2-rewards" style="margin-top: 10px; padding: 0 20px;">
+        <button type="button" class="s2-reward" :class="{ selected: rewardImage === customRewardUrl }" @click="rewardImage = customRewardUrl">
           <img :src="customRewardUrl" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
         </button>
       </div>
     </template>
 
-    <div class="s2-field" style="margin-top:18px;">
-      <div class="label">เก็บกี่แต้มถึงได้รางวัล</div>
+    <div class="s2-field" style="margin-top:22px; padding: 0 20px;">
+      <div class="s2-label">เก็บกี่แต้มถึงได้รางวัล</div>
     </div>
-    <div class="s2-goal-pills">
+    <div class="s2-goal-pills" style="padding: 0 20px; margin-top:8px;">
       {% for g in goals %}
         <button type="button" class="s2-goal-pill" :class="{ selected: goal === {{ g }} && !customOpen }" @click="goal = {{ g }}; customOpen = false">{{ g }}</button>
       {% endfor %}
@@ -112,23 +103,18 @@
       </button>
     </div>
     <div x-show="customOpen" x-cloak style="margin: 10px 20px 0;">
-      <input type="number" min="1" max="99" x-model.number="goal"
-             placeholder="จำนวนแต้ม"
-             style="width:100%;padding:12px 14px;border-radius:12px;border:1.5px dashed var(--ink);background:var(--surface);font:inherit;font-weight:600;font-size:14px;text-align:center;">
+      <input class="s2-input" type="number" min="1" max="99" x-model.number="goal" placeholder="จำนวนแต้ม" style="text-align:center;">
     </div>
-    <div class="s2-hint" style="margin: 8px 24px 0;">ส่วนใหญ่ใช้ 10 แต้ม กำลังพอดี</div>
+    <div class="s2-hint" style="margin: 8px 24px 0; font-size:11px; color:var(--ink-soft);">ส่วนใหญ่ใช้ 10 แต้ม กำลังพอดี</div>
 
     <input type="hidden" name="reward_image" :value="rewardImage">
     <input type="hidden" name="reward_threshold" :value="goal">
 
-    <div class="s2-foot">
-      <button type="submit" class="next" style="flex:1;">
-        <span>บันทึก</span>
+    <div class="s2-foot" style="padding: 20px;">
+      <button type="submit" class="s2-cta-final" style="width:100%;">
+        <span>บันทึกรางวัล</span>
         <span class="arrow">✓</span>
       </button>
     </div>
-
-    {% include "_partials/footer_mark.html" %}
   </form>
-</body>
-</html>
+{% endblock %}

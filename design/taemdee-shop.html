@@ -1631,12 +1631,101 @@
     gap: 3px;
     box-shadow: none;
   }
+  /* S3.issue · 4 buttons (lookup all 4 issue methods) */
+  .s3-issue-actions .sap-actions {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 8px;
+  }
+  .s3-issue-actions .sap-action {
+    padding: 14px 8px;
+  }
+  .s3-issue-actions .sap-action svg {
+    width: 22px; height: 22px;
+  }
+  .s3-issue-actions .sap-action span {
+    font-size: 13px;
+  }
   .s3-action-panel .sap-action svg, .s3-dock .sap-action svg, .s3-issue-actions .sap-action svg {
     width: 16px; height: 16px;
   }
   .s3-action-panel .sap-action span, .s3-dock .sap-action span, .s3-issue-actions .sap-action span {
     font-family: 'Prompt', sans-serif;
     font-weight: 700; font-size: 12px;
+  }
+
+  /* ========================================================== */
+  /* S3.qr — Dynamic QR display (ลูกค้าสแกน)                    */
+  /* ========================================================== */
+  .s3-qr-page {
+    display: flex;
+    flex-direction: column;
+    min-height: 100%;
+  }
+  .s3-qr-stage {
+    padding: 0 20px 20px;
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+  }
+  .s3-qr-helper {
+    text-align: center;
+    margin-bottom: 18px;
+  }
+  .s3-qr-helper .qh-title {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 17px;
+    color: var(--ink);
+    line-height: 1.4;
+  }
+  .s3-qr-helper .qh-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+  .s3-qr-card {
+    background: var(--surface);
+    border: 1.5px solid rgba(17,17,17,0.18);
+    border-radius: 22px;
+    padding: 24px 24px 18px;
+    text-align: center;
+  }
+  .s3-qr-svg {
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 240px;
+    margin: 0 auto 14px;
+    display: block;
+    position: relative;
+  }
+  .s3-qr-shop-name {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 20px;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+  }
+  .s3-qr-shop-name .dot { color: var(--accent); }
+  .s3-qr-countdown {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+    margin-top: 6px;
+  }
+  .s3-qr-countdown strong {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .s3-qr-foot {
+    text-align: center;
+    margin-top: 14px;
+    padding: 0 20px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
   }
 
   /* ========================================================== */
@@ -3801,6 +3890,452 @@
     color: var(--ink-soft);
     line-height: 1.4;
   }
+
+  /* S2.1 · inline collision warning (lightweight UX) */
+  .s2-field .input.warn {
+    border-color: var(--accent) !important;
+    border-width: 2px !important;
+  }
+  .s2-warn {
+    margin-top: 8px;
+    padding: 10px 12px;
+    background: var(--accent-soft);
+    border-radius: 10px;
+    display: flex;
+    align-items: flex-start;
+    gap: 8px;
+  }
+  .s2-warn svg {
+    width: 16px; height: 16px;
+    color: var(--accent);
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .s2-warn-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    line-height: 1.45;
+    flex: 1;
+  }
+  .s2-warn-text strong {
+    font-weight: 700;
+    color: var(--accent);
+    display: block;
+    margin-bottom: 2px;
+  }
+  .s2-warn-text .hint {
+    color: var(--ink-soft);
+    font-size: 11.5px;
+  }
+  .s2-foot .next.disabled {
+    background: rgba(17,17,17,0.15);
+    color: rgba(17,17,17,0.4);
+    cursor: not-allowed;
+  }
+
+  /* (deprecated) S2.1.collision page styles · kept for reference */
+  .s2-collision-warn {
+    margin: 0 18px 14px;
+    padding: 14px 16px;
+    background: var(--accent-soft);
+    border: 1px solid var(--accent);
+    border-radius: 14px;
+  }
+  .s2-collision-warn .cw-title {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--accent);
+    margin-bottom: 6px;
+  }
+  .s2-collision-warn .cw-title svg {
+    width: 18px; height: 18px;
+    flex-shrink: 0;
+  }
+  .s2-collision-warn .cw-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.5;
+  }
+  .s2-existing-shops { margin: 0 18px 14px; }
+  .s2-existing-label {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-weight: 500;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    padding: 0 4px;
+  }
+  .s2-existing-shop {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 12px;
+    padding: 10px 12px;
+    margin-bottom: 6px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .s2-existing-shop .es-logo {
+    width: 36px; height: 36px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .s2-existing-shop .es-info { flex: 1; line-height: 1.3; }
+  .s2-existing-shop .es-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .s2-existing-shop .es-loc {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .s2-collision-options {
+    margin: 0 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+  }
+  .s2-collision-opt {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 14px;
+    padding: 14px 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: flex-start;
+    gap: 10px;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .s2-collision-opt.recommended {
+    background: var(--butter-soft);
+    border-color: var(--ink);
+  }
+  .s2-collision-opt .opt-num {
+    width: 24px; height: 24px;
+    background: var(--ink);
+    color: #fff;
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+    margin-top: 1px;
+  }
+  .s2-collision-opt.recommended .opt-num { background: var(--accent); }
+  .s2-collision-opt .opt-info { flex: 1; line-height: 1.4; }
+  .s2-collision-opt .opt-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+  }
+  .s2-collision-opt .opt-desc {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .s2-collision-opt .opt-rec-tag {
+    display: inline-block;
+    background: var(--accent);
+    color: #fff;
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 9.5px;
+    margin-left: 6px;
+    transform: translateY(-1px);
+  }
+  .s2-collision-opt .opt-arrow {
+    font-size: 18px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+
+  /* Staff (Journey A) ============================ */
+  .s-staff-page { padding-bottom: 100px; }
+  .s-staff-add-btn {
+    margin: 14px 18px 0;
+    padding: 12px 16px;
+    background: var(--ink);
+    color: var(--butter);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    width: calc(100% - 36px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .s-staff-add-btn .plus { font-size: 18px; line-height: 1; }
+  .s-staff-list {
+    margin: 14px 18px 0;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+    overflow: hidden;
+  }
+  .staff-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-bottom: 1px solid rgba(17,17,17,0.06);
+    cursor: pointer;
+  }
+  .staff-row:last-child { border-bottom: none; }
+  .staff-row .sr-avatar {
+    width: 38px; height: 38px;
+    background: var(--accent-soft);
+    color: var(--accent);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    flex-shrink: 0;
+  }
+  .staff-row .sr-info { flex: 1; line-height: 1.3; min-width: 0; }
+  .staff-row .sr-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 14px;
+    color: var(--ink);
+  }
+  .staff-row .sr-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .staff-row .sr-status {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 2px 8px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    font-weight: 600;
+    flex-shrink: 0;
+  }
+  .staff-row .sr-status.online {
+    background: rgba(26,107,58,0.12);
+    color: var(--mint-ink);
+  }
+  .staff-row .sr-status.online::before {
+    content: '';
+    width: 5px; height: 5px;
+    border-radius: 50%;
+    background: var(--mint-ink);
+  }
+  .staff-row .sr-status.pending {
+    background: var(--butter-soft);
+    color: #6B5102;
+  }
+
+  .s-staff-form { padding: 18px; }
+  .ssf-field { margin-bottom: 14px; }
+  .ssf-label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13px;
+    color: var(--ink);
+    margin-bottom: 6px;
+  }
+  .ssf-input {
+    width: 100%;
+    padding: 12px 14px;
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 12px;
+    background: var(--surface);
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    outline: none;
+    box-sizing: border-box;
+  }
+  .ssf-helper {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+    line-height: 1.5;
+  }
+
+  .ssi-stage { padding: 18px; text-align: center; }
+  .ssi-greet {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .ssi-greet em { color: var(--accent); font-style: normal; }
+  .ssi-helper {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+    line-height: 1.5;
+  }
+  .ssi-qr-card {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 18px;
+    padding: 24px;
+    margin-bottom: 14px;
+  }
+  .ssi-qr-card .qr-svg {
+    width: 100%;
+    aspect-ratio: 1;
+    max-width: 220px;
+    margin: 0 auto;
+    display: block;
+  }
+  .ssi-qr-card .ssi-expire {
+    margin-top: 12px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px;
+    color: var(--ink-soft);
+    letter-spacing: 0.05em;
+  }
+  .ssi-qr-card .ssi-expire strong { color: var(--accent); }
+  .ssi-share { display: flex; gap: 8px; margin-bottom: 8px; }
+  .ssi-share-btn {
+    flex: 1;
+    padding: 12px;
+    background: var(--ink);
+    color: var(--butter);
+    border: none;
+    border-radius: 12px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .ssi-share-btn.secondary {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
+  }
+  .ssi-share-btn svg { width: 16px; height: 16px; }
+
+  /* Staff.join · staff-side join confirm */
+  .staff-join { padding: 24px 20px 0; text-align: center; }
+  .staff-join .sj-shop-mark {
+    width: 64px; height: 64px;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 18px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 28px;
+    margin: 0 auto 12px;
+  }
+  .staff-join .sj-shop-name {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 22px;
+    letter-spacing: -0.03em;
+    color: var(--ink);
+    margin-bottom: 4px;
+  }
+  .staff-join .sj-shop-name .dot { color: var(--accent); }
+  .staff-join .sj-shop-sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 18px;
+  }
+  .staff-join .sj-question {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 18px;
+    color: var(--ink);
+    margin-bottom: 6px;
+    line-height: 1.4;
+  }
+  .staff-join .sj-question em { color: var(--accent); font-style: normal; }
+  .staff-join .sj-helper {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    margin-bottom: 22px;
+    line-height: 1.5;
+  }
+  .staff-join .sj-login-btn {
+    width: 100%;
+    padding: 14px;
+    border: none;
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    cursor: pointer;
+    margin-bottom: 8px;
+  }
+  .staff-join .sj-login-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
+  .staff-join .sj-login-btn.line {
+    background: #06C755;
+    color: #fff;
+  }
+  .staff-join .sj-login-btn.phone {
+    background: var(--surface);
+    color: var(--ink);
+    border: 1px solid rgba(17,17,17,0.18);
+  }
+  .staff-join .sj-cta-cancel {
+    width: 100%;
+    padding: 12px;
+    background: transparent;
+    color: var(--ink-soft);
+    border: none;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500;
+    font-size: 12.5px;
+    cursor: pointer;
+    margin-top: 6px;
+  }
   .s2-field {
     margin: 22px 20px 0;
   }
@@ -3850,6 +4385,28 @@
   .s2-province-pick svg {
     color: var(--ink-soft);
     flex-shrink: 0;
+  }
+  /* District picker · auto-province display */
+  .s2-district-pick {
+    display: flex !important;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+    color: var(--ink);
+  }
+  .s2-district-pick .s2-province-auto {
+    background: var(--mint);
+    color: var(--mint-ink);
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    padding: 3px 10px;
+    border-radius: 99px;
+    flex-shrink: 0;
+  }
+  .s2-district-pick .s2-province-auto::before {
+    content: '✓ ';
+    font-weight: 700;
   }
   .s2-hint {
     margin-top: 8px;
@@ -6976,6 +7533,396 @@
     cursor: pointer;
   }
 
+  /* S13.create · attached offer/voucher */
+  .s13d-h .s13d-opt {
+    color: var(--ink-soft);
+    font-weight: 500;
+    font-size: 11.5px;
+  }
+  .s13c-offer-attached {
+    margin-top: 8px;
+    padding: 12px 14px;
+    background: var(--butter-soft);
+    border: 1px dashed var(--ink);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .s13c-offer-attached .off-icon {
+    width: 36px; height: 36px;
+    background: var(--butter);
+    border: 1px solid var(--ink);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    flex-shrink: 0;
+  }
+  .s13c-offer-attached .off-info { flex: 1; line-height: 1.3; min-width: 0; }
+  .s13c-offer-attached .off-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .s13c-offer-attached .off-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .s13c-offer-attached .off-edit {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    color: var(--accent);
+    text-decoration: underline;
+    cursor: pointer;
+  }
+  .s13c-offer-attached .off-remove {
+    width: 22px; height: 22px;
+    background: rgba(17,17,17,0.06);
+    border-radius: 50%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 14px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    flex-shrink: 0;
+  }
+
+  /* Empty state · "+ เพิ่มของฝาก" button */
+  .s13c-offer-add {
+    margin-top: 8px;
+    padding: 12px 14px;
+    background: var(--surface);
+    border: 1px dashed rgba(17,17,17,0.3);
+    border-radius: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+  }
+  .s13c-offer-add svg { width: 16px; height: 16px; }
+
+  /* Preview · offer block in message */
+  .s13d-preview .prev-offer {
+    margin-top: 10px;
+    padding: 10px 12px;
+    background: var(--butter-soft);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 10px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .s13d-preview .po-icon {
+    width: 32px; height: 32px;
+    background: var(--butter);
+    border: 1px solid var(--ink);
+    border-radius: 9px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 16px;
+    flex-shrink: 0;
+  }
+  .s13d-preview .po-info { flex: 1; line-height: 1.3; min-width: 0; }
+  .s13d-preview .po-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--ink);
+  }
+  .s13d-preview .po-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+
+  /* S-offer.create · offer creation page */
+  .s-offer-page { padding-bottom: 100px; }
+  .s-offer-section {
+    margin: 16px 18px 0;
+  }
+  .s-offer-label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-bottom: 8px;
+    letter-spacing: 0.02em;
+  }
+
+  /* Type tabs (no icons, simpler) */
+  .s-offer-types {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 6px;
+  }
+  .s-offer-type {
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 12px;
+    padding: 12px 8px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .s-offer-type.active {
+    background: var(--accent);
+    color: #fff;
+    border-color: var(--accent);
+  }
+  .s-offer-type span {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+  }
+
+  /* Discount field · ลด [N] [บาท/%] · unified box */
+  .s-offer-discount {
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+    border-radius: 14px;
+    padding: 6px 6px 6px 16px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+  }
+  .sod-input-wrap {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    min-width: 0;
+  }
+  .sod-prefix {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    margin-right: 8px;
+    flex-shrink: 0;
+  }
+  .sod-input {
+    flex: 1;
+    min-width: 0;
+    border: none;
+    outline: none;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    padding: 6px 4px;
+    background: transparent;
+    color: var(--ink);
+  }
+  .sod-unit {
+    display: flex;
+    background: rgba(17,17,17,0.06);
+    border-radius: 10px;
+    padding: 3px;
+    flex-shrink: 0;
+  }
+  .sod-unit-opt {
+    padding: 7px 12px;
+    border-radius: 8px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    cursor: pointer;
+    line-height: 1;
+  }
+  .sod-unit-opt.active {
+    background: var(--ink);
+    color: #fff;
+  }
+
+  /* Free-item icon picker (4-col with text input above) */
+  .s-offer-input {
+    width: 100%;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1.5px solid var(--accent);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 16px;
+    color: var(--ink);
+    outline: none;
+    box-sizing: border-box;
+  }
+  .sof-icons {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 8px;
+    margin-bottom: 8px;
+  }
+  .sof-icon {
+    aspect-ratio: 1;
+    border-radius: 16px;
+    border: 1px solid rgba(17,17,17,0.18);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    position: relative;
+    overflow: hidden;
+  }
+  .sof-icon.selected {
+    border-width: 2px;
+    border-color: var(--ink);
+  }
+  .sof-icon.selected::after {
+    content: '✓';
+    position: absolute;
+    top: 4px; right: 4px;
+    width: 18px; height: 18px;
+    background: var(--accent); color: #fff;
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-size: 11px; font-weight: 700;
+  }
+  .sof-helper {
+    font-family: 'Prompt', sans-serif;
+    font-style: italic;
+    font-size: 12px;
+    color: var(--ink-soft);
+    text-align: center;
+    margin: 12px 0;
+  }
+  .sof-upload-btn {
+    width: 100%;
+    padding: 14px;
+    background: transparent;
+    border: 1.5px dashed rgba(17,17,17,0.25);
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .sof-upload-btn svg {
+    width: 16px; height: 16px;
+  }
+
+  /* Date range picker */
+  .s-offer-range {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .sor-date {
+    flex: 1;
+    padding: 8px 12px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.18);
+    border-radius: 10px;
+    cursor: pointer;
+    display: flex;
+    flex-direction: column;
+  }
+  .sor-date-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 9.5px;
+    color: var(--ink-soft);
+    line-height: 1;
+    margin-bottom: 2px;
+  }
+  .sor-date-val {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.2;
+  }
+  .sor-arrow {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    color: var(--ink-soft);
+    flex-shrink: 0;
+  }
+
+  /* Preview */
+  .s-offer-preview {
+    background: var(--surface);
+    border: 1px dashed rgba(17,17,17,0.3);
+    border-radius: 12px;
+    padding: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+  }
+  .s-offer-preview .opv-icon {
+    width: 40px; height: 40px;
+    background: var(--butter);
+    border: 1px solid var(--ink);
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 20px;
+    flex-shrink: 0;
+  }
+  .s-offer-preview .opv-icon-img {
+    width: 40px; height: 40px;
+    border-radius: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 22px;
+    flex-shrink: 0;
+  }
+  .s-offer-preview .opv-info { flex: 1; line-height: 1.3; }
+  .s-offer-preview .opv-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+  }
+  .s-offer-preview .opv-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+
+  /* CTA */
+  .s-offer-cta {
+    margin: 22px 18px 0;
+    padding: 14px;
+    background: var(--ink);
+    color: var(--butter);
+    border: none;
+    border-radius: 14px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    width: calc(100% - 36px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    cursor: pointer;
+  }
+  .s-offer-cta .arrow { font-weight: 700; }
+
   /* Segment + Template badges */
   .s13d-badges {
     display: flex;
@@ -7416,12 +8363,12 @@
 
   <div class="grid">
 
-    <!-- S2.1 — Shop identity (name + logo) -->
+    <!-- S2.1 — Shop identity (name + logo + district) -->
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S2.1</span>ตั้งค่าร้าน · 1/4</div>
-        <h3>ชื่อร้าน + โลโก้</h3>
-        <p>ขั้นแรก ใส่ชื่อร้าน เลือกโลโก้ และเลือกจังหวัด — AI สร้าง 3 แบบจากชื่อให้เลือก หรืออัปโหลดเอง · รายละเอียดอำเภอ/ที่อยู่เพิ่มทีหลังในตั้งค่า</p>
+        <h3>ชื่อร้าน + โลโก้ + เขต/อำเภอ</h3>
+        <p>ขั้นแรก ใส่ชื่อร้าน เลือกโลโก้ และเลือกเขต/อำเภอ — AI สร้าง 3 แบบจากชื่อให้เลือก หรืออัปโหลดเอง · เลือกเขต → จังหวัด auto-fill · collision check ที่ district level (เขตเดียวกัน = block · เขตต่างกัน = OK + auto-suffix)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -7453,12 +8400,12 @@
             </div>
 
             <div class="s2-field" style="margin-top:18px;">
-              <div class="label">จังหวัด</div>
-              <div class="input s2-province-pick">
-                <span>เชียงใหม่</span>
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="14" height="14"><polyline points="6 9 12 15 18 9"/></svg>
+              <div class="label">เขต/อำเภอ</div>
+              <div class="input s2-district-pick">
+                <span>นิมมาน</span>
+                <span class="s2-province-auto">เชียงใหม่</span>
               </div>
-              <div class="s2-hint">รายละเอียดอำเภอ/ที่อยู่เพิ่มภายหลังได้ในตั้งค่า</div>
+              <div class="s2-hint">เลือกเขต/อำเภอ · จังหวัดจะ auto-fill</div>
             </div>
 
             <div class="s2-field" style="margin-top:18px;">
@@ -7500,6 +8447,87 @@
         </div>
       </div>
     </div>
+
+    <!-- S2.1.warn — Inline collision warning (district-level) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S2.1.warn</span>ชื่อซ้ำในเขตเดียวกัน</div>
+        <h3>Inline warning · ไม่ต้องไปหน้าใหม่</h3>
+        <p>ถ้า owner เลือกเขตที่มีชื่อร้านนี้แล้ว — field ชื่อร้านมี orange border + cursor focus + warning ใต้ field พร้อม suggestion · CTA "ถัดไป" disabled จนกว่าจะแก้ชื่อ · ถ้าเขตต่างกัน · จังหวัดเดียวกัน = auto-suffix district ผ่านเลย</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td" style="display:flex; flex-direction:column;">
+
+            <div class="s2-steps">
+              <div class="step active"></div>
+              <div class="step"></div>
+              <div class="step"></div>
+              <div class="step"></div>
+            </div>
+
+            <div class="s2-counter">
+              <span class="step-num"><strong>01</strong> / 04 · ร้าน</span>
+            </div>
+
+            <div class="s2-q">
+              <div class="ask">ตั้งค่า<em>ร้านของคุณ.</em></div>
+              <div class="sub">ใช้เวลาประมาณ 1 นาที</div>
+            </div>
+
+            <div class="s2-field">
+              <div class="label">ชื่อร้าน</div>
+              <div class="input focused warn">
+                <span>Mhee Coffee</span>
+                <span class="cursor"></span>
+              </div>
+              <div class="s2-warn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
+                <div class="s2-warn-text">
+                  <strong>ชื่อนี้มีในเขตนิมมานแล้ว</strong>
+                  <span class="hint">ลองเพิ่มเลข เช่น "Mhee Coffee 2"</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="s2-field" style="margin-top:18px;">
+              <div class="label">เขต/อำเภอ</div>
+              <div class="input s2-district-pick">
+                <span>นิมมาน</span>
+                <span class="s2-province-auto">เชียงใหม่</span>
+              </div>
+            </div>
+
+            <div class="s2-field" style="margin-top:18px;">
+              <div class="label">เลือกโลโก้</div>
+            </div>
+
+            <div class="s2-logos">
+              <div class="s2-logo">
+                <span class="lt-1">m<span class="dot">.</span></span>
+              </div>
+              <div class="s2-logo selected">
+                <input class="lt-edit lt-2" value="Mhee" />
+                <span class="edit-hint">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round"><path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/></svg>
+                </span>
+              </div>
+              <div class="s2-logo">
+                <span class="lt-3">หมี</span>
+              </div>
+            </div>
+
+            <div class="s2-foot">
+              <button class="next disabled" style="flex:1;">
+                <span>ถัดไป · ตั้งรางวัล</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- S2.2 — Reward (text + image + points) -->
     <div class="mockup">
       <div class="mockup-caption">
@@ -8346,8 +9374,8 @@
     <div class="mockup">
       <div class="mockup-caption">
         <div class="kicker"><span class="n">S3.issue</span>ออกแต้ม</div>
-        <h3>ออกแต้มให้ลูกค้า</h3>
-        <p>หน้าออกแต้มเต็มจอ — 3 ปุ่มออกแต้ม (สแกน/กรอกเบอร์/ค้นชื่อ) ใหญ่ขึ้น + ลูกค้าล่าสุด full list · เปิดจาก tab "ออกแต้ม" ใน liquid glass nav</p>
+        <h3>4 วิธีออกแต้ม · ลูกค้าล่าสุด</h3>
+        <p>เปิดจาก tab "ออกแต้ม" ใน liquid glass nav — 4 ปุ่มออกแต้ม (ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ · ค้นชื่อ) + ลูกค้าล่าสุด full list scroll · เปิดวิธีไหนได้ปุ่มนั้น (config ใน S5)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -8425,19 +9453,26 @@
               <div class="sap-actions">
                 <button class="sap-action">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <rect x="5" y="2" width="14" height="20" rx="2"/>
-                    <line x1="12" y1="18" x2="12.01" y2="18"/>
-                  </svg>
-                  <span>กรอกเบอร์</span>
-                </button>
-                <button class="sap-action">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <rect x="3" y="3" width="7" height="7" rx="1"/>
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="3" y="14" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/>
                   </svg>
-                  <span>สแกน QR</span>
+                  <span>ลูกค้าสแกน</span>
+                </button>
+                <button class="sap-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+                    <circle cx="12" cy="13" r="4"/>
+                  </svg>
+                  <span>ร้านสแกน</span>
+                </button>
+                <button class="sap-action">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                    <rect x="5" y="2" width="14" height="20" rx="2"/>
+                    <line x1="12" y1="18" x2="12.01" y2="18"/>
+                  </svg>
+                  <span>กรอกเบอร์</span>
                 </button>
                 <button class="sap-action">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -8487,6 +9522,77 @@
                 <span class="gn-label">แนะนำ</span>
               </a>
             </div>
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S3.qr — Dynamic QR display for customer to scan -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S3.qr</span>ลูกค้าสแกน</div>
+        <h3>หันจอให้ลูกค้าสแกน · QR หมุนทุก 15 วิ</h3>
+        <p>เปิดเมื่อ shop กดปุ่ม "ลูกค้าสแกน" ใน S3.issue — โชว์ dynamic QR ของร้านพร้อม shop logo center · countdown timer (rolling 15s) · ป้องกัน screenshot fraud · ลูกค้าเปิดกล้องสแกน → +1 stamp ทันที · ลูกค้าไม่ต้องโหลดแอป</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td s3-qr-page">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ปิด">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+              </a>
+              <div class="title-mid">ให้ลูกค้าสแกน</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s3-qr-stage">
+
+              <div class="s3-qr-helper">
+                <div class="qh-title">หันจอให้ลูกค้า</div>
+                <div class="qh-sub">เปิดกล้อง · สแกน QR นี้ · ได้แต้มทันที</div>
+              </div>
+
+              <div class="s3-qr-card">
+                <svg class="s3-qr-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="0" width="100" height="100" fill="#fff"/>
+                  <g fill="#111">
+                    <!-- Finder patterns -->
+                    <rect x="0" y="0" width="28" height="28"/>
+                    <rect x="72" y="0" width="28" height="28"/>
+                    <rect x="0" y="72" width="28" height="28"/>
+                    <rect x="4" y="4" width="20" height="20" fill="#fff"/>
+                    <rect x="76" y="4" width="20" height="20" fill="#fff"/>
+                    <rect x="4" y="76" width="20" height="20" fill="#fff"/>
+                    <rect x="8" y="8" width="12" height="12"/>
+                    <rect x="80" y="8" width="12" height="12"/>
+                    <rect x="8" y="80" width="12" height="12"/>
+                    <!-- Random data -->
+                    <rect x="32" y="0" width="4" height="4"/><rect x="40" y="0" width="4" height="4"/><rect x="48" y="0" width="4" height="4"/><rect x="60" y="0" width="4" height="4"/>
+                    <rect x="36" y="8" width="4" height="4"/><rect x="48" y="8" width="4" height="4"/><rect x="56" y="8" width="4" height="4"/><rect x="64" y="8" width="4" height="4"/>
+                    <rect x="32" y="16" width="4" height="4"/><rect x="44" y="16" width="4" height="4"/><rect x="56" y="16" width="4" height="4"/><rect x="64" y="16" width="4" height="4"/>
+                    <rect x="40" y="24" width="4" height="4"/><rect x="52" y="24" width="4" height="4"/><rect x="60" y="24" width="4" height="4"/>
+                    <rect x="0" y="32" width="4" height="4"/><rect x="12" y="32" width="4" height="4"/><rect x="24" y="32" width="4" height="4"/><rect x="32" y="32" width="4" height="4"/><rect x="44" y="32" width="4" height="4"/><rect x="56" y="32" width="4" height="4"/><rect x="68" y="32" width="4" height="4"/><rect x="76" y="32" width="4" height="4"/><rect x="88" y="32" width="4" height="4"/>
+                    <rect x="8" y="40" width="4" height="4"/><rect x="20" y="40" width="4" height="4"/><rect x="32" y="40" width="4" height="4"/><rect x="40" y="40" width="4" height="4"/><rect x="64" y="40" width="4" height="4"/><rect x="72" y="40" width="4" height="4"/><rect x="84" y="40" width="4" height="4"/>
+                    <rect x="4" y="48" width="4" height="4"/><rect x="16" y="48" width="4" height="4"/><rect x="28" y="48" width="4" height="4"/><rect x="68" y="48" width="4" height="4"/><rect x="80" y="48" width="4" height="4"/><rect x="92" y="48" width="4" height="4"/>
+                    <rect x="12" y="56" width="4" height="4"/><rect x="24" y="56" width="4" height="4"/><rect x="36" y="56" width="4" height="4"/><rect x="48" y="56" width="4" height="4"/><rect x="60" y="56" width="4" height="4"/><rect x="72" y="56" width="4" height="4"/><rect x="84" y="56" width="4" height="4"/><rect x="96" y="56" width="4" height="4"/>
+                    <rect x="0" y="64" width="4" height="4"/><rect x="20" y="64" width="4" height="4"/><rect x="32" y="64" width="4" height="4"/><rect x="40" y="64" width="4" height="4"/><rect x="52" y="64" width="4" height="4"/><rect x="64" y="64" width="4" height="4"/><rect x="76" y="64" width="4" height="4"/><rect x="88" y="64" width="4" height="4"/>
+                    <rect x="32" y="72" width="4" height="4"/><rect x="44" y="72" width="4" height="4"/><rect x="56" y="72" width="4" height="4"/><rect x="68" y="72" width="4" height="4"/>
+                    <rect x="32" y="80" width="4" height="4"/><rect x="40" y="80" width="4" height="4"/><rect x="52" y="80" width="4" height="4"/><rect x="64" y="80" width="4" height="4"/><rect x="80" y="80" width="4" height="4"/><rect x="92" y="80" width="4" height="4"/>
+                    <rect x="36" y="88" width="4" height="4"/><rect x="48" y="88" width="4" height="4"/><rect x="60" y="88" width="4" height="4"/><rect x="72" y="88" width="4" height="4"/><rect x="84" y="88" width="4" height="4"/><rect x="92" y="88" width="4" height="4"/>
+                  </g>
+                  <!-- Center logo (cover QR center, with white bg) -->
+                  <rect x="38" y="38" width="24" height="24" fill="#fff"/>
+                  <rect x="40" y="40" width="20" height="20" rx="4" fill="#FF5E3A"/>
+                  <text x="50" y="55" text-anchor="middle" fill="#fff" font-family="Host Grotesk, sans-serif" font-weight="800" font-size="14" letter-spacing="-0.04em">m</text>
+                </svg>
+                <div class="s3-qr-shop-name">mhee<span class="dot">.</span></div>
+                <div class="s3-qr-countdown">รีเฟรชใน <strong>14</strong> วินาที</div>
+              </div>
+
+              <div class="s3-qr-foot">QR เปลี่ยนทุก 15 วิ · ป้องกัน screenshot</div>
+            </div>
+
           </div>
         </div>
       </div>
@@ -9507,6 +10613,116 @@
                 <span class="s13d-badge tpl">ขอบคุณ</span>
                 <span class="s13d-badge tpl">เปล่า</span>
               </div>
+              <textarea class="s13c-textarea" rows="3">สวัสดี $ชื่อ ตอนนี้ร้านมีเมนูใหม่ คาราเมลลาเต้ มาลองนะ</textarea>
+              <div class="s13d-vars">
+                <span class="var-chip">$ชื่อ</span>
+                <span class="var-chip">$แต้ม</span>
+                <span class="var-chip">$ที่เหลือ</span>
+                <span class="var-chip">$รางวัล</span>
+              </div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">แถมของฝาก <span class="s13d-opt">· ไม่บังคับ</span></span>
+              </div>
+              <div class="s13c-offer-attached">
+                <div class="off-icon">🎁</div>
+                <div class="off-info">
+                  <div class="off-name">ลด 50 บาท ทุกเมนู</div>
+                  <div class="off-meta">หมดอายุ 30 วัน · ใช้ได้ 1 ครั้ง</div>
+                </div>
+                <a class="off-edit">แก้</a>
+                <a class="off-remove" aria-label="ลบ">×</a>
+              </div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span>
+              </div>
+              <div class="s13d-preview">
+                <div class="prev-line">สวัสดี Chatchai ตอนนี้ร้านมีเมนูใหม่</div>
+                <div class="prev-line">คาราเมลลาเต้ มาลองนะ</div>
+                <div class="prev-offer">
+                  <div class="po-icon">🎁</div>
+                  <div class="po-info">
+                    <div class="po-name">ลด 50 บาท ทุกเมนู</div>
+                    <div class="po-meta">รับเลย · หมดใน 30 วัน</div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <button class="s13d-send">
+              <span>ส่งให้ 1 คน · พร้อมของฝาก</span>
+              <span class="s13d-cost">0.5 เครดิต</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S13.create.empty — Variant: empty offer state -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S13.create.empty</span>สร้างเอง · ไม่ใส่ของฝาก</div>
+        <h3>Empty state · ของฝาก ไม่ใส่ก็ได้</h3>
+        <p>Variant ของ S13.create — text-only message ไม่มีของฝาก · ใช้สำหรับ announcement ทั่วไป · "หายไป 14 วัน" · "วันแม่ปิด" ฯลฯ · empty state ของ "แถมของฝาก" section แสดงเป็น dashed button ให้กดเพิ่มทีหลัง</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">สร้างเอง</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">ลูกค้าที่เลือก</span>
+                <span class="s13d-count">1 / 1</span>
+              </div>
+              <div class="s13d-customers">
+                <div class="s13d-search-row">
+                  <div class="s13d-search">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
+                    <input type="text" placeholder="ค้นชื่อหรือเบอร์..." readonly>
+                  </div>
+                  <button class="s13d-clear">ปลดทั้งหมด</button>
+                </div>
+                <div class="customer-row">
+                  <div class="cr-check on">✓</div>
+                  <div class="cr-avatar">C</div>
+                  <div class="cr-info">
+                    <div class="cr-name">Chatchai</div>
+                    <div class="cr-channels">
+                      <span class="ch-chip active">Web Push <span class="ch-cost">0.5</span></span>
+                      <span class="ch-chip">LINE <span class="ch-cost">1</span></span>
+                      <span class="ch-chip muted">SMS <span class="ch-cost">3</span></span>
+                    </div>
+                  </div>
+                </div>
+              </div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">เขียนข้อความ</span>
+              </div>
+              <div class="s13d-badges">
+                <span class="s13d-badge tpl">ชวนกลับ</span>
+                <span class="s13d-badge tpl">เกือบครบ</span>
+                <span class="s13d-badge tpl">วันเกิด</span>
+                <span class="s13d-badge tpl active">เมนูใหม่</span>
+                <span class="s13d-badge tpl">ขอบคุณ</span>
+                <span class="s13d-badge tpl">เปล่า</span>
+              </div>
               <textarea class="s13c-textarea" rows="3">สวัสดี $ชื่อ ตอนนี้ร้านมีเมนูใหม่ คาราเมลลาเต้ มาลองนะ ลด 10% ทั้งสัปดาห์</textarea>
               <div class="s13d-vars">
                 <span class="var-chip">$ชื่อ</span>
@@ -9514,6 +10730,16 @@
                 <span class="var-chip">$ที่เหลือ</span>
                 <span class="var-chip">$รางวัล</span>
               </div>
+            </div>
+
+            <div class="s13d-section">
+              <div class="s13d-h">
+                <span class="s13d-title">แถมของฝาก <span class="s13d-opt">· ไม่บังคับ</span></span>
+              </div>
+              <a class="s13c-offer-add">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
+                <span>เพิ่มของฝาก</span>
+              </a>
             </div>
 
             <div class="s13d-section">
@@ -9529,6 +10755,184 @@
             <button class="s13d-send">
               <span>ส่งให้ 1 คน</span>
               <span class="s13d-cost">0.5 เครดิต</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S-offer.create — Create offer/voucher (sheet from S13.create "+ ของฝาก") -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S-offer.create</span>สร้างของฝาก · ของฟรี</div>
+        <h3>Default state · ของฟรี (text + icon picker + อัปโหลด)</h3>
+        <p>เปิดเมื่อ shop กด "+ ของฝาก" ใน S13.create — default = "ของฟรี" (use case ส่วนใหญ่) · text input ชื่อของฟรี + 4 icon presets · helper "เลือกรูปที่ใช่ หรือ อัปโหลดของคุณเอง" + ปุ่ม "ใช้รูปของฉันเอง" · datetime range · preview · บันทึกกลับ S13.create</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td s-offer-page">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">สร้างของฝาก</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">ประเภท</div>
+              <div class="s-offer-types">
+                <a class="s-offer-type active">
+                  <span>ของฟรี</span>
+                </a>
+                <a class="s-offer-type">
+                  <span>ลดราคา</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">ชื่อของฟรี</div>
+              <input class="s-offer-input" type="text" value="กาแฟ Signature ฟรี 1 แก้ว" />
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">รูปรางวัล</div>
+              <div class="sof-icons">
+                <div class="sof-icon selected" style="background: #FFE6DF;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+                </div>
+                <div class="sof-icon" style="background: #FFF1B8;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;"><rect x="2" y="5" width="20" height="14" rx="2"/><line x1="2" y1="10" x2="22" y2="10"/></svg>
+                </div>
+                <div class="sof-icon" style="background: #C8E8D0;">
+                  <svg viewBox="0 0 24 24" fill="#FFD952" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;"><polygon points="12 2 15.09 8.26 22 9.27 17 14.14 18.18 21.02 12 17.77 5.82 21.02 7 14.14 2 9.27 8.91 8.26 12 2"/></svg>
+                </div>
+                <div class="sof-icon" style="background: #FFE6DF;">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:32px;height:32px;"><path d="M17 8h1a4 4 0 010 8h-1"/><path d="M3 8h14v9a4 4 0 01-4 4H7a4 4 0 01-4-4V8z"/><line x1="6" y1="2" x2="6" y2="4"/><line x1="10" y1="2" x2="10" y2="4"/><line x1="14" y1="2" x2="14" y2="4"/></svg>
+                </div>
+              </div>
+              <div class="sof-helper">เลือกรูปที่ใช่ หรือ อัปโหลดของคุณเอง</div>
+              <button class="sof-upload-btn">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/><polyline points="17 8 12 3 7 8"/><line x1="12" y1="3" x2="12" y2="15"/></svg>
+                ใช้รูปของฉันเอง
+              </button>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">ใช้ได้</div>
+              <div class="s-offer-range">
+                <div class="sor-date">
+                  <span class="sor-date-label">ตั้งแต่</span>
+                  <span class="sor-date-val">วันนี้</span>
+                </div>
+                <span class="sor-arrow">→</span>
+                <div class="sor-date">
+                  <span class="sor-date-label">ถึง</span>
+                  <span class="sor-date-val">15 พ.ค.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">ลูกค้าจะเห็นแบบนี้</div>
+              <div class="s-offer-preview">
+                <div class="opv-icon">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="#111" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+                </div>
+                <div class="opv-info">
+                  <div class="opv-name">กาแฟ Signature ฟรี 1 แก้ว</div>
+                  <div class="opv-meta">ใช้ได้ถึง 15 พ.ค.</div>
+                </div>
+              </div>
+            </div>
+
+            <button class="s-offer-cta">
+              <span>บันทึก · กลับไปส่ง</span>
+              <span class="arrow">→</span>
+            </button>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S-offer.create.discount — Variant: ลดราคา state -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S-offer.create.discount</span>สร้างของฝาก · ลดราคา</div>
+        <h3>Variant · ลดราคา (text input + บาท/%)</h3>
+        <p>เมื่อ shop เลือก type "ลดราคา" — field รายละเอียดเปลี่ยนเป็น "ลด [textbox] [บาท/%]" tab toggle · simpler than free type · keep date range + preview เหมือนเดิม</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td s-offer-page">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">สร้างของฝาก</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">ประเภท</div>
+              <div class="s-offer-types">
+                <a class="s-offer-type">
+                  <span>ของฟรี</span>
+                </a>
+                <a class="s-offer-type active">
+                  <span>ลดราคา</span>
+                </a>
+              </div>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">รายละเอียด</div>
+              <div class="s-offer-discount">
+                <div class="sod-input-wrap">
+                  <span class="sod-prefix">ลด</span>
+                  <input class="sod-input" type="text" value="50" />
+                </div>
+                <div class="sod-unit">
+                  <span class="sod-unit-opt active">บาท</span>
+                  <span class="sod-unit-opt">%</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">ใช้ได้</div>
+              <div class="s-offer-range">
+                <div class="sor-date">
+                  <span class="sor-date-label">ตั้งแต่</span>
+                  <span class="sor-date-val">วันนี้</span>
+                </div>
+                <span class="sor-arrow">→</span>
+                <div class="sor-date">
+                  <span class="sor-date-label">ถึง</span>
+                  <span class="sor-date-val">15 พ.ค.</span>
+                </div>
+              </div>
+            </div>
+
+            <div class="s-offer-section">
+              <div class="s-offer-label">ลูกค้าจะเห็นแบบนี้</div>
+              <div class="s-offer-preview">
+                <div class="opv-icon">🎁</div>
+                <div class="opv-info">
+                  <div class="opv-name">ลด 50 บาท</div>
+                  <div class="opv-meta">ใช้ได้ถึง 15 พ.ค.</div>
+                </div>
+              </div>
+            </div>
+
+            <button class="s-offer-cta">
+              <span>บันทึก · กลับไปส่ง</span>
+              <span class="arrow">→</span>
             </button>
 
           </div>
@@ -10955,6 +12359,206 @@
         </div>
       </div>
     </div>
+    <!-- S-staff — Staff list (Settings → พนักงาน) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S-staff</span>พนักงาน</div>
+        <h3>คนที่ออกแต้มได้</h3>
+        <p>เข้าจาก Settings → "พนักงาน" — list ของ staff ที่เพิ่มไว้ · status online (มี green dot) / pending (ยังไม่ scan invite) · กดแถวเพื่อดูรายละเอียด/ลบ · ปุ่ม "เพิ่มพนักงาน" ด้านบน</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td s-staff-page">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">พนักงาน</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <button class="s-staff-add-btn">
+              <span class="plus">+</span>
+              เพิ่มพนักงาน
+            </button>
+
+            <div class="s-staff-list">
+              <a class="staff-row">
+                <div class="sr-avatar">บ</div>
+                <div class="sr-info">
+                  <div class="sr-name">น้องบี</div>
+                  <div class="sr-meta">ออกแต้ม · ใช้ล่าสุดเมื่อ 2 นาทีที่แล้ว</div>
+                </div>
+                <span class="sr-status online">ออนไลน์</span>
+              </a>
+              <a class="staff-row">
+                <div class="sr-avatar">เ</div>
+                <div class="sr-info">
+                  <div class="sr-name">เอ</div>
+                  <div class="sr-meta">ออกแต้ม · ใช้ล่าสุด 3 ชม. ที่แล้ว</div>
+                </div>
+              </a>
+              <a class="staff-row">
+                <div class="sr-avatar">ก</div>
+                <div class="sr-info">
+                  <div class="sr-name">น้องกุ้ง</div>
+                  <div class="sr-meta">รอ scan invite · ส่งไปเมื่อ 5 นาที</div>
+                </div>
+                <span class="sr-status pending">รอเข้าร่วม</span>
+              </a>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S-staff.add — Add staff form -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S-staff.add</span>เพิ่มพนักงาน</div>
+        <h3>กรอกชื่อ · ไม่ต้องเบอร์/อีเมล</h3>
+        <p>กรอกแค่ชื่อเล่น (e.g., "น้องบี") · system สร้าง invite QR + link ใน step ถัดไป · staff ใช้มือถือตัวเอง · device-bound · ไม่ต้องตั้งรหัส · simplified UX</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">เพิ่มพนักงาน</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s-staff-form">
+              <div class="ssf-field">
+                <div class="ssf-label">ชื่อเล่น</div>
+                <input class="ssf-input" type="text" value="น้องบี" />
+                <div class="ssf-helper">ลูกค้าจะเห็นชื่อนี้ใน feed · เปลี่ยนได้ทีหลัง</div>
+              </div>
+
+              <button class="s2-cta-final" style="width:100%;">
+                <span>สร้าง invite</span>
+                <span class="arrow">→</span>
+              </button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- S-staff.invite — Invite QR + share -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">S-staff.invite</span>เชิญเข้าร่วม</div>
+        <h3>โชว์ QR ให้น้องบี · หรือส่งลิงก์</h3>
+        <p>ระบบสร้าง QR + invite link · expire 24 ชม. · 2 ทาง: QR ให้สแกนตรงนั้นเลย · หรือกด "ส่งลิงก์" → native share sheet → LINE/SMS/copy · staff scan/click → Staff.join screen</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">เชิญพนักงาน</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="ssi-stage">
+              <div class="ssi-greet">เชิญ <em>น้องบี</em> เข้าร่วม</div>
+              <div class="ssi-helper">ให้น้องบีเปิดมือถือ scan QR หรือกดลิงก์</div>
+
+              <div class="ssi-qr-card">
+                <svg class="qr-svg" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg">
+                  <rect x="0" y="0" width="100" height="100" fill="#fff"/>
+                  <!-- Mock QR pattern (simplified) -->
+                  <g fill="#111">
+                    <rect x="0" y="0" width="28" height="28"/>
+                    <rect x="72" y="0" width="28" height="28"/>
+                    <rect x="0" y="72" width="28" height="28"/>
+                    <rect x="4" y="4" width="20" height="20" fill="#fff"/>
+                    <rect x="76" y="4" width="20" height="20" fill="#fff"/>
+                    <rect x="4" y="76" width="20" height="20" fill="#fff"/>
+                    <rect x="8" y="8" width="12" height="12"/>
+                    <rect x="80" y="8" width="12" height="12"/>
+                    <rect x="8" y="80" width="12" height="12"/>
+                    <!-- Random data -->
+                    <rect x="32" y="4" width="4" height="4"/><rect x="40" y="4" width="4" height="4"/><rect x="52" y="4" width="4" height="4"/><rect x="60" y="4" width="4" height="4"/>
+                    <rect x="36" y="12" width="4" height="4"/><rect x="44" y="12" width="4" height="4"/><rect x="56" y="12" width="4" height="4"/><rect x="64" y="12" width="4" height="4"/>
+                    <rect x="32" y="20" width="4" height="4"/><rect x="48" y="20" width="4" height="4"/><rect x="60" y="20" width="4" height="4"/>
+                    <rect x="4" y="32" width="4" height="4"/><rect x="12" y="32" width="4" height="4"/><rect x="24" y="32" width="4" height="4"/><rect x="36" y="32" width="4" height="4"/><rect x="44" y="32" width="4" height="4"/><rect x="52" y="32" width="4" height="4"/><rect x="68" y="32" width="4" height="4"/><rect x="80" y="32" width="4" height="4"/><rect x="92" y="32" width="4" height="4"/>
+                    <rect x="8" y="40" width="4" height="4"/><rect x="20" y="40" width="4" height="4"/><rect x="32" y="40" width="4" height="4"/><rect x="48" y="40" width="4" height="4"/><rect x="60" y="40" width="4" height="4"/><rect x="72" y="40" width="4" height="4"/><rect x="84" y="40" width="4" height="4"/>
+                    <rect x="4" y="48" width="4" height="4"/><rect x="16" y="48" width="4" height="4"/><rect x="28" y="48" width="4" height="4"/><rect x="40" y="48" width="4" height="4"/><rect x="52" y="48" width="4" height="4"/><rect x="64" y="48" width="4" height="4"/><rect x="76" y="48" width="4" height="4"/><rect x="88" y="48" width="4" height="4"/>
+                    <rect x="12" y="56" width="4" height="4"/><rect x="24" y="56" width="4" height="4"/><rect x="36" y="56" width="4" height="4"/><rect x="48" y="56" width="4" height="4"/><rect x="60" y="56" width="4" height="4"/><rect x="72" y="56" width="4" height="4"/><rect x="84" y="56" width="4" height="4"/><rect x="92" y="56" width="4" height="4"/>
+                    <rect x="4" y="64" width="4" height="4"/><rect x="20" y="64" width="4" height="4"/><rect x="32" y="64" width="4" height="4"/><rect x="44" y="64" width="4" height="4"/><rect x="56" y="64" width="4" height="4"/><rect x="68" y="64" width="4" height="4"/><rect x="80" y="64" width="4" height="4"/>
+                    <rect x="32" y="72" width="4" height="4"/><rect x="44" y="72" width="4" height="4"/><rect x="56" y="72" width="4" height="4"/><rect x="68" y="72" width="4" height="4"/>
+                    <rect x="32" y="80" width="4" height="4"/><rect x="40" y="80" width="4" height="4"/><rect x="52" y="80" width="4" height="4"/><rect x="64" y="80" width="4" height="4"/><rect x="80" y="80" width="4" height="4"/>
+                    <rect x="36" y="88" width="4" height="4"/><rect x="48" y="88" width="4" height="4"/><rect x="60" y="88" width="4" height="4"/><rect x="72" y="88" width="4" height="4"/><rect x="84" y="88" width="4" height="4"/><rect x="92" y="88" width="4" height="4"/>
+                  </g>
+                </svg>
+                <div class="ssi-expire">หมดอายุใน <strong>23:58:12</strong></div>
+              </div>
+
+              <div class="ssi-share">
+                <button class="ssi-share-btn">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/><line x1="8.59" y1="13.51" x2="15.42" y2="17.49"/><line x1="15.41" y1="6.51" x2="8.59" y2="10.49"/></svg>
+                  ส่งลิงก์
+                </button>
+                <button class="ssi-share-btn secondary">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><rect x="9" y="9" width="13" height="13" rx="2"/><path d="M5 15H4a2 2 0 01-2-2V4a2 2 0 012-2h9a2 2 0 012 2v1"/></svg>
+                  คัดลอก
+                </button>
+              </div>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- Staff.join — Staff confirms join (mobile · staff side) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">Staff.join</span>เข้าร่วมร้าน</div>
+        <h3>Login ก่อนเริ่ม · LINE หรือเบอร์</h3>
+        <p>Staff scan QR (หรือกดลิงก์) → เปิด TaemDee → บังคับ login ด้วย LINE (primary) หรือเบอร์โทร + OTP (fallback) · identity-bound · เปลี่ยนเครื่องได้โดยไม่ต้อง re-invite · audit trail ชัดเจน · owner เห็นเบอร์ contact</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="staff-join">
+              <div class="sj-shop-mark">m</div>
+              <div class="sj-shop-name">mhee<span class="dot">.</span></div>
+              <div class="sj-shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
+
+              <div class="sj-question">เข้าร่วมเป็น<br><em>น้องบี</em></div>
+              <div class="sj-helper">login ก่อนเริ่ม · เปลี่ยนเครื่องได้ตลอด</div>
+
+              <button class="sj-login-btn line">
+                <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.628-.63.628h-2.386c-.345 0-.627-.285-.627-.628V8.108c0-.345.282-.63.628-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.508.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .63.285.63.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
+                เข้าด้วย LINE
+              </button>
+
+              <button class="sj-login-btn phone">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                เข้าด้วยเบอร์โทร
+              </button>
+
+              <button class="sj-cta-cancel">ไม่ใช่ฉัน</button>
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
     <!-- S9 Theme picker -->
     <div class="mockup">
       <div class="mockup-caption">

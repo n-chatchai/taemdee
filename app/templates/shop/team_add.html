@@ -1,18 +1,8 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เพิ่มพนักงาน · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <form method="POST" action="/shop/team/add" class="td">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}เพิ่มพนักงาน · {{ shop.name }} · TaemDee{% endblock %}
 
+{% block content %}
+  <form method="POST" action="/shop/team/add">
     <div class="app-bar">
       <a href="/shop/team" class="x" aria-label="ย้อนกลับ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -33,8 +23,5 @@
         <span class="arrow">→</span>
       </button>
     </div>
-
-    {% include "_partials/footer_mark.html" %}
   </form>
-</body>
-</html>
+{% endblock %}

@@ -1,49 +1,35 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ให้ลูกค้าสแกน · {{ shop.name }} · TaemDee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td s3-qr-page">
+{% extends "_layouts/s_base.html" %}
+{% block title %}ให้ลูกค้าสแกน · {{ shop.name }} · TaemDee{% endblock %}
 
-    <div class="app-bar">
-      <a href="/shop/dashboard" class="x" aria-label="ปิด">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </a>
-      <div class="title-mid">ให้ลูกค้าสแกน</div>
-      <div class="placeholder"></div>
-    </div>
-
-    <div class="s3-qr-stage">
-      <div class="s3-qr-helper">
-        <div class="qh-title">หันจอให้ลูกค้า</div>
-        <div class="qh-sub">เปิดกล้อง · สแกน QR นี้ · ได้แต้มทันที</div>
-      </div>
-
-      <div class="s3-qr-card">
-        <div class="s3-qr-svg" id="s3-qr-svg" data-ttl="{{ ttl_seconds }}">{{ qr_svg|safe }}</div>
-        <div class="s3-qr-shop-name">
-          {{ shop.name }}<span class="dot">.</span>
-        </div>
-        <div class="s3-qr-countdown">รีเฟรชใน <strong id="s3-qr-countdown">{{ ttl_seconds }}</strong> วินาที</div>
-      </div>
-
-      <div class="s3-qr-foot">QR เปลี่ยนทุก {{ ttl_seconds }} วิ · ป้องกัน screenshot</div>
-    </div>
-
+{% block content %}
+  <div class="app-bar">
+    <a href="/shop/dashboard" class="x" aria-label="ปิด">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    </a>
+    <div class="title-mid">ให้ลูกค้าสแกน</div>
+    <div class="placeholder"></div>
   </div>
 
+  <div class="s3-qr-stage">
+    <div class="s3-qr-helper">
+      <div class="qh-title">หันจอให้ลูกค้า</div>
+      <div class="qh-sub">เปิดกล้อง · สแกน QR นี้ · ได้แต้มทันที</div>
+    </div>
+
+    <div class="s3-qr-card">
+      <div class="s3-qr-svg" id="s3-qr-svg" data-ttl="{{ ttl_seconds }}">{{ qr_svg|safe }}</div>
+      <div class="s3-qr-shop-name">
+        {{ shop.name }}<span class="dot">.</span>
+      </div>
+      <div class="s3-qr-countdown">รีเฟรชใน <strong id="s3-qr-countdown">{{ ttl_seconds }}</strong> วินาที</div>
+    </div>
+
+    <div class="s3-qr-foot">QR เปลี่ยนทุก {{ ttl_seconds }} วิ · ป้องกัน screenshot</div>
+  </div>
+{% endblock %}
+
+{% block body_end %}
   <script>
-    // S3.qr — rotating QR. Polls /shop/qr/live/refresh every TTL seconds,
-    // swaps the inline SVG, restarts countdown. Server validates the JWT
-    // freshness token in /scan/{shop_id} so a screenshot from 30s ago
-    // lands on the friendly "QR หมดอายุ" page instead of issuing a stamp.
     (function () {
       const svgWrap = document.getElementById('s3-qr-svg');
       const counter = document.getElementById('s3-qr-countdown');
@@ -65,12 +51,11 @@
           ttl = j.expires_in || 15;
           remaining = ttl;
           counter.textContent = String(ttl);
-        } catch (_) { /* keep showing stale QR until next attempt */ }
+        } catch (_) { }
       }
 
       setInterval(tick, 1000);
       setInterval(refresh, ttl * 1000);
     })();
   </script>
-</body>
-</html>
+{% endblock %}

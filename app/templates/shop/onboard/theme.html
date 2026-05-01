@@ -1,22 +1,13 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ตั้งค่าร้าน · 3/4</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
+{% extends "_layouts/s_base.html" %}
+{% block title %}ตั้งค่าร้าน · 3/4 · TaemDee{% endblock %}
+
+{% block td_attrs %}
+  x-data="{ theme: '{{ shop.theme_name }}' }"
+{% endblock %}
+
+{% block content %}
   {% set logo = shop_logo(shop) %}
-  <form method="POST" action="/shop/onboard/theme" class="td"
-        x-data="{ theme: '{{ shop.theme_name }}' }">
-
-    <div class="topbar"><span></span><span></span></div>
-
+  <form method="POST" action="/shop/onboard/theme">
     <div class="s2-steps">
       <div class="step done"></div>
       <div class="step done"></div>
@@ -33,8 +24,7 @@
       <div class="sub">มุมมองลูกค้า</div>
     </div>
 
-    {# C1-style mini preview that re-tints when the swatch changes (theme-* live on .td via x-class). #}
-    <div class="s2-c1-preview" :class="'theme-' + theme">
+    <div class="s2-c1-preview" :class="'theme-' + theme" style="margin: 0 20px;">
       <div class="shop-head-mini">
         <div class="shop-logo-mark-mini">
           {% if logo %}
@@ -87,7 +77,7 @@
       ('night',   'กลางคืน', ['#141414', '#FFD952', '#FF5E3A']),
       ('pastel',  'พาสเทล',  ['#FFEEE4', '#E87A6A', '#F4B583'])
     ] %}
-    <div class="s2-theme-swatches">
+    <div class="s2-theme-swatches" style="padding: 0 20px; margin-top:22px;">
       {% for t_id, t_name, colors in theme_meta %}
         <button type="button" class="s2-theme-swatch"
                 :class="{ selected: theme === '{{ t_id }}' }"
@@ -102,15 +92,14 @@
 
     <input type="hidden" name="theme" :value="theme">
 
-    <div class="s2-foot">
-      <a href="/shop/onboard/reward" class="back" aria-label="ย้อนกลับ">←</a>
-      <button type="submit" class="next">
+    <div class="s2-foot" style="padding: 20px;">
+      <a href="/shop/onboard/reward" class="back" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
+      <button type="submit" class="s2-cta-final" style="flex:1;">
         <span>ถัดไป · พิมพ์ QR</span>
         <span class="arrow">→</span>
       </button>
     </div>
-
-    {% include "_partials/footer_mark.html" %}
   </form>
-</body>
-</html>
+{% endblock %}

@@ -1,49 +1,39 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>สแกนบัตรลูกค้า · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}สแกน QR ลูกค้า · {{ shop.name }} · TaemDee{% endblock %}
 
-    <div class="app-bar">
-      <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">←</a>
-      <div class="title-mid">สแกนบัตรลูกค้า</div>
-      <div class="placeholder"></div>
-    </div>
-
-    <div class="scan-page">
-      <div class="scan-viewfinder" id="scan-viewfinder">
-        <video id="scan-video" playsinline muted autoplay></video>
-        <div class="scan-corners">
-          <span class="tl"></span><span class="tr"></span>
-          <span class="bl"></span><span class="br"></span>
-        </div>
-        <div class="scan-line"></div>
-      </div>
-
-      <div class="scan-hint" id="scan-hint">
-        วาง QR ของลูกค้าให้อยู่ในกรอบ<br>
-        กล้องจะอ่านอัตโนมัติ
-      </div>
-
-      <div class="scan-status" id="scan-status" hidden></div>
-
-      <div class="scan-fallback">
-        <a href="/shop/issue/phone">ลูกค้าไม่มี QR · กรอกเบอร์แทน</a>
-      </div>
-    </div>
-
-    {% include "_partials/footer_mark.html" %}
+{% block content %}
+  <div class="app-bar">
+    <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
+    <div class="title-mid">สแกน QR ลูกค้า</div>
+    <div class="placeholder"></div>
   </div>
 
+  <div class="scan-page">
+    <div class="scan-viewfinder" id="scan-viewfinder">
+      <video id="scan-video" playsinline muted autoplay></video>
+      <div class="scan-corners">
+        <span class="tl"></span><span class="tr"></span>
+        <span class="bl"></span><span class="br"></span>
+      </div>
+      <div class="scan-line"></div>
+    </div>
+
+    <div class="scan-hint" id="scan-hint">
+      วาง QR ของลูกค้าให้อยู่ในกรอบ<br>
+      กล้องจะอ่านอัตโนมัติ
+    </div>
+
+    <div class="scan-status" id="scan-status" hidden></div>
+
+    <div class="scan-fallback">
+      <a href="/shop/issue/phone">ลูกค้าไม่มี QR · กรอกเบอร์แทน</a>
+    </div>
+  </div>
+{% endblock %}
+
+{% block body_end %}
   {# qr-scanner library — small (~60kB), uses BarcodeDetector when available
      and falls back to a worker-based decoder otherwise. #}
   <script type="module">
@@ -98,5 +88,4 @@
     // Stop the camera when leaving the page so the LED turns off.
     window.addEventListener('pagehide', () => scanner.stop(), { once: true });
   </script>
-</body>
-</html>
+{% endblock %}

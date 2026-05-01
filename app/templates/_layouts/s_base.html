@@ -1,0 +1,38 @@
+{# Shop-side base layout — extended by dashboard, issue, customers, insights,
+   settings, and other shop-facing pages.
+
+   Child templates fill these blocks:
+     · {% block title %} ... {% endblock %}      page <title>
+     · {% block head_extra %} ... {% endblock %} extra <head> tags
+     · {% block body_top %} ... {% endblock %}   top-of-body inline scripts
+     · {% block td_class %} ... {% endblock %}   extra .td classes (td-tabbed)
+     · {% block td_attrs %} ... {% endblock %}   extra attrs on .td root
+     · {% block content %} ... {% endblock %}    page body
+     · {% block nav %} ... {% endblock %}        bottom navigation (glass_nav)
+     · {% block body_end %} ... {% endblock %}   inline scripts at end of body #}
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>{% block title %}{{ shop.name }} · TaemDee{% endblock %}</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
+  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  {% block head_extra %}{% endblock %}
+</head>
+<body>
+  {% block body_top %}{% endblock %}
+  <div class="td{% block td_class %}{% endblock %}"{% block td_attrs %}{% endblock %}>
+    <div class="topbar"><span></span><span></span></div>
+    {% block content %}{% endblock %}
+    {% include "_partials/footer_mark.html" %}
+    {% block nav %}{% endblock %}
+  </div>
+  {% include "_partials/sse_listener.html" %}
+  {% block body_end %}{% endblock %}
+</body>
+</html>

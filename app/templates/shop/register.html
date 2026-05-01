@@ -1,103 +1,91 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เข้าสู่ระบบ · TaemDee แต้มดี</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
-  <div class="td" x-data="{ step: 'choose', phone: '', code: '', error: '{{ error|default('') }}', ref: '{{ ref_code|default('') }}', simulatedCode: '' }">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}เข้าสู่ระบบ · TaemDee แต้มดี{% endblock %}
 
-    <div class="s1-hero" style="padding: 56px 30px 16px;">
-      <div class="s1-logo-mark" style="margin-bottom:14px;">
-        <svg class="smile-stamp" viewBox="0 0 100 100" width="72" height="72">
-          <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-          <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-          <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
-        </svg>
-      </div>
-      <div class="s1-name">แต้มดี<span class="dot">.</span></div>
-      <div class="s1-tag">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรี · ไม่มีค่ารายเดือน</div>
+{% block td_attrs %}
+  x-data="{ step: 'choose', phone: '', code: '', error: '{{ error|default('') }}', ref: '{{ ref_code|default('') }}', simulatedCode: '' }"
+{% endblock %}
+
+{% block content %}
+  <div class="s1-hero" style="padding: 56px 30px 16px;">
+    <div class="s1-logo-mark" style="margin-bottom:14px;">
+      <svg class="smile-stamp" viewBox="0 0 100 100" width="72" height="72">
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
+        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
+        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+      </svg>
     </div>
-
-    <!-- Step 1: choose login method -->
-    <div class="s1-buttons" x-show="step === 'choose'">
-      <a href="/auth/line/start" class="s1-btn s1-btn-line">
-        <svg viewBox="0 0 24 24" fill="currentColor">
-          <path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
-        </svg>
-        เข้าสู่ระบบด้วย LINE
-      </a>
-      <button type="button" class="s1-btn s1-btn-phone" @click="step = 'phone'; error = ''">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <rect x="5" y="2" width="14" height="20" rx="2"/>
-          <line x1="12" y1="18" x2="12.01" y2="18"/>
-        </svg>
-        ใช้เบอร์โทร · รับ OTP
-      </button>
-    </div>
-
-    <!-- Step 2: phone entry -->
-    <form class="s1-otp-form"
-          x-show="step === 'phone'" x-cloak
-          @submit.prevent="
-            const fd = new FormData();
-            fd.append('phone', phone);
-            const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
-            const data = await r.json();
-            if (r.ok) { 
-              step = 'otp'; error = ''; 
-              if (data.code) { simulatedCode = data.code; }
-            }
-            else { error = 'เบอร์โทรไม่ถูกต้อง ลองอีกครั้ง'; }
-          ">
-      <label for="phone-input">เบอร์โทรของคุณ</label>
-      <input id="phone-input" type="tel" inputmode="numeric"
-             x-model="phone" placeholder="0812345678" required>
-      <button type="submit" class="s1-btn s1-btn-phone">ส่ง OTP</button>
-      <button type="button" class="back" @click="step = 'choose'">เปลี่ยนวิธี</button>
-      <div x-show="error" x-cloak class="err" x-text="error"></div>
-    </form>
-
-    <!-- Step 3: OTP entry -->
-    <form class="s1-otp-form"
-          x-show="step === 'otp'" x-cloak
-          @submit.prevent="
-            const fd = new FormData();
-            fd.append('phone', phone);
-            fd.append('code', code);
-            fd.append('name', 'ร้านใหม่');
-            if (ref) { fd.append('ref', ref); }
-            const r = await fetch('/auth/otp/verify', { method: 'POST', body: fd });
-            if (r.ok) { window.location.href = '/shop/dashboard'; }
-            else {
-              const j = await r.json().catch(() => ({}));
-              error = j.detail || (r.status + ' — ' + (r.statusText || 'ยืนยันไม่สำเร็จ'));
-            }
-          ">
-      <label>กรอก OTP ที่ส่งไปยัง <strong x-text="phone"></strong></label>
-      <div x-show="simulatedCode" class="err" style="background:#F6F1E5; color:#111; margin-bottom:12px; border:1px dashed var(--ink);">
-        OTP ทดสอบ: <strong x-text="simulatedCode"></strong>
-      </div>
-      <input x-model="code" type="text" inputmode="numeric" maxlength="4"
-             placeholder="1234" required>
-      <button type="submit" class="s1-btn s1-btn-phone">ยืนยัน &amp; เข้าสู่ระบบ</button>
-      <button type="button" class="back" @click="step = 'phone'">เปลี่ยนเบอร์</button>
-      <div x-show="error" x-cloak class="err" x-text="error"></div>
-    </form>
-
-    <div class="s1-foot">
-      ถือว่ายอมรับ <a href="#">ข้อตกลง</a> และ <a href="#">นโยบายความเป็นส่วนตัว</a>
-    </div>
-
-    {% include "_partials/footer_mark.html" %}
+    <div class="s1-name">แต้มดี<span class="dot">.</span></div>
+    <div class="s1-tag">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรี · ไม่มีค่ารายเดือน</div>
   </div>
-</body>
-</html>
+
+  <!-- Step 1: choose login method -->
+  <div class="s1-buttons" x-show="step === 'choose'">
+    <a href="/auth/line/start" class="s1-btn s1-btn-line">
+      <svg viewBox="0 0 24 24" fill="currentColor">
+        <path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
+      </svg>
+      เข้าสู่ระบบด้วย LINE
+    </a>
+    <button type="button" class="s1-btn s1-btn-phone" @click="step = 'phone'; error = ''">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <rect x="5" y="2" width="14" height="20" rx="2"/>
+        <line x1="12" y1="18" x2="12.01" y2="18"/>
+      </svg>
+      ใช้เบอร์โทร · รับ OTP
+    </button>
+  </div>
+
+  <!-- Step 2: phone entry -->
+  <form class="s1-otp-form"
+        x-show="step === 'phone'" x-cloak
+        @submit.prevent="
+          const fd = new FormData();
+          fd.append('phone', phone);
+          const r = await fetch('/auth/otp/request', { method: 'POST', body: fd });
+          const data = await r.json();
+          if (r.ok) { 
+            step = 'otp'; error = ''; 
+            if (data.code) { simulatedCode = data.code; }
+          }
+          else { error = 'เบอร์โทรไม่ถูกต้อง ลองอีกครั้ง'; }
+        ">
+    <label for="phone-input">เบอร์โทรของคุณ</label>
+    <input id="phone-input" type="tel" inputmode="numeric"
+           x-model="phone" placeholder="0812345678" required>
+    <button type="submit" class="s1-btn s1-btn-phone">ส่ง OTP</button>
+    <button type="button" class="back" @click="step = 'choose'">เปลี่ยนวิธี</button>
+    <div x-show="error" x-cloak class="err" x-text="error"></div>
+  </form>
+
+  <!-- Step 3: OTP entry -->
+  <form class="s1-otp-form"
+        x-show="step === 'otp'" x-cloak
+        @submit.prevent="
+          const fd = new FormData();
+          fd.append('phone', phone);
+          fd.append('code', code);
+          fd.append('name', 'ร้านใหม่');
+          if (ref) { fd.append('ref', ref); }
+          const r = await fetch('/auth/otp/verify', { method: 'POST', body: fd });
+          if (r.ok) { window.location.href = '/shop/dashboard'; }
+          else {
+            const j = await r.json().catch(() => ({}));
+            error = j.detail || (r.status + ' — ' + (r.statusText || 'ยืนยันไม่สำเร็จ'));
+          }
+        ">
+    <label>กรอก OTP ที่ส่งไปยัง <strong x-text="phone"></strong></label>
+    <div x-show="simulatedCode" class="err" style="background:#F6F1E5; color:#111; margin-bottom:12px; border:1px dashed var(--ink);">
+      OTP ทดสอบ: <strong x-text="simulatedCode"></strong>
+    </div>
+    <input x-model="code" type="text" inputmode="numeric" maxlength="4"
+           placeholder="1234" required>
+    <button type="submit" class="s1-btn s1-btn-phone">ยืนยัน &amp; เข้าสู่ระบบ</button>
+    <button type="button" class="back" @click="step = 'phone'">เปลี่ยนเบอร์</button>
+    <div x-show="error" x-cloak class="err" x-text="error"></div>
+  </form>
+
+  <div class="s1-foot">
+    ถือว่ายอมรับ <a href="#">ข้อตกลง</a> และ <a href="#">นโยบายความเป็นส่วนตัว</a>
+  </div>
+{% endblock %}

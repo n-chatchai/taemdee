@@ -1,102 +1,83 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>เสร็จเรียบร้อย!</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}เสร็จเรียบร้อย! · TaemDee{% endblock %}
 
-    <div class="s2-steps" style="margin-top:18px;">
-      <div class="step done"></div>
-      <div class="step done"></div>
-      <div class="step done"></div>
-      <div class="step active"></div>
-    </div>
-
-    <div class="s2-counter">
-      <span class="step-num"><strong>04</strong> / 04 · เสร็จ</span>
-    </div>
-
-    <div class="s2-done-hero">
-      <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-      <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-
-      <div class="s2-done-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-      <div class="s2-done-title"><em>พร้อมใช้งาน</em><br>แล้วครับ!</div>
-      <div class="s2-done-sub">โหลด คิวอาร์ร้าน พิมพ์ติดที่เคาน์เตอร์</div>
-    </div>
-
-    {# S2.4 ends with the actual print QR + download. /shop/qr.png streams a
-       high-DPI PNG straight into the user's downloads folder.
-       Card structure per design verbatim: shop-head (logo mark + sub line) +
-       QR with center logo overlay + trust strip. #}
-    {% set logo = shop_logo(shop) %}
-    {% set center_initial = (shop.name or 'm')[0]|lower %}
-    <div class="s2-qr-block">
-      <div class="s2-qr-card">
-        <div class="s2-shop-head">
-          <div class="shop-logo-mark">
-            {% if logo %}
-              {% if logo.is_image %}
-                <img src="{{ logo.url }}" class="shop-logo-img" style="width:40px; height:40px;">
-              {% else %}
-                <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-              {% endif %}
-            {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
-          </div>
-          <div class="shop-sub">
-            <span>{{ shop.name }}</span>
-            {% if shop.location %}<span class="dotsep"></span><span>{{ shop.location }}</span>{% endif %}
-          </div>
-        </div>
-        <div class="s2-qr-svg-wrap">
-          {{ qr_svg|safe }}
-          <div class="s2-qr-center">
-            {% if logo and logo.is_image %}
-              <img src="{{ logo.url }}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">
-            {% else %}
-              {{ center_initial }}<span class="dot">.</span>
-            {% endif %}
-          </div>
-        </div>
-        <div class="s2-qr-trust">
-          ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
-        </div>
-      </div>
-
-      <a class="s2-qr-download" href="/shop/qr.png" download>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        <span>ดาวน์โหลดคิวอาร์โค๊ด</span>
-      </a>
-
-      <div class="s2-qr-hint">ติดตั้งที่จุดที่ลูกค้าเห็นชัด</div>
-    </div>
-
-    <form method="POST" action="/shop/onboard/done" style="margin:0;">
-      <button type="submit" class="s2-cta-final">
-        <span>ไปที่แดชบอร์ด</span>
-        <span class="arrow">→</span>
-      </button>
-    </form>
-
-    {% include "_partials/footer_mark.html" %}
+{% block content %}
+  <div class="s2-steps" style="margin-top:18px;">
+    <div class="step done"></div>
+    <div class="step done"></div>
+    <div class="step done"></div>
+    <div class="step active"></div>
   </div>
-</body>
-</html>
+
+  <div class="s2-counter">
+    <span class="step-num"><strong>04</strong> / 04 · เสร็จ</span>
+  </div>
+
+  <div class="s2-done-hero">
+    <svg class="confetti c1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+
+    <div class="s2-done-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+    <div class="s2-done-title"><em>พร้อมใช้งาน</em><br>แล้วครับ!</div>
+    <div class="s2-done-sub">โหลด คิวอาร์ร้าน พิมพ์ติดที่เคาน์เตอร์</div>
+  </div>
+
+  {% set logo = shop_logo(shop) %}
+  {% set center_initial = (shop.name or 'm')[0]|lower %}
+  <div class="s2-qr-block">
+    <div class="s2-qr-card">
+      <div class="s2-shop-head">
+        <div class="shop-logo-mark">
+          {% if logo %}
+            {% if logo.is_image %}
+              <img src="{{ logo.url }}" class="shop-logo-img" style="width:40px; height:40px;">
+            {% else %}
+              <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+            {% endif %}
+          {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
+        </div>
+        <div class="shop-sub">
+          <span>{{ shop.name }}</span>
+          {% if shop.location %}<span class="dotsep"></span><span>{{ shop.location }}</span>{% endif %}
+        </div>
+      </div>
+      <div class="s2-qr-svg-wrap">
+        {{ qr_svg|safe }}
+        <div class="s2-qr-center">
+          {% if logo and logo.is_image %}
+            <img src="{{ logo.url }}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">
+          {% else %}
+            {{ center_initial }}<span class="dot">.</span>
+          {% endif %}
+        </div>
+      </div>
+      <div class="s2-qr-trust">
+        ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
+      </div>
+    </div>
+
+    <a class="s2-qr-download" href="/shop/qr.png" download>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      <span>ดาวน์โหลดคิวอาร์โค๊ด</span>
+    </a>
+
+    <div class="s2-qr-hint">ติดตั้งที่จุดที่ลูกค้าเห็นชัด</div>
+  </div>
+
+  <form method="POST" action="/shop/onboard/done" style="margin:20px;">
+    <button type="submit" class="s2-cta-final" style="width:100%;">
+      <span>ไปที่แดชบอร์ด</span>
+      <span class="arrow">→</span>
+    </button>
+  </form>
+{% endblock %}

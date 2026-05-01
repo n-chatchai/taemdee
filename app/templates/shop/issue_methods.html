@@ -1,17 +1,8 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>วิธีออกแต้ม · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
-  <form method="POST" action="/shop/issue/methods" class="td"
+{% extends "_layouts/s_base.html" %}
+{% block title %}วิธีออกแต้ม · {{ shop.name }} · TaemDee{% endblock %}
+
+{% block content %}
+  <form method="POST" action="/shop/issue/methods"
         x-data="{
           shopScan: {{ 'true' if shop.issue_method_shop_scan else 'false' }},
           phoneEntry: {{ 'true' if shop.issue_method_phone_entry else 'false' }},
@@ -19,10 +10,11 @@
           dirty: false,
         }"
         x-init="$watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
-    <div class="topbar"><span></span><span></span></div>
 
     <div class="app-bar">
-      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">←</a>
+      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
       <div class="title-mid">วิธีออกแต้ม</div>
       <div class="placeholder"></div>
     </div>
@@ -124,8 +116,5 @@
         <span class="arrow">✓</span>
       </button>
     </div>
-
-    {% include "_partials/footer_mark.html" %}
   </form>
-</body>
-</html>
+{% endblock %}

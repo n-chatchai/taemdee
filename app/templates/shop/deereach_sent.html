@@ -1,59 +1,42 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ส่งสำเร็จ · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}ส่งสำเร็จ · {{ shop.name }} · TaemDee{% endblock %}
 
-    <div class="app-bar">
-      <a href="/shop/dashboard" class="x" aria-label="ปิด">×</a>
-      <div class="title-mid"></div>
-      <div class="placeholder"></div>
-    </div>
-
-    <div class="s13s-stage">
-      <div class="s13s-mark">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 6 9 17 4 12"/>
-        </svg>
-      </div>
-
-      {# v2 schema: credits_spent → locked_credits_satang. While the campaign
-         is still 'locked' (worker hasn't reconciled), `final_credits_satang`
-         is 0 and we show the locked amount as the upper-bound charge.
-         After 'completed' the final figure reflects only delivered messages. #}
-      {% set spent_satang = campaign.final_credits_satang or campaign.locked_credits_satang %}
-      <div class="s13s-title">ส่ง<em>เรียบร้อย!</em></div>
-      <div class="s13s-sub">ส่งให้ {{ campaign.audience_count }} คน · ใช้ {{ spent_satang // 100 }} เครดิต</div>
-
-      <div class="s13s-card">
-        <div class="s13s-row">
-          <span class="s13s-label">เครดิตคงเหลือ</span>
-          <span class="s13s-val">{{ shop.credit_balance // 100 }}</span>
-        </div>
-        {% if campaign.status == 'locked' %}
-          <div class="s13s-row" style="font-size:11px;color:var(--ink-soft);font-style:italic;">
-            ระบบกำลังทยอยส่งให้ลูกค้า — ข้อความจะถึงภายในไม่กี่นาที.
-            ถ้ามีรายการส่งไม่สำเร็จ เครดิตจะคืนอัตโนมัติ.
-          </div>
-        {% endif %}
-      </div>
-    </div>
-
-    <a class="s13s-cta" href="/shop/dashboard">
-      <span>กลับแดชบอร์ด</span>
-      <span class="arrow">→</span>
+{% block content %}
+  <div class="app-bar">
+    <a href="/shop/dashboard" class="x" aria-label="ปิด">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
     </a>
-
-    {% include "_partials/footer_mark.html" %}
+    <div class="title-mid"></div>
+    <div class="placeholder"></div>
   </div>
-</body>
-</html>
+
+  <div class="s13s-stage">
+    <div class="s13s-mark">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
+        <polyline points="20 6 9 17 4 12"/>
+      </svg>
+    </div>
+
+    {% set spent_satang = campaign.final_credits_satang or campaign.locked_credits_satang %}
+    <div class="s13s-title">ส่ง<em>เรียบร้อย!</em></div>
+    <div class="s13s-sub">ส่งให้ {{ campaign.audience_count }} คน · ใช้ {{ spent_satang // 100 }} เครดิต</div>
+
+    <div class="s13s-card">
+      <div class="s13s-row">
+        <span class="s13s-label">เครดิตคงเหลือ</span>
+        <span class="s13s-val">{{ shop.credit_balance // 100 }}</span>
+      </div>
+      {% if campaign.status == 'locked' %}
+        <div class="s13s-row" style="font-size:11px;color:var(--ink-soft);font-style:italic;">
+          ระบบกำลังทยอยส่งให้ลูกค้า — ข้อความจะถึงภายในไม่กี่นาที.
+          ถ้ามีรายการส่งไม่สำเร็จ เครดิตจะคืนอัตโนมัติ.
+        </div>
+      {% endif %}
+    </div>
+  </div>
+
+  <a class="s13s-cta" href="/shop/dashboard">
+    <span>กลับแดชบอร์ด</span>
+    <span class="arrow">→</span>
+  </a>
+{% endblock %}

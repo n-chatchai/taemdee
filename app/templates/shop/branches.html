@@ -1,91 +1,77 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>สาขา · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
-  <div class="td" x-data="{ adding: false }">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}สาขา · {{ shop.name }} · TaemDee{% endblock %}
 
-    <div class="app-bar">
-      <a href="/shop/settings" class="x">←</a>
-      <div class="title-mid">สาขา</div>
-      <div class="right-action">{{ branches|length }} สาขา</div>
-    </div>
+{% block td_attrs %}
+  x-data="{ adding: false }"
+{% endblock %}
 
-    <div class="page-title">
-      <div class="h">สาขา<em>ทั้งหมด.</em></div>
-      <div class="sub">{% if branches|length > 1 %}สาขาทุกสาขาของร้าน{% else %}เพิ่มสาขาที่สองเพื่อเริ่มใช้โหมดสาขา{% endif %}</div>
-    </div>
+{% block content %}
+  <div class="app-bar">
+    <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
+    <div class="title-mid">สาขา</div>
+    <div class="placeholder"></div>
+  </div>
 
-    {% if branches|length >= 2 %}
+  <div class="page-title" style="padding: 22px 22px 12px;">
+    <div class="h">สาขา<em>ทั้งหมด.</em></div>
+    <div class="sub">{% if branches|length > 1 %}สาขาทุกสาขาของร้าน{% else %}เพิ่มสาขาที่สองเพื่อเริ่มใช้โหมดสาขา{% endif %}</div>
+  </div>
+
+  {% if branches|length >= 2 %}
     <div class="s12-mode">
       <div class="top">
         <div class="l">โหมดรางวัล · ล็อก</div>
         <div class="pill">{% if shop.reward_mode == 'shared' %}รวม{% else %}แยก{% endif %}</div>
       </div>
       <div class="name">
-        {% if shop.reward_mode == 'shared' %}
-          รางวัลเดียวกันทุกสาขา
-        {% else %}
-          แยกรางวัลต่อสาขา
-        {% endif %}
+        {% if shop.reward_mode == 'shared' %}รางวัลเดียวกันทุกสาขา{% else %}แยกรางวัลต่อสาขา{% endif %}
       </div>
       <div class="desc">
-        {% if shop.reward_mode == 'shared' %}
-          ลูกค้ามีบัตรเดียว เก็บแต้มได้ทุกสาขา รับรางวัลได้ทุกสาขา
-        {% else %}
-          ลูกค้ามีบัตรแยกต่อสาขา ต้องเก็บครบแต่ละสาขา
-        {% endif %}
+        {% if shop.reward_mode == 'shared' %}ลูกค้ามีบัตรเดียว เก็บแต้มได้ทุกสาขา รับรางวัลได้ทุกสาขา{% else %}ลูกค้ามีบัตรแยกต่อสาขา ต้องเก็บครบแต่ละสาขา{% endif %}
       </div>
     </div>
-    {% endif %}
+  {% endif %}
 
-    {# Add-branch CTA — expands an inline form #}
-    <a href="#" class="s12-add" @click.prevent="adding = !adding">
-      <div class="ic">+</div>
-      <div class="meta">
-        <div class="h">เพิ่มสาขาใหม่</div>
-        <div class="s">
-          {% if branches|length == 0 %}
-            ตั้งชื่อสาขาแรกของคุณ
-          {% elif branches|length == 1 %}
-            เพิ่มสาขาที่สอง — เลือกโหมดรางวัล
-          {% else %}
-            เปิดสาขาเพิ่มเติม
-          {% endif %}
+  <a href="#" class="s12-add" @click.prevent="adding = !adding">
+    <div class="ic">+</div>
+    <div class="meta">
+      <div class="h">เพิ่มสาขาใหม่</div>
+      <div class="s">
+        {% if branches|length == 0 %}ตั้งชื่อสาขาแรกของคุณ
+        {% elif branches|length == 1 %}เพิ่มสาขาที่สอง — เลือกโหมดรางวัล
+        {% else %}เปิดสาขาเพิ่มเติม{% endif %}
+      </div>
+    </div>
+    <div class="arrow">›</div>
+  </a>
+
+  <form x-show="adding" x-cloak class="s11-form" method="POST" action="/shop/branches" style="padding: 12px 20px;">
+    <div class="s2-field">
+      <div class="s2-label">ชื่อสาขา</div>
+      <input class="s2-input" name="name" type="text" placeholder="เช่น นิมมาน" required>
+    </div>
+    <div class="s2-field" style="margin-top:12px;">
+      <div class="s2-label">ที่อยู่ (ทางเลือก)</div>
+      <input class="s2-input" name="address" type="text" placeholder="เช่น 123 ถ.นิมมานเหมินท์ · เชียงใหม่">
+    </div>
+
+    {% if branches|length == 1 %}
+      <div class="s2-field" style="margin-top:12px;">
+        <div class="s2-label">โหมดรางวัล (ล็อกหลังเพิ่ม)</div>
+        <div class="checks" style="margin-top:8px;">
+          <label style="display:block; margin-bottom:8px;"><input type="radio" name="reward_mode" value="shared" checked> รวม — บัตรเดียวข้ามสาขา</label>
+          <label style="display:block;"><input type="radio" name="reward_mode" value="separate"> แยก — บัตรต่อสาขา</label>
         </div>
       </div>
-      <div class="arrow">›</div>
-    </a>
+    {% endif %}
 
-    <form x-show="adding" x-cloak class="s11-form" method="POST" action="/shop/branches">
-      <label for="b-name">ชื่อสาขา</label>
-      <input id="b-name" name="name" type="text" placeholder="เช่น นิมมาน" required>
-      <label for="b-addr">ที่อยู่ (ทางเลือก)</label>
-      <input id="b-addr" name="address" type="text" placeholder="เช่น 123 ถ.นิมมานเหมินท์ · เชียงใหม่">
+    <button type="submit" class="s2-cta-final" style="width:100%; margin-top:20px;">เพิ่มสาขา</button>
+  </form>
 
-      {% if branches|length == 1 %}
-      {# 2nd-branch only — must pick reward mode (locked after) #}
-      <label>โหมดรางวัล (ล็อกหลังเพิ่ม)</label>
-      <div class="checks">
-        <label><input type="radio" name="reward_mode" value="shared" checked>รวม — บัตรเดียวข้ามสาขา</label>
-        <label><input type="radio" name="reward_mode" value="separate">แยก — บัตรต่อสาขา</label>
-      </div>
-      {% endif %}
-
-      <button type="submit" class="submit-btn">เพิ่มสาขา</button>
-    </form>
-
-    {% if branches %}
-    <div class="s12-list-h">{{ branches|length }} สาขา</div>
+  {% if branches %}
+    <div class="s12-list-h" style="padding: 18px 22px 8px; font-size:12px; color:var(--ink-soft); font-weight:600;">{{ branches|length }} สาขา</div>
     {% for branch in branches %}
       <div class="s12-branch {% if loop.index == 2 %}b2{% elif loop.index == 3 %}b3{% endif %}">
         <div class="num">{{ '%02d'|format(loop.index) }}</div>
@@ -96,9 +82,5 @@
         <a href="/shop/branches/{{ branch.id }}/qr" class="qr-link">ดู QR ↗</a>
       </div>
     {% endfor %}
-    {% endif %}
-
-    <div style="height: 24px;"></div>
-  </div>
-</body>
-</html>
+  {% endif %}
+{% endblock %}

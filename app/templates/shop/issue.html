@@ -1,104 +1,94 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ออกแต้ม · {{ shop.name }} · TaemDee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td td-tabbed td-issue">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}ออกแต้ม · {{ shop.name }} · TaemDee{% endblock %}
 
-    {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
-    {% include "_partials/s3_top.html" %}
+{% block content %}
+  {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
+  {% include "_partials/s3_top.html" %}
 
-    <div class="ph-section-h" style="margin-top:8px;">
-      <div class="label">ลูกค้าล่าสุด</div>
-      <span class="met-pills issue-feed-pills">
-        <a class="mp active" aria-disabled="true" tabindex="-1">ทั้งหมด</a>
-        <a class="mp" aria-disabled="true" tabindex="-1">สแกน</a>
-        <a class="mp" aria-disabled="true" tabindex="-1">แลก</a>
-      </span>
-    </div>
+  <div class="ph-section-h" style="margin-top:8px;">
+    <div class="label">ลูกค้าล่าสุด</div>
+    <span class="met-pills issue-feed-pills">
+      <a class="mp active" aria-disabled="true" tabindex="-1">ทั้งหมด</a>
+      <a class="mp" aria-disabled="true" tabindex="-1">สแกน</a>
+      <a class="mp" aria-disabled="true" tabindex="-1">แลก</a>
+    </span>
+  </div>
 
-    <div class="s3-issue-feed">
-      <table class="sap-table" id="sap-table">
-        <tbody id="sap-tbody">
-          {% for kind, item, customer_name in feed[:feed_cap] %}
-            <tr class="feed-row{% if loop.first %} latest{% endif %}"
-                id="row-{{ item.id }}"
-                data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
-              <td class="t">{{ item.created_at|bkk_feed_time }}</td>
-              <td class="n">{{ customer_name }}</td>
-              <td class="a">
-                {% if kind == 'point' %}
-                  <span class="icon-mini">+</span> <strong>1 แต้ม</strong>
-                {% else %}
-                  <strong>รับรางวัล</strong>
-                {% endif %}
-              </td>
-            </tr>
-          {% else %}
-            <tr><td colspan="3" style="text-align:center; padding:18px 0; color:var(--ink-softer); font-style:italic; font-size:12px;">ยังไม่มีกิจกรรมวันนี้</td></tr>
-          {% endfor %}
-        </tbody>
-      </table>
-    </div>
+  <div class="s3-issue-feed">
+    <table class="sap-table" id="sap-table">
+      <tbody id="sap-tbody">
+        {% for kind, item, customer_name in feed[:feed_cap] %}
+          <tr class="feed-row{% if loop.first %} latest{% endif %}"
+              id="row-{{ item.id }}"
+              data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
+            <td class="t">{{ item.created_at|bkk_feed_time }}</td>
+            <td class="n">{{ customer_name }}</td>
+            <td class="a">
+              {% if kind == 'point' %}
+                <span class="icon-mini">+</span> <strong>1 แต้ม</strong>
+              {% else %}
+                <strong>รับรางวัล</strong>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="3" style="text-align:center; padding:18px 0; color:var(--ink-softer); font-style:italic; font-size:12px;">ยังไม่มีกิจกรรมวันนี้</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
 
-    <div class="s3-issue-actions">
-      <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
-      <div class="sap-actions">
-        {# S3.qr — show rotating on-screen QR for the customer's camera. #}
-        <a class="sap-action" href="/shop/qr/live">
+  <div class="s3-issue-actions">
+    <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
+    <div class="sap-actions">
+      {# S3.qr — show rotating on-screen QR for the customer's camera. #}
+      <a class="sap-action" href="/shop/qr/live">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span>ลูกค้าสแกน</span>
+      </a>
+      {% if shop.issue_method_phone_entry %}
+        <a class="sap-action" href="/shop/issue/phone">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="5" y="2" width="14" height="20" rx="2"/>
+            <line x1="12" y1="18" x2="12.01" y2="18"/>
+          </svg>
+          <span>กรอกเบอร์</span>
+        </a>
+      {% endif %}
+      {% if shop.issue_method_shop_scan %}
+        <a class="sap-action" href="/shop/issue/scan">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
             <rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/>
             <rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
-          <span>ลูกค้าสแกน</span>
+          <span>สแกน QR</span>
         </a>
-        {% if shop.issue_method_phone_entry %}
-          <a class="sap-action" href="/shop/issue/phone">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="5" y="2" width="14" height="20" rx="2"/>
-              <line x1="12" y1="18" x2="12.01" y2="18"/>
-            </svg>
-            <span>กรอกเบอร์</span>
-          </a>
-        {% endif %}
-        {% if shop.issue_method_shop_scan %}
-          <a class="sap-action" href="/shop/issue/scan">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <rect x="3" y="3" width="7" height="7" rx="1"/>
-              <rect x="14" y="3" width="7" height="7" rx="1"/>
-              <rect x="3" y="14" width="7" height="7" rx="1"/>
-              <rect x="14" y="14" width="7" height="7" rx="1"/>
-            </svg>
-            <span>สแกน QR</span>
-          </a>
-        {% endif %}
-        {% if shop.issue_method_grant %}
-          <a class="sap-action" href="/shop/issue/grant">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <circle cx="11" cy="11" r="8"/>
-              <line x1="21" y1="21" x2="16.65" y2="16.65"/>
-            </svg>
-            <span>ค้นชื่อ</span>
-          </a>
-        {% endif %}
-      </div>
+      {% endif %}
+      {% if shop.issue_method_grant %}
+        <a class="sap-action" href="/shop/issue/grant">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="8"/>
+            <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+          </svg>
+          <span>ค้นชื่อ</span>
+        </a>
+      {% endif %}
     </div>
-
-    {% set nav_active = 'issue' %}
-    {% include "_partials/glass_nav.html" %}
-
-    {% include "_partials/feed_detail_sheet.html" %}
   </div>
-  {% include "_partials/sse_listener.html" %}
-</body>
-</html>
+
+  {% include "_partials/feed_detail_sheet.html" %}
+{% endblock %}
+
+{% block td_class %} td-tabbed td-issue{% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'issue' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}

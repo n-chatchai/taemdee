@@ -1,130 +1,120 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>{{ shop.name }} · TaemDee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
+{% extends "_layouts/s_base.html" %}
+{% set nav_active = 'home' %}
+
+{% block content %}
   {# Markup follows design/taemdee-shop.html S3 — full-page hub with
      snapshot + trend bars + attention cards + 4-tab glass nav.
      The old dock+feed pattern moved to /shop/issue (S3.issue tab). #}
-  <div class="td td-tabbed">
-    <div class="topbar"><span></span><span></span></div>
+  
+  {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
+  {% include "_partials/s3_top.html" %}
 
-    {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
-    {% include "_partials/s3_top.html" %}
+  {# Merged metrics card per design rev — replaces the three separate
+     cards (time-pills, snapshot, trend) with one rounded surface that
+     holds the period tabs (underline style), big customer count + delta,
+     inline 7-day bars, and the sub-stats line. #}
+  <div class="s3-metrics">
+    <div class="met-head">
+      <span class="met-title">ลูกค้า</span>
+      <span class="met-pills">
+        <a class="mp active" href="/shop/dashboard">วันนี้</a>
+        <a class="mp" href="/shop/dashboard?period=week" aria-disabled="true" tabindex="-1">สัปดาห์</a>
+        <a class="mp" href="/shop/dashboard?period=month" aria-disabled="true" tabindex="-1">เดือน</a>
+      </span>
+    </div>
 
-    {# Merged metrics card per design rev — replaces the three separate
-       cards (time-pills, snapshot, trend) with one rounded surface that
-       holds the period tabs (underline style), big customer count + delta,
-       inline 7-day bars, and the sub-stats line. #}
-    <div class="s3-metrics">
-      <div class="met-head">
-        <span class="met-title">ลูกค้า</span>
-        <span class="met-pills">
-          <a class="mp active" href="/shop/dashboard">วันนี้</a>
-          <a class="mp" href="/shop/dashboard?period=week" aria-disabled="true" tabindex="-1">สัปดาห์</a>
-          <a class="mp" href="/shop/dashboard?period=month" aria-disabled="true" tabindex="-1">เดือน</a>
-        </span>
+    <div class="met-num-row">
+      <div class="met-num">
+        <span class="num-big">{{ customers_today }}</span>
+        <span class="num-unit">คน</span>
       </div>
-
-      <div class="met-num-row">
-        <div class="met-num">
-          <span class="num-big">{{ customers_today }}</span>
-          <span class="num-unit">คน</span>
+      {% if today_delta != 0 %}
+        <div class="met-delta {% if today_delta > 0 %}up{% else %}down{% endif %}">
+          <span class="delta-arr">{% if today_delta > 0 %}↑{% else %}↓{% endif %}</span>
+          <span class="delta-num">{% if today_delta > 0 %}+{% endif %}{{ today_delta }}</span>
+          <span class="delta-from">จากเมื่อวาน</span>
         </div>
-        {% if today_delta != 0 %}
-          <div class="met-delta {% if today_delta > 0 %}up{% else %}down{% endif %}">
-            <span class="delta-arr">{% if today_delta > 0 %}↑{% else %}↓{% endif %}</span>
-            <span class="delta-num">{% if today_delta > 0 %}+{% endif %}{{ today_delta }}</span>
-            <span class="delta-from">จากเมื่อวาน</span>
+      {% endif %}
+    </div>
+
+    <div class="met-trend">
+      <div class="trend-bars">
+        {% set day_labels = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'] %}
+        {% for pct in daily_pct %}
+          <div class="tb">
+            <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%"></div>
+            <span class="tb-day">{{ day_labels[(loop.index0 - 6 + 7) % 7] }}</span>
           </div>
-        {% endif %}
-      </div>
-
-      <div class="met-trend">
-        <div class="trend-bars">
-          {% set day_labels = ['จ.', 'อ.', 'พ.', 'พฤ.', 'ศ.', 'ส.', 'อา.'] %}
-          {% for pct in daily_pct %}
-            <div class="tb">
-              <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%"></div>
-              <span class="tb-day">{{ day_labels[(loop.index0 - 6 + 7) % 7] }}</span>
-            </div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div class="met-sub">
-        ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
-        {% if wow_pct is not none %}
-          · สัปดาห์นี้
-          <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
-        {% endif %}
+        {% endfor %}
       </div>
     </div>
 
-    {% if items %}
-      <div class="ph-section-h" style="margin-top:8px;">
-        <div class="label">รายการที่ต้องทำ</div>
-      </div>
-      {% for it in items %}
-        <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
-          <button type="submit" class="s3-item">
-            <span class="s3-item-icon">✦</span>
-            <div class="s3-item-info">
-              <div class="s3-item-h">{{ it.label }}</div>
-              <div class="s3-item-s">{{ it.sub }}</div>
-            </div>
-            <span class="s3-item-cta">{{ it.cta }} ›</span>
-          </button>
-        </form>
-      {% endfor %}
-    {% endif %}
-
-    {% if attn_cards %}
-      <div class="ph-section-h" style="margin-top:8px;">
-        <div class="label">แต้มดีแนะนำ ✦</div>
-      </div>
-      {% for c in attn_cards %}
-        <a class="s3-attn {{ c.kind }}" href="{{ c.link }}">
-          <div class="attn-icon">
-            {% if c.kind == 'warn' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-                <line x1="12" y1="9" x2="12" y2="13"/>
-                <line x1="12" y1="17" x2="12.01" y2="17"/>
-              </svg>
-            {% elif c.kind == 'opp' %}
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                <polyline points="20 12 20 22 4 22 4 12"/>
-                <rect x="2" y="7" width="20" height="5"/>
-                <line x1="12" y1="22" x2="12" y2="7"/>
-                <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-                <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
-              </svg>
-            {% else %}
-              <svg viewBox="0 0 24 24" fill="currentColor">
-                <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
-              </svg>
-            {% endif %}
-          </div>
-          <div class="attn-info">
-            <div class="attn-h">{{ c.head }}</div>
-            <div class="attn-s">{{ c.sub }}</div>
-          </div>
-          <span class="attn-arr">›</span>
-        </a>
-      {% endfor %}
-    {% endif %}
-
-    {% set nav_active = 'home' %}
-    {% include "_partials/glass_nav.html" %}
+    <div class="met-sub">
+      ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
+      {% if wow_pct is not none %}
+        · สัปดาห์นี้
+        <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
+      {% endif %}
+    </div>
   </div>
-  {% include "_partials/sse_listener.html" %}
-</body>
-</html>
+
+  {% if items %}
+    <div class="ph-section-h" style="margin-top:8px;">
+      <div class="label">รายการที่ต้องทำ</div>
+    </div>
+    {% for it in items %}
+      <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
+        <button type="submit" class="s3-item">
+          <span class="s3-item-icon">✦</span>
+          <div class="s3-item-info">
+            <div class="s3-item-h">{{ it.label }}</div>
+            <div class="s3-item-s">{{ it.sub }}</div>
+          </div>
+          <span class="s3-item-cta">{{ it.cta }} ›</span>
+        </button>
+      </form>
+    {% endfor %}
+  {% endif %}
+
+  {% if attn_cards %}
+    <div class="ph-section-h" style="margin-top:8px;">
+      <div class="label">แต้มดีแนะนำ ✦</div>
+    </div>
+    {% for c in attn_cards %}
+      <a class="s3-attn {{ c.kind }}" href="{{ c.link }}">
+        <div class="attn-icon">
+          {% if c.kind == 'warn' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+              <line x1="12" y1="9" x2="12" y2="13"/>
+              <line x1="12" y1="17" x2="12.01" y2="17"/>
+            </svg>
+          {% elif c.kind == 'opp' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <polyline points="20 12 20 22 4 22 4 12"/>
+              <rect x="2" y="7" width="20" height="5"/>
+              <line x1="12" y1="22" x2="12" y2="7"/>
+              <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+              <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+            </svg>
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="currentColor">
+              <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
+            </svg>
+          {% endif %}
+        </div>
+        <div class="attn-info">
+          <div class="attn-h">{{ c.head }}</div>
+          <div class="attn-s">{{ c.sub }}</div>
+        </div>
+        <span class="attn-arr">›</span>
+      </a>
+    {% endfor %}
+  {% endif %}
+{% endblock %}
+
+{% block td_class %} td-tabbed{% endblock %}
+
+{% block nav %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}

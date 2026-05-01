@@ -1,20 +1,12 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ติดต่อ · TaemDee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <form method="POST" action="/shop/settings/contact" class="td">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}ติดต่อ · {{ shop.name }} · TaemDee{% endblock %}
 
+{% block content %}
+  <form method="POST" action="/shop/settings/contact">
     <div class="app-bar">
-      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">←</a>
+      <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+      </a>
       <div class="title-mid">ติดต่อ</div>
       <div class="placeholder"></div>
     </div>
@@ -60,12 +52,11 @@
         <span class="arrow">→</span>
       </button>
     </div>
-
-    {% include "_partials/footer_mark.html" %}
   </form>
+{% endblock %}
 
-  {# Toggle the time inputs whenever 'ปิด' checkbox flips. No Alpine
-     dependency to keep the page light. #}
+{% block body_end %}
+  {# Toggle the time inputs whenever 'ปิด' checkbox flips. #}
   <script>
     (function () {
       document.querySelectorAll('.s10-hour-row').forEach(row => {
@@ -78,5 +69,4 @@
       });
     })();
   </script>
-</body>
-</html>
+{% endblock %}

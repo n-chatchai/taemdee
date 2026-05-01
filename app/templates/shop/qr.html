@@ -1,81 +1,66 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>QR ของ {{ shop.name }} · TaemDee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}QR ของ {{ shop.name }} · TaemDee{% endblock %}
 
-    <div class="app-bar">
-      <a href="{% if branch %}/shop/branches{% else %}/shop/dashboard{% endif %}" class="x">←</a>
-      <div class="title-mid">{% if branch %}คิวอาร์ · {{ branch.name }}{% else %}คิวอาร์ร้าน{% endif %}</div>
-      <div class="placeholder"></div>
-    </div>
-
-    <div class="s8-actions">
-      <a class="pill" href="{% if branch %}/shop/branches/{{ branch.id }}/qr.png{% else %}/shop/qr.png{% endif %}" download>
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="7 10 12 15 17 10"/>
-          <line x1="12" y1="15" x2="12" y2="3"/>
-        </svg>
-        บันทึก
-      </a>
-    </div>
-
-    {# Print card per S8 design: shop-head (logo + name · location) on top,
-       QR with accent center badge, trust strip, brand foot. The print
-       stylesheet hides .topbar / .app-bar / .s8-actions so only this
-       card lands on paper. #}
-    {% set logo = shop_logo(shop) %}
-    {% set center_initial = (shop.name or 'm')[0]|lower %}
-    <div class="s8-print" data-scan-url="{{ scan_url }}">
-      <div class="s8-shop-head">
-        <div class="shop-logo-mark">
-          {% if logo %}
-            {% if logo.is_image %}
-              <img src="{{ logo.url }}" class="shop-logo-img">
-            {% else %}
-              <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-            {% endif %}
-          {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
-        </div>
-        <div class="shop-sub">
-          <span>{{ shop.name }}</span>
-          {% if branch %}<span class="dotsep"></span><span>{{ branch.name }}</span>
-          {% elif shop.location %}<span class="dotsep"></span><span>{{ shop.location }}</span>{% endif %}
-        </div>
-      </div>
-
-      <div class="s8-qr-wrap">
-        <div class="s8-qr">
-          {{ qr_svg|safe }}
-          <div class="center">{{ center_initial }}<span class="dot">.</span></div>
-        </div>
-      </div>
-
-      <div class="trust-strip">
-        ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
-      </div>
-
-      <div class="brand-foot">
-        <span>taemdee<span class="dot">.</span></span>
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-      </div>
-    </div>
-
-    {% include "_partials/footer_mark.html" %}
+{% block content %}
+  <div class="app-bar">
+    <a href="{% if branch %}/shop/branches{% else %}/shop/dashboard{% endif %}" class="x">←</a>
+    <div class="title-mid">{% if branch %}คิวอาร์ · {{ branch.name }}{% else %}คิวอาร์ร้าน{% endif %}</div>
+    <div class="placeholder"></div>
   </div>
-</body>
-</html>
+
+  <div class="s8-actions">
+    <a class="pill" href="{% if branch %}/shop/branches/{{ branch.id }}/qr.png{% else %}/shop/qr.png{% endif %}" download>
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
+      </svg>
+      บันทึก
+    </a>
+  </div>
+
+  {# Print card per S8 design: shop-head (logo + name · location) on top,
+     QR with accent center badge, trust strip, brand foot. The print
+     stylesheet hides .topbar / .app-bar / .s8-actions so only this
+     card lands on paper. #}
+  {% set logo = shop_logo(shop) %}
+  {% set center_initial = (shop.name or 'm')[0]|lower %}
+  <div class="s8-print" data-scan-url="{{ scan_url }}">
+    <div class="s8-shop-head">
+      <div class="shop-logo-mark">
+        {% if logo %}
+          {% if logo.is_image %}
+            <img src="{{ logo.url }}" class="shop-logo-img">
+          {% else %}
+            <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+          {% endif %}
+        {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
+      </div>
+      <div class="shop-sub">
+        <span>{{ shop.name }}</span>
+        {% if branch %}<span class="dotsep"></span><span>{{ branch.name }}</span>
+        {% elif shop.location %}<span class="dotsep"></span><span>{{ shop.location }}</span>{% endif %}
+      </div>
+    </div>
+
+    <div class="s8-qr-wrap">
+      <div class="s8-qr">
+        {{ qr_svg|safe }}
+        <div class="center">{{ center_initial }}<span class="dot">.</span></div>
+      </div>
+    </div>
+
+    <div class="trust-strip">
+      ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
+    </div>
+
+    <div class="brand-foot">
+      <span>taemdee<span class="dot">.</span></span>
+      <svg class="smile" viewBox="0 0 20 12" fill="none">
+        <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+        <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+        <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+      </svg>
+    </div>
+  </div>
+{% endblock %}

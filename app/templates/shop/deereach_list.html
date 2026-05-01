@@ -1,67 +1,54 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>แต้มดีแนะนำ · {{ shop.name }}</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/s_base.html" %}
+{% block title %}แต้มดีแนะนำ · {{ shop.name }} · TaemDee{% endblock %}
 
-    <div class="app-bar">
-      <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">←</a>
-      <div class="title-mid">แต้มดีแนะนำ</div>
-      <div class="placeholder"></div>
-    </div>
-
-    <div class="s13-intro">
-      <div class="ask">แคมเปญ<em>แนะนำ.</em></div>
-      <div class="ask-th">ระบบเลือกลูกค้าและเขียนข้อความให้ — ปรับก่อนส่งได้</div>
-    </div>
-
-    {% if suggestions %}
-      <div class="s13-list">
-        {% for s in suggestions %}
-          <a class="s13-card {% if loop.first %}primary{% endif %}" href="/shop/deereach/{{ s.kind }}">
-            {% if loop.first %}<div class="sc-tag">ใหม่ · แนะนำ</div>{% endif %}
-            <div class="sc-row">
-              <div class="sc-icon">
-                {% if s.kind == 'win_back' %}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="9 13 12 10 15 13 21 7"/></svg>
-                {% elif s.kind == 'almost_there' %}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L15 9 L22 9 L17 14 L19 22 L12 18 L5 22 L7 14 L2 9 L9 9 Z"/></svg>
-                {% else %}
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
-                {% endif %}
-              </div>
-              <div class="sc-info">
-                <div class="sc-name">{{ s.head }}</div>
-                <div class="sc-meta">{{ s.body }}</div>
-              </div>
-              <div class="sc-cost">{{ s.cost_credit }} เครดิต</div>
-            </div>
-          </a>
-        {% endfor %}
-      </div>
-    {% else %}
-      <div class="s3-reach placeholder" style="margin: 18px 20px;">
-        <div class="reach-kicker">ยังไม่มีคำแนะนำ</div>
-        <div class="reach-head">ลูกค้าที่หายไปจะปรากฏที่นี่</div>
-        <div class="reach-body">เมื่อมีลูกค้าหายเกิน 60 วัน หรือใกล้ครบบัตร แต้มดีจะแนะนำที่นี่</div>
-      </div>
-    {% endif %}
-
-    <a class="s13-create" href="/shop/deereach/manual">
-      <span class="plus">+</span>
-      สร้างแคมเปญเอง
+{% block content %}
+  <div class="app-bar">
+    <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
     </a>
-
-    {% include "_partials/footer_mark.html" %}
+    <div class="title-mid">แต้มดีแนะนำ</div>
+    <div class="placeholder"></div>
   </div>
-</body>
-</html>
+
+  <div class="s13-intro">
+    <div class="ask">แต้มดี<em>แนะนำ.</em></div>
+    <div class="ask-th">คัดสรรกลยุทธ์เพื่อร้านคุณโดยเฉพาะ · ส่งหาลูกค้าได้ทันที</div>
+  </div>
+
+  {% if suggestions %}
+    <div class="s13-list">
+      {% for s in suggestions %}
+        <a class="s13-card {% if loop.first %}primary{% endif %}" href="/shop/deereach/{{ s.kind }}">
+          {% if loop.first %}<div class="sc-tag">ใหม่ · แนะนำ</div>{% endif %}
+          <div class="sc-row">
+            <div class="sc-icon">
+              {% if s.kind == 'win_back' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 3v18h18"/><polyline points="9 13 12 10 15 13 21 7"/></svg>
+              {% elif s.kind == 'almost_there' %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 2 L15 9 L22 9 L17 14 L19 22 L12 18 L5 22 L7 14 L2 9 L9 9 Z"/></svg>
+              {% else %}
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
+              {% endif %}
+            </div>
+            <div class="sc-info">
+              <div class="sc-name">{{ s.head }}</div>
+              <div class="sc-meta">{{ s.body }}</div>
+            </div>
+            <div class="sc-cost">{{ s.cost_credit }} เครดิต</div>
+          </div>
+        </a>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="s3-reach placeholder" style="margin: 18px 20px;">
+      <div class="reach-kicker">ยังไม่มีคำแนะนำ</div>
+      <div class="reach-head">ลูกค้าที่หายไปจะปรากฏที่นี่</div>
+      <div class="reach-body">เมื่อมีลูกค้าหายเกิน 60 วัน หรือใกล้ครบบัตร แต้มดีจะแนะนำที่นี่</div>
+    </div>
+  {% endif %}
+
+  <a class="s13-create" href="/shop/deereach/manual">
+    <span class="plus">+</span>
+    สร้างแคมเปญเอง
+  </a>
+{% endblock %}

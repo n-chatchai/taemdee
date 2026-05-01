@@ -1,46 +1,36 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ตั้งค่าร้าน · 1/4</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script src="https://unpkg.com/htmx.org@1.9.10"></script>
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
-  <form method="POST" action="/shop/onboard/identity" class="td"
-        x-data="{
-          choice: '{{ picked_id or options[0].id }}',
-          customText: '{{ custom_text }}',
-          isUploading: false,
-          customLogoUrl: '{{ shop.logo_url if shop.logo_url and shop.logo_url.startswith('url:') else '' }}',
-          async handleFileUpload(e) {
-            const file = e.target.files[0];
-            if (!file) return;
-            this.isUploading = true;
-            const formData = new FormData();
-            formData.append('file', file);
-            try {
-              const res = await fetch('/shop/upload/logo', { method: 'POST', body: formData });
-              const data = await res.json();
-              if (data.url) {
-                this.customLogoUrl = 'url:' + data.url;
-                this.choice = 'url:' + data.url;
-              }
-            } catch (err) {
-              console.error('Upload failed', err);
-            } finally {
-              this.isUploading = false;
-            }
-          }
-        }">
+{% extends "_layouts/s_base.html" %}
+{% block title %}ตั้งค่าร้าน · 1/4 · TaemDee{% endblock %}
 
-    <div class="topbar"><span></span><span></span></div>
+{% block td_attrs %}
+  x-data="{
+    choice: '{{ picked_id or options[0].id }}',
+    customText: '{{ custom_text }}',
+    isUploading: false,
+    customLogoUrl: '{{ shop.logo_url if shop.logo_url and shop.logo_url.startswith('url:') else '' }}',
+    async handleFileUpload(e) {
+      const file = e.target.files[0];
+      if (!file) return;
+      this.isUploading = true;
+      const formData = new FormData();
+      formData.append('file', file);
+      try {
+        const res = await fetch('/shop/upload/logo', { method: 'POST', body: formData });
+        const data = await res.json();
+        if (data.url) {
+          this.customLogoUrl = 'url:' + data.url;
+          this.choice = 'url:' + data.url;
+        }
+      } catch (err) {
+        console.error('Upload failed', err);
+      } finally {
+        this.isUploading = false;
+      }
+    }
+  }"
+{% endblock %}
 
+{% block content %}
+  <form method="POST" action="/shop/onboard/identity">
     <div class="s2-steps">
       <div class="step active"></div>
       <div class="step"></div>
@@ -57,8 +47,8 @@
       <div class="sub">ใช้เวลาประมาณ 1 นาที</div>
     </div>
 
-    <div class="s2-field">
-      <label class="label" for="onboard-name">ชื่อร้าน</label>
+    <div class="s2-field" style="padding: 0 20px;">
+      <div class="s2-label">ชื่อร้าน</div>
       <input id="onboard-name" name="name" type="text" required
              class="s2-input{% if collision_warning %} warn{% endif %}"
              value="{% if shop.name not in ('ร้านใหม่', 'New Shop') %}{{ shop.name }}{% endif %}"
@@ -76,22 +66,16 @@
           </div>
         </div>
       {% else %}
-        <div class="s2-hint">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
+        <div class="s2-hint" style="margin-top:8px;">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
       {% endif %}
     </div>
 
-    {# S2.1 — combobox picker. Search input with magnifier prefix, no
-       chevron arrow. Dropdown filters the district list as the owner
-       types; each row shows "<district> · <province>" so ambiguous
-       names (จอมทอง / เฉลิมพระเกียรติ) resolve in one tap rather than
-       a separate ambiguity row. ✓ marks the current pick. Click outside
-       closes the dropdown. #}
-    <div class="s2-field" style="margin-top:18px;"
+    <div class="s2-field" style="margin-top:18px; padding: 0 20px;"
          x-data="districtPicker({
            initialDistrict: '{{ shop.district or '' }}',
            initialProvince: {{ initial_province|tojson if initial_province else 'null' }}
          })" @click.outside="open = false">
-      <label class="label" for="onboard-district">เขต/อำเภอ</label>
+      <div class="s2-label">เขต/อำเภอ</div>
       <input id="onboard-district" type="text"
              class="s2-input s2-district-input"
              x-ref="di"
@@ -115,69 +99,31 @@
         </template>
       </div>
 
-      {# Static province confirmation — shown after a pick so the owner
-         doesn't lose visibility of which province they committed once
-         the dropdown closes. Falls back to the placeholder hint when
-         no pick yet. #}
-      <div class="s2-hint" x-show="!open && picked.province" x-cloak>
+      <div class="s2-hint" style="margin-top:8px;" x-show="!open && picked.province" x-cloak>
         ✓ <strong x-text="picked.province" style="color:var(--mint-ink); font-weight:700;"></strong>
       </div>
-      <div class="s2-hint" x-show="!open && !picked.province">
+      <div class="s2-hint" style="margin-top:8px;" x-show="!open && !picked.province">
         เลือกเขต/อำเภอ · จังหวัดจะมาเอง
       </div>
     </div>
 
-    <script>
-      function districtPicker(init) {
-        // Inlined dataset of {district, province} pairs — full list,
-        // ~975 rows. Prebuilt server-side from the lookup table so the
-        // typeahead filter stays client-side (no per-keystroke fetch).
-        const PAIRS = {{ district_pairs|tojson }};
-        return {
-          query: init.initialDistrict,
-          picked: { district: init.initialDistrict, province: init.initialProvince || '' },
-          results: [],
-          open: false,
-          lookupActive() {
-            const q = this.query.trim().toLowerCase();
-            if (!q) { this.results = []; return; }
-            // Match by startsWith first, then includes — cap at 12 rows.
-            const starts = [], contains = [];
-            for (const p of PAIRS) {
-              const lower = p.district.toLowerCase();
-              if (lower === q || lower.startsWith(q)) starts.push(p);
-              else if (lower.includes(q)) contains.push(p);
-              if (starts.length >= 12) break;
-            }
-            this.results = starts.concat(contains).slice(0, 12);
-          },
-          commit(r) {
-            this.picked = { district: r.district, province: r.province };
-            this.query = r.district;
-            this.results = [];
-            this.open = false;
-          },
-        };
-      }
-    </script>
-
-    <div class="s2-field" style="margin-top:18px;">
-      <div class="label">เลือกโลโก้</div>
+    <div class="s2-field" style="margin-top:18px; padding: 0 20px;">
+      <div class="s2-label">เลือกโลโก้</div>
     </div>
 
     {% include "_partials/logo_picker.html" %}
 
-    <div class="s2-upload" @click="$refs.logoFileInput.click()" :class="{ uploading: isUploading }">
+    <div class="s2-upload" @click="$refs.logoFileInput.click()" :class="{ uploading: isUploading }" style="margin: 12px 20px 0;">
       <input type="file" x-ref="logoFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
       <template x-if="!isUploading">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
           <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
           <polyline points="17 8 12 3 7 8"/>
           <line x1="12" y1="3" x2="12" y2="15"/>
         </svg>
       </template>
       <template x-if="isUploading">
-        <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3">
+        <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:18px;height:18px;">
           <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
         </svg>
       </template>
@@ -185,7 +131,7 @@
     </div>
 
     <template x-if="customLogoUrl">
-      <div class="s2-logos" style="margin-top: 10px; grid-template-columns: repeat(1, 1fr);">
+      <div class="s2-logos" style="margin-top: 10px; grid-template-columns: repeat(1, 1fr); padding: 0 20px;">
         <button type="button" class="s2-logo"
                 :class="{ selected: choice === customLogoUrl }"
                 @click="choice = customLogoUrl">
@@ -197,14 +143,41 @@
     <input type="hidden" name="logo_choice" :value="choice">
     <input type="hidden" name="custom_text" :value="customText">
 
-    <div class="s2-foot">
-      <button type="submit" class="next">
+    <div class="s2-foot" style="padding: 20px;">
+      <button type="submit" class="s2-cta-final" style="width:100%;">
         <span>ถัดไป · ตั้งรางวัล</span>
         <span class="arrow">→</span>
       </button>
     </div>
-
-    {% include "_partials/footer_mark.html" %}
   </form>
-</body>
-</html>
+
+  <script>
+    function districtPicker(init) {
+      const PAIRS = {{ district_pairs|tojson }};
+      return {
+        query: init.initialDistrict,
+        picked: { district: init.initialDistrict, province: init.initialProvince || '' },
+        results: [],
+        open: false,
+        lookupActive() {
+          const q = this.query.trim().toLowerCase();
+          if (!q) { this.results = []; return; }
+          const starts = [], contains = [];
+          for (const p of PAIRS) {
+            const lower = p.district.toLowerCase();
+            if (lower === q || lower.startsWith(q)) starts.push(p);
+            else if (lower.includes(q)) contains.push(p);
+            if (starts.length >= 12) break;
+          }
+          this.results = starts.concat(contains).slice(0, 12);
+        },
+        commit(r) {
+          this.picked = { district: r.district, province: r.province };
+          this.query = r.district;
+          this.results = [];
+          this.open = false;
+        },
+      };
+    }
+  </script>
+{% endblock %}
