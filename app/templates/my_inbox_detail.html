@@ -1,97 +1,83 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ข้อความ · TaemDee แต้มดี</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-</head>
-<body>
-  <div class="td has-c-dock">
-    <div class="topbar"><span></span><span></span></div>
+{% extends "_layouts/c_base.html" %}
+{% set nav_active = 'inbox' %}
+{% block title %}ข้อความ · TaemDee แต้มดี{% endblock %}
 
-    <div class="app-bar">
-      <a href="/my-inbox" class="x" aria-label="ย้อนกลับ">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-      </a>
-      <div class="title-mid">ข้อความ</div>
-      <div class="placeholder"></div>
-    </div>
-
-    <div class="inbox-detail-hero">
-      <div class="idh-logo">
-        {% if shop %}
-          {% set logo = shop_logo(shop) %}
-          {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-          {% else %}{{ shop.name[0]|upper }}{% endif %}
-        {% else %}T{% endif %}
-      </div>
-      <div class="idh-text">
-        <div class="idh-shop">{{ shop.name if shop else 'TaemDee' }}</div>
-        <div class="idh-meta">
-          {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}ฝากถึงพี่{{ customer.display_name }} · {% endif %}{{ row.created_at|bkk_feed_time }}
-        </div>
-      </div>
-    </div>
-
-    <div class="inbox-detail-body">
-      <p>{{ row.body }}</p>
-    </div>
-
-    {% if row.offer_text %}
-      <div class="inbox-detail-offer">
-        <div class="ido-row">
-          <div class="ido-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <polyline points="20 12 20 22 4 22 4 12"/>
-              <rect x="2" y="7" width="20" height="5"/>
-              <line x1="12" y1="22" x2="12" y2="7"/>
-              <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-              <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-            </svg>
-          </div>
-          <div class="ido-text">
-            <div class="ido-label">ของฝากจากร้าน</div>
-            <div class="ido-name">{{ row.offer_text }}</div>
-            {% if row.offer_until %}
-              <div class="ido-condition">ใช้ก่อน {{ row.offer_until|bkk_short_date }} · โชว์หน้านี้ที่ร้าน</div>
-            {% else %}
-              <div class="ido-condition">โชว์หน้านี้ที่ร้านได้เลยครับ</div>
-            {% endif %}
-          </div>
-        </div>
-      </div>
-    {% endif %}
-
-    {% if shop %}
-      <div class="inbox-detail-cta">
-        <a class="idc-secondary" href="/card/{{ shop.id }}">
-          เปิดบัตรของร้าน
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
-        </a>
-      </div>
-
-      {% if not is_muted %}
-        <div class="inbox-detail-mute">
-          <a href="#" data-mute-shop="{{ shop.id }}"
-             onclick="window.muteShopFromDetail(event, this)">ปิดเสียงร้านนี้</a>
-        </div>
-      {% else %}
-        <div class="inbox-detail-mute">
-          <a class="muted-done">✓ ปิดเสียงร้านนี้แล้ว</a>
-        </div>
-      {% endif %}
-    {% endif %}
-
-    {% include "_partials/footer_mark.html" %}
-
-    {% set nav_active = 'inbox' %}
-    {% include "_partials/c_dock.html" %}
+{% block content %}
+  <div class="app-bar">
+    <a href="/my-inbox" class="x" aria-label="ย้อนกลับ">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
+    <div class="title-mid">ข้อความ</div>
+    <div class="placeholder"></div>
   </div>
 
+  <div class="inbox-detail-hero">
+    <div class="idh-logo">
+      {% if shop %}
+        {% set logo = shop_logo(shop) %}
+        {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+        {% else %}{{ shop.name[0]|upper }}{% endif %}
+      {% else %}T{% endif %}
+    </div>
+    <div class="idh-text">
+      <div class="idh-shop">{{ shop.name if shop else 'TaemDee' }}</div>
+      <div class="idh-meta">
+        {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}ฝากถึงพี่{{ customer.display_name }} · {% endif %}{{ row.created_at|bkk_feed_time }}
+      </div>
+    </div>
+  </div>
+
+  <div class="inbox-detail-body">
+    <p>{{ row.body }}</p>
+  </div>
+
+  {% if row.offer_text %}
+    <div class="inbox-detail-offer">
+      <div class="ido-row">
+        <div class="ido-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 12 20 22 4 22 4 12"/>
+            <rect x="2" y="7" width="20" height="5"/>
+            <line x1="12" y1="22" x2="12" y2="7"/>
+            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+          </svg>
+        </div>
+        <div class="ido-text">
+          <div class="ido-label">ของฝากจากร้าน</div>
+          <div class="ido-name">{{ row.offer_text }}</div>
+          {% if row.offer_until %}
+            <div class="ido-condition">ใช้ก่อน {{ row.offer_until|bkk_short_date }} · โชว์หน้านี้ที่ร้าน</div>
+          {% else %}
+            <div class="ido-condition">โชว์หน้านี้ที่ร้านได้เลยครับ</div>
+          {% endif %}
+        </div>
+      </div>
+    </div>
+  {% endif %}
+
+  {% if shop %}
+    <div class="inbox-detail-cta">
+      <a class="idc-secondary" href="/card/{{ shop.id }}">
+        เปิดบัตรของร้าน
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M5 12h14M12 5l7 7-7 7"/></svg>
+      </a>
+    </div>
+
+    {% if not is_muted %}
+      <div class="inbox-detail-mute">
+        <a href="#" data-mute-shop="{{ shop.id }}"
+           onclick="window.muteShopFromDetail(event, this)">ปิดเสียงร้านนี้</a>
+      </div>
+    {% else %}
+      <div class="inbox-detail-mute">
+        <a class="muted-done">✓ ปิดเสียงร้านนี้แล้ว</a>
+      </div>
+    {% endif %}
+  {% endif %}
+{% endblock %}
+
+{% block body_end %}
   <script>
     window.muteShopFromDetail = async function(ev, linkEl) {
       ev.preventDefault();
@@ -107,5 +93,4 @@
       } catch (_) { /* leave the link in place so user can retry */ }
     };
   </script>
-</body>
-</html>
+{% endblock %}

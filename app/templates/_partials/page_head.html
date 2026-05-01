@@ -1,0 +1,39 @@
+{# Customer page-head — greeting + sub + ph-actions slot. Used by C7 / C6
+   / Inbox / Gifts. Caller passes `weekday_th` (so the route picks the
+   timezone) and `customer` in context.
+
+   Optional: include a {% block ph_action %} or pass `gear_action=True`
+   to render the gear icon → /card/account in the right slot. Otherwise
+   the slot is empty (gifts page has no action). #}
+<div class="page-head">
+  <div class="ph-text">
+    <h1>
+      {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}สวัสดีครับพี่{{ customer.display_name }}{% else %}สวัสดีครับ{% endif %}
+    </h1>
+    <div class="ph-sub">วัน{{ weekday_th }} · ขอให้เป็นวันที่ดี</div>
+  </div>
+  {% if ph_action_kind %}
+    <div class="ph-actions">
+      {% if ph_action_kind == 'qr' %}
+        <a href="/my-id" class="ph-icon-btn" title="โชว์ QR ของพี่" aria-label="โชว์ QR">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="3" y="3" width="7" height="7" rx="1"/>
+            <rect x="14" y="3" width="7" height="7" rx="1"/>
+            <rect x="3" y="14" width="7" height="7" rx="1"/>
+            <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </a>
+      {% elif ph_action_kind == 'gear' %}
+        {# Gear → C6 settings. Replaces the dock's old "ตั้งค่า" tab per
+           the Apr 30 design (settings is no longer a top-level destination
+           — gear in the page-head is the only way in). #}
+        <a href="/card/account" class="ph-icon-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="3"/>
+            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+          </svg>
+        </a>
+      {% endif %}
+    </div>
+  {% endif %}
+</div>
