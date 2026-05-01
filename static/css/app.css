@@ -1340,6 +1340,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .ob-canvas {
   flex: 1;
+  min-height: 0;
   display: flex;
   flex-direction: column;
   justify-content: center;
