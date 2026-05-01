@@ -28,6 +28,12 @@ class Customer(SQLModel, table=True):
     # the customer either provides a nickname or skips (skip stores the
     # polite default "คุณลูกค้า" so we don't ask again).
     display_name: Optional[str] = Field(default=None)
+    # Master DeeReach kill-switch — when False, _audience_for filters
+    # this customer out of every campaign kind across every shop. Per-
+    # shop mute (CustomerShopMute) still works alongside; the master
+    # toggle is just the global override the customer can flip from
+    # settings.notif. Default True so existing rows stay opted in.
+    notifications_enabled: bool = Field(default=True)
     preferred_channel: Optional[str] = Field(default=None)
     # Web Push (VAPID) subscription. Set when the customer accepts the
     # browser push prompt — endpoint URL is the per-browser push service

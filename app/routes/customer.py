@@ -216,6 +216,7 @@ async def card_account_notifications(
         name="card_account_notifications.html",
         context={
             "customer": customer,
+            "notifications_enabled": customer.notifications_enabled,
             "selected_channel": selected_channel,
             "has_line": bool(customer.line_id),
             "has_phone": bool(customer.phone),
@@ -248,6 +249,26 @@ async def card_account_notifications_post(
         # provider — fall back to waterfall. The picker disables those
         # options client-side, but a hand-crafted POST still lands here.
         customer.preferred_channel = None
+    db.add(customer)
+    await db.commit()
+    return RedirectResponse(
+        url="/card/account/notifications",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.post("/card/account/notifications/master")
+async def card_account_notifications_master_toggle(
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Flip the master "รับข้อความจากร้าน" toggle (settings.notif top
+    row). When OFF, DeeReach._audience_for excludes this customer from
+    every campaign kind across every shop — wider net than the per-
+    shop CustomerShopMute. Single POST endpoint, server-driven flip
+    (no client toggle state)."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    customer.notifications_enabled = not customer.notifications_enabled
     db.add(customer)
     await db.commit()
     return RedirectResponse(

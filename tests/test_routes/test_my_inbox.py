@@ -475,3 +475,48 @@ async def test_push_unsubscribe_clears_keys(client, db):
 
     rows = (await db.exec(select(Customer))).all()
     assert all(c.web_push_endpoint is None for c in rows)
+
+
+async def test_notifications_master_toggle_flips_flag(client, db):
+    """settings.notif master toggle flips Customer.notifications_enabled.
+    DeeReach._audience_for excludes customers with the flag off so this
+    is the per-customer kill-switch for every campaign kind."""
+    from app.models import Customer
+
+    # Spawn a customer via push subscribe (same path as the channel test).
+    sub = await client.post(
+        "/push/subscribe",
+        data={"endpoint": "https://x", "p256dh": "p", "auth": "a"},
+    )
+    assert sub.status_code == 200
+
+    customer = (await db.exec(select(Customer))).first()
+    assert customer.notifications_enabled is True  # default
+
+    r = await client.post("/card/account/notifications/master", follow_redirects=False)
+    assert r.status_code == 303
+    db.expire_all()
+    await db.refresh(customer)
+    assert customer.notifications_enabled is False
+
+    # Idempotent toggle — second POST flips back ON.
+    await client.post("/card/account/notifications/master", follow_redirects=False)
+    db.expire_all()
+    await db.refresh(customer)
+    assert customer.notifications_enabled is True
+
+
+async def test_notifications_page_renders_master_toggle(client, db, shop):
+    """GET /card/account/notifications surfaces the master row + the
+    c6-toggle state derived from notifications_enabled."""
+    sub = await client.post(
+        "/push/subscribe",
+        data={"endpoint": "https://x", "p256dh": "p", "auth": "a"},
+    )
+    assert sub.status_code == 200
+
+    body = (await client.get("/card/account/notifications")).text
+    assert "รับข้อความจากร้าน" in body
+    assert "โปรชวนกลับ · ใกล้ครบบัตร · วันเกิด" in body
+    # Default ON → c6-toggle gets the .on modifier
+    assert "c6-toggle on" in body

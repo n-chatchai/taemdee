@@ -9,6 +9,24 @@
     <div class="placeholder"></div>
   </div>
 
+  {# Master toggle — kill switch for every DeeReach kind across every
+     shop. Per-shop mute (CustomerShopMute) and the channel preference
+     below stay independent; toggling this OFF makes both moot. #}
+  <div class="s10-section">
+    <form method="POST" action="/card/account/notifications/master" style="margin: 0;">
+      <button type="submit" class="s10-row" style="appearance: none; -webkit-appearance: none; background: var(--surface); border: 1px solid rgba(17, 17, 17, 0.18); width: 100%; text-align: left; cursor: pointer; font: inherit; color: inherit;">
+        <div class="row-icon mint">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
+        </div>
+        <div class="row-info">
+          <div class="row-name">รับข้อความจากร้าน</div>
+          <div class="row-meta">โปรชวนกลับ · ใกล้ครบบัตร · วันเกิด</div>
+        </div>
+        <div class="c6-toggle{% if notifications_enabled %} on{% endif %}"><div class="dot"></div></div>
+      </button>
+    </form>
+  </div>
+
   {# settings.notif — 3 channel options. The route hands us:
      - selected_channel: 'taemdee' | 'line' | 'sms' (always one of these)
      - has_line:  bool — whether to enable the LINE row

@@ -454,13 +454,24 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
         # the limit so the system itself can't spam a customer. Mute
         # still applies — opt-out is the customer's right.
         muted = await _muted_customer_ids(db, shop)
-        return [c for c in await find_all_reachable_customers(db, shop) if c.id not in muted]
+        return [
+            c for c in await find_all_reachable_customers(db, shop)
+            if c.id not in muted and c.notifications_enabled
+        ]
     else:
         raise DeeReachSendError(f"Unsupported kind: {kind}")
 
     rate_limited = await _recently_messaged_customer_ids(db, shop)
     muted = await _muted_customer_ids(db, shop)
-    return [c for c in candidates if c.id not in rate_limited and c.id not in muted]
+    # `notifications_enabled` is the customer's master kill-switch from
+    # settings.notif. Any kind respects it — even manual owner-composed
+    # campaigns shouldn't reach a customer who flipped it off.
+    return [
+        c for c in candidates
+        if c.id not in rate_limited
+        and c.id not in muted
+        and c.notifications_enabled
+    ]
 
 
 def _pick_channel(customer: Customer) -> str:
