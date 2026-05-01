@@ -21,12 +21,38 @@ async def test_team_add_form_renders(auth_client):
     response = await auth_client.get("/shop/team/add")
     assert response.status_code == 200
     body = response.text
-    # Single nickname field, no perm checkboxes (design = simplified)
+    # Nickname field + perm section (4 toggles + 1 locked "ออกแต้ม" row).
     assert 'name="display_name"' in body
     assert "ssf-input" in body
+    assert "ssf-perm-section" in body
+    assert "สิทธิ์การใช้งาน" in body
+    assert "เปิดเสมอ" in body
+    for field in ("can_void", "can_deereach", "can_topup", "can_settings"):
+        assert f'name="{field}"' in body
     # No phone/email inputs in the new flow
     assert 'name="phone"' not in body
     assert 'name="line_id"' not in body
+
+
+async def test_team_add_post_persists_permission_flags(auth_client, db, shop):
+    """Toggles on the add form must round-trip to the StaffMember row —
+    can_void defaults on, the rest follow what the owner picked."""
+    response = await auth_client.post(
+        "/shop/team/add",
+        data={
+            "display_name": "น้องเอฟ",
+            "can_void": "on",
+            "can_deereach": "on",
+            # can_topup + can_settings unchecked
+        },
+        follow_redirects=False,
+    )
+    assert response.status_code == 303
+    staff = (await db.exec(select(StaffMember).where(StaffMember.shop_id == shop.id))).first()
+    assert staff.can_void is True
+    assert staff.can_deereach is True
+    assert staff.can_topup is False
+    assert staff.can_settings is False
 
 
 async def test_team_add_post_creates_staff_and_redirects_to_invite(auth_client, db, shop):

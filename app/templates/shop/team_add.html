@@ -2,7 +2,11 @@
 {% block title %}เพิ่มพนักงาน · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-  <form method="POST" action="/shop/team/add">
+  {# Each toggle is an Alpine button bound to a hidden checkbox so the
+     POST carries the perm flags. "ออกแต้ม" is locked-on (no input —
+     server defaults issuance permission for every staff). #}
+  <form method="POST" action="/shop/team/add"
+        x-data="{ can_void: true, can_deereach: false, can_topup: false, can_settings: false }">
     <div class="app-bar">
       <a href="/shop/team" class="x" aria-label="ย้อนกลับ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
@@ -18,7 +22,73 @@
         <div class="ssf-helper">ลูกค้าจะเห็นชื่อนี้ใน feed · เปลี่ยนได้ทีหลัง</div>
       </div>
 
-      <button type="submit" class="s2-cta-final" style="width:100%;">
+      <div class="ssf-perm-section">
+        <div class="ssf-perm-h">สิทธิ์การใช้งาน</div>
+        <div class="ssf-perm-sub">เลือกสิ่งที่พนักงานทำได้ · ปรับได้ทีหลังในตั้งค่า</div>
+
+        <div class="ssf-perm-list">
+          <div class="ssf-perm-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/></svg>
+            </div>
+            <div class="info">
+              <div class="perm-name">ออกแต้ม</div>
+              <div class="perm-desc">สแกน · กรอกเบอร์ · ค้นชื่อ</div>
+            </div>
+            <span class="perm-locked">เปิดเสมอ</span>
+          </div>
+
+          <div class="ssf-perm-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+            </div>
+            <div class="info">
+              <div class="perm-name">ยกเลิกแต้ม</div>
+              <div class="perm-desc">void แต้มที่ออกผิด ภายใน 5 นาที</div>
+            </div>
+            <button type="button" class="ssf-toggle" :class="{ 'on': can_void }" @click="can_void = !can_void" aria-label="ยกเลิกแต้ม"></button>
+            <input type="hidden" name="can_void" :value="can_void ? 'on' : ''">
+          </div>
+
+          <div class="ssf-perm-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
+            </div>
+            <div class="info">
+              <div class="perm-name">ส่งข้อความ</div>
+              <div class="perm-desc">ส่งข้อความหาลูกค้า · ใช้เครดิต</div>
+            </div>
+            <button type="button" class="ssf-toggle" :class="{ 'on': can_deereach }" @click="can_deereach = !can_deereach" aria-label="ส่งข้อความ"></button>
+            <input type="hidden" name="can_deereach" :value="can_deereach ? 'on' : ''">
+          </div>
+
+          <div class="ssf-perm-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><line x1="12" y1="1" x2="12" y2="23"/><path d="M17 5H9.5a3.5 3.5 0 000 7h5a3.5 3.5 0 010 7H6"/></svg>
+            </div>
+            <div class="info">
+              <div class="perm-name">เติมเครดิต</div>
+              <div class="perm-desc">เติม PromptPay · จ่ายเงิน</div>
+            </div>
+            <button type="button" class="ssf-toggle" :class="{ 'on': can_topup }" @click="can_topup = !can_topup" aria-label="เติมเครดิต"></button>
+            <input type="hidden" name="can_topup" :value="can_topup ? 'on' : ''">
+          </div>
+
+          <div class="ssf-perm-row">
+            <div class="icon">
+              <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="3"/><path d="M19.4 15a1.65 1.65 0 00.33 1.82l.06.06a2 2 0 010 2.83 2 2 0 01-2.83 0l-.06-.06a1.65 1.65 0 00-1.82-.33 1.65 1.65 0 00-1 1.51V21a2 2 0 01-2 2 2 2 0 01-2-2v-.09A1.65 1.65 0 009 19.4a1.65 1.65 0 00-1.82.33l-.06.06a2 2 0 01-2.83 0 2 2 0 010-2.83l.06-.06a1.65 1.65 0 00.33-1.82 1.65 1.65 0 00-1.51-1H3a2 2 0 01-2-2 2 2 0 012-2h.09A1.65 1.65 0 004.6 9a1.65 1.65 0 00-.33-1.82l-.06-.06a2 2 0 010-2.83 2 2 0 012.83 0l.06.06a1.65 1.65 0 001.82.33H9a1.65 1.65 0 001-1.51V3a2 2 0 012-2 2 2 0 012 2v.09a1.65 1.65 0 001 1.51 1.65 1.65 0 001.82-.33l.06-.06a2 2 0 012.83 0 2 2 0 010 2.83l-.06.06a1.65 1.65 0 00-.33 1.82V9a1.65 1.65 0 001.51 1H21a2 2 0 012 2 2 2 0 01-2 2h-.09a1.65 1.65 0 00-1.51 1z"/></svg>
+            </div>
+            <div class="info">
+              <div class="perm-name">ตั้งค่าร้าน</div>
+              <div class="perm-desc">แก้รางวัล · ธีม · ทีม · สาขา</div>
+            </div>
+            <button type="button" class="ssf-toggle" :class="{ 'on': can_settings }" @click="can_settings = !can_settings" aria-label="ตั้งค่าร้าน"></button>
+            <input type="hidden" name="can_settings" :value="can_settings ? 'on' : ''">
+          </div>
+        </div>
+      </div>
+
+      <button type="submit" class="s2-cta-final" style="width:100%; margin-top:18px;">
         <span>สร้าง invite</span>
         <span class="arrow">→</span>
       </button>

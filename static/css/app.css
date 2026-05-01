@@ -11433,6 +11433,117 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   line-height: 1.5;
 }
 
+/* Per-staff permission section on S-staff.add — section header +
+   stacked rows with icon + name/desc + on/off toggle (or 'เปิดเสมอ'
+   pill on the locked "ออกแต้ม" row). */
+.ssf-perm-section {
+  margin-top: 18px;
+  padding-top: 14px;
+  border-top: 1px solid rgba(17,17,17,0.10);
+}
+.ssf-perm-h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  margin-bottom: 4px;
+  letter-spacing: -0.005em;
+}
+.ssf-perm-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-bottom: 14px;
+  line-height: 1.4;
+}
+.ssf-perm-list {
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.10);
+  border-radius: 14px;
+  overflow: hidden;
+}
+.ssf-perm-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 13px 14px;
+}
+.ssf-perm-row + .ssf-perm-row {
+  border-top: 1px solid rgba(17,17,17,0.06);
+}
+.ssf-perm-row .icon {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  background: var(--butter-soft, #FFF7DA);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  color: var(--accent);
+  flex-shrink: 0;
+}
+.ssf-perm-row .icon svg {
+  width: 16px; height: 16px;
+  stroke: currentColor;
+  fill: none;
+  stroke-width: 2;
+  stroke-linecap: round;
+  stroke-linejoin: round;
+}
+.ssf-perm-row .info {
+  flex: 1;
+  min-width: 0;
+}
+.ssf-perm-row .perm-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.ssf-perm-row .perm-desc {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+  line-height: 1.3;
+}
+.ssf-perm-row .perm-locked {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-softer, rgba(17,17,17,0.45));
+  flex-shrink: 0;
+}
+.ssf-toggle {
+  flex-shrink: 0;
+  width: 40px;
+  height: 24px;
+  background: rgba(17,17,17,0.18);
+  border-radius: 99px;
+  position: relative;
+  cursor: pointer;
+  transition: background 0.2s ease;
+  border: 0;
+  padding: 0;
+}
+.ssf-toggle::after {
+  content: '';
+  position: absolute;
+  top: 2px; left: 2px;
+  width: 20px; height: 20px;
+  background: #fff;
+  border-radius: 50%;
+  transition: left 0.2s ease;
+  box-shadow: 0 1px 3px rgba(0,0,0,0.2);
+}
+.ssf-toggle.on { background: var(--accent); }
+.ssf-toggle.on::after { left: 18px; }
+.ssf-toggle.locked {
+  background: var(--accent);
+  opacity: 0.5;
+  cursor: not-allowed;
+}
+.ssf-toggle.locked::after { left: 18px; }
+
 /* S-staff.invite — QR + share */
 .ssi-stage { padding: 18px; text-align: center; }
 .ssi-greet {
@@ -11473,7 +11584,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   letter-spacing: 0.05em;
 }
 .ssi-qr-card .ssi-expire strong { color: var(--accent); }
-.ssi-share { display: flex; gap: 8px; margin: 0 18px 8px; }
+.ssi-share { display: flex; gap: 8px; margin-bottom: 8px; }
 .ssi-share-btn {
   flex: 1;
   padding: 12px;

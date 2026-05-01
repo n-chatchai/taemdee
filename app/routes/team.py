@@ -57,6 +57,10 @@ async def team_add_form(
 @router.post("/add")
 async def team_add_post(
     display_name: str = Form(""),
+    can_void: Optional[str] = Form(None),
+    can_deereach: Optional[str] = Form(None),
+    can_topup: Optional[str] = Form(None),
+    can_settings: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(require_owner),
     db: AsyncSession = Depends(get_session),
@@ -64,7 +68,14 @@ async def team_add_post(
     name = (display_name or "").strip()
     if not name:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "ใส่ชื่อเล่นพนักงานก่อนนะครับ")
-    staff = StaffMember(shop_id=shop.id, display_name=name)
+    staff = StaffMember(
+        shop_id=shop.id,
+        display_name=name,
+        can_void=bool(can_void),
+        can_deereach=bool(can_deereach),
+        can_topup=bool(can_topup),
+        can_settings=bool(can_settings),
+    )
     db.add(staff)
     await db.commit()
     await db.refresh(staff)
