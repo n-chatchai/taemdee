@@ -10981,28 +10981,6 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 .c-scan-modal .csm-helper[data-kind="err"] { color: #ff8a78; }
 .c-scan-modal .csm-helper[data-kind="ok"]  { color: var(--butter); }
 
-.c-scan-modal .csm-bottom {
-  padding: 0 24px 28px;
-}
-.c-scan-modal .csm-toggle {
-  width: 100%;
-  background: var(--butter);
-  color: var(--ink);
-  border: none;
-  border-radius: 14px;
-  padding: 16px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: var(--text-md);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  cursor: pointer;
-  text-decoration: none;
-}
-.c-scan-modal .csm-toggle svg { width: 18px; height: 18px; }
-
 /* C5 CTA "ดูในของขวัญของพี่" — pins the voucher to /my-gifts so the
    customer can keep browsing without losing the receipt of the redemption.
    Ported from design lines 3219-3242 (Apr 30 design refresh). */

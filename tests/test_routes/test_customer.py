@@ -524,18 +524,20 @@ async def test_voucher_view_renders_qr_and_offer(client, db, shop):
 
 
 async def test_scan_shop_renders_design_aligned_modal(client):
-    """C-scan modal — fullscreen scanner with butter-bracket viewfinder
-    and 'ให้ร้านสแกน QR ของพี่' toggle to /my-id."""
+    """scan.camera modal — fullscreen scanner with butter-bracket
+    viewfinder. Bottom 'ให้ร้านสแกน QR ของพี่' toggle was retired
+    in the May 1 pass (cards.list now carries the QR icon top-right,
+    so /my-id is reachable without crowding this surface)."""
     body = (await client.get("/scan-shop")).text
     assert "c-scan-modal" in body
     # Viewfinder corner markers + scanning line
     assert "vf-corners" in body
     assert "vf-line" in body
-    # Bottom toggle to flip to the customer's own QR display
-    assert 'href="/my-id"' in body
-    assert "ให้ร้านสแกน QR ของพี่" in body
     # X close jumps back to /my-cards
     assert 'href="/my-cards"' in body
+    # Toggle row is gone
+    assert "ให้ร้านสแกน QR ของพี่" not in body
+    assert "csm-bottom" not in body
     # No customer dock on the modal — it's fullscreen
     assert "c-glass-nav" not in body
 
