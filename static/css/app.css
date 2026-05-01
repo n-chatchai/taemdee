@@ -2752,6 +2752,19 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c5 .claimed-hero .confetti.c2 { top: 18px; right: 20%; width: 10px; height: 10px; animation-delay: 0.5s; color: var(--accent); stroke: none; }
 .c5 .claimed-hero .confetti.c3 { top: 60px; right: 14%; width: 10px; height: 10px; animation-delay: 1.2s; }
 .c5 .claimed-hero .confetti.c4 { top: 66px; left: 12%; width: 8px; height: 8px; animation-delay: 1.6s; color: var(--accent); stroke: none; }
+.c5 .claimed-hero .confetti.c5 { top: 88px; left: 24%; width: 11px; height: 11px; animation-delay: 0.9s; color: var(--accent); stroke: none; }
+.c5 .claimed-hero .confetti.c6 { top: 95px; right: 22%; width: 12px; height: 12px; animation-delay: 1.4s; }
+
+.c5 .claimed-sub {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 500;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  margin-top: 10px;
+  text-align: center;
+  position: relative;
+  z-index: 1;
+}
 
 .c5 .claimed-title {
   font-weight: 700;

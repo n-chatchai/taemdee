@@ -567,9 +567,11 @@ async def test_my_gifts_voided_redemption_excluded(client, db, shop):
     assert "ยังไม่มีของขวัญ" in body
 
 
-async def test_c5_voucher_renders_active_state_when_unserved(client, db, shop):
-    """C5 — fresh redemption (served_at NULL) shows the celebration label
-    and particles. No served indicator yet."""
+async def test_reward_claim_renders_active_state_when_unserved(client, db, shop):
+    """reward.claim — fresh redemption (served_at NULL) shows the
+    celebration sub copy + particles, no served indicator. The legacy
+    "✦ คูปองของพี่ ✦" v-label was retired in the May 1 pass; the
+    .claimed-sub line above the voucher carries the same role now."""
     from app.models import Customer, Redemption
     c = Customer(is_anonymous=True)
     db.add(c)
@@ -585,11 +587,13 @@ async def test_c5_voucher_renders_active_state_when_unserved(client, db, shop):
     client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(c.id))
 
     body = (await client.get(f"/card/{shop.id}/claimed?r={r.id}")).text
-    assert "✦ คูปองของพี่ ✦" in body
+    assert "ของขวัญพร้อมแล้ว" in body  # .claimed-sub
     assert "ใช้แล้ว" not in body
     assert "v-particles" in body
+    # 6 confetti dots in the hero (was 4 before May 1 refresh).
+    assert body.count('class="confetti c') == 6
     # No served class on the voucher container
-    assert "voucher served" not in body and 'voucher\n' in body or 'class="voucher"' in body
+    assert "voucher served" not in body
 
 
 async def test_c5_active_voucher_offers_link_to_gifts(client, db, shop):

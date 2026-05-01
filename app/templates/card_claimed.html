@@ -9,6 +9,8 @@
     <svg class="confetti c2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
     <svg class="confetti c3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
     <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+    <svg class="confetti c6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
 
     <div class="claimed-mark">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
@@ -16,13 +18,15 @@
       </svg>
     </div>
     <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
+    <div class="claimed-sub">ของขวัญพร้อมแล้วครับ · เก็บไว้ใช้ครั้งหน้าได้</div>
   </div>
 
   <div class="voucher{% if redemption.served_at %} served{% endif %}">
     {% if not redemption.served_at %}
       {# Floating particles — continuous CSS animation that a screenshot
-         can't reproduce. Per the revised C5 design this replaces the older
-         "0 sec ago" pulse counter. Hidden once the voucher is served. #}
+         can't reproduce. Per the revised reward.claim design this replaces
+         the older "0 sec ago" pulse counter. Hidden once the voucher is
+         served. #}
       <div class="v-particles" aria-hidden="true">
         <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
         <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
@@ -34,13 +38,14 @@
         <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
       </div>
     {% endif %}
-    <div class="v-label">
-      {% if redemption.served_at %}
-        <span class="v-served">✓ ใช้แล้ว {{ redemption.served_at|bkk_hms }}</span>
-      {% else %}
-        ✦ คูปองของพี่ ✦
-      {% endif %}
-    </div>
+    {# .v-label "✦ คูปองของพี่ ✦" was retired in the May 1 design pass —
+       the .v-title + .v-id pair carries enough context, and .claimed-sub
+       above already says "ของขวัญพร้อมแล้วครับ". The served-at note
+       stays so the customer sees "✓ ใช้แล้ว HH:MM" if they happen to
+       reload the page after activating the voucher in voucher.use. #}
+    {% if redemption.served_at %}
+      <div class="v-label"><span class="v-served">✓ ใช้แล้ว {{ redemption.served_at|bkk_hms }}</span></div>
+    {% endif %}
     <div class="v-title">{{ shop.reward_description }}</div>
     <div class="v-id">#{{ shop.name[:4]|upper }}-{{ redemption.id.hex[:4]|upper }} · รับเมื่อ {{ redemption.created_at.strftime('%d.%m.%y') }}</div>
   </div>
