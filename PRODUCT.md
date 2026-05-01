@@ -51,7 +51,7 @@ The codebase routes, templates, and comments are heavily mapped to these identif
 ### Shared
 | # | Screen | Purpose |
 |---|---|---|
-| Role picker | **เข้าใช้งานเป็น...** | Shown at `/` when one device carries a valid shop session AND a valid customer session — two tiles ("ร้านค้า" → /shop/dashboard, "ลูกค้า" → /my-cards) so an owner who also collects points elsewhere isn't auto-shoved into the shop side. Single-cookie devices skip the picker and redirect as before. |
+| Role picker | **เข้าใช้งานเป็น...** | Shown at `/` when one device carries a valid shop session AND a valid customer session — two tiles ("ร้านค้า" → /shop/dashboard, "ลูกค้า" → /my-cards) so an owner who also collects points elsewhere isn't auto-shoved into the shop side. Single-cookie devices skip the picker and redirect as before. Re-entry from inside either app via "เปลี่ยนหน้าใช้งาน" in the settings menu → `/switch` (force-renders the picker — PWA standalone mode hides the URL bar so `/` alone is reachable only via this in-app link). |
 
 ### Customer-facing
 | # | Screen | Purpose |

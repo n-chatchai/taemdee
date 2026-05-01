@@ -49,6 +49,29 @@ async def test_home_redirects_anonymous_customer_to_my_cards(client, shop):
     assert response.headers["location"] == "/my-cards"
 
 
+async def test_switch_renders_role_picker_unconditionally(auth_client):
+    """/switch is the in-app re-entry to the picker — needed because PWA
+    standalone mode hides the URL bar so users can't manually visit /."""
+    response = await auth_client.get("/switch")
+    assert response.status_code == 200
+    body = response.text
+    assert "role-picker-page" in body
+    assert 'href="/shop/dashboard"' in body
+    assert 'href="/my-cards"' in body
+
+
+async def test_settings_pages_link_to_switch(auth_client, named_client):
+    """Both shop settings and customer account menu surface a "เปลี่ยนหน้าใช้งาน"
+    row pointing at /switch — the only entry point once a PWA icon is pinned."""
+    shop_settings = (await auth_client.get("/shop/settings")).text
+    assert "เปลี่ยนหน้าใช้งาน" in shop_settings
+    assert 'href="/switch"' in shop_settings
+
+    customer_account = (await named_client.get("/card/account")).text
+    assert "เปลี่ยนหน้าใช้งาน" in customer_account
+    assert 'href="/switch"' in customer_account
+
+
 async def test_home_renders_role_picker_when_both_sessions_valid(auth_client, shop):
     """When the same device carries a valid shop session AND a valid
     customer session (e.g. an owner who also collects points elsewhere),

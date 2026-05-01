@@ -135,6 +135,23 @@ async def home(request: Request, db: AsyncSession = Depends(get_session)):
     )
 
 
+@app.get("/switch")
+async def switch_role(request: Request):
+    """Force-render the role picker. PWA standalone mode hides the URL bar
+    so once an installed icon launches into /shop/dashboard or /my-cards,
+    the user can't get back to / to switch sides — / would auto-redirect
+    them right back to where they came from. Settings menus on both sides
+    link here. Each tile still targets its dashboard directly; if a tile is
+    tapped without that side's cookie, the dashboard's own auth bounces the
+    user to its login page.
+    """
+    return templates.TemplateResponse(
+        request=request,
+        name="role_picker.html",
+        context={},
+    )
+
+
 @app.get("/version")
 async def version():
     """Plain-text short git SHA the running process started with. Used by
