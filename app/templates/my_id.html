@@ -62,11 +62,13 @@
     })();
   </script>
 
-  {# Auto-redirect when the shop scans this QR. The shop's /shop/issue/scan
-     POST publishes a 'stamped' event on the customer's SSE channel with
-     the shop id as the payload — bounce the customer straight to
-     /card/<shop>?stamped=1 so the celebration overlay fires without the
-     customer having to navigate manually. #}
+  {# Auto-redirect when the shop scans this QR. /shop/issue/scan publishes
+     either:
+       - 'stamped' (payload: shop_id) — plain stamp, bounce to C1 with the
+         +1 celebration overlay.
+       - 'redeemed' (payload: shop_id:redemption_id) — this stamp tripped
+         the threshold, auto-redeem fired, land on the C5 celebration page
+         instead of the redundant C4. #}
   <script>
     (function () {
       if (!('EventSource' in window)) return;
@@ -79,6 +81,13 @@
           // Stop the scanner-camera-anti-screenshot reload by redirecting
           // first.
           window.location.href = '/card/' + shopId + '?stamped=1';
+        });
+        es.addEventListener('redeemed', (ev) => {
+          const parts = (ev.data || '').split(':');
+          const shopId = parts[0];
+          const redemptionId = parts[1];
+          if (!shopId || !redemptionId) return;
+          window.location.href = '/card/' + shopId + '/claimed?r=' + redemptionId;
         });
       } catch (_) { /* fall through — the staff still saw success on their end */ }
       window.addEventListener('pagehide', () => { try { es && es.close(); } catch (_) {} }, { once: true });

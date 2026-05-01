@@ -242,6 +242,62 @@ async def test_issue_scan_publishes_stamped_event_to_customer(auth_client, db, s
         events.unsubscribe_customer(c.id, q)
 
 
+async def test_issue_scan_publishes_redeemed_event_when_threshold_hit(auth_client, db, shop):
+    """When the shop-side scan trips the customer to threshold, the SSE
+    channel carries a 'redeemed' event (payload "<shop_id>:<redemption_id>")
+    so the customer's /my-id page lands on /claimed instead of /card. Plain
+    "stamped" must NOT also fire — that would race the redirect."""
+    import asyncio
+    from app.models import Customer, Point, Redemption
+    from app.services import events
+
+    shop.reward_threshold = 3
+    db.add(shop)
+    await db.commit()
+
+    c = Customer(is_anonymous=False, display_name="พี่ครบ", phone="0822233344")
+    db.add(c)
+    await db.commit()
+    await db.refresh(c)
+    # Seed 2 stamps so the next /issue/scan is the threshold-hit.
+    for _ in range(2):
+        db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    q = events.subscribe_customer(c.id)
+    received = []
+    try:
+        response = await auth_client.post(
+            "/shop/issue/scan",
+            data={"scanned_value": f"https://taemdee.com/c/{c.id}"},
+        )
+        assert response.status_code == 200
+        body = response.json()
+        assert body["auto_redemption_id"] is not None
+
+        # Drain up to 3 events (gifts-update + redeemed expected; no stamped).
+        from sqlmodel import select
+        for _ in range(3):
+            try:
+                received.append(await asyncio.wait_for(q.get(), timeout=0.5))
+            except asyncio.TimeoutError:
+                break
+
+        names = [name for name, _ in received]
+        assert "redeemed" not in names or "redeemed" in names  # placeholder
+        assert "redeemed" in names
+        assert "gifts-update" in names
+        assert "stamped" not in names
+
+        redemption = (await db.exec(select(Redemption).where(Redemption.customer_id == c.id))).first()
+        assert redemption is not None
+        for name, payload in received:
+            if name == "redeemed":
+                assert payload == f"{shop.id}:{redemption.id}"
+    finally:
+        events.unsubscribe_customer(c.id, q)
+
+
 async def test_issue_scan_rejects_garbage_uuid(auth_client):
     response = await auth_client.post(
         "/shop/issue/scan",

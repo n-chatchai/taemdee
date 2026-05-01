@@ -193,7 +193,7 @@ async def issue_scan_grant(
         }
 
     try:
-        point, _ = await issue_point(
+        point, auto_redemption = await issue_point(
             db, shop, customer,
             method="shop_scan",
             staff_id=staff.id if staff else None,
@@ -206,17 +206,41 @@ async def issue_scan_grant(
         "feed-row",
         feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
     )
-    # Nudge the customer's device — if they're on /my-id showing the
-    # QR they just got scanned, the listener in that page will redirect
-    # them to /card/<shop>?stamped=1 so the celebration overlay fires
-    # without the customer having to manually navigate. Payload is the
-    # shop id; the client builds the target URL.
     from app.services.events import publish_customer
-    publish_customer(customer.id, "stamped", str(shop.id))
+    if auto_redemption is not None:
+        # This stamp tipped the customer to threshold — fire the redemption
+        # feed-row for the dashboard, bump the customer's gifts dock badge,
+        # and tell the customer's /my-id page to land on /claimed (not /card)
+        # so the celebration page is what they see, mirroring /scan.
+        publish(
+            shop.id,
+            "feed-row",
+            feed_row_html(
+                "redemption", auto_redemption.id,
+                bkk_feed_time(auto_redemption.created_at),
+                customer.display_name or "ลูกค้า",
+            ),
+        )
+        gifts_count = (await db.exec(
+            select(func.count())
+            .select_from(Redemption)
+            .where(
+                Redemption.customer_id == customer.id,
+                Redemption.served_at.is_(None),
+                Redemption.is_voided == False,  # noqa: E712
+            )
+        )).one()
+        publish_customer(customer.id, "gifts-update", str(gifts_count))
+        publish_customer(customer.id, "redeemed", f"{shop.id}:{auto_redemption.id}")
+    else:
+        # Plain stamp — bounce the customer to /card/<shop>?stamped=1 for
+        # the +1 celebration overlay.
+        publish_customer(customer.id, "stamped", str(shop.id))
     return {
         "point_id": str(point.id),
         "customer_id": str(customer.id),
         "customer_name": customer.display_name or "ลูกค้า",
+        "auto_redemption_id": str(auto_redemption.id) if auto_redemption else None,
     }
 
 
