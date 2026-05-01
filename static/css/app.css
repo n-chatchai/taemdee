@@ -1631,7 +1631,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-bottom: 18px;
 }
 .ob-protect-card {
-  padding: 12px 14px;
+  padding: 20px 14px;
   background: var(--butter-soft);
   border: 1px dashed rgba(17,17,17,0.18);
   border-radius: 14px;
