@@ -71,15 +71,19 @@ async def upload_to_r2(
             endpoint_url=endpoint_url,
             aws_access_key_id=settings.r2_access_key_id,
             aws_secret_access_key=settings.r2_secret_access_key,
-            # boto3 ≥1.36 sends flexible checksums by default
-            # (x-amz-content-sha256: STREAMING-UNSIGNED-PAYLOAD-TRAILER)
-            # which R2 rejects as `InvalidArgument: Authorization`. Pin
-            # both checksum knobs back to legacy "when_required" so the
-            # signature lands cleanly. See boto/boto3#4392.
+            # R2 quirks: (a) boto3 ≥1.36 ships flexible checksums
+            # (STREAMING-UNSIGNED-PAYLOAD-TRAILER) which R2 rejects as
+            # `InvalidArgument: Authorization` — pin both knobs to
+            # legacy "when_required" (boto/boto3#4392). (b) R2 only
+            # accepts path-style addressing on the account endpoint;
+            # boto3's default virtual-hosted style routes to a
+            # nonexistent <bucket>.<account>.r2.cloudflarestorage.com
+            # subdomain.
             config=Config(
                 signature_version="s3v4",
                 request_checksum_calculation="when_required",
                 response_checksum_validation="when_required",
+                s3={"addressing_style": "path"},
             ),
             region_name="auto",
         ) as s3:
