@@ -1169,7 +1169,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-bottom: 8px;
 }
 .shop-head.hero .shop-sub {
-  font-size: 16px;
+  font-size: var(--text-md);
   color: var(--ink-soft);
   letter-spacing: 0.01em;
 }
@@ -1210,7 +1210,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--text-base);
   box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.4);
   cursor: pointer;
   text-decoration: none;
@@ -1226,7 +1226,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-align: center;
   gap: 8px;
   font-family: 'Prompt', sans-serif;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink-soft);
   line-height: 1.35;
 }
@@ -1310,7 +1310,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .ob-shop-mark .dot { color: var(--accent); }
 .ob-shop-sub {
   font-family: 'Prompt', sans-serif;
-  font-size: 16px;
+  font-size: var(--text-md);
   color: var(--ink-soft);
   margin-top: 8px;
   letter-spacing: 0.01em;
@@ -1411,7 +1411,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 .ob-greet {
   font-family: 'Prompt', sans-serif;
-  font-size: 17.5px;
+  font-size: var(--text-lg);
   line-height: 1.55;
   color: var(--ink-soft);
   margin-bottom: 26px;
@@ -1475,7 +1475,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 12px;
   font-family: 'Prompt', sans-serif;
-  font-size: 17px;
+  font-size: var(--text-md);
   color: var(--ink);
   text-align: center;
   box-shadow: none;
@@ -1483,7 +1483,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 .ob-thanks-line {
   font-family: 'Prompt', sans-serif;
-  font-size: 15px;
+  font-size: var(--text-base);
   color: var(--ink-soft);
   margin-bottom: 18px;
 }
@@ -1570,7 +1570,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .ob-rc-line {
   font-family: 'Prompt', sans-serif;
-  font-size: 16px;
+  font-size: var(--text-md);
   color: var(--ink-soft);
   line-height: 1.4;
 }
@@ -1580,7 +1580,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .ob-rc-reward {
   font-family: 'Prompt', sans-serif;
-  font-size: 20px;
+  font-size: var(--text-lg);
   color: var(--ink);
   line-height: 1.3;
 }
@@ -1617,7 +1617,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .ob-icon-wrap svg { width: 28px; height: 28px; }
 .ob-warn-s {
   font-family: 'Prompt', sans-serif;
-  font-size: 16px;
+  font-size: var(--text-md);
   line-height: 1.5;
   color: var(--ink-soft);
   margin-bottom: 18px;
@@ -1631,14 +1631,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .ob-pc-h {
   font-family: 'Prompt', sans-serif;
-  font-weight: 700; font-size: 19px;
+  font-weight: 700; font-size: var(--text-lg);
   color: var(--ink);
   margin-bottom: 4px;
 }
 .ob-pc-h strong { color: var(--accent); }
 .ob-pc-s {
   font-family: 'Prompt', sans-serif;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink-soft);
   line-height: 1.5;
 }
@@ -1658,7 +1658,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .ob-skip {
   font-family: 'Prompt', sans-serif;
-  font-size: 15.5px;
+  font-size: var(--text-md);
   color: var(--ink-soft);
   text-decoration: underline;
   cursor: pointer;
@@ -1673,7 +1673,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 14px;
   padding: 16px 20px;
   font-family: 'Prompt', sans-serif;
-  font-weight: 700; font-size: 17px;
+  font-weight: 700; font-size: var(--text-md);
   box-shadow: none;
   cursor: pointer;
   display: inline-flex; align-items: center; justify-content: space-between;
@@ -1682,7 +1682,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .ob-next.full { width: 100%; flex: none; }
 .ob-next .arrow {
   color: var(--butter);
-  font-size: 16px; font-weight: 800;
+  font-size: var(--text-md); font-weight: 800;
   flex-shrink: 0;
 }
 
@@ -1697,7 +1697,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   gap: 12px;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 17.5px;
+  font-size: var(--text-lg);
   letter-spacing: -0.01em;
   text-decoration: none;
   transition: transform 0.15s ease;
@@ -1729,6 +1729,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   display: inline-block;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
+  /* Hero wordmark — kept px so it stays bold at the design size
+     regardless of fs-* picker (var(--text-xl) shrinks too far). */
   font-size: 30px;
   letter-spacing: -0.04em;
   margin-bottom: 4px;
@@ -1743,7 +1745,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .shop-logo-mark .dot { color: var(--accent); }
 .shop-sub {
   font-weight: 400;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink-soft);
   display: inline-flex;
   align-items: center;
@@ -1777,7 +1779,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .hero-label {
   font-style: italic;
   font-weight: 500;
-  font-size: 15px;
+  font-size: var(--text-base);
   color: var(--ink-soft);
   margin-bottom: 2px;
 }
@@ -1804,7 +1806,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   animation: gentle-spin 6s linear infinite;
 }
 .hero-num-sub {
-  font-size: 15px;
+  font-size: var(--text-base);
   font-weight: 500;
   color: var(--ink);
   letter-spacing: -0.005em;
@@ -1817,7 +1819,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .hero-num-sub .of {
   font-weight: 400;
   color: var(--ink-softer);
-  font-size: 13px;
+  font-size: var(--text-sm);
   margin-left: 4px;
 }
 
@@ -1897,7 +1899,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   padding: 3px 10px;
   border-radius: 999px;
   font-weight: 700;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   letter-spacing: 0.04em;
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
@@ -1916,14 +1918,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .reward-pill .rtxt { flex: 1; line-height: 1.3; }
 .reward-pill .rlabel {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   letter-spacing: 0.14em;
   text-transform: uppercase;
   color: var(--ink-softer);
   margin-bottom: 2px;
 }
 .reward-pill .rname {
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 600;
   letter-spacing: -0.01em;
 }
@@ -2201,7 +2203,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .signup-title {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-md);
   line-height: 1.25;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -2213,7 +2215,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .signup-sub {
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
   line-height: 1.4;
   color: var(--ink-soft);
 }
@@ -2257,12 +2259,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .signup-btn .bn-name {
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-md);
   letter-spacing: -0.015em;
 }
 .signup-btn .bn-meta {
   font-weight: 500;
-  font-size: 10.5px;
+  font-size: var(--text-2xs);
   opacity: 0.85;
   margin-top: 1px;
 }
@@ -2279,7 +2281,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 12px;
   font-family: 'Prompt', sans-serif;
-  font-size: 17px;
+  font-size: var(--text-md);
   color: var(--ink);
 }
 .welcome-nickname-input::placeholder { color: var(--ink-softer); }
@@ -2293,7 +2295,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: #fff;
   box-shadow: none;
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-md);
   text-decoration: none;
 }
 
@@ -2302,7 +2304,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-align: center;
   font-family: 'Prompt', sans-serif;
   font-style: italic;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink-softer);
   padding: 8px 0 2px;
   cursor: pointer;
@@ -2332,7 +2334,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   justify-content: center;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink);
   margin-bottom: 12px;
 }
@@ -2347,7 +2349,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 14px;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-md);
   letter-spacing: -0.015em;
   display: flex;
   align-items: center;
@@ -2365,7 +2367,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-size: 15px;
+  font-size: var(--text-base);
   flex-shrink: 0;
 }
 
@@ -2385,7 +2387,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 999px;
   font-weight: 700;
   font-style: italic;
-  font-size: 14px;
+  font-size: var(--text-base);
   letter-spacing: -0.005em;
   box-shadow: 0 8px 20px -6px rgba(255, 94, 58, 0.5);
   transform: rotate(-3deg);
@@ -2447,7 +2449,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c4 .redeem-num .done {
   font-style: italic;
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-md);
   color: var(--ink);
 }
 
@@ -2460,7 +2462,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 18px;
   font-family: inherit;
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-md);
   letter-spacing: -0.015em;
   width: calc(100% - 40px);
   display: flex;
@@ -2478,12 +2480,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
   justify-content: center;
   color: #FFF;
-  font-size: 16px;
+  font-size: var(--text-md);
 }
 .c4 .counter-note {
   text-align: center;
   padding: 10px 20px 0;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-softer);
   font-style: italic;
 }
@@ -2551,6 +2553,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 .c5 .claimed-title {
   font-weight: 700;
+  /* Hero "ขอบคุณที่กลับมาบ่อยๆ" — kept px so it stays bold celebration
+     scale even when fs-sm shrinks the rest. */
   font-size: 28px;
   letter-spacing: -0.025em;
   line-height: 1.1;
@@ -2627,7 +2631,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c5 .voucher .v-id { position: relative; }
 .c5 .voucher .v-label {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   letter-spacing: 0.2em;
   text-transform: uppercase;
   color: var(--ink);
@@ -2637,14 +2641,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c5 .voucher .v-title {
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-md);
   letter-spacing: -0.015em;
   text-align: center;
   margin-bottom: 6px;
 }
 .c5 .voucher .v-id {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   color: var(--ink);
   opacity: 0.6;
   text-align: center;
@@ -2660,7 +2664,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c5 .reset .kicker {
   font-style: italic;
   font-weight: 500;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
   margin-bottom: 10px;
   display: inline-flex;
@@ -2682,7 +2686,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c5 .reset .mini-num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 24px;
+  font-size: var(--text-xl);
   color: var(--accent);
   text-align: center;
   letter-spacing: -0.03em;
@@ -2692,7 +2696,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c5 .reset .mini-num .of {
   color: var(--ink-softer);
   font-weight: 400;
-  font-size: 16px;
+  font-size: var(--text-md);
 }
 .c5 .reset .mini-stamps {
   display: grid;
@@ -2709,7 +2713,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin: 16px 20px 0;
   font-style: italic;
   font-weight: 500;
-  font-size: 16px;
+  font-size: var(--text-md);
   color: var(--ink);
 }
 
@@ -2895,7 +2899,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c3 .c3-bar .back svg { width: 14px; height: 14px; }
 .c3 .c3-title {
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-md);
   letter-spacing: -0.015em;
   color: var(--ink);
 }
@@ -3082,7 +3086,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-md);
   box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.4);
   cursor: pointer;
   text-decoration: none;
@@ -3216,7 +3220,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c8-msg {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: var(--text-lg);
   line-height: 1.3;
   letter-spacing: -0.02em;
   color: var(--ink);
@@ -3253,7 +3257,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c8-id-label {
   font-family: 'Prompt', sans-serif;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-softer);
@@ -3261,13 +3265,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c8-id-num {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-md);
   letter-spacing: 0.05em;
   color: var(--ink);
 }
 .c8-refresh {
   font-family: 'Prompt', sans-serif;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--ink-soft);
   display: inline-flex;
   align-items: center;
@@ -3326,12 +3330,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c7-stats .ss-meta .label {
   font-style: italic;
-  font-size: 13.5px;
+  font-size: var(--text-sm);
   color: var(--ink-softer);
   margin-bottom: 2px;
 }
 .c7-stats .ss-meta .total {
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   letter-spacing: -0.005em;
 }
@@ -3340,7 +3344,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   padding-top: 14px;
   border-top: 1px solid rgba(255, 255, 255, 0.12);
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--bg);
   display: flex;
   align-items: center;
@@ -3360,7 +3364,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 13px;
+  font-size: var(--text-sm);
   letter-spacing: -0.025em;
 }
 .c7-stats .ss-bottom .ssb-logo .dot { color: var(--butter); }
@@ -3377,7 +3381,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-family: 'Prompt', sans-serif;
   font-style: italic;
   font-weight: 500;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink);
   display: inline-flex;
   align-items: center;
@@ -3390,7 +3394,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c7-list-head .sort {
   font-family: 'Prompt', sans-serif;
-  font-size: 12px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--ink-soft);
   background: var(--surface);
@@ -3427,7 +3431,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 999px;
   font-weight: 700;
   font-style: italic;
-  font-size: 12px;
+  font-size: var(--text-xs);
   letter-spacing: -0.005em;
   border: 1px solid rgba(17, 17, 17, 0.18);
   display: inline-flex;
@@ -3452,7 +3456,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 16px;
+  font-size: var(--text-md);
   letter-spacing: -0.03em;
   flex-shrink: 0;
   border: 1px solid rgba(17, 17, 17, 0.18);
@@ -3461,7 +3465,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c7-card .info { min-width: 0; }
 .c7-card .name {
   font-weight: 700;
-  font-size: 14.5px;
+  font-size: var(--text-base);
   letter-spacing: -0.015em;
   margin-bottom: 1px;
   line-height: 1.15;
@@ -3473,7 +3477,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c7-card.featured .name .dot { color: var(--ink); }
 .c7-card .reward {
   font-weight: 400;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
   line-height: 1.2;
   white-space: nowrap;
@@ -3488,7 +3492,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c7-card .progress .num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 22px;
+  font-size: var(--text-xl);
   letter-spacing: -0.025em;
   color: var(--accent);
   line-height: 1;
@@ -3496,7 +3500,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c7-card .progress .num .of {
   color: var(--ink-softer);
   font-weight: 400;
-  font-size: 15px;
+  font-size: var(--text-base);
   margin-left: 2px;
 }
 .c7-card.featured .progress .num { color: var(--ink); }
@@ -3526,12 +3530,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c7-add .h {
   font-style: italic;
   font-weight: 500;
-  font-size: 16px;
+  font-size: var(--text-md);
   margin-bottom: 2px;
   letter-spacing: -0.01em;
 }
 .c7-add .s {
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
   line-height: 1.4;
 }
@@ -3575,7 +3579,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
   justify-content: center;
   font-weight: 700;
-  font-size: 22px;
+  font-size: var(--text-xl);
   letter-spacing: -0.02em;
   flex-shrink: 0;
   position: relative;
@@ -3589,13 +3593,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c6-profile-card .name {
   font-weight: 700;
-  font-size: 17px;
+  font-size: var(--text-md);
   letter-spacing: -0.02em;
   margin-bottom: 3px;
 }
 .c6-profile-card .meta {
   font-family: 'JetBrains Mono', monospace;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
   letter-spacing: 0.02em;
   display: flex;
@@ -3613,7 +3617,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--mint-ink);
   font-weight: 600;
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
 }
 .c6-profile-card .edit {
   width: 32px;
@@ -3670,7 +3674,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-align: center;
   padding: 0 20px 18px;
   font-family: 'JetBrains Mono', monospace;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   color: var(--ink-softer);
   letter-spacing: 0.1em;
 }
@@ -3849,7 +3853,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 .install-sheet .pitch-h {
   font-family: 'Prompt', sans-serif;
-  font-weight: 800; font-size: 22px;
+  font-weight: 800; font-size: var(--text-xl);
   letter-spacing: -0.025em;
   line-height: 1.15;
   margin-bottom: 6px;
@@ -3860,7 +3864,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .install-sheet .pitch-s {
   font-family: 'Prompt', sans-serif;
-  font-size: 12.5px; color: var(--ink-soft);
+  font-size: var(--text-xs); color: var(--ink-soft);
   line-height: 1.5;
   text-align: center;
   margin-bottom: 14px;
@@ -3874,7 +3878,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   padding: 13px;
   border-radius: 99px;
   font-family: 'Prompt', sans-serif;
-  font-weight: 700; font-size: 14px;
+  font-weight: 700; font-size: var(--text-base);
   cursor: pointer;
   display: flex;
   align-items: center;
@@ -3882,7 +3886,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   gap: 6px;
 }
 .install-sheet .sheet-cta .arr {
-  font-weight: 800; font-size: 14px;
+  font-weight: 800; font-size: var(--text-base);
 }
 .install-sheet .sheet-cta.cta-dark {
   background: var(--ink);
@@ -3895,7 +3899,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   padding: 8px;
   margin-top: 4px;
   font-family: 'Prompt', sans-serif;
-  font-weight: 500; font-size: 12px;
+  font-weight: 500; font-size: var(--text-xs);
   cursor: pointer;
 }
 
@@ -3924,14 +3928,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   align-items: center;
   justify-content: center;
   font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   font-weight: 700;
   flex-shrink: 0;
 }
 .install-sheet .ios-steps .ios-step .ios-step-text {
   flex: 1;
   font-family: 'Prompt', sans-serif;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--ink);
   line-height: 1.4;
 }
@@ -4039,7 +4043,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s10-section { padding: 22px 20px 0; }
 .s10-section .label {
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink-soft);
   margin-bottom: 8px;
   padding-left: 4px;
@@ -4191,20 +4195,20 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s10-row .row-info { line-height: 1.2; }
 .s10-row .row-name {
   font-weight: 700;
-  font-size: 16px;
+  font-size: var(--text-md);
   letter-spacing: -0.01em;
   margin-bottom: 1px;
 }
 .s10-row .row-meta {
   font-style: italic;
   font-weight: 400;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
 }
 .s10-row .arrow-r {
   font-family: 'JetBrains Mono', monospace;
   color: var(--ink-soft);
-  font-size: 16px;
+  font-size: var(--text-md);
 }
 .s10-logout {
   margin: 24px 20px 20px;
@@ -4214,7 +4218,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 14px;
   font-family: inherit;
   font-weight: 700;
-  font-size: 15px;
+  font-size: var(--text-base);
   color: var(--ink);
   width: calc(100% - 40px);
   cursor: pointer;
@@ -4264,7 +4268,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .notif-radio .nr-text { flex: 1; min-width: 0; }
 .notif-radio .nr-name {
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 500;
   color: var(--ink);
   display: flex;
@@ -4284,7 +4288,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .notif-radio .nr-desc {
   font-family: 'Prompt', sans-serif;
-  font-size: 10.5px;
+  font-size: var(--text-2xs);
   color: var(--ink-soft);
   margin-top: 2px;
   line-height: 1.45;
@@ -4308,7 +4312,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--ink);
   background: var(--bg);
   flex-shrink: 0;
@@ -4317,12 +4321,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .notif-mute-row .nm-name {
   flex: 1;
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink);
 }
 .notif-mute-row .nm-unmute {
   font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   color: var(--accent);
   font-weight: 500;
 }
@@ -4410,7 +4414,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: none;
   text-align: center;
   font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   color: rgba(190, 60, 50, 0.85);
   text-decoration: none;
   cursor: pointer;
@@ -7268,7 +7272,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   }
   .page-head h1 {
     font-family: 'Prompt', sans-serif;
-    font-size: 22px;
+    font-size: var(--text-xl);
     font-weight: 600;
     color: var(--ink);
     line-height: 1.25;
@@ -7276,7 +7280,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   }
   .page-head .ph-sub {
     font-family: 'Prompt', sans-serif;
-    font-size: 12.5px;
+    font-size: var(--text-xs);
     color: var(--ink-soft);
     margin-top: 3px;
   }
@@ -9102,7 +9106,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .ob-recovery-h {
   text-align: center;
   font-family: 'Prompt', sans-serif;
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--ink);
   margin-bottom: 6px;
@@ -9111,7 +9115,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .ob-recovery-s {
   text-align: center;
   font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
   line-height: 1.55;
   margin-bottom: 22px;
@@ -9128,7 +9132,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .ob-recovery-code {
   font-family: 'JetBrains Mono', ui-monospace, monospace;
-  font-size: 20px;
+  font-size: var(--text-lg);
   font-weight: 700;
   color: var(--ink);
   letter-spacing: 0.04em;
@@ -9142,7 +9146,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 99px;
   padding: 10px;
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
   font-weight: 600;
   display: flex;
   align-items: center;
@@ -9160,7 +9164,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .ob-recovery-hint {
   text-align: center;
   font-family: 'Prompt', sans-serif;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--ink-softer);
   font-style: italic;
   margin-bottom: 6px;
@@ -9225,7 +9229,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 17px;
+  font-size: var(--text-md);
   color: #fff;
   letter-spacing: -0.025em;
   background: var(--ink);
@@ -9234,14 +9238,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .inbox-detail-hero .idh-text { flex: 1; min-width: 0; }
 .inbox-detail-hero .idh-shop {
   font-family: 'Prompt', sans-serif;
-  font-size: 16px;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
 }
 .inbox-detail-hero .idh-meta {
   font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
+  font-size: var(--text-xs);
   color: var(--ink-soft);
   margin-top: 1px;
 }
@@ -9269,7 +9273,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   gap: 6px;
   padding: 10px;
   font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
+  font-size: var(--text-sm);
   color: var(--ink);
   font-weight: 500;
   text-decoration: underline;
@@ -9365,7 +9369,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .pp-headline {
   text-align: center;
   font-family: 'Prompt', sans-serif;
-  font-size: 17px;
+  font-size: var(--text-md);
   font-weight: 600;
   color: var(--ink);
   line-height: 1.4;
@@ -9374,7 +9378,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .pp-sub {
   text-align: center;
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
   line-height: 1.55;
   margin-bottom: 16px;
@@ -9407,7 +9411,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .pp-bullet .pb-icon svg { width: 12px; height: 12px; }
 .pp-bullet span {
   font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
+  font-size: var(--text-xs);
   color: var(--ink);
 }
 .pp-primary {
@@ -9419,7 +9423,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 99px;
   padding: 13px;
   font-family: 'Prompt', sans-serif;
-  font-size: 14px;
+  font-size: var(--text-base);
   font-weight: 600;
   cursor: pointer;
   margin-bottom: 6px;
@@ -9429,7 +9433,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-align: center;
   padding: 10px;
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink-soft);
   text-decoration: underline;
   text-decoration-color: rgba(17,17,17,0.25);
@@ -9471,7 +9475,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-top: 6px;
   display: flex; align-items: center; gap: 6px;
   font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
+  font-size: var(--text-xs);
   font-weight: 500;
   color: var(--ink-soft);
 }
@@ -9504,12 +9508,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c9-thanks-h {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 14.5px;
+  font-size: var(--text-base);
   color: var(--ink);
 }
 .c9-thanks-s {
   font-family: 'Prompt', sans-serif;
-  font-size: 12px;
+  font-size: var(--text-xs);
   color: var(--ink-soft);
   margin-top: 2px;
 }
@@ -9520,13 +9524,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c9-section-h {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: var(--ink);
   margin-bottom: 10px;
 }
 .c9-story {
   font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
+  font-size: var(--text-sm);
   line-height: 1.55;
   color: var(--ink-soft);
 }
@@ -9591,7 +9595,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c-glass-nav .gn-tab .gn-label {
   font-family: 'Prompt', sans-serif;
-  font-size: 10.5px;
+  font-size: var(--text-2xs);
   font-weight: 500;
   line-height: 1;
 }
@@ -9679,7 +9683,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .page-head .ph-text { flex: 1; min-width: 0; }
 .page-head h1 {
   font-family: 'Prompt', sans-serif;
-  font-size: 22px;
+  font-size: var(--text-xl);
   font-weight: 600;
   color: var(--ink);
   line-height: 1.25;
@@ -9687,7 +9691,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .page-head .ph-sub {
   font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
+  font-size: var(--text-xs);
   color: var(--ink-soft);
   margin-top: 3px;
 }
@@ -9787,7 +9791,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 13px;
+  font-size: var(--text-sm);
   color: #fff;
   letter-spacing: -0.025em;
   background: var(--ink);
@@ -9802,7 +9806,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .inbox-card .ic-shop {
   font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
+  font-size: var(--text-sm);
   font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
@@ -9816,13 +9820,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .inbox-card .ic-time {
   font-family: 'Prompt', sans-serif;
-  font-size: 11px;
+  font-size: var(--text-2xs);
   color: var(--ink-softer);
   flex-shrink: 0;
 }
 .inbox-card .ic-preview {
   font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
+  font-size: var(--text-xs);
   color: var(--ink);
   line-height: 1.45;
   margin-top: 2px;
@@ -9858,7 +9862,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .inbox-empty .ie-msg {
   font-family: 'Prompt', sans-serif;
-  font-size: 14px;
+  font-size: var(--text-base);
   color: var(--ink-soft);
   line-height: 1.55;
 }
@@ -9890,20 +9894,20 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 16px;
+  font-size: var(--text-md);
   letter-spacing: -0.04em;
 }
 .s10-fontsize .fs-info { line-height: 1.2; }
 .s10-fontsize .fs-name {
   font-family: 'Prompt', sans-serif;
-  font-weight: 700; font-size: 14px;
+  font-weight: 700; font-size: var(--text-base);
   letter-spacing: -0.01em;
   margin-bottom: 1px;
 }
 .s10-fontsize .fs-meta {
   font-family: 'Prompt', sans-serif;
   font-style: italic; font-weight: 400;
-  font-size: 12.5px; color: var(--ink-soft);
+  font-size: var(--text-xs); color: var(--ink-soft);
 }
 .s10-fontsize .fs-options {
   display: grid;
@@ -9922,9 +9926,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
   transition: none;
 }
-.s10-fontsize .fs-opt.sm { font-size: 12px; font-weight: 500; }
-.s10-fontsize .fs-opt.md { font-size: 14px; font-weight: 600; }
-.s10-fontsize .fs-opt.lg { font-size: 16px; font-weight: 600; }
+.s10-fontsize .fs-opt.sm { font-size: var(--text-xs); font-weight: 500; }
+.s10-fontsize .fs-opt.md { font-size: var(--text-base); font-weight: 600; }
+.s10-fontsize .fs-opt.lg { font-size: var(--text-md); font-weight: 600; }
 .s10-fontsize .fs-opt.active {
   border: 2px solid var(--accent);
   padding: 9px 7px;
@@ -9987,7 +9991,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 22px;
+  font-size: var(--text-xl);
   flex-shrink: 0;
 }
 .gift-card.used .gc-icon {
@@ -9995,7 +9999,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   border: none;
   width: 36px; height: 36px;
   border-radius: 10px;
-  font-size: 16px;
+  font-size: var(--text-md);
 }
 .gift-card .gc-icon.butter { background: var(--butter); border: 1px solid var(--ink); }
 .gift-card .gc-icon.mint { background: var(--mint); border: 1px solid var(--mint-ink); }
@@ -10475,13 +10479,15 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
+  /* Hero shop-letter inside the 64px tile — kept px so it stays
+     dominant in the join confirmation card. */
   font-size: 28px;
   margin: 0 auto 12px;
 }
 .staff-join .sj-shop-name {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 22px;
+  font-size: var(--text-xl);
   letter-spacing: -0.03em;
   color: var(--ink);
   margin-bottom: 4px;
@@ -10489,14 +10495,14 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 .staff-join .sj-shop-name .dot { color: var(--accent); }
 .staff-join .sj-shop-sub {
   font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
+  font-size: var(--text-xs);
   color: var(--ink-soft);
   margin-bottom: 18px;
 }
 .staff-join .sj-question {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 18px;
+  font-size: var(--text-lg);
   color: var(--ink);
   margin-bottom: 6px;
   line-height: 1.4;
@@ -10504,7 +10510,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 .staff-join .sj-question em { color: var(--accent); font-style: normal; }
 .staff-join .sj-helper {
   font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
+  font-size: var(--text-xs);
   color: var(--ink-soft);
   margin-bottom: 22px;
   line-height: 1.5;
@@ -10516,7 +10522,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   border-radius: 14px;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 14px;
+  font-size: var(--text-base);
   display: flex;
   align-items: center;
   justify-content: center;
@@ -10544,7 +10550,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   border: none;
   font-family: 'Prompt', sans-serif;
   font-weight: 500;
-  font-size: 12.5px;
+  font-size: var(--text-xs);
   cursor: pointer;
   margin-top: 6px;
   text-decoration: none;
