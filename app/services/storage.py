@@ -71,7 +71,16 @@ async def upload_to_r2(
             endpoint_url=endpoint_url,
             aws_access_key_id=settings.r2_access_key_id,
             aws_secret_access_key=settings.r2_secret_access_key,
-            config=Config(signature_version="s3v4"),
+            # boto3 ≥1.36 sends flexible checksums by default
+            # (x-amz-content-sha256: STREAMING-UNSIGNED-PAYLOAD-TRAILER)
+            # which R2 rejects as `InvalidArgument: Authorization`. Pin
+            # both checksum knobs back to legacy "when_required" so the
+            # signature lands cleanly. See boto/boto3#4392.
+            config=Config(
+                signature_version="s3v4",
+                request_checksum_calculation="when_required",
+                response_checksum_validation="when_required",
+            ),
             region_name="auto",
         ) as s3:
             await s3.put_object(
