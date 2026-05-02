@@ -1,9 +1,9 @@
 {# Install sheet — auto-pops in regular browser tabs (not the installed
-   PWA). Two variants share the same template:
-     · Android Chrome → "เพิ่มลงหน้าจอ" CTA fires beforeinstallprompt
-     · iOS Safari    → step-by-step "Share → Add to Home Screen" + dark
-                        "เข้าใจแล้ว" CTA (no native install API)
-   JS at the bottom flips data-variant visibility via UA sniff. #}
+    PWA). Two variants share the same template:
+      · Android Chrome → "เพิ่มลงหน้าจอ" CTA fires beforeinstallprompt
+      · iOS Safari    → step-by-step "Share → Add to Home Screen" + dark
+                         "เข้าใจแล้ว" CTA (no native install API)
+    JS at the bottom flips data-variant visibility via UA sniff. #}
 <div class="install-sheet-overlay" id="install-sheet" onclick="this.classList.remove('open');">
   <div class="install-sheet" onclick="event.stopPropagation();">
     <div class="sheet-handle"></div>
@@ -90,7 +90,7 @@
     if (!sheet) return;
     const isPWA = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
                 || window.navigator.standalone === true;
-    if (isPWA) return; // already installed — don't pester
+    if (isPWA) return;
 
     // Variant pick: iOS Safari has no beforeinstallprompt, must instruct
     // manual Share → Add to Home Screen.
