@@ -30,32 +30,31 @@
   background: rgba(255,255,255,0.15);
 }
 .cl-hero-mini > * { position: relative; z-index: 1; }
-.cl-hero-mini-emoji-big {
-  width: 80px;
-  height: 80px;
-  border-radius: 20px;
+.cl-hero-mini-emoji {
+  width: 56px;
+  height: 56px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 40px;
-  margin: 0 auto 16px;
+  font-size: 28px;
+  flex-shrink: 0;
 }
-.cl-hero-mini-emoji-big.butter { background: var(--butter); }
-.cl-hero-mini-emoji-big.mint { background: var(--mint); }
-.cl-hero-mini-emoji-big.accent { background: var(--accent); }
+.cl-hero-mini-emoji.butter { background: var(--butter); }
+.cl-hero-mini-emoji.mint { background: var(--mint); }
+.cl-hero-mini-emoji.accent { background: var(--accent); }
 .cl-hero-mini-name {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: var(--text-lg);
+  font-size: var(--text-base);
   color: #fff;
-  margin-bottom: 4px;
+  margin-bottom: 2px;
   letter-spacing: -0.005em;
 }
 .cl-hero-mini-reward {
   font-family: 'Prompt', sans-serif;
   font-size: var(--text-sm);
   color: rgba(255,255,255,0.8);
-  margin-bottom: auto;
 }
 .cl-hero-mini-cta {
   font-family: 'Prompt', sans-serif;
@@ -66,7 +65,7 @@
   padding: 10px 16px;
   border-radius: 12px;
   text-align: center;
-  margin-top: 12px;
+  flex-shrink: 0;
 }
 </style>
 {% endblock %}
@@ -93,10 +92,12 @@
         {% for voucher in hero_vouchers %}
           {% set logo = shop_logo(voucher.shop) %}
           <form method="post" action="/voucher/{{ voucher.redemption.id }}/use" class="cl-hero-mini" style="margin:0;">
-            <button type="submit" style="border:none;cursor:pointer;width:100%;text-align:left;background:transparent;color:inherit;">
-              <div class="cl-hero-mini-emoji-big {{ voucher.icon_color }}">{{ voucher.emoji }}</div>
-              <div class="cl-hero-mini-name">{{ voucher.shop.name }}</div>
-              <div class="cl-hero-mini-reward">{{ voucher.shop.reward_description }}</div>
+            <button type="submit" style="border:none;cursor:pointer;width:100%;text-align:left;background:transparent;color:inherit;display:flex;align-items:center;gap:16px;">
+              <div class="cl-hero-mini-emoji {{ voucher.icon_color }}">{{ voucher.emoji }}</div>
+              <div class="cl-hero-mini-info" style="flex:1;">
+                <div class="cl-hero-mini-name">{{ voucher.shop.name }}</div>
+                <div class="cl-hero-mini-reward">{{ voucher.shop.reward_description }}</div>
+              </div>
               <div class="cl-hero-mini-cta">ใช้เลย</div>
             </button>
           </form>
