@@ -122,9 +122,9 @@
       });
     }
 
-    // Auto-open temporarily disabled per chatchai's request — sheet
-    // markup + JS still mounted so re-enabling is a one-line uncomment
-    // (or add a small "เพิ่มลงหน้าจอ" trigger somewhere when ready).
-    // setTimeout(() => sheet.classList.add('open'), 600);
+    // Auto-open only in browser mode (not installed PWA)
+    if (!isPWA) {
+      setTimeout(() => sheet.classList.add('open'), 600);
+    }
   })();
 </script>
