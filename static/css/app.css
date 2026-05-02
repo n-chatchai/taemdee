@@ -9467,6 +9467,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 14px;
   padding: 4px 8px;
+  max-height: 340px;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 .s13d-toolbar {
   display: flex;
@@ -9494,9 +9497,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s13d-select-all {
   appearance: none;
   -webkit-appearance: none;
-  padding: 8px 14px;
+  padding: 6px 12px;
   background: var(--ink);
-  color: var(--butter);
+  color: var(--bg);
   border: none;
   border-radius: 999px;
   font-family: 'Prompt', sans-serif;
@@ -9504,7 +9507,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-size: 12px;
   cursor: pointer;
   flex-shrink: 0;
+  transition: transform 0.1s active;
 }
+.s13d-select-all:active { transform: scale(0.96); }
 
 .customer-row {
   display: flex;
@@ -9647,6 +9652,23 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
   line-height: 1.6;
 }
+.s13d-vars {
+  display: flex;
+  gap: 6px;
+  margin-top: 8px;
+}
+.var-chip {
+  padding: 6px 12px;
+  background: var(--bg);
+  border: 1px solid rgba(17, 17, 17, 0.12);
+  border-radius: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.var-chip:hover { border-color: var(--accent); color: var(--accent); }
 .s13d-message-edit {
   width: 100%;
   appearance: none;

@@ -83,11 +83,11 @@
     <div class="s13d-h">
       <span class="s13d-title">ลูกค้าที่เลือก</span>
       <span class="s13d-count" x-text="countSelected() + ' / {{ audience_total }}'"></span>
-      <button type="button" class="s13d-opt" @click="toggleAll()"
+      <button type="button" class="s13d-select-all" @click="toggleAll()"
               x-text="allOn() ? 'ปลดทั้งหมด' : 'เลือกทั้งหมด'"></button>
     </div>
 
-    <div class="s13d-search-row">
+    <div class="s13d-toolbar">
       <div class="s13d-search">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="11" cy="11" r="8"/><line x1="21" y1="21" x2="16.65" y2="16.65"/></svg>
         <input type="text" x-model="searchQuery" placeholder="ค้นจากชื่อหรือเบอร์โทร">
@@ -138,7 +138,7 @@
       <span class="s13d-title">ข้อความ</span>
       <span class="s13d-edit" @click="resetMessage()" title="คืนค่าข้อความเริ่มต้น">รีเซ็ต</span>
     </div>
-    <textarea class="s13d-message" x-model="message" rows="4" maxlength="500" placeholder="พิมพ์ข้อความที่อยากส่งให้ลูกค้า..."></textarea>
+    <textarea class="s13d-message s13d-message-edit" x-model="message" rows="4" maxlength="500" placeholder="พิมพ์ข้อความที่อยากส่งให้ลูกค้า..."></textarea>
     <div class="s13d-vars">
       <div class="var-chip" @click="message += '{name}'">ชื่อลูกค้า</div>
       <div class="var-chip" @click="message += '{points}'">แต้มสะสม</div>
