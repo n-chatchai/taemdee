@@ -1332,6 +1332,7 @@ async def my_gifts(
 async def voucher_mark_used(
     redemption_id: uuid.UUID,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    next: Optional[str] = None,
     db: AsyncSession = Depends(get_session),
 ):
     """voucher.use activation — trust-based: tapping "ใช้" in gifts.list
@@ -1367,8 +1368,9 @@ async def voucher_mark_used(
         # (e.g. /my-cards) should reflect the lower count immediately.
         from app.services.events import publish_customer
         publish_customer(customer.id, "gifts-update", str(await _active_gifts_count(db, customer.id)))
+    redirect_url = next or f"/voucher/{redemption_id}"
     return RedirectResponse(
-        url=f"/voucher/{redemption_id}",
+        url=redirect_url,
         status_code=status.HTTP_303_SEE_OTHER,
     )
 

@@ -100,7 +100,7 @@
       <div class="cl-carousel">
         {% for voucher in hero_vouchers %}
           {% set logo = shop_logo(voucher.shop) %}
-          <form method="post" action="/voucher/{{ voucher.redemption.id }}/use" class="cl-hero-mini" style="margin:0;">
+          <form method="post" action="/voucher/{{ voucher.redemption.id }}/use?next=/my-cards" class="cl-hero-mini" style="margin:0;">
             <button type="submit" style="border:none;cursor:pointer;width:100%;text-align:left;background:transparent;color:inherit;display:flex;align-items:center;gap:16px;">
               <div class="cl-hero-mini-emoji {{ voucher.icon_color }}">{{ voucher.emoji }}</div>
               <div class="cl-hero-mini-info" style="flex:1;">
