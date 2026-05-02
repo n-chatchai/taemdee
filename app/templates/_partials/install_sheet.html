@@ -3,7 +3,8 @@
       · Android Chrome → "เพิ่มลงหน้าจอ" CTA fires beforeinstallprompt
       · iOS Safari    → step-by-step "Share → Add to Home Screen" + dark
                          "เข้าใจแล้ว" CTA (no native install API)
-    JS at th<div class="install-sheet-overlay" id="install-sheet" onclick="this.snoozeAndClose();">
+    JS at the bottom flips data-variant visibility via UA sniff. #}
+<div class="install-sheet-overlay" id="install-sheet" onclick="if(this.snoozeAndClose) this.snoozeAndClose();">
   <div class="install-sheet" onclick="event.stopPropagation();">
     <div class="sheet-handle"></div>
 
@@ -76,11 +77,11 @@
       <span class="arr">→</span>
     </button>
     <button type="button" class="sheet-cta cta-dark" data-variant="ios" id="install-cta-ios" style="display:none;"
-            onclick="document.getElementById('install-sheet').snoozeAndClose();">
+            onclick="const s = document.getElementById('install-sheet'); if(s && s.snoozeAndClose) s.snoozeAndClose();">
       เข้าใจแล้ว
     </button>
 
-    <button type="button" class="sheet-close" data-variant="android" onclick="document.getElementById('install-sheet').snoozeAndClose();">ไว้ก่อน</button>
+    <button type="button" class="sheet-close" data-variant="android" onclick="const s = document.getElementById('install-sheet'); if(s && s.snoozeAndClose) s.snoozeAndClose();">ไว้ก่อน</button>
   </div>
 </div>
 <script>
@@ -89,7 +90,7 @@
     if (!sheet) return;
 
     const SNOOZE_KEY = 'td_install_snoozed';
-    const SNOOZE_DAYS = 30; // Increased from 14 to reduce annoyance
+    const SNOOZE_DAYS = 30;
 
     // Add central snooze function to the sheet element
     sheet.snoozeAndClose = function() {
@@ -103,17 +104,19 @@
                 || window.navigator.standalone === true;
     if (isPWA) return;
 
-    // Check snooze: don't show if snoozed within SNOOZE_DAYS
+    // Check snooze logic: don't even finish the script if snoozed
     try {
       const snoozed = localStorage.getItem(SNOOZE_KEY);
       if (snoozed) {
         const snoozeTime = parseInt(snoozed, 10);
-        const daysSinceSnooze = (Date.now() - snoozeTime) / (1000 * 60 * 60 * 24);
-        if (daysSinceSnooze < SNOOZE_DAYS) return;
+        if (!isNaN(snoozeTime)) {
+          const daysSinceSnooze = (Date.now() - snoozeTime) / (1000 * 60 * 60 * 24);
+          if (daysSinceSnooze < SNOOZE_DAYS) return;
+        }
       }
     } catch (_) {}
 
-    // Variant pick: iOS Safari has no beforeinstallprompt, must instruct
+    // Variant pick: iOS Safari vs others
     const ua = navigator.userAgent || '';
     const isIOS = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
     const wantedVariant = isIOS ? 'ios' : 'android';
@@ -121,7 +124,7 @@
       el.style.display = (el.dataset.variant === wantedVariant) ? '' : 'none';
     });
 
-    // Capture beforeinstallprompt
+    // Capture beforeinstallprompt (Android/Chrome only)
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
@@ -140,12 +143,12 @@
       });
     }
 
-    // Auto-open logic: Less aggressive - only pop on main Home/Dashboard pages
+    // Auto-open logic: only on main entry pages
     const path = window.location.pathname;
     const isHomePage = path === '/' || path === '/my-cards' || path === '/shop/dashboard';
     
-    if (!isPWA && isHomePage) {
-      setTimeout(() => sheet.classList.add('open'), 1200); // Slightly longer delay
+    if (isHomePage) {
+      setTimeout(() => sheet.classList.add('open'), 1500);
     }
   })();
 </script>

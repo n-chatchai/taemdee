@@ -81,6 +81,19 @@ async def session_auth_error_handler(request: Request, exc: SessionAuthError):
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
+@app.get("/manifest.json")
+async def manifest_redirect():
+    """Some browsers (and the PWA install crawler) look for the manifest
+    at the root. Redirect to the URL-busted static copy."""
+    return RedirectResponse(url="/static/manifest.json")
+
+
+@app.get("/favicon.ico")
+async def favicon_redirect():
+    """Root-level favicon for browsers that don't respect the link tag."""
+    return RedirectResponse(url="/static/taemdee-icons/taemdee-icon-32.png")
+
+
 @app.get("/")
 async def home(request: Request, db: AsyncSession = Depends(get_session)):
     """Marketing home for guests. Logged-in users get sent to their app —

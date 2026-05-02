@@ -16,11 +16,13 @@
      final step redirects to /card/{shop.id}. #}
   {% set logo = shop_logo(shop) %}
   <div class="td onboarding" :class="'step-' + step" x-data="{
-        step: 1, name: '', error: '', pointCount: {{ point_count }},
+        step: 1, name: '', error: '', pointCount: Number('{{ point_count or 0 }}'),
         async submitName() {
+          const shopId = '{{ shop.id or "" }}';
+          if (!shopId) { this.error = 'ข้อมูลร้านค้าไม่ถูกต้อง'; return; }
           const fd = new FormData();
           fd.append('name', this.name.trim());
-          fd.append('shop_id', '{{ shop.id }}');
+          fd.append('shop_id', shopId);
           try {
             const r = await fetch('/card/nickname', {
               method: 'POST',
@@ -30,7 +32,7 @@
             if (!r.ok) { const j = await r.json().catch(() => ({}));
               this.error = j.detail || (r.status + ' — บันทึกไม่สำเร็จ'); return; }
             const res = await r.json();
-            if (res.point_count !== undefined) this.pointCount = res.point_count;
+            if (res.point_count !== undefined) this.pointCount = Number(res.point_count);
           } catch (_) { this.error = 'บันทึกไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต'; return; }
           this.error = ''; this.step = 2;
         }
