@@ -22,9 +22,9 @@ if "postgresql" in settings.database_url:
     # Skipped for SQLite (test mode) — aiosqlite uses StaticPool which
     # rejects these kwargs.
     engine_kwargs = {
-        "pool_size": 10,
-        "max_overflow": 20,
-        "pool_timeout": 30,
+        "pool_size": 20,
+        "max_overflow": 30,
+        "pool_timeout": 10,
         "pool_recycle": 1800,  # asyncpg drops idle conns after 30 min
         "pool_pre_ping": True,  # detect dead conns left over from a redeploy
     }

@@ -91,7 +91,7 @@ async def start() -> None:
     try:
         _listener_conn = await asyncpg.connect(dsn)
         await _listener_conn.add_listener(CHANNEL, _on_notify)
-        _publisher_pool = await asyncpg.create_pool(dsn, min_size=1, max_size=4)
+        _publisher_pool = await asyncpg.create_pool(dsn, min_size=2, max_size=10)
         log.info("events: LISTEN/NOTIFY started on channel=%s", CHANNEL)
     except Exception:
         log.exception("events: failed to start LISTEN/NOTIFY; falling back to local dispatch")
