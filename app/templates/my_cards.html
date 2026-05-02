@@ -50,6 +50,15 @@
   color: #fff;
   margin-bottom: 2px;
   letter-spacing: -0.005em;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.cl-hero-mini-name .shop-logo {
+  width: 24px;
+  height: 24px;
+  border-radius: 6px;
+  object-fit: cover;
 }
 .cl-hero-mini-reward {
   font-family: 'Prompt', sans-serif;
@@ -95,7 +104,10 @@
             <button type="submit" style="border:none;cursor:pointer;width:100%;text-align:left;background:transparent;color:inherit;display:flex;align-items:center;gap:16px;">
               <div class="cl-hero-mini-emoji {{ voucher.icon_color }}">{{ voucher.emoji }}</div>
               <div class="cl-hero-mini-info" style="flex:1;">
-                <div class="cl-hero-mini-name">{{ voucher.shop.name }}</div>
+                <div class="cl-hero-mini-name">
+                  {% if logo %}{% if logo.is_image %}<img src="{{ logo.url }}" class="shop-logo">{% endif %}{% endif %}
+                  {{ voucher.shop.name }}
+                </div>
                 <div class="cl-hero-mini-reward">{{ voucher.shop.reward_description }}</div>
               </div>
               <div class="cl-hero-mini-cta">ใช้เลย</div>
