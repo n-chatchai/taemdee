@@ -28,48 +28,20 @@
     <div class="s2-done-sub">โหลด คิวอาร์ร้าน พิมพ์ติดที่เคาน์เตอร์</div>
   </div>
 
-  {% set logo = shop_logo(shop) %}
-  {% set center_initial = (shop.name or 'm')[0]|lower %}
   <div class="s2-qr-block">
-    <div class="s2-qr-card">
-      <div class="s2-shop-head">
-        <div class="shop-logo-mark">
-          {% if logo %}
-            {% if logo.is_image %}
-              <img src="{{ logo.url }}" class="shop-logo-img" style="width:40px; height:40px;">
-            {% else %}
-              <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-            {% endif %}
-          {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
-        </div>
-        <div class="shop-sub">
-          <span>{{ shop.name }}</span>
-          {% if shop.location %}<span class="dotsep"></span><span>{{ shop.location }}</span>{% endif %}
-        </div>
-      </div>
-      <div class="s2-qr-svg-wrap">
-        {{ qr_svg|safe }}
-        <div class="s2-qr-center">
-          {% if logo and logo.is_image %}
-            <img src="{{ logo.url }}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">
-          {% else %}
-            {{ center_initial }}<span class="dot">.</span>
-          {% endif %}
-        </div>
-      </div>
-      <div class="s2-qr-trust">
-        ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
-      </div>
-    </div>
+    {% include "_partials/qr_card.html" with context %}
 
-    <a class="s2-qr-download" href="/shop/qr.png" download>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
-        <polyline points="7 10 12 15 17 10"/>
-        <line x1="12" y1="15" x2="12" y2="3"/>
-      </svg>
-      <span>ดาวน์โหลดคิวอาร์โค๊ด</span>
-    </a>
+
+    <div class="s2-qr-actions" style="justify-content: center;">
+      <button type="button" class="s2-qr-download" onclick="downloadQRCard('qr-card-unified', 'taemdee-card-{{ shop.name|slugify }}')">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+          <polyline points="7 10 12 15 17 10"/>
+          <line x1="12" y1="15" x2="12" y2="3"/>
+        </svg>
+        <span>บันทึกรูป</span>
+      </button>
+    </div>
 
     <div class="s2-qr-hint">ติดตั้งที่จุดที่ลูกค้าเห็นชัด</div>
   </div>

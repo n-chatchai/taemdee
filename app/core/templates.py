@@ -4,9 +4,11 @@ Carries Jinja globals like `asset_version` so all stylesheet links get
 cache-busted on each deploy.
 """
 
+import re
 import subprocess
 from pathlib import Path
 from typing import Optional
+import unicodedata
 
 from fastapi.templating import Jinja2Templates
 
@@ -66,9 +68,20 @@ def shop_logo(shop) -> Optional[dict]:
     return rendered
 
 
+def slugify(text: str) -> str:
+    """Simple slugify for Thai/English filenames."""
+    if not text:
+        return "shop"
+    # Keep Thai characters, alphanumeric, and spaces
+    text = re.sub(r'[^\u0E00-\u0E7F\w\s-]', '', text).strip().lower()
+    return re.sub(r'[-\s]+', '-', text)
+
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["asset_version"] = ASSET_VERSION
 templates.env.globals["shop_logo"] = shop_logo
-templates.env.filters["bkk_hms"] = bkk_hms
-templates.env.filters["bkk_feed_time"] = bkk_feed_time
-templates.env.filters["bkk_short_date"] = bkk_short_date
+templates.env.filters.update({
+    "bkk_hms": bkk_hms,
+    "bkk_feed_time": bkk_feed_time,
+    "bkk_short_date": bkk_short_date,
+    "slugify": slugify,
+})

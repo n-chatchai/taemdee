@@ -1,4 +1,5 @@
 import io
+import urllib.parse
 import uuid
 from datetime import timedelta, timezone
 from typing import Optional
@@ -20,6 +21,7 @@ from app.services.branch import s3_top_context
 from app.services.deereach import compute_suggestions
 from app.services.events import stream as event_stream
 from app.services.items import ItemError, claim as claim_item, list_available as list_available_items
+from app.services.card_gen import generate_shop_card_png
 from app.services.logo_gen import VALID_STYLE_IDS, generate_logos, render_style
 from app.services.referrals import (
     complete_referral_for,
@@ -511,7 +513,6 @@ async def onboard_identity_post(
 
     if same_district_collision is not None:
         # Re-render the same step with inline warning + form values preserved.
-        from app.services.logo_gen import generate_logos, render_style
         from app.services.thai_address import all_districts, district_province_pairs
         shop.name = cleaned_name
         shop.district = cleaned_district or shop.district
@@ -1472,20 +1473,34 @@ async def shop_qr_png(
     request: Request,
     shop: Shop = Depends(get_current_shop),
 ):
-    """High-DPI PNG of just the QR for the บันทึก (save) button on S8.
-
-    Browsers respect the Content-Disposition filename, so the file lands as
-    `taemdee-qr-<shop>.png` in the user's Downloads folder. Plain QR only —
-    the framing/reward card is for `window.print()` from the page itself.
-    """
+    """High-DPI PNG of just the QR. Used by some legacy flows."""
     scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
     buf = io.BytesIO()
-    segno.make(scan_url, error="m").save(buf, kind="png", scale=20, border=2)
+    segno.make(scan_url, error="h").save(buf, kind="png", scale=30, border=1)
     safe_name = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
+    quoted_filename = urllib.parse.quote(f"taemdee-qr-{safe_name}.png")
     return Response(
         content=buf.getvalue(),
         media_type="image/png",
-        headers={"Content-Disposition": f'attachment; filename="taemdee-qr-{safe_name}.png"'},
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quoted_filename}"},
+    )
+
+@router.get("/qr_card.png")
+async def shop_qr_card_png(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+):
+    """High-quality PNG of the full unified card (matching /shop/onboard/done).
+    Suitable for printing or sharing.
+    """
+    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
+    content = await generate_shop_card_png(shop, scan_url)
+    safe_name = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
+    quoted_filename = urllib.parse.quote(f"taemdee-card-{safe_name}.png")
+    return Response(
+        content=content,
+        media_type="image/png",
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quoted_filename}"},
     )
 
 @router.post("/upload/logo")

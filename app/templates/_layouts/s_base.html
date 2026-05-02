@@ -22,6 +22,37 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+  <script src="https://cdnjs.cloudflare.com/ajax/libs/html2canvas/1.4.1/html2canvas.min.js"></script>
+  <script>
+    async function downloadQRCard(elementId, filename) {
+      const element = document.getElementById(elementId);
+      if (!element) return;
+      
+      // Add a class for capture to handle any specific print/export styles
+      element.classList.add('is-capturing');
+      
+      try {
+        const canvas = await html2canvas(element, {
+          scale: 4, // Very high quality
+          useCORS: true,
+          backgroundColor: '#ffffff',
+          logging: false,
+          windowWidth: element.scrollWidth,
+          windowHeight: element.scrollHeight
+        });
+        
+        const link = document.createElement('a');
+        link.download = filename + '.png';
+        link.href = canvas.toDataURL('image/png', 1.0);
+        link.click();
+      } catch (err) {
+        console.error('Download failed:', err);
+        alert('เกิดข้อผิดพลาดในการบันทึกรูป โปรดลองใหม่อีกครั้ง');
+      } finally {
+        element.classList.remove('is-capturing');
+      }
+    }
+  </script>
   {% block head_extra %}{% endblock %}
 </head>
 <body>

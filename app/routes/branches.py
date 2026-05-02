@@ -1,6 +1,7 @@
 """Branch CRUD — owner-only. Renders S12 page; mutations redirect back."""
 
 import io
+import urllib.parse
 from typing import Optional
 from uuid import UUID
 
@@ -14,6 +15,7 @@ from app.core.auth import SessionContext, get_current_shop, require_owner
 from app.core.database import get_session
 from app.models import Branch, Shop
 from app.services.branch import create_branch, list_branches, update_branch
+from app.services.card_gen import generate_shop_card_png
 
 router = APIRouter()
 
@@ -80,19 +82,43 @@ async def branch_qr_png(
     _: SessionContext = Depends(require_owner),
     db: AsyncSession = Depends(get_session),
 ):
-    """High-DPI PNG of the branch QR for the บันทึก (save) button on S8."""
+    """High-DPI PNG of just the QR for the branch."""
     branch = await db.get(Branch, branch_id)
     if not branch or branch.shop_id != shop.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Branch not found")
     scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}?branch={branch.id}"
     buf = io.BytesIO()
-    segno.make(scan_url, error="m").save(buf, kind="png", scale=20, border=2)
+    segno.make(scan_url, error="h").save(buf, kind="png", scale=30, border=1)
     safe_shop = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
     safe_branch = "".join(c if c.isalnum() else "-" for c in branch.name).strip("-").lower() or "branch"
+    quoted_filename = urllib.parse.quote(f"taemdee-qr-{safe_shop}-{safe_branch}.png")
     return Response(
         content=buf.getvalue(),
         media_type="image/png",
-        headers={"Content-Disposition": f'attachment; filename="taemdee-qr-{safe_shop}-{safe_branch}.png"'},
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quoted_filename}"},
+    )
+
+@router.get("/{branch_id}/qr_card.png")
+async def branch_qr_card_png(
+    request: Request,
+    branch_id: UUID,
+    shop: Shop = Depends(get_current_shop),
+    _: SessionContext = Depends(require_owner),
+    db: AsyncSession = Depends(get_session),
+):
+    """High-quality PNG of the full unified card for the branch."""
+    branch = await db.get(Branch, branch_id)
+    if not branch or branch.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "Branch not found")
+    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}?branch={branch.id}"
+    content = await generate_shop_card_png(shop, scan_url, branch=branch)
+    safe_shop = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
+    safe_branch = "".join(c if c.isalnum() else "-" for c in branch.name).strip("-").lower() or "branch"
+    quoted_filename = urllib.parse.quote(f"taemdee-card-{safe_shop}-{safe_branch}.png")
+    return Response(
+        content=content,
+        media_type="image/png",
+        headers={"Content-Disposition": f"attachment; filename*=UTF-8''{quoted_filename}"},
     )
 
 
