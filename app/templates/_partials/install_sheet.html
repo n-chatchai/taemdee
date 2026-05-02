@@ -3,8 +3,7 @@
       · Android Chrome → "เพิ่มลงหน้าจอ" CTA fires beforeinstallprompt
       · iOS Safari    → step-by-step "Share → Add to Home Screen" + dark
                          "เข้าใจแล้ว" CTA (no native install API)
-    JS at the bottom flips data-variant visibility via UA sniff. #}
-<div class="install-sheet-overlay" id="install-sheet" onclick="this.classList.remove('open');">
+    JS at th<div class="install-sheet-overlay" id="install-sheet" onclick="this.snoozeAndClose();">
   <div class="install-sheet" onclick="event.stopPropagation();">
     <div class="sheet-handle"></div>
 
@@ -77,24 +76,34 @@
       <span class="arr">→</span>
     </button>
     <button type="button" class="sheet-cta cta-dark" data-variant="ios" id="install-cta-ios" style="display:none;"
-            onclick="document.getElementById('install-sheet').classList.remove('open');">
+            onclick="document.getElementById('install-sheet').snoozeAndClose();">
       เข้าใจแล้ว
     </button>
 
-    <button type="button" class="sheet-close" data-variant="android" onclick="document.getElementById('install-sheet').classList.remove('open');">ไว้ก่อน</button>
+    <button type="button" class="sheet-close" data-variant="android" onclick="document.getElementById('install-sheet').snoozeAndClose();">ไว้ก่อน</button>
   </div>
 </div>
 <script>
   (function () {
     const sheet = document.getElementById('install-sheet');
     if (!sheet) return;
+
+    const SNOOZE_KEY = 'td_install_snoozed';
+    const SNOOZE_DAYS = 30; // Increased from 14 to reduce annoyance
+
+    // Add central snooze function to the sheet element
+    sheet.snoozeAndClose = function() {
+      try {
+        localStorage.setItem(SNOOZE_KEY, String(Date.now()));
+      } catch (_) {}
+      this.classList.remove('open');
+    };
+
     const isPWA = (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches)
                 || window.navigator.standalone === true;
     if (isPWA) return;
 
-    // Check snooze: don't show if snoozed within 2 weeks
-    const SNOOZE_KEY = 'td_install_snoozed';
-    const SNOOZE_DAYS = 14;
+    // Check snooze: don't show if snoozed within SNOOZE_DAYS
     try {
       const snoozed = localStorage.getItem(SNOOZE_KEY);
       if (snoozed) {
@@ -105,23 +114,20 @@
     } catch (_) {}
 
     // Variant pick: iOS Safari has no beforeinstallprompt, must instruct
-    // manual Share → Add to Home Screen.
     const ua = navigator.userAgent || '';
     const isIOS = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
     const wantedVariant = isIOS ? 'ios' : 'android';
     sheet.querySelectorAll('[data-variant]').forEach((el) => {
-      el.style.display = (el.dataset.variant === wantedVariant)
-        ? (el.tagName === 'BUTTON' ? '' : '')
-        : 'none';
+      el.style.display = (el.dataset.variant === wantedVariant) ? '' : 'none';
     });
 
-    // Capture beforeinstallprompt so the Android CTA can fire the native
-    // dialog. Some Chromium variants only fire this once per page-load.
+    // Capture beforeinstallprompt
     let deferredPrompt = null;
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
     });
+
     const androidCta = document.getElementById('install-cta-android');
     if (androidCta) {
       androidCta.addEventListener('click', async () => {
@@ -134,20 +140,12 @@
       });
     }
 
-    // Snooze button - store timestamp in localStorage
-    const closeBtn = sheet.querySelector('.sheet-close');
-    if (closeBtn) {
-      closeBtn.addEventListener('click', () => {
-        try {
-          localStorage.setItem(SNOOZE_KEY, String(Date.now()));
-        } catch (_) {}
-        sheet.classList.remove('open');
-      });
-    }
-
-    // Auto-open only in browser mode (not installed PWA)
-    if (!isPWA) {
-      setTimeout(() => sheet.classList.add('open'), 600);
+    // Auto-open logic: Less aggressive - only pop on main Home/Dashboard pages
+    const path = window.location.pathname;
+    const isHomePage = path === '/' || path === '/my-cards' || path === '/shop/dashboard';
+    
+    if (!isPWA && isHomePage) {
+      setTimeout(() => sheet.classList.add('open'), 1200); // Slightly longer delay
     }
   })();
 </script>
