@@ -32,8 +32,15 @@
   {% include "_partials/page_head.html" %}
 
   {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
+  {% set has_picture = customer.picture_url|string|length > 0 %}
   <div class="c6-profile-card">
-    <div class="avatar">{{ initial }}</div>
+    <div class="avatar">
+      {% if has_picture %}
+        <img src="{{ customer.picture_url }}" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+      {% else %}
+        {{ initial }}
+      {% endif %}
+    </div>
     <div class="info">
       <div class="name">{{ customer.display_name or 'ลูกค้าแต้มดี' }}</div>
       <div class="meta">

@@ -32,9 +32,10 @@ async def claim_by_line(
     anonymous_customer: Customer,
     line_id: str,
     display_name: Optional[str] = None,
+    picture_url: Optional[str] = None,
 ) -> Customer:
     return await _claim(
-        db, anonymous_customer, line_id=line_id, display_name=display_name
+        db, anonymous_customer, line_id=line_id, display_name=display_name, picture_url=picture_url
     )
 
 
@@ -69,6 +70,7 @@ async def _claim(
     google_id: Optional[str] = None,
     facebook_id: Optional[str] = None,
     display_name: Optional[str] = None,
+    picture_url: Optional[str] = None,
 ) -> Customer:
     if not anonymous_customer.is_anonymous:
         return anonymous_customer  # Already claimed — no-op
@@ -102,6 +104,11 @@ async def _claim(
             .where(Redemption.customer_id == anonymous_customer.id)
             .values(customer_id=existing.id)
         )
+        if picture_url:
+            existing.picture_url = picture_url
+        if display_name and not existing.display_name:
+            existing.display_name = display_name
+        db.add(existing)
         await db.delete(anonymous_customer)
         await db.commit()
         await db.refresh(existing)
@@ -117,8 +124,10 @@ async def _claim(
         anonymous_customer.google_id = google_id
     if facebook_id:
         anonymous_customer.facebook_id = facebook_id
-    if display_name:
+    if display_name and not anonymous_customer.display_name:
         anonymous_customer.display_name = display_name
+    if picture_url:
+        anonymous_customer.picture_url = picture_url
     db.add(anonymous_customer)
     await db.commit()
     await db.refresh(anonymous_customer)

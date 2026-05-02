@@ -132,13 +132,15 @@ async def line_customer_start(next_redeem: Optional[str] = None):
 
 
 @router.get("/line/customer/confirm")
-async def line_customer_confirm_view(
+async def line_customer_confirm(
     request: Request,
     next_redeem: Optional[str] = None,
+    c3_line_ctx: Optional[str] = Cookie(None, alias="c3_line_ctx"),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
     """C3.line — confirmation step shown after the LINE OAuth callback.
+
     Renders the LINE display name + DeeReach consent toggle. Reachable
     only with a customer cookie that already points at the just-claimed
     Customer (the callback set it). If the cookie is missing or stale we
@@ -146,11 +148,25 @@ async def line_customer_confirm_view(
     customer, _ = await find_or_create_customer(customer_cookie, db)
     if customer.is_anonymous:
         return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+    # Parse the context cookie set by the callback (line_name|||onboard_name|||picture_url)
+    line_name = customer.display_name
+    onboard_name = None
+    picture_url = None
+    if c3_line_ctx:
+        parts = c3_line_ctx.split("|||")
+        if len(parts) >= 3:
+            line_name = parts[0] or None
+            onboard_name = parts[1] or None
+            picture_url = parts[2] or None
+
     return templates.TemplateResponse(
         request=request,
         name="c3_line.html",
         context={
-            "display_name": customer.display_name,
+            "line_display_name": line_name,
+            "onboard_name": onboard_name,
+            "picture_url": picture_url,
             "next_redeem": next_redeem,
         },
     )
@@ -159,6 +175,7 @@ async def line_customer_confirm_view(
 @router.post("/line/customer/confirm")
 async def line_customer_confirm_save(
     next_redeem: Optional[str] = Form(None),
+    display_name: Optional[str] = Form(None),
     dr_consent: Optional[str] = Form("on"),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
@@ -173,6 +190,11 @@ async def line_customer_confirm_save(
     customer, _ = await find_or_create_customer(customer_cookie, db)
     if customer.is_anonymous:
         return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+    # Allow customer to override the LINE display_name
+    if display_name and display_name.strip():
+        customer.display_name = display_name.strip()
+        await db.commit()
 
     target_shop_id: Optional[_uuid.UUID] = None
     if next_redeem:
@@ -193,7 +215,9 @@ async def line_customer_confirm_save(
             await db.commit()
 
     target_url = await _redeem_after_claim(db, customer, next_redeem) or "/my-cards"
-    return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+    response = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie("c3_line_ctx", path="/")
+    return response
 
 
 @router.get("/line/callback")
@@ -226,10 +250,12 @@ async def line_callback(
 
     line_id = profile["userId"]
     display_name = profile.get("displayName") or None
+    picture_url = profile.get("pictureUrl") or None
 
     if role == "customer":
         anon, _ = await find_or_create_customer(customer_cookie, db)
-        claimed = await claim_by_line(db, anon, line_id, display_name=display_name)
+        onboard_name = anon.display_name  # Name from onboard.greet (before LINE overwrites)
+        claimed = await claim_by_line(db, anon, line_id, display_name=display_name, picture_url=picture_url)
 
         # Hand off to C3.line — design splits "LINE OAuth came back" from
         # "decide DeeReach consent". Carry next_redeem through as a query
@@ -242,6 +268,12 @@ async def line_callback(
         if next_redeem:
             target_url += f"?next_redeem={next_redeem}"
         redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+        redirect.set_cookie(
+            key="c3_line_ctx",
+            value=f"{display_name or ''}|||{onboard_name or ''}|||{picture_url or ''}",
+            httponly=True,
+            path="/",
+        )
         set_customer_cookie(redirect, claimed.id)
         redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
         return redirect

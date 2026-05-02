@@ -15,7 +15,16 @@
      after /auth/line/callback already promoted the anonymous Customer
      via claim_by_line. Submitting POSTs the consent state and lands on
      /my-cards (or /card/{shop}/claimed if next_redeem rides through). #}
-  <div class="td c3" x-data="{ drConsent: true }">
+  <div class="td c3" x-data="{ 
+  drConsent: true, 
+  mode: 'line', 
+  customName: '',
+  lineName: '{{ line_display_name|default('''') }}',
+  onboardName: '{{ onboard_name|default('''') }}',
+  finalName() { 
+    return this.mode === 'line' ? this.lineName : (this.customName || this.onboardName); 
+  }
+}">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="c3-bar">
@@ -31,16 +40,38 @@
 
       <div class="line-account">
         <div class="la-avatar">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+          {% if picture_url %}
+            <img src="{{ picture_url }}" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+          {% endif %}
         </div>
         <div class="la-info">
           <div class="la-label">บัญชี LINE</div>
-          <div class="la-name">{{ display_name or 'พี่' }}</div>
+          <div class="la-name">{{ line_display_name or 'พี่' }}</div>
+        </div>
+      </div>
+
+      <div class="c3-field">
+        <label class="c3-field-label">ชื่อที่พี่อยากให้เรียก</label>
+        <div class="c3-name-options">
+          <label class="c3-name-opt">
+            <input type="radio" name="name_mode" value="line" x-model="mode">
+            <span class="c3-name-opt-label">ใช้ชื่อ LINE</span>
+            <span class="c3-name-opt-value" x-text="lineName || 'พี่'"></span>
+          </label>
+          <label class="c3-name-opt">
+            <input type="radio" name="name_mode" value="custom" x-model="mode">
+            <span class="c3-name-opt-label">ใช้ชื่อที่พิมพ์ไว้</span>
+            <span class="c3-name-opt-value" x-text="onboardName || 'พี่'"></span>
+            <input class="c3-input c3-input-inline" type="text" maxlength="40" placeholder="แก้ไขชื่อ…" x-model="customName" @focus="mode = 'custom'">
+          </label>
         </div>
       </div>
 
       <form method="POST" action="/auth/line/customer/confirm">
         {% if next_redeem %}<input type="hidden" name="next_redeem" value="{{ next_redeem }}">{% endif %}
+        <input type="hidden" name="display_name" :value="finalName()">
         <input type="hidden" name="dr_consent" :value="drConsent ? 'on' : 'off'">
 
         <div class="consent-toggle" :class="{ off: !drConsent }"

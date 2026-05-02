@@ -28,6 +28,7 @@ class Customer(SQLModel, table=True):
     # the customer either provides a nickname or skips (skip stores the
     # polite default "คุณลูกค้า" so we don't ask again).
     display_name: Optional[str] = Field(default=None)
+    picture_url: Optional[str] = Field(default=None)
     # Master DeeReach kill-switch — when False, _audience_for filters
     # this customer out of every campaign kind across every shop. Per-
     # shop mute (CustomerShopMute) still works alongside; the master
