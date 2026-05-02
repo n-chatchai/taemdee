@@ -5,12 +5,15 @@
 
 {% block head_extra %}
 <style>
-.cl-hero-carousel-wrap { position: relative; overflow: hidden; }
+.cl-hero-carousel-wrap { position: relative; overflow: hidden; margin: 4px 14px 0; }
 .cl-hero-carousel { display: flex; transition: transform 0.3s ease; }
-.cl-hero-carousel .cl-hero { flex: 0 0 100%; min-width: 100%; }
+.cl-hero-carousel .cl-hero { flex: 0 0 100%; min-width: 100%; margin: 0; }
 .cl-carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
 .cl-carousel-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gray-4); }
 .cl-carousel-dots .dot.active { background: var(--accent); }
+.cl-carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; font-size: 24px; color: var(--ink); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
+.cl-carousel-arrow.prev { left: 8px; }
+.cl-carousel-arrow.next { right: 8px; }
 </style>
 {% endblock %}
 
@@ -68,6 +71,8 @@
             <span class="dot{% if loop.first %} active{% endif %}"></span>
           {% endfor %}
         </div>
+        <button class="cl-carousel-arrow prev" id="hero-prev" aria-label="ก่อนหน้า">‹</button>
+        <button class="cl-carousel-arrow next" id="hero-next" aria-label="ถัดไป">›</button>
       {% endif %}
     </div>
   {% endif %}
@@ -190,6 +195,10 @@
       dots.querySelectorAll('.dot').forEach((dot, idx) => {
         dot.addEventListener('click', () => go(idx));
       });
+      const prev = document.getElementById('hero-prev');
+      const next = document.getElementById('hero-next');
+      if (prev) prev.addEventListener('click', () => go((current - 1 + slides.length) % slides.length));
+      if (next) next.addEventListener('click', () => go((current + 1) % slides.length));
     })();
   </script>
 {% endblock %}
