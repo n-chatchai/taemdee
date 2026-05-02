@@ -9,14 +9,14 @@
   <div class="s1-hero" style="padding: 56px 30px 16px;">
     <div class="s1-logo-mark" style="margin-bottom:14px;">
       <svg class="smile-stamp" viewBox="0 0 100 100" width="72" height="72">
-        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+        <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+        <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
       </svg>
     </div>
     <div class="s1-name">แต้มดี<span class="dot">.</span></div>
-    <div class="s1-tag">เปิดร้านค้าใหม่ใน 60 วินาที<br>ฟรี · ไม่มีค่ารายเดือน</div>
+    <div class="s1-tag">เปิดร้านค้าใหม่ในไม่กี่นาที<br>ฟรี · ไม่มีค่ารายเดือน</div>
   </div>
 
   <!-- Step 1: choose login method -->
@@ -84,6 +84,20 @@
     <button type="button" class="back" @click="step = 'phone'">เปลี่ยนเบอร์</button>
     <div x-show="error" x-cloak class="err" x-text="error"></div>
   </form>
+
+  <div class="s1-branch-note">
+    <div class="bn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/>
+        <line x1="12" y1="16" x2="12" y2="12"/>
+        <line x1="12" y1="8" x2="12.01" y2="8"/>
+      </svg>
+    </div>
+    <div class="bn-text">
+      <div class="bn-h">เป็นสาขาของร้านที่มีอยู่แล้ว?</div>
+      <div class="bn-s">ติดต่อเจ้าของร้านให้เพิ่มเป็นสาขา</div>
+    </div>
+  </div>
 
   <div class="s1-foot">
     ถือว่ายอมรับ <a href="#">ข้อตกลง</a> และ <a href="#">นโยบายความเป็นส่วนตัว</a>

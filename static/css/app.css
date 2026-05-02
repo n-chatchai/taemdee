@@ -266,6 +266,45 @@ body {
   gap: 10px;
 }
 
+/* S1 — Branch info note */
+.s1-branch-note {
+  margin: 18px 22px 0;
+  padding: 12px 14px;
+  border: 1.5px dashed var(--ink-softer);
+  border-radius: 14px;
+  display: flex;
+  align-items: flex-start;
+  gap: 10px;
+  background: var(--surface);
+}
+.s1-branch-note .bn-icon {
+  flex-shrink: 0;
+  width: 22px;
+  height: 22px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  margin-top: 1px;
+}
+.s1-branch-note .bn-icon svg { width: 18px; height: 18px; }
+.s1-branch-note .bn-text {
+  flex: 1;
+  line-height: 1.35;
+}
+.s1-branch-note .bn-h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12px;
+  color: var(--ink);
+  margin-bottom: 2px;
+}
+.s1-branch-note .bn-s {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+
 .s1-btn {
   width: 100%;
   padding: 14px 16px;
