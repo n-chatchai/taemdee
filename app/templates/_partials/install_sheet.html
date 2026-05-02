@@ -95,8 +95,8 @@
     // Variant pick: iOS Safari has no beforeinstallprompt, must instruct
     // manual Share → Add to Home Screen.
     const ua = navigator.userAgent || '';
-    const isIOS = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
-    const wantedVariant = isIOS ? 'ios' : 'android';
+    // iOS install disabled per request — only Android variant shown
+    const wantedVariant = 'android';
     sheet.querySelectorAll('[data-variant]').forEach((el) => {
       el.style.display = (el.dataset.variant === wantedVariant)
         ? (el.tagName === 'BUTTON' ? '' : '')
