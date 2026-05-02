@@ -900,31 +900,39 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    ========================================================== */
 
 .app-bar {
-  padding: 14px 20px 0;
   display: flex;
-  justify-content: space-between;
   align-items: center;
+  justify-content: space-between;
+  padding: 14px 16px;
+  position: sticky;
+  top: 0;
+  background: var(--bg);
+  z-index: 5;
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  flex-shrink: 0;
 }
 .app-bar .x {
-  width: 34px;
-  height: 34px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
+  width: 36px;
+  height: 36px;
+  background: rgba(17, 17, 17, 0.05);
+  border: none;
   border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
-  box-shadow: none;
   cursor: pointer;
-  font-size: 16px;
   color: var(--ink);
   text-decoration: none;
 }
+.app-bar .x svg { width: 16px; height: 16px; }
 .app-bar .title-mid {
+  font-family: 'Prompt', sans-serif;
   font-weight: 600;
-  font-size: 16px;
+  font-size: var(--text-base);
+  color: var(--ink);
 }
-.app-bar .placeholder { width: 34px; }
+.app-bar .placeholder { width: 36px; height: 36px; }
 
 /* ==========================================================
    S8 — Shop QR (printable / shareable)
