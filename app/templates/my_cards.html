@@ -30,37 +30,19 @@
   background: rgba(255,255,255,0.15);
 }
 .cl-hero-mini > * { position: relative; z-index: 1; }
-.cl-hero-mini-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  margin-bottom: 8px;
-}
-.cl-hero-mini-emoji {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
+.cl-hero-mini-emoji-big {
+  width: 80px;
+  height: 80px;
+  border-radius: 20px;
   display: flex;
   align-items: center;
   justify-content: center;
-  font-size: 24px;
+  font-size: 40px;
+  margin: 0 auto 16px;
 }
-.cl-hero-mini-emoji.butter { background: var(--butter); }
-.cl-hero-mini-emoji.mint { background: var(--mint); }
-.cl-hero-mini-emoji.accent { background: var(--accent); }
-.cl-hero-mini-logo {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.25);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 18px;
-}
-.cl-hero-mini-logo img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.cl-hero-mini-emoji-big.butter { background: var(--butter); }
+.cl-hero-mini-emoji-big.mint { background: var(--mint); }
+.cl-hero-mini-emoji-big.accent { background: var(--accent); }
 .cl-hero-mini-name {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
@@ -112,16 +94,7 @@
           {% set logo = shop_logo(voucher.shop) %}
           <form method="post" action="/voucher/{{ voucher.redemption.id }}/use" class="cl-hero-mini" style="margin:0;">
             <button type="submit" style="border:none;cursor:pointer;width:100%;text-align:left;background:transparent;color:inherit;">
-              <div class="cl-hero-mini-header">
-                <div class="cl-hero-mini-emoji {{ voucher.icon_color }}">{{ voucher.emoji }}</div>
-                <div class="cl-hero-mini-logo">
-                  {% if logo %}
-                    {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">
-                    {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-                    {% endif %}
-                  {% else %}{{ voucher.shop.name[0]|upper }}{% endif %}
-                </div>
-              </div>
+              <div class="cl-hero-mini-emoji-big {{ voucher.icon_color }}">{{ voucher.emoji }}</div>
               <div class="cl-hero-mini-name">{{ voucher.shop.name }}</div>
               <div class="cl-hero-mini-reward">{{ voucher.shop.reward_description }}</div>
               <div class="cl-hero-mini-cta">ใช้เลย</div>
