@@ -98,6 +98,20 @@
         };
       } catch (_) { /* server-rendered badge still works */ }
     }
-    open();
+
+    // Pause SSE when page is hidden (mobile background) to save battery
+    let isActive = true;
+    function connect() { if (isActive) open(); }
+    function disconnect() { try { es.close(); } catch (_) {} es = null; }
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) {
+        isActive = false;
+        disconnect();
+      } else {
+        isActive = true;
+        connect();
+      }
+    });
+    connect();
   })();
 </script>
