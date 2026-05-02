@@ -3,49 +3,73 @@
 {% set nav_inbox_badge = inbox_unread %}
 {% block title %}บัตรของพี่ · TaemDee แต้มดี{% endblock %}
 
+{% block head_extra %}
+<style>
+.cl-hero-carousel-wrap { position: relative; overflow: hidden; }
+.cl-hero-carousel { display: flex; transition: transform 0.3s ease; }
+.cl-hero-carousel .cl-hero { flex: 0 0 100%; min-width: 100%; }
+.cl-carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
+.cl-carousel-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gray-4); }
+.cl-carousel-dots .dot.active { background: var(--accent); }
+</style>
+{% endblock %}
+
 {% block content %}
   {% set is_guest = customer and customer.is_anonymous %}
   {% include "_partials/page_head.html" %}
 
-  {# Hero — most-recent unused voucher (Redemption served_at IS NULL).
+  {# Hero carousel — all unused vouchers (Redemption served_at IS NULL).
      Auto-redeem on /scan creates the Redemption inline, so by the time
      the customer lands here the voucher is already in /my-gifts; this
-     tile just makes it findable. Tap → /my-gifts where they can hit
+     carousel makes it discoverable. Tap → /my-gifts where they can hit
      "ใช้" on the row. #}
-  {% if hero_voucher %}
-    {% set logo = shop_logo(hero_voucher.shop) %}
-    <a class="cl-hero" href="/my-gifts" style="margin-top: 4px;">
-      <div class="cl-hero-tag">
-        <span class="pulse"></span>
-        พร้อมใช้ · ของขวัญรอพี่อยู่
+  {% if hero_vouchers %}
+    <div class="cl-hero-carousel-wrap" style="margin-top: 4px;">
+      <div class="cl-hero-carousel" id="hero-carousel">
+        {% for voucher in hero_vouchers %}
+          {% set logo = shop_logo(voucher.shop) %}
+          <a class="cl-hero" href="/my-gifts">
+            <div class="cl-hero-tag">
+              <span class="pulse"></span>
+              พร้อมใช้ · ของขวัญรอพี่อยู่
+            </div>
+            <div class="cl-hero-row">
+              <div class="cl-hero-logo">
+                {% if logo %}
+                  {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">
+                  {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+                  {% endif %}
+                {% else %}{{ voucher.shop.name[0]|upper }}{% endif %}
+              </div>
+              <div class="cl-hero-info">
+                <div class="cl-hero-name">{{ voucher.shop.name }}</div>
+                <div class="cl-hero-reward">{{ voucher.shop.reward_description }}</div>
+              </div>
+              <div class="cl-hero-num">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;">
+                  <polyline points="20 12 20 22 4 22 4 12"/>
+                  <rect x="2" y="7" width="20" height="5"/>
+                  <line x1="12" y1="22" x2="12" y2="7"/>
+                  <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+                  <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+                </svg>
+              </div>
+            </div>
+            <div class="cl-hero-cta">
+              <span>ใช้ของขวัญตอนนี้</span>
+              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+            </div>
+          </a>
+        {% endfor %}
       </div>
-      <div class="cl-hero-row">
-        <div class="cl-hero-logo">
-          {% if logo %}
-            {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">
-            {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-            {% endif %}
-          {% else %}{{ hero_voucher.shop.name[0]|upper }}{% endif %}
+      {% if hero_vouchers|length > 1 %}
+        <div class="cl-carousel-dots" id="hero-dots">
+          {% for _ in hero_vouchers %}
+            <span class="dot{% if loop.first %} active{% endif %}"></span>
+          {% endfor %}
         </div>
-        <div class="cl-hero-info">
-          <div class="cl-hero-name">{{ hero_voucher.shop.name }}</div>
-          <div class="cl-hero-reward">{{ hero_voucher.shop.reward_description }}</div>
-        </div>
-        <div class="cl-hero-num">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;">
-            <polyline points="20 12 20 22 4 22 4 12"/>
-            <rect x="2" y="7" width="20" height="5"/>
-            <line x1="12" y1="22" x2="12" y2="7"/>
-            <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-            <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
-          </svg>
-        </div>
-      </div>
-      <div class="cl-hero-cta">
-        <span>ใช้ของขวัญตอนนี้</span>
-        <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-      </div>
-    </a>
+      {% endif %}
+    </div>
   {% endif %}
 
   {# "ใกล้แล้ว" carousel — horizontal scroll cards for shops that
@@ -147,6 +171,24 @@
           const name = (row.dataset.shopName || '').toLowerCase();
           row.style.display = q && !name.includes(q) ? 'none' : '';
         }
+      });
+    })();
+
+    // Hero carousel
+    (function () {
+      const carousel = document.getElementById('hero-carousel');
+      const dots = document.getElementById('hero-dots');
+      if (!carousel || !dots) return;
+      const slides = carousel.querySelectorAll('.cl-hero');
+      if (slides.length <= 1) return;
+      let current = 0;
+      const go = (i) => {
+        current = i;
+        carousel.style.transform = `translateX(-${i * 100}%)`;
+        dots.querySelectorAll('.dot').forEach((d, idx) => d.classList.toggle('active', idx === i));
+      };
+      dots.querySelectorAll('.dot').forEach((dot, idx) => {
+        dot.addEventListener('click', () => go(idx));
       });
     })();
   </script>

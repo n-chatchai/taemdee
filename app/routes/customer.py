@@ -1162,13 +1162,13 @@ async def my_cards(
         })
     cards.sort(key=lambda c: c["ratio"], reverse=True)
 
-    # Hero now points at the most recent unused voucher (Redemption
-    # served_at IS NULL · is_voided = False) instead of a card-at-threshold.
+    # Hero now points at all unused vouchers (Redemption served_at IS NULL ·
+    # is_voided = False) as a carousel instead of a single hero tile.
     # Auto-redeem on /scan means the threshold-hit moment immediately
     # collapses into a Redemption row — by the time the customer lands on
     # /my-cards there's a voucher waiting in /my-gifts, not a full unredeemed
     # card. The hero surfaces "ของขวัญรอพี่อยู่" with a tap-through to use it.
-    hero_redemption = (await db.exec(
+    hero_redemptions = (await db.exec(
         select(Redemption)
         .where(
             Redemption.customer_id == customer.id,
@@ -1176,16 +1176,15 @@ async def my_cards(
             Redemption.is_voided == False,  # noqa: E712
         )
         .order_by(Redemption.created_at.desc())
-        .limit(1)
-    )).first()
-    hero_voucher = None
-    if hero_redemption is not None:
-        hero_shop = await db.get(Shop, hero_redemption.shop_id)
-        if hero_shop is not None:
-            hero_voucher = {
-                "redemption": hero_redemption,
-                "shop": hero_shop,
-            }
+    )).all()
+    hero_vouchers = []
+    for redemption in hero_redemptions:
+        shop = await db.get(Shop, redemption.shop_id)
+        if shop is not None:
+            hero_vouchers.append({
+                "redemption": redemption,
+                "shop": shop,
+            })
 
     # near + other zones still come from the points view since they're about
     # accumulation progress, not active vouchers.
@@ -1214,7 +1213,7 @@ async def my_cards(
         context={
             "customer": customer,
             "cards": cards,
-            "hero_voucher": hero_voucher,
+            "hero_vouchers": hero_vouchers,
             "near_cards": near_cards,
             "other_cards": other_cards,
             "total_stamps": total_stamps,
