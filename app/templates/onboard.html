@@ -29,14 +29,21 @@
         }
       }">
 
-    <div class="ob-shop-head">
-      <div class="ob-shop-mark">
+    <div class="shop-head hero" x-show="step <= 2">
+      <div class="shop-logo-mark">
         {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
         {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
       </div>
-      <div class="ob-shop-sub">
+      <div class="shop-sub">
         {{ shop.name }}{% if shop.location %} · {{ shop.location }}{% endif %}
       </div>
+    </div>
+
+    <div class="ob-shop-strip" x-show="step === 3" x-cloak>
+      <span class="strip-logo">
+        {% if logo %}{{ logo.text[0]|upper }}{% else %}{{ shop.name[0]|upper }}{% endif %}
+      </span>
+      <span class="strip-name">ที่ <strong>{{ shop.name }}</strong></span>
     </div>
 
     <div class="ob-step-dots">
@@ -125,7 +132,7 @@
       <div class="ob-protect-card">
         <div class="ob-pc-text">
           <div class="ob-pc-h">ผูกบัญชี<strong>แต้มดี</strong></div>
-          <div class="ob-pc-s">เก็บแต้มไว้ให้ตลอด · เปลี่ยนเครื่องก็ใช้ต่อได้</div>
+          <div class="ob-pc-s">เก็บแต้มไว้ตลอด · เปลี่ยนเครื่องก็ไม่หาย</div>
         </div>
       </div>
     </div>

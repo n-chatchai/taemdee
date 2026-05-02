@@ -928,6 +928,10 @@
     width: 18px;
     height: 18px;
   }
+  /* Role switcher button · top-right · matches other icons */
+  .page-head .ph-icon-btn.role-switch svg {
+    stroke-width: 2.4;
+  }
 
   .inbox-filters {
     padding: 0 22px 14px;
@@ -4133,86 +4137,201 @@
   /* reward.claim — Reward claimed                                         */
   /* ========================================================== */
   .c5 .claimed-hero {
-    padding: 32px 22px 22px;
+    padding: 36px 22px 18px;
     text-align: center;
     position: relative;
+    overflow: hidden;
   }
+  /* Sun rays from center · radial conic gradient */
   .c5 .claimed-hero::before {
     content: '';
     position: absolute;
-    top: 0; left: 50%;
+    top: -40px;
+    left: 50%;
     transform: translateX(-50%);
-    width: 280px; height: 280px;
-    background: radial-gradient(circle, var(--butter) 0%, transparent 55%);
-    opacity: 0.65; border-radius: 50%;
+    width: 480px;
+    height: 480px;
+    background: conic-gradient(
+      from 0deg,
+      rgba(255, 217, 82, 0.35) 0deg,
+      transparent 12deg,
+      rgba(255, 217, 82, 0.35) 30deg,
+      transparent 42deg,
+      rgba(255, 94, 58, 0.18) 60deg,
+      transparent 72deg,
+      rgba(255, 217, 82, 0.35) 90deg,
+      transparent 102deg,
+      rgba(255, 217, 82, 0.35) 120deg,
+      transparent 132deg,
+      rgba(255, 94, 58, 0.18) 150deg,
+      transparent 162deg,
+      rgba(255, 217, 82, 0.35) 180deg,
+      transparent 192deg,
+      rgba(255, 217, 82, 0.35) 210deg,
+      transparent 222deg,
+      rgba(255, 94, 58, 0.18) 240deg,
+      transparent 252deg,
+      rgba(255, 217, 82, 0.35) 270deg,
+      transparent 282deg,
+      rgba(255, 217, 82, 0.35) 300deg,
+      transparent 312deg,
+      rgba(255, 94, 58, 0.18) 330deg,
+      transparent 342deg,
+      rgba(255, 217, 82, 0.35) 360deg
+    );
+    border-radius: 50%;
+    opacity: 0.85;
+    animation: ray-rotate 18s linear infinite;
     z-index: 0;
+    mask-image: radial-gradient(circle, black 30%, transparent 70%);
+    -webkit-mask-image: radial-gradient(circle, black 30%, transparent 70%);
   }
   .c5 .claimed-hero::after {
     content: '';
     position: absolute;
-    top: 30px; left: 50%;
+    top: 40px;
+    left: 50%;
     transform: translateX(-50%);
-    width: 200px; height: 200px;
-    background: radial-gradient(circle, var(--accent-soft) 0%, transparent 60%);
-    opacity: 0.6; border-radius: 50%;
+    width: 200px;
+    height: 200px;
+    background: radial-gradient(circle, rgba(255, 217, 82, 0.55) 0%, transparent 65%);
+    border-radius: 50%;
     z-index: 0;
   }
+  @keyframes ray-rotate {
+    from { transform: translateX(-50%) rotate(0deg); }
+    to { transform: translateX(-50%) rotate(360deg); }
+  }
   .c5 .claimed-hero > * { position: relative; z-index: 1; }
+
+  /* Achievement ribbon · "10/10 ครั้ง" */
+  .c5 .claimed-streak {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 6px 14px;
+    background: var(--ink);
+    color: var(--butter);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-2xs);
+    letter-spacing: 0.04em;
+    margin-bottom: 16px;
+    box-shadow: 0 4px 12px -4px rgba(0,0,0,0.3);
+  }
+  .c5 .claimed-streak .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 14px;
+    letter-spacing: -0.02em;
+    color: var(--butter);
+  }
+  .c5 .claimed-streak svg {
+    width: 12px; height: 12px;
+    fill: var(--butter);
+  }
+
+  /* Big gift box hero icon · with shine */
   .c5 .claimed-mark {
-    width: 84px; height: 84px;
-    margin: 0 auto 20px;
-    border-radius: 50%;
-    background: var(--accent); color: #fff;
-    border: 1px solid rgba(17,17,17,0.18);
-    box-shadow: 0 10px 26px -6px rgba(255,94,58,0.5), 4px 4px 0 var(--ink);
+    width: 110px; height: 110px;
+    margin: 0 auto 18px;
+    border-radius: 28px;
+    background: linear-gradient(145deg, #FF7A55 0%, #FF5E3A 50%, #E04020 100%);
+    color: #fff;
+    border: 2px solid var(--ink);
+    box-shadow:
+      0 16px 40px -8px rgba(255, 94, 58, 0.55),
+      6px 6px 0 var(--ink),
+      inset 0 -4px 0 rgba(0,0,0,0.15);
     display: flex; align-items: center; justify-content: center;
     position: relative;
+    transform: rotate(-3deg);
+    animation: gift-bob 2.5s ease-in-out infinite;
   }
-  .c5 .claimed-mark svg { width: 40px; height: 40px; }
+  .c5 .claimed-mark svg {
+    width: 56px; height: 56px;
+  }
+  /* Shine highlight on gift */
+  .c5 .claimed-mark::after {
+    content: '';
+    position: absolute;
+    top: 8px; left: 12px;
+    width: 26px; height: 14px;
+    background: rgba(255,255,255,0.45);
+    border-radius: 50%;
+    filter: blur(2px);
+  }
+  /* Pulse ring */
   .c5 .claimed-mark::before {
     content: '';
     position: absolute;
-    top: -6px; left: -6px; right: -6px; bottom: -6px;
-    border: 1.5px dashed var(--accent);
-    opacity: 0.4; border-radius: 50%;
+    top: -8px; left: -8px; right: -8px; bottom: -8px;
+    border: 2px dashed var(--accent);
+    opacity: 0.45;
+    border-radius: 32px;
     animation: pulse-ring 2s ease-in-out infinite;
   }
   @keyframes pulse-ring {
-    0%, 100% { transform: scale(1); opacity: 0.4; }
-    50% { transform: scale(1.14); opacity: 0.1; }
+    0%, 100% { transform: scale(1); opacity: 0.45; }
+    50% { transform: scale(1.18); opacity: 0.05; }
   }
+  @keyframes gift-bob {
+    0%, 100% { transform: rotate(-3deg) translateY(0); }
+    50% { transform: rotate(2deg) translateY(-4px); }
+  }
+
+  /* Confetti · more colorful + scattered wider */
   .c5 .claimed-hero .confetti {
     position: absolute;
     color: var(--butter);
-    stroke: var(--ink); stroke-width: 1.5;
+    stroke: var(--ink);
+    stroke-width: 1.5;
     animation: twinkle-c 2s ease-in-out infinite;
   }
-  .c5 .claimed-hero .confetti.c1 { top: 40px; left: 18%; width: 12px; height: 12px; }
-  .c5 .claimed-hero .confetti.c2 { top: 18px; right: 20%; width: 10px; height: 10px; animation-delay: 0.5s; color: var(--accent); stroke: none; }
-  .c5 .claimed-hero .confetti.c3 { top: 60px; right: 14%; width: 10px; height: 10px; animation-delay: 1.2s; }
-  .c5 .claimed-hero .confetti.c4 { top: 66px; left: 12%; width: 8px; height: 8px; animation-delay: 1.6s; color: var(--accent); stroke: none; }
-  .c5 .claimed-hero .confetti.c5 { top: 88px; left: 24%; width: 11px; height: 11px; animation-delay: 0.9s; color: var(--accent); stroke: none; }
-  .c5 .claimed-hero .confetti.c6 { top: 95px; right: 22%; width: 12px; height: 12px; animation-delay: 1.4s; }
+  .c5 .claimed-hero .confetti.c1 { top: 16px;  left: 12%;  width: 14px; height: 14px; color: var(--accent); stroke: none; }
+  .c5 .claimed-hero .confetti.c2 { top: 24px;  right: 14%; width: 10px; height: 10px; animation-delay: 0.5s; }
+  .c5 .claimed-hero .confetti.c3 { top: 60px;  right: 8%;  width: 11px; height: 11px; animation-delay: 1.2s; color: var(--accent); stroke: none; }
+  .c5 .claimed-hero .confetti.c4 { top: 80px;  left: 6%;   width: 9px;  height: 9px;  animation-delay: 1.6s; }
+  .c5 .claimed-hero .confetti.c5 { top: 130px; left: 18%;  width: 11px; height: 11px; animation-delay: 0.9s; color: var(--accent); stroke: none; }
+  .c5 .claimed-hero .confetti.c6 { top: 130px; right: 18%; width: 12px; height: 12px; animation-delay: 1.4s; }
+  .c5 .claimed-hero .confetti.c7 { top: 175px; left: 8%;   width: 10px; height: 10px; animation-delay: 0.3s; color: var(--mint-ink); stroke: none; }
+  .c5 .claimed-hero .confetti.c8 { top: 175px; right: 10%; width: 9px;  height: 9px;  animation-delay: 1.8s; color: var(--accent); stroke: none; }
+
+  /* Big title · "ปลดล็อกของขวัญ!" */
   .c5 .claimed-title {
     font-family: 'Prompt', sans-serif;
     font-weight: 800;
-    font-size: var(--text-2xl);
-    letter-spacing: -0.03em;
-    line-height: 1.1;
-    margin-bottom: 0;
+    font-size: 32px;
+    letter-spacing: -0.035em;
+    line-height: 1.05;
+    margin-bottom: 6px;
+    color: var(--ink);
   }
   .c5 .claimed-title em {
-    font-style: italic; font-weight: 800; color: var(--accent);
+    font-style: italic;
+    font-weight: 800;
+    color: var(--accent);
+  }
+  .c5 .claimed-title .wow-mark {
+    display: inline-block;
+    color: var(--accent);
+    transform: rotate(15deg);
+    margin-left: 4px;
   }
   .c5 .claimed-sub {
     font-family: 'Prompt', sans-serif;
     font-weight: 500;
     font-size: var(--text-sm);
     color: var(--ink-soft);
-    margin-top: 10px;
+    margin-top: 4px;
     text-align: center;
     position: relative;
     z-index: 1;
+  }
+  .c5 .claimed-sub strong {
+    color: var(--ink);
+    font-weight: 700;
   }
 
   @keyframes blink-dot {
@@ -8371,94 +8490,12 @@
         </div>
       </div>
     </div>
-    <!-- reward.almost — Ready to redeem -->
+    <!-- reward.claim — Reward auto-claimed (10/10 reached, voucher auto-saved) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">reward.almost</span>พี่ครบ 10 แต้มแล้ว</div>
-        <h3>พร้อมรับรางวัลแล้ว</h3>
-        <p>ลูกค้าครบ 10 แต้ม — กดรับรางวัลได้เลย ไม่ต้องสมัคร · soft link ชวนสมัคร "เก็บบัตรไม่ให้หาย" ใต้ปุ่ม (optional)</p>
-      </div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="td c4">
-
-            <div class="shop-head hero">
-              <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-              <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
-            </div>
-
-            <div class="ready-banner">
-              <div class="sparks">
-                <svg class="s s-1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="s s-2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="s s-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="s s-4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-              </div>
-              <div class="pill">
-                <span class="sparkle-dot"></span>
-                <span>ครบแล้วครับพี่!</span>
-              </div>
-            </div>
-
-            <div class="redeem-num">
-              <div class="big">10</div>
-              <div class="done">รางวัลพร้อมเก็บแล้วครับ</div>
-            </div>
-
-            <div class="stamps-wrap">
-              <div class="stamps">
-                <div class="stamp on"></div>
-                <div class="stamp on butter"></div>
-                <div class="stamp on"></div>
-                <div class="stamp on"></div>
-                <div class="stamp on butter"></div>
-                <div class="stamp on"></div>
-                <div class="stamp on"></div>
-                <div class="stamp on butter"></div>
-                <div class="stamp on"></div>
-                <div class="stamp on"></div>
-              </div>
-            </div>
-
-            <div class="redeem-gate">
-              <button class="redeem-cta">
-                <span>เปิดของขวัญ</span>
-                <span class="redeem-arrow">→</span>
-              </button>
-              <a class="redeem-soft-link">
-                <span class="rsl-spark">✦</span>
-                <span>สมัครเพื่อเก็บบัตรไม่ให้หาย</span>
-              </a>
-            </div>
-
-                        <nav class="c-glass-nav" aria-label="Main navigation">
-              <a class="gn-tab active" aria-label="บัตรของฉัน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
-                <span class="gn-label">บัตร</span>
-              </a>
-              <a class="gn-tab gn-scan" aria-label="สแกน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-                <span class="gn-label">สแกน</span>
-              </a>
-              <a class="gn-tab" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ข้อความ</span>
-              </a>
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- reward.claim — Reward claimed -->
-    <div class="mockup">
-      <div class="mockup-caption">
-        <div class="kicker"><span class="n">reward.claim</span>ขอบคุณที่กลับมาบ่อยๆ</div>
+        <div class="kicker"><span class="n">reward.claim</span>ครบ 10 · ของขวัญถูกเก็บอัตโนมัติ</div>
         <h3>เก็บไว้ใช้ครั้งหน้านะครับ</h3>
-        <p>ลูกค้าครบ 10 แต้ม → เห็นหน้านี้ทันที · voucher ผมเก็บไว้ในของขวัญ ใช้เมื่อกลับมาร้านครั้งหน้า · CTA "ดูในของขวัญ" + บัตรใหม่เริ่ม 0/10 ทันที · ลูกค้าไม่ต้องรู้สึกบังคับใช้เลย</p>
+        <p>ลูกค้าสแกนครั้งที่ 10 → ระบบ auto-create voucher + เก็บใน gifts.list ทันที · ไม่ต้องกด · หน้าจอเด้ง celebration (confetti + voucher card) · CTA "ดูในของขวัญ" + บัตรใหม่ของพี่เริ่ม 0/10 รอ scan ครั้งหน้า · friction ต่ำสุด</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -8471,29 +8508,27 @@
               <svg class="confetti c4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               <svg class="confetti c5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               <svg class="confetti c6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              <svg class="confetti c7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+              <svg class="confetti c8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+
+              <div class="claimed-streak">
+                <svg viewBox="0 0 16 16"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <span class="num">10/10</span>
+                <span>ครั้งสำเร็จ</span>
+              </div>
 
               <div class="claimed-mark">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 6 9 17 4 12"/>
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12"/>
+                  <rect x="2" y="7" width="20" height="5"/>
+                  <line x1="12" y1="22" x2="12" y2="7"/>
+                  <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+                  <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
                 </svg>
               </div>
-              <div class="claimed-title"><em>ขอบคุณ</em><br>ที่กลับมาบ่อยๆ</div>
-              <div class="claimed-sub">ของขวัญพร้อมแล้วครับ · เก็บไว้ใช้ครั้งหน้าได้</div>
-            </div>
 
-            <div class="voucher">
-              <div class="v-particles">
-                <svg class="p p1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="p p2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="p p3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="p p4" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="p p5" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="p p6" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="p p7" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                <svg class="p p8" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-              </div>
-              <div class="v-title">กาแฟ Signature<br>ฟรี 1 แก้ว</div>
-              <div class="v-id">#MHEE-A72B · รับเมื่อ 24.04.26</div>
+              <div class="claimed-title">เก็บครบแล้ว<em>!</em></div>
+              <div class="claimed-sub">ของขวัญ <strong>กาแฟ Signature ฟรี</strong> เก็บไว้ใช้ครั้งหน้านะครับ</div>
             </div>
 
             <a class="c5-cta-gifts">
@@ -8580,6 +8615,11 @@
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="3" y="14" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+                <a class="ph-icon-btn role-switch" title="สลับเป็นร้านค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
@@ -8758,6 +8798,11 @@
                     <rect x="14" y="14" width="7" height="7" rx="1"/>
                   </svg>
                 </a>
+                <a class="ph-icon-btn role-switch" title="สลับเป็นร้านค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
+                  </svg>
+                </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <circle cx="12" cy="12" r="3"/>
@@ -8879,6 +8924,11 @@
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="3" y="14" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+                <a class="ph-icon-btn role-switch" title="สลับเป็นร้านค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
@@ -9107,6 +9157,11 @@
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="3" y="14" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+                <a class="ph-icon-btn role-switch" title="สลับเป็นร้านค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
@@ -9432,6 +9487,11 @@
                     <rect x="14" y="3" width="7" height="7" rx="1"/>
                     <rect x="3" y="14" width="7" height="7" rx="1"/>
                     <rect x="14" y="14" width="7" height="7" rx="1"/>
+                  </svg>
+                </a>
+                <a class="ph-icon-btn role-switch" title="สลับเป็นร้านค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
                 </a>
                 <a class="ph-icon-btn" title="ตั้งค่า">
@@ -9974,7 +10034,7 @@
   </svg>
   <h3>ครบ 23 หน้าจอลูกค้า <span class="accent">·</span> Design v1</h3>
   <p>
-    เริ่มจาก C2 (สแกนครั้งแรก) ผ่าน verify.phone (ยืนยันเบอร์) ใช้งานประจำที่ shop.daily/reward.almost/reward.claim จัดการบัตรที่ cards.list/settings และเพิ่มลงหน้าจอด้วย bottom sheet — ทำเสร็จก่อนค่อยขยับไปฝั่งร้าน
+    เริ่มจาก C2 (สแกนครั้งแรก) ผ่าน verify.phone (ยืนยันเบอร์) ใช้งานประจำที่ shop.daily/reward.claim จัดการบัตรที่ cards.list/settings และเพิ่มลงหน้าจอด้วย bottom sheet — ทำเสร็จก่อนค่อยขยับไปฝั่งร้าน
   </p>
 </div>
 

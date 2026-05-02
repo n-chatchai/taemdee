@@ -1,8 +1,8 @@
 """Recovery codes for anonymous customers.
 
-When a customer skips signup (C2.3 → C2.4), we issue them a 12-character
-human-readable recovery code so they can re-attach their points on a new
-device. Alphabet drops 0/O/1/I/L to avoid mis-reading screenshots.
+When a customer skips signup (C2.3 → C2.4), we issue them a 12-digit
+recovery code so they can re-attach their points on a new device.
+Format: XXXX-XXXX-XXXX.
 """
 
 import secrets
@@ -13,11 +13,11 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import Customer
 
-ALPHABET = "ABCDEFGHJKMNPQRSTUVWXYZ23456789"
+ALPHABET = "0123456789"
 
 
 def _generate() -> str:
-    """Format: XXXX-XXXX-XXXX (12 chars + 2 hyphens, all uppercase)."""
+    """Format: XXXX-XXXX-XXXX (12 digits + 2 hyphens)."""
     chars = "".join(secrets.choice(ALPHABET) for _ in range(12))
     return f"{chars[0:4]}-{chars[4:8]}-{chars[8:12]}"
 
@@ -46,9 +46,9 @@ async def ensure_recovery_code(db: AsyncSession, customer: Customer) -> str:
 
 
 def normalize(raw: str) -> str:
-    """User input → canonical form. Strips whitespace, uppercases, inserts
-    hyphens at every 4th char if the user typed without them."""
-    cleaned = "".join(c for c in raw.strip().upper() if c.isalnum())
+    """User input → canonical form. Strips whitespace, filters to digits,
+    inserts hyphens at every 4th char if the user typed without them."""
+    cleaned = "".join(c for c in raw.strip() if c.isdigit())
     if len(cleaned) != 12:
         return ""
     return f"{cleaned[0:4]}-{cleaned[4:8]}-{cleaned[8:12]}"

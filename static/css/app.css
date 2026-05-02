@@ -1323,6 +1323,38 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-top: 8px;
   letter-spacing: 0.01em;
 }
+/* Compact context strip · used when shop-head.hero is too heavy */
+.ob-shop-strip {
+  padding: 36px 20px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  flex-shrink: 0;
+}
+.ob-shop-strip .strip-logo {
+  width: 32px; height: 32px;
+  border-radius: 9px;
+  background: var(--ink);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.04em;
+}
+.ob-shop-strip .strip-name {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-md);
+  color: var(--ink-soft);
+}
+.ob-shop-strip .strip-name strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
 .ob-step-dots {
   display: flex; justify-content: center; align-items: center; gap: 8px;
   padding: 12px 20px 0;
@@ -1774,14 +1806,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   appearance: none; -webkit-appearance: none;
   background: var(--surface);
   border: 1px solid rgba(17,17,17,0.12);
-  border-radius: 12px;
-  padding: 8px 14px;
+  border-radius: 14px;
+  padding: 14px 18px;
   cursor: pointer;
   display: flex;
   flex-direction: row;
   align-items: center;
   justify-content: center;
-  gap: 10px;
+  gap: 12px;
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
   font-size: var(--text-sm);
@@ -1791,8 +1823,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .ob-social-pill:active { transform: scale(0.98); }
 .ob-social-pill svg {
-  width: 20px;
-  height: 20px;
+  width: 22px;
+  height: 22px;
   display: block;
   flex-shrink: 0;
 }
@@ -8028,6 +8060,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   }
   .page-head .ph-icon-btn svg { width: 18px; height: 18px; }
   .page-head .ph-icon-btn.active { background: var(--ink); color: #fff; }
+  .page-head .ph-icon-btn.role-switch svg { stroke-width: 2.4; }
 .s3-glass-nav .gn-tab:active {
   transform: scale(0.96);
 }

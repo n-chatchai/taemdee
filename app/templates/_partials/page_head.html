@@ -17,7 +17,7 @@
    Pages with an .app-bar back-arrow (story / my-id / inbox detail /
    notifications) intentionally skip this partial — the back nav owns
    the chrome instead. #}
-{% set _ph_kinds = (ph_action_kind.split('_') if ph_action_kind else ['qr', 'gear']) %}
+{% set _ph_kinds = (ph_action_kind.split('_') if ph_action_kind else ['qr', 'role', 'gear']) %}
 <div class="page-head">
   <div class="ph-text">
     <h1>
@@ -36,6 +36,13 @@
             <rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/>
             <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </a>
+      {% endif %}
+      {% if 'role' in _ph_kinds %}
+        <a href="/switch" class="ph-icon-btn role-switch" title="สลับเป็นร้านค้า">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
           </svg>
         </a>
       {% endif %}

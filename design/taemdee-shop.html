@@ -831,10 +831,56 @@
     box-shadow: 0 0 0 2px var(--bg);
     animation: gn-badge-pulse 1.6s ease-out infinite;
   }
+  /* Number badge variant (e.g. "3" recommendations) */
+  .s3-glass-nav .gn-badge.count {
+    width: auto; height: 16px;
+    min-width: 16px;
+    padding: 0 4px;
+    border-radius: 99px;
+    top: -4px; right: -8px;
+    color: #fff;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 10px;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    line-height: 1;
+    animation: none;
+  }
   @keyframes gn-badge-pulse {
     0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
     70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
     100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
+  }
+
+  /* home · sticky "ออกแต้มลูกค้า" CTA above dock */
+  .s3-issue-cta {
+    margin: 12px 16px 0;
+    padding: 16px 20px;
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 16px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 10px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    letter-spacing: -0.005em;
+    box-shadow: 0 8px 20px -8px rgba(255, 94, 58, 0.5);
+    flex-shrink: 0;
+  }
+  .s3-issue-cta svg {
+    width: 20px; height: 20px;
+    stroke-width: 2.2;
+  }
+  .s3-issue-cta:active {
+    transform: scale(0.98);
   }
 
   /* S3 — Home — Merged metrics card (time pills + hero number + trend chart + sub) */
@@ -3903,6 +3949,146 @@
   .s1-btn-line svg { width: 20px; height: 20px; }
   .s1-btn-phone { background: var(--ink); color: var(--bg); }
   .s1-btn-phone svg { width: 18px; height: 18px; }
+
+  /* login.otp · OTP confirm + ชื่อเรียก inline (phone path only) */
+  .s1-otp-page {
+    padding: 0 22px 24px;
+  }
+  .s1-otp-h {
+    text-align: center;
+    padding: 36px 12px 4px;
+  }
+  .s1-otp-h .ask {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 22px;
+    color: var(--ink);
+    letter-spacing: -0.02em;
+    margin-bottom: 6px;
+  }
+  .s1-otp-h .ask em {
+    font-style: normal;
+    color: var(--accent);
+  }
+  .s1-otp-h .sub {
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink-soft);
+    line-height: 1.5;
+  }
+  .s1-otp-h .sub strong {
+    color: var(--ink);
+    font-weight: 600;
+  }
+  .s1-otp-cells {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin: 28px 0 12px;
+  }
+  .s1-otp-cell {
+    width: 44px;
+    height: 54px;
+    background: var(--surface);
+    border: 1.5px solid rgba(17,17,17,0.16);
+    border-radius: 12px;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 24px;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    letter-spacing: -0.02em;
+  }
+  .s1-otp-cell.filled {
+    background: #fff;
+    border-color: var(--ink);
+  }
+  .s1-otp-cell.cursor {
+    border-color: var(--accent);
+    border-width: 2px;
+  }
+  .s1-otp-cell.cursor::after {
+    content: '';
+    width: 2px;
+    height: 26px;
+    background: var(--accent);
+    animation: blink 1s infinite;
+  }
+  @keyframes blink {
+    50% { opacity: 0; }
+  }
+  .s1-otp-resend {
+    text-align: center;
+    margin-bottom: 28px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    color: var(--ink-soft);
+  }
+  .s1-otp-resend strong {
+    color: var(--accent);
+    font-weight: 600;
+  }
+  .s1-otp-name {
+    background: var(--butter-soft, #FFF7DA);
+    border: 1px solid rgba(255, 217, 82, 0.45);
+    border-radius: 14px;
+    padding: 14px 16px;
+    margin-bottom: 18px;
+  }
+  .s1-otp-name .label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13.5px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: -0.005em;
+  }
+  .s1-otp-name .helper {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .s1-otp-name input {
+    width: 100%;
+    padding: 11px 14px;
+    border: 1px solid rgba(17,17,17,0.16);
+    border-radius: 10px;
+    background: #fff;
+    font-family: 'Prompt', sans-serif;
+    font-size: 15px;
+    font-weight: 600;
+    color: var(--ink);
+    outline: none;
+    box-sizing: border-box;
+  }
+  .s1-otp-name input::placeholder {
+    color: var(--ink-softer);
+    font-weight: 500;
+  }
+  .s1-otp-cta {
+    width: 100%;
+    padding: 16px 18px;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 16px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+  }
+  .s1-otp-cta .arrow {
+    color: var(--accent);
+  }
+
   .s1-no-pwd {
     margin: 24px 22px 0;
     padding: 10px 14px;
@@ -4472,36 +4658,109 @@
     font-size: 14px;
     color: var(--ink);
   }
-  .staff-row .sr-meta {
-    font-family: 'Prompt', sans-serif;
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    margin-top: 1px;
+  .staff-row .sr-perms {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 4px;
+    margin-top: 6px;
   }
-  .staff-row .sr-status {
+  .staff-row .sr-perm {
     display: inline-flex;
     align-items: center;
     gap: 4px;
-    padding: 2px 8px;
+    padding: 3px 9px;
+    background: var(--butter-soft, #FFF7DA);
+    color: var(--ink);
     border-radius: 99px;
     font-family: 'Prompt', sans-serif;
     font-size: 10.5px;
-    font-weight: 600;
+    font-weight: 500;
+    line-height: 1.3;
+  }
+  .staff-row .sr-perm.locked {
+    background: rgba(17,17,17,0.06);
+    color: var(--ink-soft);
+  }
+  .staff-row .sr-pending-cta {
     flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    padding: 7px 12px;
+    background: var(--ink);
+    color: var(--bg);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
   }
-  .staff-row .sr-status.online {
-    background: rgba(26,107,58,0.12);
-    color: var(--mint-ink);
+  .staff-row .sr-pending-cta svg {
+    width: 12px; height: 12px;
+    stroke: currentColor;
+    fill: none;
+    stroke-width: 2.2;
   }
-  .staff-row .sr-status.online::before {
+  .staff-row .sr-pending-tag {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 4px;
+  }
+
+  /* staff row · active/inactive toggle */
+  .staff-row .sr-toggle {
+    flex-shrink: 0;
+    width: 38px;
+    height: 22px;
+    background: rgba(17,17,17,0.18);
+    border-radius: 99px;
+    position: relative;
+    cursor: pointer;
+    transition: background 0.2s ease;
+  }
+  .staff-row .sr-toggle::after {
     content: '';
-    width: 5px; height: 5px;
+    position: absolute;
+    top: 2px; left: 2px;
+    width: 18px; height: 18px;
+    background: #fff;
     border-radius: 50%;
-    background: var(--mint-ink);
+    transition: left 0.2s ease;
+    box-shadow: 0 1px 3px rgba(0,0,0,0.2);
   }
-  .staff-row .sr-status.pending {
-    background: var(--butter-soft);
-    color: #6B5102;
+  .staff-row .sr-toggle.on {
+    background: var(--accent);
+  }
+  .staff-row .sr-toggle.on::after {
+    left: 18px;
+  }
+  /* Inactive row · dim + paused tag */
+  .staff-row.inactive {
+    opacity: 0.5;
+  }
+  .staff-row.inactive .sr-toggle {
+    opacity: 1;
+  }
+  .staff-row .sr-paused {
+    display: inline-block;
+    margin-top: 4px;
+    padding: 2px 8px;
+    background: rgba(17,17,17,0.08);
+    color: var(--ink-soft);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    font-weight: 500;
+  }
+  /* Owner row · locked · no toggle · accent treatment */
+  .staff-row.owner .sr-avatar {
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .staff-row.owner {
+    cursor: default;
   }
 
   .s-staff-form { padding: 18px; }
@@ -4771,11 +5030,11 @@
     margin-bottom: 8px;
   }
   .staff-join .sj-login-btn svg { width: 20px; height: 20px; flex-shrink: 0; }
-  .staff-join .sj-login-btn.line {
+  .staff-join .sj-login-btn.sj-line {
     background: #06C755;
     color: #fff;
   }
-  .staff-join .sj-login-btn.phone {
+  .staff-join .sj-login-btn.sj-phone {
     background: var(--surface);
     color: var(--ink);
     border: 1px solid rgba(17,17,17,0.18);
@@ -5774,6 +6033,24 @@
     width: 22px; height: 22px;
   }
   .s3-top .settings-btn:active {
+    transform: scale(0.92);
+  }
+  /* Role switcher · between bell & settings · matches settings-btn style */
+  .s3-top .role-switch {
+    width: 44px; height: 44px;
+    background: transparent;
+    color: var(--ink);
+    border: none;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
+    text-decoration: none;
+    flex-shrink: 0;
+  }
+  .s3-top .role-switch svg {
+    width: 22px; height: 22px;
+    stroke-width: 2;
+  }
+  .s3-top .role-switch:active {
     transform: scale(0.92);
   }
 
@@ -8777,6 +9054,106 @@
       </div>
     </div>
 
+    <!-- login.phone — Phone number + ชื่อเรียก entry (paired together) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">login.phone</span>เบอร์โทร · ชื่อเรียก</div>
+        <h3>ใส่เบอร์ + เรียกพี่ว่าอะไรดี</h3>
+        <p>เปิดเมื่อเลือก "ใช้เบอร์โทร" จาก login — กรอก 2 field ด้วยกัน · กด "ส่ง OTP" → ระบบส่งรหัสไป SMS → หน้า login.otp · LINE login ไม่เห็นหน้านี้ (ดึงชื่อจาก display_name อัตโนมัติ)</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">เข้าสู่ระบบ</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s1-otp-page">
+
+              <div class="s1-otp-h">
+                <div class="ask">ใส่ <em>เบอร์โทร</em></div>
+                <div class="sub">ส่ง OTP ทาง SMS เพื่อยืนยัน</div>
+              </div>
+
+              <div class="ssf-field" style="margin-top:24px;">
+                <div class="ssf-label">เบอร์โทร</div>
+                <input class="ssf-input" type="tel" value="081-234-5678" />
+              </div>
+
+              <div class="s1-otp-name" style="margin-top:18px;">
+                <div class="label">เรียกพี่ว่าอะไรดี?</div>
+                <div class="helper">ใช้ทักทายในแดชบอร์ด · ลูกค้าไม่เห็น · เปลี่ยนได้ทีหลัง</div>
+                <input type="text" placeholder="เช่น ลุงหมี · พี่บอย · เจ๊แดง" value="ลุงหมี">
+              </div>
+
+              <button class="s1-otp-cta" style="margin-top:24px;">
+                <span>ส่ง OTP</span>
+                <span class="arrow">→</span>
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
+    <!-- login.otp — OTP confirm only (name already entered in login.phone) -->
+    <div class="mockup">
+      <div class="mockup-caption">
+        <div class="kicker"><span class="n">login.otp</span>ยืนยัน OTP</div>
+        <h3>ใส่รหัส 6 หลัก</h3>
+        <p>หลังกด "ส่ง OTP" จาก login.phone — ใส่ OTP 6 หลัก เพื่อยืนยันเบอร์ · ชื่อเรียกถูกใส่ไปแล้วใน step ก่อน · LINE login ไม่เห็นหน้านี้</p>
+      </div>
+      <div class="phone">
+        <div class="phone-screen">
+          <div class="td">
+
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="title-mid">ยืนยันเบอร์</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="s1-otp-page">
+
+              <div class="s1-otp-h">
+                <div class="ask">ใส่ <em>OTP</em></div>
+                <div class="sub">ส่งไปที่ <strong>081-234-5678</strong></div>
+              </div>
+
+              <div class="s1-otp-cells">
+                <div class="s1-otp-cell filled">4</div>
+                <div class="s1-otp-cell filled">3</div>
+                <div class="s1-otp-cell filled">2</div>
+                <div class="s1-otp-cell cursor"></div>
+                <div class="s1-otp-cell"></div>
+                <div class="s1-otp-cell"></div>
+              </div>
+
+              <div class="s1-otp-resend">
+                ส่งใหม่ใน <strong>0:42</strong>
+              </div>
+
+              <button class="s1-otp-cta" style="margin-top:24px;">
+                <span>ยืนยัน · ตั้งค่าร้าน</span>
+                <span class="arrow">→</span>
+              </button>
+
+            </div>
+
+          </div>
+        </div>
+      </div>
+    </div>
+
   </div>
 </section>
 
@@ -9627,12 +10004,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -9771,7 +10146,6 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
                   </svg>
-                  <span class="gn-badge"></span>
                 </span>
                 <span class="gn-label">ออกแต้ม</span>
               </a>
@@ -9791,6 +10165,7 @@
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
                     <path d="M9.663 17h4.673M12 3v1m6.364 1.636l-.707.707M21 12h-1M4 12H3m3.343-5.657l-.707-.707m2.828 9.9a5 5 0 117.072 0l-.548.547A3.374 3.374 0 0014 18.469V19a2 2 0 11-4 0v-.531c0-.895-.356-1.754-.988-2.386l-.548-.547z"/>
                   </svg>
+                  <span class="gn-badge count">3</span>
                 </span>
                 <span class="gn-label">แนะนำ</span>
               </a>
@@ -9816,12 +10191,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10044,12 +10417,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10116,12 +10487,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10193,12 +10562,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10292,12 +10659,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10396,12 +10761,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10617,7 +10980,6 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn"></a>
                 <a class="settings-btn"></a>
               </div>
             </div>
@@ -10701,12 +11063,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -10865,12 +11225,10 @@
                 <span class="td-greet">สวัสดี <span class="td-brand">ลุงหมี<span class="dot">.</span></span></span>
               </div>
               <div class="actions">
-                <a class="bell-btn" title="แจ้งเตือน">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
-                    <path d="M13.73 21a2 2 0 01-3.46 0"/>
+                <a class="role-switch" title="สลับเป็นลูกค้า">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round">
+                    <path d="M20 21v-2a4 4 0 00-4-4H8a4 4 0 00-4 4v2"/><circle cx="12" cy="7" r="4"/>
                   </svg>
-                  <span class="bell-badge"></span>
                 </a>
                 <a class="settings-btn" title="ตั้งค่า">
                   <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -12915,11 +13273,12 @@
       </div>
     </div>
     <!-- S-staff — Staff list (Settings → พนักงาน) -->
+    <!-- settings.team — Team management (list of all members incl. owner) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">staff</span>พนักงาน</div>
+        <div class="kicker"><span class="n">settings.team</span>ทีม</div>
         <h3>คนที่ออกแต้มได้</h3>
-        <p>เข้าจาก Settings → "พนักงาน" — list ของ staff ที่เพิ่มไว้ · status online (มี green dot) / pending (ยังไม่ scan invite) · กดแถวเพื่อดูรายละเอียด/ลบ · ปุ่ม "เพิ่มพนักงาน" ด้านบน</p>
+        <p>เข้าจาก Settings → "ทีม" — list ของทีมทั้งหมด เริ่มจากเจ้าของร้าน (locked) แล้วตามด้วย staff · permission badges บอกว่าใครทำอะไรได้ · toggle on/off เพื่อหยุดใช้/กลับมาใช้ · pending staff (ยังไม่ join) มีปุ่ม "ดู QR"</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -12929,7 +13288,7 @@
               <a class="x" aria-label="ย้อนกลับ">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               </a>
-              <div class="title-mid">พนักงาน</div>
+              <div class="title-mid">ทีม</div>
               <div class="placeholder"></div>
             </div>
 
@@ -12939,28 +13298,56 @@
             </button>
 
             <div class="s-staff-list">
+              <a class="staff-row owner">
+                <div class="sr-avatar">ม</div>
+                <div class="sr-info">
+                  <div class="sr-name">หมี (คุณ)</div>
+                  <div class="sr-perms">
+                    <span class="sr-perm locked">เจ้าของร้าน · ทำได้ทุกอย่าง</span>
+                  </div>
+                </div>
+              </a>
               <a class="staff-row">
                 <div class="sr-avatar">บ</div>
                 <div class="sr-info">
                   <div class="sr-name">น้องบี</div>
-                  <div class="sr-meta">ออกแต้ม · ใช้ล่าสุดเมื่อ 2 นาทีที่แล้ว</div>
+                  <div class="sr-perms">
+                    <span class="sr-perm">ออกแต้ม</span>
+                    <span class="sr-perm">ยกเลิก</span>
+                    <span class="sr-perm">ส่งข้อความ</span>
+                  </div>
                 </div>
-                <span class="sr-status online">ออนไลน์</span>
+                <div class="sr-toggle on"></div>
               </a>
               <a class="staff-row">
                 <div class="sr-avatar">เ</div>
                 <div class="sr-info">
                   <div class="sr-name">เอ</div>
-                  <div class="sr-meta">ออกแต้ม · ใช้ล่าสุด 3 ชม. ที่แล้ว</div>
+                  <div class="sr-perms">
+                    <span class="sr-perm">ออกแต้ม</span>
+                    <span class="sr-perm">ยกเลิก</span>
+                  </div>
                 </div>
+                <div class="sr-toggle on"></div>
+              </a>
+              <a class="staff-row inactive">
+                <div class="sr-avatar">ม</div>
+                <div class="sr-info">
+                  <div class="sr-name">น้องมิ้น</div>
+                  <span class="sr-paused">หยุดใช้</span>
+                </div>
+                <div class="sr-toggle"></div>
               </a>
               <a class="staff-row">
                 <div class="sr-avatar">ก</div>
                 <div class="sr-info">
                   <div class="sr-name">น้องกุ้ง</div>
-                  <div class="sr-meta">รอ scan invite · ส่งไปเมื่อ 5 นาที</div>
+                  <div class="sr-pending-tag">ยังไม่เข้าร่วม · ส่งไปเมื่อ 5 นาที</div>
                 </div>
-                <span class="sr-status pending">รอเข้าร่วม</span>
+                <button class="sr-pending-cta">
+                  <svg viewBox="0 0 24 24"><rect x="3" y="3" width="7" height="7" rx="1"/><rect x="14" y="3" width="7" height="7" rx="1"/><rect x="3" y="14" width="7" height="7" rx="1"/><rect x="14" y="14" width="7" height="7" rx="1"/></svg>
+                  ดู QR
+                </button>
               </a>
             </div>
 
@@ -13158,12 +13545,12 @@
               <div class="sj-question">เข้าร่วมเป็น<br><em>น้องบี</em></div>
               <div class="sj-helper">login ก่อนเริ่ม · เปลี่ยนเครื่องได้ตลอด</div>
 
-              <button class="sj-login-btn line">
+              <button class="sj-login-btn sj-line">
                 <svg viewBox="0 0 24 24" fill="currentColor"><path d="M19.365 9.863c.349 0 .63.285.63.631 0 .345-.281.63-.63.63H17.61v1.125h1.755c.349 0 .63.283.63.63 0 .344-.281.628-.63.628h-2.386c-.345 0-.627-.285-.627-.628V8.108c0-.345.282-.63.628-.63h2.386c.346 0 .627.285.627.63 0 .349-.281.63-.63.63H17.61v1.125h1.755zm-3.855 3.016c0 .27-.174.51-.432.596-.064.021-.133.031-.199.031-.211 0-.391-.09-.51-.25l-2.443-3.317v2.94c0 .344-.279.629-.631.629-.346 0-.626-.285-.626-.629V8.108c0-.27.173-.508.43-.595.06-.023.136-.033.194-.033.195 0 .375.104.495.254l2.462 3.33V8.108c0-.345.282-.63.63-.63.345 0 .63.285.63.63v4.771zm-5.741 0c0 .344-.282.629-.631.629-.345 0-.627-.285-.627-.629V8.108c0-.345.282-.63.627-.63.349 0 .63.285.63.63v4.771zm-2.466.629H4.917c-.345 0-.63-.285-.63-.629V8.108c0-.345.285-.63.63-.63.348 0 .63.285.63.63v4.141h1.756c.348 0 .629.283.629.63 0 .344-.282.629-.629.629M24 10.314C24 4.943 18.615.572 12 .572S0 4.943 0 10.314c0 4.811 4.27 8.842 10.035 9.608.391.082.923.258 1.058.59.12.301.079.766.038 1.08l-.164 1.02c-.045.301-.24 1.186 1.049.645 1.291-.539 6.916-4.078 9.436-6.975C23.176 14.393 24 12.458 24 10.314"/></svg>
                 เข้าด้วย LINE
               </button>
 
-              <button class="sj-login-btn phone">
+              <button class="sj-login-btn sj-phone">
                 <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
                 เข้าด้วยเบอร์โทร
               </button>
@@ -13271,70 +13658,6 @@
             <div style="padding: 22px 20px 20px;">
               <div style="font-family:'Prompt',sans-serif;font-style:italic;font-size:12px;color:var(--ink-soft);text-align:center;">
                 ธีมจะใช้กับบัตรของลูกค้าทุกคนทันที
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </div>
-    <!-- S11 Team -->
-    <div class="mockup">
-      <div class="mockup-caption">
-        <div class="kicker"><span class="n">settings.team</span>ทีมงาน</div>
-        <h3>จัดการทีม</h3>
-        <p>การ์ดเหลือง "เชิญทีม" มีป้าย + เอียง ๆ เจ้าของร้านอยู่แถวมิ้นต์ พนักงานคนอื่น ๆ มีสิทธิ์ต่างกัน</p>
-      </div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="td">
-
-            <div class="app-bar">
-              <a class="x" aria-label="ย้อนกลับ">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              </a>
-              <div class="title-mid">ทีม</div>
-              <div class="right-action">3 คน</div>
-            </div>
-
-            <div class="page-title">
-              <div class="h">ทีม<em>ของคุณ.</em></div>
-              <div class="sub">คนที่ออกแต้มได้</div>
-            </div>
-
-            <div class="s11-invite">
-              <div class="ic">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M16 21v-2a4 4 0 00-4-4H5a4 4 0 00-4 4v2"/><circle cx="8.5" cy="7" r="4"/><line x1="20" y1="8" x2="20" y2="14"/><line x1="23" y1="11" x2="17" y2="11"/></svg>
-              </div>
-              <div class="meta">
-                <div class="h">เชิญทีม</div>
-                <div class="s">ส่งลิงก์ทาง LINE หรือ SMS</div>
-              </div>
-            </div>
-
-            <div class="s11-list">
-              <div class="s11-member owner-row owner">
-                <div class="av m">ม</div>
-                <div class="info">
-                  <div class="name">หมี (คุณ)</div>
-                  <div class="role"><span class="dot"></span><span>เจ้าของร้าน</span></div>
-                </div>
-                <div class="more">⋯</div>
-              </div>
-              <div class="s11-member">
-                <div class="av">น</div>
-                <div class="info">
-                  <div class="name">น้อย</div>
-                  <div class="role"><span class="dot"></span><span>พนักงาน · ยกเลิก · ข้อความ</span></div>
-                </div>
-                <div class="more">⋯</div>
-              </div>
-              <div class="s11-member">
-                <div class="av b">พ</div>
-                <div class="info">
-                  <div class="name">พิม</div>
-                  <div class="role"><span class="dot"></span><span>พนักงาน · ออกแต้มเท่านั้น</span></div>
-                </div>
-                <div class="more">⋯</div>
               </div>
             </div>
           </div>
