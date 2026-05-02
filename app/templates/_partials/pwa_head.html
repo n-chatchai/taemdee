@@ -22,6 +22,8 @@
    older iOS Safari which uses the non-standard navigator.standalone instead. #}
 <style>@media (display-mode: standalone){.footer-mark .fm-install{display:none}}.pwa-standalone .footer-mark .fm-install{display:none}</style>
 <script>if(window.navigator.standalone)document.documentElement.classList.add('pwa-standalone');</script>
+{# Track PWA usage — only call once per session #}
+<script>(function(){try{var k='td_pwa_tracked',s=sessionStorage.getItem(k);if(s)return;var m=window.matchMedia('(display-mode:standalone)');if(m.matches||window.navigator.standalone===true){fetch('/track/pwa',{method:'POST',credentials:'same-origin'});sessionStorage.setItem(k,'1');}}catch(_){}})();</script>
 {# C6 ขนาดตัวอักษร bootstrap — apply the saved fs-* class to <html>
    before first paint so users on the lg/sm setting don't flash the
    default 16px. The class drives root font-size (14/16/18px) — any

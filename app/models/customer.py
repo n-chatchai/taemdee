@@ -59,6 +59,8 @@ class Customer(SQLModel, table=True):
     # <html> via the pwa_head bootstrap script (also persisted in
     # localStorage for instant first-paint without a round-trip).
     text_size: Optional[str] = Field(default=None)
+    # PWA tracking — True when customer first opened app via home screen icon
+    is_pwa: bool = Field(default=False)
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="customer")

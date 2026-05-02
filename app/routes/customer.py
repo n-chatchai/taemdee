@@ -412,6 +412,21 @@ async def customer_logout():
     return response
 
 
+@router.post("/track/pwa")
+async def track_pwa(
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Record that customer is using PWA (installed to home screen)."""
+    from app.core.auth import find_or_create_customer
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    if not customer.is_pwa:
+        customer.is_pwa = True
+        db.add(customer)
+        await db.commit()
+    return JSONResponse(status_code=204, content=None)
+
+
 @router.post("/link/snooze")
 async def link_prompt_snooze(
     request: Request,
