@@ -48,7 +48,7 @@ async def login_page(
             referrer = await db.get(Shop, referral.referrer_shop_id)
     return templates.TemplateResponse(
         request=request,
-        name="shop/register.html",
+        name="shop/login.html",
         context={"ref_code": ref, "referrer": referrer},
     )
 

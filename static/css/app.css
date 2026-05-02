@@ -199,30 +199,13 @@ body {
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  width: 70px; height: 70px;
-  background: var(--ink);
-  color: var(--accent);
-  border-radius: 22px;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  box-shadow: none;
-  margin-bottom: 14px;
-  transform: rotate(-4deg);
+  margin-bottom: 22px;
   position: relative;
-}
-.s1-logo-mark .smile-big { width: 30px; height: 18px; }
-.s1-logo-mark .star-corner {
-  position: absolute;
-  top: -10px; right: -10px;
-  width: 18px; height: 18px;
-  color: var(--butter);
-  stroke: var(--ink);
-  stroke-width: 2;
-  transform: rotate(15deg);
 }
 
 .s1-name {
   font-weight: 800;
-  font-size: 32px;
+  font-size: 40px;
   letter-spacing: -0.035em;
   line-height: 1;
   margin-bottom: 10px;
