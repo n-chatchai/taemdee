@@ -25,6 +25,18 @@ from app.services.recovery import ensure_recovery_code, find_by_code
 from app.services.redemption import RedemptionError, active_point_count, redeem
 from app.services.soft_wall import claim_by_phone
 
+
+async def publish_gifts_update(customer_id: uuid.UUID) -> None:
+    from app.services.events import publish_customer
+    from app.core.database import SessionFactory
+    try:
+        async with SessionFactory() as db:
+            count = await _active_gifts_count(db, customer_id)
+            publish_customer(customer_id, "gifts-update", str(count))
+    except Exception:
+        pass
+
+
 router = APIRouter()
 
 
@@ -883,7 +895,9 @@ async def scan(
             feed_row_html("redemption", auto_redemption.id, bkk_feed_time(auto_redemption.created_at), customer.display_name or "ลูกค้า"),
         )
         from app.services.events import publish_customer
-        publish_customer(customer.id, "gifts-update", str(await _active_gifts_count(db, customer.id)))
+        import asyncio
+        loop = asyncio.get_event_loop()
+        loop.create_task(publish_gifts_update(customer.id))
         response = RedirectResponse(
             url=f"/card/{shop_id}/claimed?r={auto_redemption.id}",
             status_code=status.HTTP_303_SEE_OTHER,

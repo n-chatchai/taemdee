@@ -2,7 +2,7 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
-from sqlmodel import Field, Relationship, SQLModel
+from sqlmodel import Field, Index, Relationship, SQLModel
 
 from app.models.util import utcnow
 
@@ -11,6 +11,9 @@ class Point(SQLModel, table=True):
     """A point a customer earned at a shop."""
 
     __tablename__ = "points"
+    __table_args__ = (
+        Index("ix_points_shop_customer_active", "shop_id", "customer_id", "is_voided", "redemption_id"),
+    )
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shops.id", index=True)
