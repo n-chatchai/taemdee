@@ -4420,6 +4420,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   max-width: 440px;
   box-shadow: 0 -8px 24px -8px rgba(0, 0, 0, 0.25);
   position: relative;
+  transform: translateY(100%);
+  transition: transform 0.3s ease-out;
+}
+.install-sheet-overlay.open .install-sheet {
+  transform: translateY(0);
 }
 .install-sheet .sheet-handle {
   width: 36px;
