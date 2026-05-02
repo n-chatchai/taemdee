@@ -38,17 +38,14 @@
   text-shadow: 0 1px 3px rgba(0,0,0,0.4);
 }
 .cl-hero-mini-cta {
-  position: absolute;
-  bottom: 12px;
-  right: 12px;
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
   font-size: var(--text-sm);
   color: #fff;
-  background: rgba(0,0,0,0.4);
+  background: #E04020;
   padding: 8px 14px;
   border-radius: 10px;
-  backdrop-filter: blur(4px);
+  flex-shrink: 0;
 }
 .cl-hero-mini-shop {
   display: flex;
@@ -80,6 +77,7 @@
   font-weight: 600;
   font-size: var(--text-sm);
   color: var(--ink);
+  flex: 1;
 }
 </style>
 {% endblock %}
@@ -110,11 +108,11 @@
               <div class="cl-hero-mini-img">
                 {{ voucher.emoji }}
                 <div class="cl-hero-mini-reward-text">{{ voucher.shop.reward_description }}</div>
-                <div class="cl-hero-mini-cta">ใช้เลย</div>
               </div>
               <div class="cl-hero-mini-shop">
                 {% if logo %}{% if logo.is_image %}<img src="{{ logo.url }}" class="shop-logo">{% else %}<span class="shop-logo-text {{ logo.css_class }}">{{ logo.text[0] }}</span>{% endif %}{% else %}<span class="shop-logo-text">{{ voucher.shop.name[0] }}</span>{% endif %}
                 <span class="shop-name">{{ voucher.shop.name }}</span>
+                <div class="cl-hero-mini-cta">ใช้เลย</div>
               </div>
             </button>
           </form>
