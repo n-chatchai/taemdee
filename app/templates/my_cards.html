@@ -69,17 +69,6 @@
   text-align: center;
   margin-top: 12px;
 }
-.hero-swipe-hint {
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  color: var(--ink-soft);
-  font-size: var(--text-xs);
-  margin-top: 8px;
-  margin-bottom: 4px;
-}
-.hero-swipe-hint svg { width: 16px; height: 16px; }
 </style>
 {% endblock %}
 
@@ -121,14 +110,7 @@
         {% endfor %}
       </div>
     </div>
-    {% if hero_vouchers|length > 1 %}
-    <div class="hero-swipe-hint">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="15 18 9 12 15 6"/></svg>
-      <span>เลื่อนดูรางวัลถัดไป</span>
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 18 15 12 9 6"/></svg>
-    </div>
     {% endif %}
-  {% endif %}
 
   {# "ใกล้แล้ว" carousel — horizontal scroll cards for shops that
      are ≥ 50% of the way to a reward. #}
