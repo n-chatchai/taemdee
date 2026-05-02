@@ -38,13 +38,9 @@
 {% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/shop/dashboard" class="x" aria-label="ย้อนกลับ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
-    <div class="title-mid">ให้แต้มลูกค้า</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/shop/dashboard' %}
+{% set app_bar_title = 'ให้แต้มลูกค้า' %}
+{% include "_partials/app_bar.html" %}
 
   <div class="search-box">
     <div class="search-input">

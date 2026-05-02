@@ -2,13 +2,9 @@
 {% block title %}แนะนำเพื่อน · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
-    <div class="title-mid">แนะนำเพื่อน</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/shop/settings' %}
+{% set app_bar_title = 'แนะนำเพื่อน' %}
+{% include "_partials/app_bar.html" %}
 
   <div class="page-title" style="padding: 22px 22px 12px;">
     <div class="h">แนะนำ<em>ร้านเพื่อน.</em></div>

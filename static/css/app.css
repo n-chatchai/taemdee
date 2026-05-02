@@ -3598,7 +3598,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .c8-id-label {
   font-family: 'Prompt', sans-serif;
-  font-size: var(--text-2xs);
+  font-size: 9px;
   letter-spacing: 0.1em;
   text-transform: uppercase;
   color: var(--ink-softer);
@@ -3606,7 +3606,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .c8-id-num {
   font-family: 'JetBrains Mono', monospace;
   font-weight: 700;
-  font-size: var(--text-md);
+  font-size: 15px;
   letter-spacing: 0.05em;
   color: var(--ink);
 }

@@ -3,11 +3,9 @@
 {% block title %}การแจ้งเตือน · TaemDee แต้มดี{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/card/account" class="x" aria-label="ย้อนกลับ">←</a>
-    <div class="title-mid">การแจ้งเตือน</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/card/account' %}
+{% set app_bar_title = 'การแจ้งเตือน' %}
+{% include "_partials/app_bar.html" %}
 
   {# Master toggle — kill switch for every DeeReach kind across every
      shop. Per-shop mute (CustomerShopMute) and the channel preference

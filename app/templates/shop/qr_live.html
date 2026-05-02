@@ -2,13 +2,10 @@
 {% block title %}ให้ลูกค้าสแกน · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/shop/dashboard" class="x" aria-label="ปิด">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-    </a>
-    <div class="title-mid">ให้ลูกค้าสแกน</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/shop/dashboard' %}
+{% set app_bar_title = 'ให้ลูกค้าสแกน' %}
+{% set app_bar_close = True %}
+{% include "_partials/app_bar.html" %}
 
   <div class="s3-qr-stage">
     <div class="s3-qr-helper">

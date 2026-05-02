@@ -3,13 +3,9 @@
 {% block title %}ข้อความ · TaemDee แต้มดี{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/my-inbox" class="x" aria-label="ย้อนกลับ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
-    <div class="title-mid">ข้อความ</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/my-inbox' %}
+{% set app_bar_title = 'ข้อความ' %}
+{% include "_partials/app_bar.html" %}
 
   <div class="inbox-detail-hero">
     <div class="idh-logo">

@@ -12,13 +12,10 @@
 <body>
   {% set logo = shop_logo(shop) %}
   <div class="td">
-    <div class="app-bar">
-      <a class="x" aria-label="ย้อนกลับ" href="/my-gifts">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
-      </a>
-      <div class="title-mid">ใช้ของขวัญ</div>
-      <div class="placeholder"></div>
-    </div>
+{% set app_bar_back = '/my-gifts' %}
+{% set app_bar_title = 'ใช้ของขวัญ' %}
+{% set app_bar_close = True %}
+{% include "_partials/app_bar.html" %}
 
     <div class="voucher-screen">
       <div class="vs-shop">

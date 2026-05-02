@@ -2,13 +2,9 @@
 {% block title %}เติมเครดิต · จ่าย · TaemDee{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/shop/topup" class="x" aria-label="ย้อนกลับ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
-    <div class="title-mid">เติมเครดิต</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/shop/topup' %}
+{% set app_bar_title = 'เติมเครดิต' %}
+{% include "_partials/app_bar.html" %}
 
   <div class="s7c-meta">
     <div class="label">คุณกำลังเติม</div>

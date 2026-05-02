@@ -2,11 +2,8 @@
 {% block title %}QR ของ {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="{% if branch %}/shop/branches{% else %}/shop/dashboard{% endif %}" class="x">←</a>
-    <div class="title-mid">{% if branch %}คิวอาร์ · {{ branch.name }}{% else %}คิวอาร์ร้าน{% endif %}</div>
-    <div class="placeholder"></div>
-  </div>
+{% if branch %}{% set app_bar_back = '/shop/branches/' ~ branch.id %}{% set app_bar_title = 'คิวอาร์ · ' ~ branch.name %}{% else %}{% set app_bar_back = '/shop/dashboard' %}{% set app_bar_title = 'คิวอาร์ร้าน' %}{% endif %}
+{% include "_partials/app_bar.html" %}
 
   <div class="s8-actions">
     <a class="pill" href="{% if branch %}/shop/branches/{{ branch.id }}/qr.png{% else %}/shop/qr.png{% endif %}" download>

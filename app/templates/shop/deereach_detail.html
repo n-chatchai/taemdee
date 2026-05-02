@@ -75,13 +75,9 @@
 {% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/shop/deereach" class="x" aria-label="ย้อนกลับ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
-    <div class="title-mid">{{ suggestion.label }}</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/shop/deereach' %}
+{% set app_bar_title = suggestion.label %}
+{% include "_partials/app_bar.html" %}
 
   <div class="s13d-section">
     <div class="s13d-h">

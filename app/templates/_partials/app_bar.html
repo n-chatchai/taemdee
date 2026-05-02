@@ -1,0 +1,23 @@
+{# App bar — top navigation with back arrow + centered title.
+   Used by: my-id, inbox-detail, voucher-use, shop/* pages.
+
+   Variables:
+     app_bar_back    — href for back button (default: "javascript:history.back()")
+     app_bar_title   — centered title text (required)
+     app_bar_close   — if True, show X (close) icon instead of back arrow
+     app_bar_action  — optional right-side slot (HTML string or include) #}
+<div class="app-bar">
+  <a href="{{ app_bar_back|default('javascript:history.back()') }}" class="x" aria-label="ย้อนกลับ">
+    {% if app_bar_close %}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round"><path d="M18 6L6 18M6 6l12 12"/></svg>
+    {% else %}
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    {% endif %}
+  </a>
+  <div class="title-mid">{{ app_bar_title }}</div>
+  {% if app_bar_action %}
+    {{ app_bar_action|safe }}
+  {% else %}
+    <div class="placeholder"></div>
+  {% endif %}
+</div>

@@ -2,11 +2,9 @@
 {% block title %}ตั้งค่า · {{ shop.name }}{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/shop/dashboard" class="x">←</a>
-    <div class="title-mid">ตั้งค่า</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/shop/dashboard' %}
+{% set app_bar_title = 'ตั้งค่า' %}
+{% include "_partials/app_bar.html" %}
 
   {% set logo = shop_logo(shop) %}
   <div class="s10-shop-card">

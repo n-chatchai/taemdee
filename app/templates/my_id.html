@@ -1,13 +1,11 @@
 {% extends "_layouts/c_base.html" %}
-{% set nav_active = 'cards' %}
+{% set nav_active = 'scan' %}
 {% block title %}QR ของพี่ · TaemDee แต้มดี{% endblock %}
 
 {% block content %}
-  <div class="app-bar">
-    <a href="/my-cards" class="x" aria-label="ย้อนกลับ">←</a>
-    <div class="title-mid">QR ของพี่</div>
-    <div class="placeholder"></div>
-  </div>
+{% set app_bar_back = '/my-cards' %}
+{% set app_bar_title = 'QR ของพี่' %}
+{% include "_partials/app_bar.html" %}
 
   <div class="c8-stage">
     <div class="c8-instruction">
