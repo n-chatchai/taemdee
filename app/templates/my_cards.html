@@ -25,21 +25,30 @@
   justify-content: center;
   font-size: 64px;
   position: relative;
+  background: linear-gradient(135deg, #FF8A5C 0%, #FF5E3A 55%, #E04020 100%);
 }
-.cl-hero-mini-img.butter { background: var(--butter); }
-.cl-hero-mini-img.mint { background: var(--mint); }
-.cl-hero-mini-img.accent { background: var(--accent); }
-.cl-hero-mini-img-overlay {
+.cl-hero-mini-reward-text {
   position: absolute;
-  bottom: 0;
-  left: 0;
-  right: 0;
-  background: rgba(0,0,0,0.5);
-  padding: 12px 16px;
+  bottom: 12px;
+  left: 16px;
+  right: 16px;
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
   font-size: var(--text-base);
-  text-align: center;
+  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
+}
+.cl-hero-mini-cta {
+  position: absolute;
+  bottom: 12px;
+  right: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: var(--text-sm);
+  color: #fff;
+  background: rgba(0,0,0,0.4);
+  padding: 8px 14px;
+  border-radius: 10px;
+  backdrop-filter: blur(4px);
 }
 .cl-hero-mini-shop {
   display: flex;
@@ -98,9 +107,10 @@
           {% set logo = shop_logo(voucher.shop) %}
           <form method="post" action="/voucher/{{ voucher.redemption.id }}/use?next=/my-cards" class="cl-hero-mini" style="margin:0;">
             <button type="submit" style="border:none;cursor:pointer;width:100%;text-align:left;background:transparent;color:inherit;">
-              <div class="cl-hero-mini-img {{ voucher.icon_color }}">
+              <div class="cl-hero-mini-img">
                 {{ voucher.emoji }}
-                <div class="cl-hero-mini-img-overlay">{{ voucher.shop.reward_description }}</div>
+                <div class="cl-hero-mini-reward-text">{{ voucher.shop.reward_description }}</div>
+                <div class="cl-hero-mini-cta">ใช้เลย</div>
               </div>
               <div class="cl-hero-mini-shop">
                 {% if logo %}{% if logo.is_image %}<img src="{{ logo.url }}" class="shop-logo">{% else %}<span class="shop-logo-text {{ logo.css_class }}">{{ logo.text[0] }}</span>{% endif %}{% else %}<span class="shop-logo-text">{{ voucher.shop.name[0] }}</span>{% endif %}
