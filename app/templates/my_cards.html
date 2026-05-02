@@ -5,15 +5,69 @@
 
 {% block head_extra %}
 <style>
-.cl-hero-carousel-wrap { position: relative; overflow: hidden; margin: 4px 14px 0; }
-.cl-hero-carousel { display: flex; transition: transform 0.3s ease; }
-.cl-hero-carousel .cl-hero { flex: 0 0 100%; min-width: 100%; margin: 0; }
-.cl-carousel-dots { display: flex; justify-content: center; gap: 6px; margin-top: 8px; }
-.cl-carousel-dots .dot { width: 6px; height: 6px; border-radius: 50%; background: var(--gray-4); }
-.cl-carousel-dots .dot.active { background: var(--accent); }
-.cl-carousel-arrow { position: absolute; top: 50%; transform: translateY(-50%); width: 32px; height: 32px; border-radius: 50%; background: rgba(255,255,255,0.9); border: none; font-size: 24px; color: var(--ink); cursor: pointer; z-index: 10; display: flex; align-items: center; justify-content: center; box-shadow: 0 2px 8px rgba(0,0,0,0.15); }
-.cl-carousel-arrow.prev { left: 8px; }
-.cl-carousel-arrow.next { right: 8px; }
+.cl-hero-mini {
+  flex: 0 0 165px;
+  scroll-snap-align: start;
+  background: linear-gradient(135deg, #FF8A5C 0%, #FF5E3A 55%, #E04020 100%);
+  border-radius: 18px;
+  padding: 14px;
+  position: relative;
+  overflow: hidden;
+  display: flex;
+  flex-direction: column;
+  text-decoration: none;
+  color: #fff;
+}
+.cl-hero-mini::before {
+  content: '';
+  position: absolute;
+  right: -32px;
+  top: -32px;
+  width: 92px;
+  height: 92px;
+  border-radius: 50%;
+  background: rgba(255,255,255,0.15);
+}
+.cl-hero-mini > * { position: relative; z-index: 1; }
+.cl-hero-mini-logo {
+  width: 36px;
+  height: 36px;
+  border-radius: 12px;
+  background: rgba(255,255,255,0.25);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 14px;
+  margin-bottom: 10px;
+}
+.cl-hero-mini-logo img { width: 100%; height: 100%; border-radius: inherit; object-fit: cover; }
+.cl-hero-mini-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-sm);
+  color: #fff;
+  margin-bottom: 2px;
+  letter-spacing: -0.005em;
+}
+.cl-hero-mini-reward {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-xs);
+  color: rgba(255,255,255,0.8);
+  margin-bottom: auto;
+}
+.cl-hero-mini-cta {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: var(--text-xs);
+  color: #fff;
+  background: rgba(255,255,255,0.2);
+  padding: 6px 10px;
+  border-radius: 8px;
+  text-align: center;
+  margin-top: 10px;
+}
 </style>
 {% endblock %}
 
@@ -27,53 +81,33 @@
      carousel makes it discoverable. Tap → /my-gifts where they can hit
      "ใช้" on the row. #}
   {% if hero_vouchers %}
-    <div class="cl-hero-carousel-wrap" style="margin-top: 4px;">
-      <div class="cl-hero-carousel" id="hero-carousel">
+    <div class="cl-section-h" style="margin-top: 4px;">
+      <span class="icon" style="color: var(--accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6"/><path d="M12 3v12"/><path d="M15 6l-3-3-3 3"/></svg>
+      </span>
+      พร้อมใช้
+      <span class="count">{{ hero_vouchers|length }} รางวัล</span>
+    </div>
+    <div class="cl-carousel-wrap">
+      <div class="cl-carousel">
         {% for voucher in hero_vouchers %}
           {% set logo = shop_logo(voucher.shop) %}
-          <a class="cl-hero" href="/my-gifts">
-            <div class="cl-hero-tag">
-              <span class="pulse"></span>
-              พร้อมใช้ · ของขวัญรอพี่อยู่
-            </div>
-            <div class="cl-hero-row">
-              <div class="cl-hero-logo">
+          <form method="post" action="/voucher/{{ voucher.redemption.id }}/use" style="margin:0;">
+            <button type="submit" class="cl-hero-mini" style="border:none;cursor:pointer;width:100%;text-align:left;">
+              <div class="cl-hero-mini-logo">
                 {% if logo %}
                   {% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">
                   {% else %}<span class="{{ logo.css_class }}" style="font-size:inherit;">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
                   {% endif %}
                 {% else %}{{ voucher.shop.name[0]|upper }}{% endif %}
               </div>
-              <div class="cl-hero-info">
-                <div class="cl-hero-name">{{ voucher.shop.name }}</div>
-                <div class="cl-hero-reward">{{ voucher.shop.reward_description }}</div>
-              </div>
-              <div class="cl-hero-num">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:34px;height:34px;">
-                  <polyline points="20 12 20 22 4 22 4 12"/>
-                  <rect x="2" y="7" width="20" height="5"/>
-                  <line x1="12" y1="22" x2="12" y2="7"/>
-                  <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-                  <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
-                </svg>
-              </div>
-            </div>
-            <div class="cl-hero-cta">
-              <span>ใช้ของขวัญตอนนี้</span>
-              <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-            </div>
-          </a>
+              <div class="cl-hero-mini-name">{{ voucher.shop.name }}</div>
+              <div class="cl-hero-mini-reward">{{ voucher.shop.reward_description }}</div>
+              <div class="cl-hero-mini-cta">ใช้เลย</div>
+            </button>
+          </form>
         {% endfor %}
       </div>
-      {% if hero_vouchers|length > 1 %}
-        <div class="cl-carousel-dots" id="hero-dots">
-          {% for _ in hero_vouchers %}
-            <span class="dot{% if loop.first %} active{% endif %}"></span>
-          {% endfor %}
-        </div>
-        <button class="cl-carousel-arrow prev" id="hero-prev" aria-label="ก่อนหน้า">‹</button>
-        <button class="cl-carousel-arrow next" id="hero-next" aria-label="ถัดไป">›</button>
-      {% endif %}
     </div>
   {% endif %}
 
