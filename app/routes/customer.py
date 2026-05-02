@@ -62,16 +62,33 @@ async def customer_event_stream(
     from app.services.events import stream_customer
 
     async with SessionFactory() as db:
-        customer, was_created = await find_or_create_customer(customer_cookie, db)
-        customer_id = customer.id
+        from app.core.auth import decode_customer_token
+        customer_id = decode_customer_token(customer_cookie) if customer_cookie else None
+        if customer_id:
+            existing = await db.get(Customer, customer_id)
+            if existing:
+                was_created = False
+                cid = existing.id
+            else:
+                was_created = True
+                new_customer = Customer(is_anonymous=True)
+                db.add(new_customer)
+                await db.commit()
+                cid = new_customer.id
+        else:
+            was_created = True
+            new_customer = Customer(is_anonymous=True)
+            db.add(new_customer)
+            await db.commit()
+            cid = new_customer.id
 
     response = StreamingResponse(
-        stream_customer(customer_id),
+        stream_customer(cid),
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
     if was_created:
-        set_customer_cookie(response, customer_id)
+        set_customer_cookie(response, cid)
     return response
 
 
