@@ -92,6 +92,18 @@
                 || window.navigator.standalone === true;
     if (isPWA) return;
 
+    // Check snooze: don't show if snoozed within 2 weeks
+    const SNOOZE_KEY = 'td_install_snoozed';
+    const SNOOZE_DAYS = 14;
+    try {
+      const snoozed = localStorage.getItem(SNOOZE_KEY);
+      if (snoozed) {
+        const snoozeTime = parseInt(snoozed, 10);
+        const daysSinceSnooze = (Date.now() - snoozeTime) / (1000 * 60 * 60 * 24);
+        if (daysSinceSnooze < SNOOZE_DAYS) return;
+      }
+    } catch (_) {}
+
     // Variant pick: iOS Safari has no beforeinstallprompt, must instruct
     // manual Share → Add to Home Screen.
     const ua = navigator.userAgent || '';
@@ -118,6 +130,17 @@
           try { await deferredPrompt.userChoice; } catch (_) {}
           deferredPrompt = null;
         }
+        sheet.classList.remove('open');
+      });
+    }
+
+    // Snooze button - store timestamp in localStorage
+    const closeBtn = sheet.querySelector('.sheet-close');
+    if (closeBtn) {
+      closeBtn.addEventListener('click', () => {
+        try {
+          localStorage.setItem(SNOOZE_KEY, String(Date.now()));
+        } catch (_) {}
         sheet.classList.remove('open');
       });
     }
