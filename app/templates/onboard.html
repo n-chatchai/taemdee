@@ -16,14 +16,21 @@
      final step redirects to /card/{shop.id}. #}
   {% set logo = shop_logo(shop) %}
   <div class="td onboarding" :class="'step-' + step" x-data="{
-        step: 1, name: '', error: '',
+        step: 1, name: '', error: '', pointCount: {{ point_count }},
         async submitName() {
           const fd = new FormData();
           fd.append('name', this.name.trim());
+          fd.append('shop_id', '{{ shop.id }}');
           try {
-            const r = await fetch('/card/nickname', { method: 'POST', body: fd });
+            const r = await fetch('/card/nickname', {
+              method: 'POST',
+              body: fd,
+              credentials: 'same-origin'
+            });
             if (!r.ok) { const j = await r.json().catch(() => ({}));
               this.error = j.detail || (r.status + ' — บันทึกไม่สำเร็จ'); return; }
+            const res = await r.json();
+            if (res.point_count !== undefined) this.pointCount = res.point_count;
           } catch (_) { this.error = 'บันทึกไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต'; return; }
           this.error = ''; this.step = 2;
         }
@@ -95,16 +102,16 @@
       <div class="ob-big-num">
         <div class="ob-num-label">ผมเก็บแต้มแรกให้แล้ว</div>
         <div class="ob-num">
-          {{ point_count }}
+          <span x-text="pointCount"></span>
           <svg class="ob-num-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
         </div>
-        <div class="ob-num-sub">อีก <strong>{{ shop.reward_threshold - point_count }} ครั้ง</strong> ได้รางวัล</div>
+        <div class="ob-num-sub">อีก <strong x-text="{{ shop.reward_threshold }} - pointCount"></strong><strong> ครั้ง</strong> ได้รางวัล</div>
       </div>
 
       <div class="stamps-wrap" style="padding: 0; margin-bottom: 18px;">
         <div class="stamps">
           {% for i in range(1, shop.reward_threshold + 1) %}
-            <div class="stamp{% if i <= point_count %} on{% endif %}"></div>
+            <div class="stamp" :class="{ 'on': pointCount >= {{ i }} }"></div>
           {% endfor %}
         </div>
       </div>

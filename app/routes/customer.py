@@ -642,21 +642,9 @@ async def onboard(
     if not shop:
         return RedirectResponse(url=f"/card/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
     customer, was_created = await find_or_create_customer(customer_cookie, db)
+    print(f"DEBUG: onboard shop={shop.id} customer={customer.id} was_created={was_created}")
     point_count = await active_point_count(db, shop.id, customer.id)
-    if point_count == 0:
-        try:
-            stamp, _ = await issue_point(db, shop, customer, method="customer_scan")
-            publish(
-                shop.id,
-                "feed-row",
-                feed_row_html("point", stamp.id, bkk_feed_time(stamp.created_at), customer.display_name or "ลูกค้า"),
-            )
-            point_count = 1
-        except IssuanceError:
-            # Cooldown / branch-required / etc. — leave point_count at 0
-            # and let the template render the 0-stamp fallback rather
-            # than 500.
-            pass
+    
     response = templates.TemplateResponse(
         request=request,
         name="onboard.html",
@@ -666,12 +654,7 @@ async def onboard(
             "point_count": point_count,
         },
     )
-    # Re-issue the cookie if the customer was created here — covers the case
-    # where iOS Safari dropped the Set-Cookie from /scan's 303 redirect, which
-    # would otherwise spawn a fresh anonymous customer per page load and leave
-    # the saved nickname on a phantom row that the next request can't find.
-    if was_created:
-        set_customer_cookie(response, customer.id)
+    set_customer_cookie(response, customer.id)
     return response
 
 
@@ -882,6 +865,14 @@ async def scan(
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
 
+    # If this is a first-time scan (no nickname yet), skip issuance here
+    # and bounce to onboarding. The point will be issued in /card/nickname
+    # after they provide their name.
+    if customer.display_name is None:
+        response = RedirectResponse(url=f"/onboard/{shop.id}", status_code=status.HTTP_303_SEE_OTHER)
+        set_customer_cookie(response, customer.id)
+        return response
+
     just_stamped = False
     auto_redemption = None
     try:
@@ -893,7 +884,7 @@ async def scan(
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", stamp.id, bkk_feed_time(stamp.created_at), customer.display_name or "ลูกค้า"),
+            feed_row_html("point", stamp.id, bkk_feed_time(stamp.created_at), customer.display_name),
         )
         just_stamped = True
     except IssuanceError:
@@ -1112,6 +1103,7 @@ SKIP_NICKNAME_DEFAULT = "คุณลูกค้า"
 @router.post("/card/nickname")
 async def save_nickname(
     name: str = Form(""),
+    shop_id: Optional[uuid.UUID] = Form(None),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
@@ -1125,9 +1117,42 @@ async def save_nickname(
     customer.display_name = cleaned if cleaned else SKIP_NICKNAME_DEFAULT
     db.add(customer)
     await db.commit()
-    response = JSONResponse({"ok": True, "display_name": customer.display_name})
-    if was_created:
-        set_customer_cookie(response, customer.id)
+    await db.refresh(customer)
+
+    # Issue a point if this nickname submit included a shop context.
+    # We do this regardless of current point_count because the customer
+    # just scanned the QR and we deferred their point until they provided a name.
+    point_count = 0
+    if shop_id:
+        shop = await db.get(Shop, shop_id)
+        if shop:
+            from app.services.issuance import issue_point
+            from app.services.events import publish, feed_row_html
+            from app.models.util import bkk_feed_time
+            from app.services.redemption import active_point_count
+
+            # Re-fetch points to be sure
+            before_count = await active_point_count(db, shop.id, customer.id)
+            
+            try:
+                stamp, _ = await issue_point(db, shop, customer, method="customer_scan")
+                publish(
+                    shop.id,
+                    "feed-row",
+                    feed_row_html("point", stamp.id, bkk_feed_time(stamp.created_at), customer.display_name),
+                )
+            except IssuanceError as e:
+                # If it's a cooldown, it's fine, we just want the latest count.
+                # But we don't want to swallow other potential logic errors.
+                if "cooldown" not in str(e).lower():
+                    raise
+            
+            # Return the fresh count to Step 2
+            await db.refresh(customer)
+            point_count = await active_point_count(db, shop.id, customer.id)
+
+    response = JSONResponse({"ok": True, "display_name": customer.display_name, "point_count": point_count})
+    set_customer_cookie(response, customer.id)
     return response
 
 

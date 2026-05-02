@@ -584,3 +584,27 @@ async def test_void_old_point_still_allowed(auth_client, db, shop, customer):
     response = await auth_client.post(f"/shop/points/{old.id}/void")
     assert response.status_code == 200
     assert response.json()["voided"] is True
+
+async def test_issue_page_has_filter_pills(auth_client):
+    """S3.issue — the 'Recent Customers' feed now includes filter pills."""
+    response = await auth_client.get("/shop/issue")
+    assert response.status_code == 200
+    body = response.text
+    assert "issue-feed-pills" in body
+    assert "filterFeed('all', this)" in body
+    assert "filterFeed('point', this)" in body
+    assert "filterFeed('redemption', this)" in body
+
+
+async def test_issue_feed_rows_have_kind_data(auth_client, db, shop, customer):
+    """Each row in the issue feed must carry data-kind for client-side filtering."""
+    from app.models import Point, Redemption
+    db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
+    db.add(Redemption(shop_id=shop.id, customer_id=customer.id))
+    await db.commit()
+
+    response = await auth_client.get("/shop/issue")
+    assert response.status_code == 200
+    body = response.text
+    assert 'data-kind="point"' in body
+    assert 'data-kind="redemption"' in body

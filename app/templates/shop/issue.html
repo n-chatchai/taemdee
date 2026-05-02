@@ -9,9 +9,9 @@
     <div class="if-head">
       <div class="if-label">ลูกค้าล่าสุด</div>
       <span class="met-pills issue-feed-pills">
-        <a class="mp active" aria-disabled="true" tabindex="-1">ทั้งหมด</a>
-        <a class="mp" aria-disabled="true" tabindex="-1">สแกน</a>
-        <a class="mp" aria-disabled="true" tabindex="-1">แลก</a>
+        <a class="mp active" onclick="filterFeed('all', this)">ทั้งหมด</a>
+        <a class="mp" onclick="filterFeed('point', this)">สแกน</a>
+        <a class="mp" onclick="filterFeed('redemption', this)">แลก</a>
       </span>
     </div>
     <table class="sap-table" id="sap-table">
@@ -19,6 +19,7 @@
         {% for kind, item, customer_name in feed[:feed_cap] %}
           <tr class="feed-row{% if loop.first %} latest{% endif %}"
               id="row-{{ item.id }}"
+              data-kind="{{ kind }}"
               data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
             <td class="t">{{ item.created_at|bkk_feed_time }}</td>
             <td class="n">{{ customer_name }}</td>
@@ -79,6 +80,24 @@
   </div>
 
   {% include "_partials/feed_detail_sheet.html" %}
+
+  <script>
+    function filterFeed(kind, el) {
+      // 1. Update active state
+      document.querySelectorAll('.issue-feed-pills .mp').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+
+      // 2. Filter rows
+      const rows = document.querySelectorAll('#sap-tbody .feed-row');
+      rows.forEach(row => {
+        if (kind === 'all' || row.dataset.kind === kind) {
+          row.style.display = '';
+        } else {
+          row.style.display = 'none';
+        }
+      });
+    }
+  </script>
 {% endblock %}
 
 {% block td_class %} td-tabbed td-issue{% endblock %}

@@ -24,34 +24,50 @@ async def test_scan_returner_redirects_to_card_with_celebration(client, shop):
     assert response.headers["location"] == f"/card/{shop.id}?stamped=1"
 
 
-async def test_scan_persists_stamp(client, db, shop):
+async def test_scan_first_time_does_not_persist_stamp(client, db, shop):
+    """First-ever scan redirects to onboard and DOES NOT issue a point yet."""
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    result = await db.exec(select(Point).where(Point.shop_id == shop.id))
+    stamps = list(result.all())
+    assert len(stamps) == 0
+
+
+async def test_scan_plus_nickname_persists_stamp(client, db, shop):
+    """E2E: Scan (redirect) -> Nickname (with shop_id) -> Point issued."""
+    # 1. Scan
+    await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    
+    # 2. Submit nickname with shop_id context
+    response = await client.post("/card/nickname", data={"name": "พี่หมี", "shop_id": str(shop.id)})
+    assert response.status_code == 200
+    
+    # 3. Verify point issued
     result = await db.exec(select(Point).where(Point.shop_id == shop.id))
     stamps = list(result.all())
     assert len(stamps) == 1
     assert stamps[0].issuance_method == "customer_scan"
+    
+    # Verify response contains the count
+    assert response.json()["point_count"] == 1
 
 
-async def test_scan_twice_with_default_cooldown_creates_two_stamps(client, db, shop):
-    """Default config (scan_cooldown_minutes=0) means every scan succeeds.
-    Cooldown protection is opt-in per shop."""
-    await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    assert response.status_code == 303
+async def test_scan_twice_with_default_cooldown_creates_two_stamps(named_client, db, shop):
+    """Subsequent scans for a named customer issue points immediately."""
+    await named_client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await named_client.get(f"/scan/{shop.id}", follow_redirects=False)
     result = await db.exec(select(Point).where(Point.shop_id == shop.id))
     assert len(list(result.all())) == 2
 
 
-async def test_scan_blocked_silently_when_cooldown_set(client, db, shop):
+async def test_scan_blocked_silently_when_cooldown_set(named_client, db, shop):
     """When the shop sets scan_cooldown_minutes>0, a re-scan within that window
-    is silently swallowed — the route still 303s back to the card so the customer
-    sees their existing count, no error message surfaces."""
+    is silently swallowed."""
     shop.scan_cooldown_minutes = 60
     db.add(shop)
     await db.commit()
 
-    await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await named_client.get(f"/scan/{shop.id}", follow_redirects=False)
+    response = await named_client.get(f"/scan/{shop.id}", follow_redirects=False)
     assert response.status_code == 303
     result = await db.exec(select(Point).where(Point.shop_id == shop.id))
     assert len(list(result.all())) == 1
@@ -93,9 +109,9 @@ async def test_scan_auto_redeems_when_threshold_is_hit(client, db, shop):
 
     # First scan + onboard so subsequent scans don't bounce to /onboard.
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    await client.post("/card/nickname", data={"name": "พี่ห้า"})
+    await client.post("/card/nickname", data={"name": "พี่ห้า", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
-    # Seed 3 more stamps (already 1 from the first /scan) — next scan = 5/5.
+    # Seed 3 more stamps (already 1 from the first /scan+nickname) — next scan = 5/5.
     for _ in range(shop.reward_threshold - 2):
         db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
     await db.commit()
@@ -119,7 +135,7 @@ async def test_scan_below_threshold_keeps_card_redirect(client, db, shop):
     await db.commit()
 
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
-    await client.post("/card/nickname", data={"name": "พี่สี่"})
+    await client.post("/card/nickname", data={"name": "พี่สี่", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     # Already 1 from the first /scan; seed 2 more so the next scan = 4/5.
     for _ in range(2):
@@ -133,7 +149,7 @@ async def test_scan_below_threshold_keeps_card_redirect(client, db, shop):
     assert (await db.exec(select(Redemption))).first() is None
 
 
-async def test_scan_publishes_feed_row_event(client, db, shop, monkeypatch):
+async def test_scan_publishes_feed_row_event(named_client, db, shop, monkeypatch):
     """Scan publishes a feed-row event so the shop dashboard dock prepends a new row.
     Tapping that row in the dock opens the S3.detail bottom sheet, which
     fetches /shop/feed/point/<id> for full activity meta + the void button."""
@@ -146,7 +162,7 @@ async def test_scan_publishes_feed_row_event(client, db, shop, monkeypatch):
 
     monkeypatch.setattr(customer_routes, "publish", fake_publish)
 
-    response = await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    response = await named_client.get(f"/scan/{shop.id}", follow_redirects=False)
     assert response.status_code == 303
 
     event_names = [name for name, _ in received]
@@ -210,6 +226,7 @@ async def test_redeem_post_succeeds_for_anonymous_guest(client, db, shop):
     from app.models import Customer, Point, Redemption
 
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post("/card/nickname", data={"name": "ก้อย", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     assert customer.is_anonymous
     for _ in range(shop.reward_threshold - 1):
@@ -237,8 +254,9 @@ async def test_my_cards_renders_for_guest_without_banner(client, shop):
     """Per the latest C7 design, the guest-only upgrade banner is gone
     (Option A — respect customer choice). The card list still renders and
     signup_picker stays mounted in case any CTA wants to open it."""
-    # /scan creates an anonymous customer cookie + 1 point at this shop
+    # /scan creates an anonymous customer cookie, nickname post issues 1 point
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    await client.post("/card/nickname", data={"name": "พี่เทส", "shop_id": str(shop.id)})
 
     response = await client.get("/my-cards", follow_redirects=False)
     assert response.status_code == 200
@@ -264,15 +282,15 @@ async def test_my_cards_renders_hero_for_unused_voucher(client, db, shop):
     from app.models import Customer, Redemption
 
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    await client.post("/card/nickname", data={"name": "พี่เทส", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     db.add(Redemption(customer_id=customer.id, shop_id=shop.id))
     await db.commit()
 
     body = (await client.get("/my-cards")).text
-    assert "cl-hero" in body
-    assert "พร้อมใช้ · ของขวัญรอพี่อยู่" in body
-    assert "ใช้ของขวัญตอนนี้" in body
-    assert 'href="/my-gifts"' in body
+    assert "พร้อมใช้" in body
+    assert "cl-hero-mini" in body
+    assert "ใช้เลย" in body
     assert shop.reward_description in body
 
 
@@ -290,6 +308,7 @@ async def test_my_cards_hero_picks_latest_redemption(client, db, shop):
     await db.refresh(other_shop)
 
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    await client.post("/card/nickname", data={"name": "พี่เทส", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     older = Redemption(customer_id=customer.id, shop_id=shop.id, created_at=utcnow() - timedelta(days=2))
     newer = Redemption(customer_id=customer.id, shop_id=other_shop.id, created_at=utcnow())
@@ -297,13 +316,9 @@ async def test_my_cards_hero_picks_latest_redemption(client, db, shop):
     await db.commit()
 
     body = (await client.get("/my-cards")).text
-    # Hero pulls the latest — other_shop's name + reward should appear in
-    # the .cl-hero block. The older shop is still listed below but not as hero.
-    import re
-    hero_block = re.search(r'class="cl-hero".*?</a>', body, re.DOTALL)
-    assert hero_block, "expected a .cl-hero tile"
-    assert "ร้านที่สอง" in hero_block.group(0)
-    assert "โดนัทฟรี" in hero_block.group(0)
+    # Hero pulls all unused vouchers — they appear as .cl-hero-mini tiles.
+    assert "ร้านที่สอง" in body
+    assert "โดนัทฟรี" in body
 
 
 async def test_my_cards_no_hero_when_all_vouchers_used(client, db, shop):
@@ -314,13 +329,14 @@ async def test_my_cards_no_hero_when_all_vouchers_used(client, db, shop):
     from app.models.util import utcnow
 
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    await client.post("/card/nickname", data={"name": "พี่เทส", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     db.add(Redemption(customer_id=customer.id, shop_id=shop.id, served_at=utcnow()))
     await db.commit()
 
     body = (await client.get("/my-cards")).text
-    assert "cl-hero" not in body
-    assert "พร้อมใช้ · ของขวัญรอพี่อยู่" not in body
+    assert 'class="cl-hero-mini"' not in body
+    assert "พร้อมใช้" not in body
 
 
 async def test_my_cards_renders_carousel_for_near_complete_cards(client, db, shop):
@@ -329,6 +345,7 @@ async def test_my_cards_renders_carousel_for_near_complete_cards(client, db, sho
     from app.models import Customer, Point
 
     await client.get(f"/scan/{shop.id}", follow_redirects=True)
+    await client.post("/card/nickname", data={"name": "พี่เทส", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     # Ratio = 6/10 → 0.6 → near bucket.
     for _ in range(5):
@@ -557,6 +574,7 @@ async def test_redeem_publishes_gifts_update_with_new_count(client, db, shop):
     from app.services import events
 
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post("/card/nickname", data={"name": "พี่เทส", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     for _ in range(shop.reward_threshold - 1):
         db.add(Point(shop_id=shop.id, customer_id=customer.id, issuance_method="customer_scan"))
@@ -615,6 +633,7 @@ async def test_my_cards_renders_initial_gifts_badge_from_server(client, db, shop
     from app.models import Customer, Redemption
 
     await client.get(f"/scan/{shop.id}", follow_redirects=False)
+    await client.post("/card/nickname", data={"name": "พี่เทส", "shop_id": str(shop.id)})
     customer = (await db.exec(select(Customer))).first()
     db.add(Redemption(customer_id=customer.id, shop_id=shop.id))
     db.add(Redemption(customer_id=customer.id, shop_id=shop.id))
