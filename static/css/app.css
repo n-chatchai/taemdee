@@ -537,11 +537,33 @@ body {
   font-size: 14px;
 }
 
-.s2-foot {
-  margin: auto 20px 20px;
-  padding-top: 26px;
+.s2-onboard-form {
   display: flex;
-  gap: 10px;
+  flex-direction: column;
+  flex: 1;
+}
+
+.s2-foot {
+  margin-top: auto;
+  position: sticky;
+  bottom: 0;
+  z-index: 10;
+  background: var(--bg);
+  padding: 16px 20px 24px;
+  display: flex;
+  align-items: stretch;
+  gap: 12px;
+  border-top: 1px solid var(--line);
+}
+
+.s2-foot .s2-cta-final {
+  margin: 0;
+  flex: 1;
+}
+
+.s2-foot .back {
+  height: auto; /* Allow it to match button height */
+  margin: 0;
 }
 .s2-foot .next {
   flex: 1;

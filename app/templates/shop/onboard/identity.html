@@ -2,190 +2,188 @@
 {% block title %}ตั้งค่าร้าน · 1/4 · TaemDee{% endblock %}
 
 {% block td_attrs %}
-  x-data='identityPage({
-    choice: {{ (picked_id or options[0].id)|tojson }},
-    customText: {{ (custom_text or "")|tojson }},
-    logoUrl: {{ (shop.logo_url if shop.logo_url and shop.logo_url.startswith("url:") else "")|tojson }}
-  })'
+x-data='identityPage({
+choice: {{ (picked_id or options[0].id)|tojson }},
+customText: {{ (custom_text or "")|tojson }},
+logoUrl: {{ (shop.logo_url if shop.logo_url and shop.logo_url.startswith("url:") else "")|tojson }}
+})'
 {% endblock %}
 
 {% block content %}
-  <form method="POST" action="/shop/onboard/identity">
-    <div class="s2-steps">
-      <div class="step active"></div>
-      <div class="step"></div>
-      <div class="step"></div>
-      <div class="step"></div>
-    </div>
+<form method="POST" action="/shop/onboard/identity" class="s2-onboard-form">
+  <div class="s2-steps">
+    <div class="step active"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+    <div class="step"></div>
+  </div>
 
-    <div class="s2-counter">
-      <span class="step-num"><strong>01</strong> / 04 · ตัวร้าน</span>
-    </div>
+  <div class="s2-counter">
+    <span class="step-num"><strong>01</strong> / 04 · ตัวร้าน</span>
+  </div>
 
-    <div class="s2-q">
-      <div class="ask">ตั้งค่า<em>ร้านของคุณ.</em></div>
-      <div class="sub">ใช้เวลาประมาณ 1 นาที</div>
-    </div>
+  <div class="s2-q">
+    <div class="ask">ตั้งค่า<em>ร้านของคุณ.</em></div>
+    <div class="sub">ใช้เวลาประมาณ 1 นาที</div>
+  </div>
 
-    <div class="s2-field" style="padding: 0 20px;">
-      <div class="s2-label">ชื่อร้าน</div>
-      <input id="onboard-name" name="name" type="text" required
-             class="s2-input{% if collision_warning %} warn{% endif %}"
-             value="{% if shop.name not in ('ร้านใหม่', 'New Shop') %}{{ shop.name }}{% endif %}"
-             placeholder="เช่น ร้านกาแฟลุงหมี"
-             hx-get="/shop/onboard/identity/logos_partial"
-             hx-target="#logo-picker-container"
-             hx-swap="outerHTML"
-             hx-trigger="keyup changed delay:500ms">
-      {% if collision_warning %}
-        <div class="s2-warn">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/><line x1="12" y1="9" x2="12" y2="13"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-          <div class="s2-warn-text">
-            <strong>ชื่อนี้มีในเขต{{ collision_warning.district }}แล้ว</strong>
-            <span class="hint">ลองเพิ่มเลข เช่น "{{ collision_warning.suggestion }}"</span>
-          </div>
-        </div>
-      {% else %}
-        <div class="s2-hint" style="margin-top:8px;">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
-      {% endif %}
+  <div class="s2-field">
+    <div class="s2-label">ชื่อร้าน</div>
+    <input id="onboard-name" name="name" type="text" required class="s2-input{% if collision_warning %} warn{% endif %}"
+      value="{% if shop.name not in ('ร้านใหม่', 'New Shop') %}{{ shop.name }}{% endif %}"
+      placeholder="เช่น ร้านกาแฟลุงหมี" hx-get="/shop/onboard/identity/logos_partial" hx-target="#logo-picker-container"
+      hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms">
+    {% if collision_warning %}
+    <div class="s2-warn">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z" />
+        <line x1="12" y1="9" x2="12" y2="13" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+      <div class="s2-warn-text">
+        <strong>ชื่อนี้มีในเขต{{ collision_warning.district }}แล้ว</strong>
+        <span class="hint">ลองเพิ่มเลข เช่น "{{ collision_warning.suggestion }}"</span>
+      </div>
     </div>
+    {% else %}
+    <div class="s2-hint" style="margin-top:8px;">ลูกค้าจะเห็นชื่อนี้บนบัตรสะสมแต้ม</div>
+    {% endif %}
+  </div>
 
-    <div class="s2-field" style="margin-top:18px; padding: 0 20px;"
-         x-data='districtPicker({
+  <div class="s2-field" style="margin-top:18px;" x-data='districtPicker({
            initialDistrict: {{ (shop.district or "")|tojson }},
            initialProvince: {{ initial_province|tojson if initial_province else "null" }}
          })' @click.outside="open = false">
-      <div class="s2-label">เขต/อำเภอ</div>
-      <input id="onboard-district" type="text"
-             class="s2-input s2-district-input"
-             x-ref="di"
-             x-model="query"
-             @focus="open = true"
-             @input="open = true; lookupActive()"
-             placeholder="เช่น นิมมาน"
-             autocomplete="off">
-      <input type="hidden" name="district" :value="picked.district">
-      <input type="hidden" name="province" :value="picked.province">
+    <div class="s2-label">เขต/อำเภอ</div>
+    <input id="onboard-district" type="text" class="s2-input s2-district-input" x-ref="di" x-model="query"
+      @focus="open = true" @input="open = true; lookupActive()" placeholder="เช่น นิมมาน" autocomplete="off">
+    <input type="hidden" name="district" :value="picked.district">
+    <input type="hidden" name="province" :value="picked.province">
 
-      <div class="s2-combo-list" x-show="open && results.length" x-cloak>
-        <template x-for="r in results" :key="r.district + '|' + r.province">
-          <button type="button" class="s2-combo-row"
-                  :class="{ selected: r.district === picked.district && r.province === picked.province }"
-                  @click="commit(r)">
-            <span class="s2-combo-check" x-show="r.district === picked.district && r.province === picked.province" x-cloak>✓</span>
-            <span class="s2-combo-name" x-text="r.district"></span>
-            <span class="s2-combo-prov" x-text="r.province"></span>
-          </button>
-        </template>
-      </div>
-
-      <div class="s2-hint" style="margin-top:8px;" x-show="!open && picked.province" x-cloak>
-        ✓ <strong x-text="picked.province" style="color:var(--mint-ink); font-weight:700;"></strong>
-      </div>
-      <div class="s2-hint" style="margin-top:8px;" x-show="!open && !picked.province">
-        เลือกเขต/อำเภอ · จังหวัดจะมาเอง
-      </div>
-    </div>
-
-    <div class="s2-field" style="margin-top:18px; padding: 0 20px;">
-      <div class="s2-label">เลือกโลโก้</div>
-    </div>
-
-    {% include "_partials/logo_picker.html" %}
-
-    <div class="s2-upload" @click="$refs.logoFileInput.click()" :class="{ uploading: isUploading }" style="margin: 12px 20px 0;">
-      <input type="file" x-ref="logoFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
-      <template x-if="!isUploading">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-      </template>
-      <template x-if="isUploading">
-        <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:18px;height:18px;">
-          <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
-        </svg>
-      </template>
-      <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้โลโก้ของฉันเอง'"></span>
-    </div>
-
-    <template x-if="customLogoUrl">
-      <div class="s2-logos" style="margin-top: 10px; grid-template-columns: repeat(1, 1fr); padding: 0 20px;">
-        <button type="button" class="s2-logo"
-                :class="{ selected: choice === customLogoUrl }"
-                @click="choice = customLogoUrl">
-          <img :src="customLogoUrl.startsWith('url:') ? customLogoUrl.slice(4) : customLogoUrl" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
+    <div class="s2-combo-list" x-show="open && results.length" x-cloak>
+      <template x-for="r in results" :key="r.district + '|' + r.province">
+        <button type="button" class="s2-combo-row"
+          :class="{ selected: r.district === picked.district && r.province === picked.province }" @click="commit(r)">
+          <span class="s2-combo-check" x-show="r.district === picked.district && r.province === picked.province"
+            x-cloak>✓</span>
+          <span class="s2-combo-name" x-text="r.district"></span>
+          <span class="s2-combo-prov" x-text="r.province"></span>
         </button>
-      </div>
+      </template>
+    </div>
+
+    <div class="s2-hint" style="margin-top:8px;" x-show="!open && picked.province" x-cloak>
+      ✓ <strong x-text="picked.province" style="color:var(--mint-ink); font-weight:700;"></strong>
+    </div>
+    <div class="s2-hint" style="margin-top:8px;" x-show="!open && !picked.province">
+      เลือกเขต/อำเภอ · จังหวัดจะมาเอง
+    </div>
+  </div>
+
+  <div class="s2-field" style="margin-top:18px; padding: 0 20px;">
+    <div class="s2-label">เลือกโลโก้</div>
+  </div>
+
+  {% include "_partials/logo_picker.html" %}
+
+  <div class="s2-upload" @click="$refs.logoFileInput.click()" :class="{ uploading: isUploading }"
+    style="margin: 12px 20px 0;">
+    <input type="file" x-ref="logoFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
+    <template x-if="!isUploading">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round" style="width:18px;height:18px;">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+        <polyline points="17 8 12 3 7 8" />
+        <line x1="12" y1="3" x2="12" y2="15" />
+      </svg>
     </template>
+    <template x-if="isUploading">
+      <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+        style="width:18px;height:18px;">
+        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
+      </svg>
+    </template>
+    <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้โลโก้ของฉันเอง'"></span>
+  </div>
 
-    <input type="hidden" name="logo_choice" :value="choice">
-    <input type="hidden" name="custom_text" :value="customText">
-
-    <div class="s2-foot" style="padding: 20px;">
-      <button type="submit" class="s2-cta-final" style="width:100%;">
-        <span>ถัดไป · ตั้งรางวัล</span>
-        <span class="arrow">→</span>
+  <template x-if="customLogoUrl">
+    <div class="s2-logos" style="margin-top: 10px; grid-template-columns: repeat(1, 1fr); padding: 0 20px;">
+      <button type="button" class="s2-logo" :class="{ selected: choice === customLogoUrl }"
+        @click="choice = customLogoUrl">
+        <img :src="customLogoUrl.startsWith('url:') ? customLogoUrl.slice(4) : customLogoUrl"
+          style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
       </button>
     </div>
-  </form>
+  </template>
 
-  <script>
-    function identityPage(init) {
-      return {
-        choice: init.choice,
-        customText: init.customText,
-        isUploading: false,
-        customLogoUrl: init.logoUrl,
-        async handleFileUpload(e) {
-          const file = e.target.files[0];
-          if (!file) return;
-          this.isUploading = true;
-          const formData = new FormData();
-          formData.append('file', file);
-          try {
-            const res = await fetch('/shop/upload/logo', { method: 'POST', body: formData });
-            const data = await res.json();
-            if (data.url) {
-              this.customLogoUrl = 'url:' + data.url;
-              this.choice = 'url:' + data.url;
-            }
-          } catch (err) {
-            console.error('Upload failed', err);
-          } finally {
-            this.isUploading = false;
+  <input type="hidden" name="logo_choice" :value="choice">
+  <input type="hidden" name="custom_text" :value="customText">
+
+  <div class="s2-foot">
+    <button type="submit" class="s2-cta-final" style="width:100%;">
+      <span>ถัดไป · ตั้งรางวัล</span>
+      <span class="arrow">→</span>
+    </button>
+  </div>
+</form>
+
+<script>
+  function identityPage(init) {
+    return {
+      choice: init.choice,
+      customText: init.customText,
+      isUploading: false,
+      customLogoUrl: init.logoUrl,
+      async handleFileUpload(e) {
+        const file = e.target.files[0];
+        if (!file) return;
+        this.isUploading = true;
+        const formData = new FormData();
+        formData.append('file', file);
+        try {
+          const res = await fetch('/shop/upload/logo', { method: 'POST', body: formData });
+          const data = await res.json();
+          if (data.url) {
+            this.customLogoUrl = 'url:' + data.url;
+            this.choice = 'url:' + data.url;
           }
+        } catch (err) {
+          console.error('Upload failed', err);
+        } finally {
+          this.isUploading = false;
         }
-      };
-    }
+      }
+    };
+  }
 
-    function districtPicker(init) {
-      const PAIRS = {{ district_pairs|tojson|safe }};
-      return {
-        query: init.initialDistrict,
-        picked: { district: init.initialDistrict, province: init.initialProvince || '' },
-        results: [],
-        open: false,
-        lookupActive() {
-          const q = this.query.trim().toLowerCase();
-          if (!q) { this.results = []; return; }
-          const starts = [], contains = [];
-          for (const p of PAIRS) {
-            const lower = p.district.toLowerCase();
-            if (lower === q || lower.startsWith(q)) starts.push(p);
-            else if (lower.includes(q)) contains.push(p);
-            if (starts.length >= 12) break;
-          }
-          this.results = starts.concat(contains).slice(0, 12);
-        },
-        commit(r) {
-          this.picked = { district: r.district, province: r.province };
-          this.query = r.district;
-          this.results = [];
-          this.open = false;
-        },
-      };
+  function districtPicker(init) {
+    const PAIRS = {{ district_pairs| tojson | safe
+  }};
+  return {
+    query: init.initialDistrict,
+    picked: { district: init.initialDistrict, province: init.initialProvince || '' },
+    results: [],
+    open: false,
+    lookupActive() {
+      const q = this.query.trim().toLowerCase();
+      if (!q) { this.results = []; return; }
+      const starts = [], contains = [];
+      for (const p of PAIRS) {
+        const lower = p.district.toLowerCase();
+        if (lower === q || lower.startsWith(q)) starts.push(p);
+        else if (lower.includes(q)) contains.push(p);
+        if (starts.length >= 12) break;
+      }
+      this.results = starts.concat(contains).slice(0, 12);
+    },
+    commit(r) {
+      this.picked = { district: r.district, province: r.province };
+      this.query = r.district;
+      this.results = [];
+      this.open = false;
+    },
+  };
     }
-  </script>
+</script>
 {% endblock %}

@@ -2,115 +2,124 @@
 {% block title %}รางวัล · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block td_attrs %}
-  {% set picked_image = shop.reward_image or 'coffee_cup' %}
-  x-data="{
-    rewardImage: '{{ picked_image }}',
-    goal: {{ shop.reward_threshold }},
-    customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }},
-    isUploading: false,
-    customRewardUrl: '{{ shop.reward_image if shop.reward_image.startswith('http') else '' }}',
-    async handleFileUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      this.isUploading = true;
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const res = await fetch('/shop/upload/reward', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.url) {
-          this.customRewardUrl = data.url;
-          this.rewardImage = data.url;
-        }
-      } catch (err) {
-        console.error('Upload failed', err);
-      } finally {
-        this.isUploading = false;
-      }
-    }
-  }"
+{% set picked_image = shop.reward_image or 'coffee_cup' %}
+x-data="{
+rewardImage: '{{ picked_image }}',
+goal: {{ shop.reward_threshold }},
+customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }},
+isUploading: false,
+customRewardUrl: '{{ shop.reward_image if shop.reward_image.startswith('http') else '' }}',
+async handleFileUpload(e) {
+const file = e.target.files[0];
+if (!file) return;
+this.isUploading = true;
+const formData = new FormData();
+formData.append('file', file);
+try {
+const res = await fetch('/shop/upload/reward', { method: 'POST', body: formData });
+const data = await res.json();
+if (data.url) {
+this.customRewardUrl = data.url;
+this.rewardImage = data.url;
+}
+} catch (err) {
+console.error('Upload failed', err);
+} finally {
+this.isUploading = false;
+}
+}
+}"
 {% endblock %}
 
 {% block content %}
-  <form method="POST" action="/shop/reward">
-{% set app_bar_back = '/shop/settings' %}
-{% set app_bar_title = 'รางวัล' %}
-{% include "_partials/app_bar.html" %}
+<form method="POST" action="/shop/reward" class="s2-onboard-form">
+  {% set app_bar_back = '/shop/settings' %}
+  {% set app_bar_title = 'รางวัล' %}
+  {% include "_partials/app_bar.html" %}
 
-    <div class="s2-q">
-      <div class="ask">ตั้ง<em>รางวัล.</em></div>
-      <div class="sub">ลูกค้าได้อะไรเมื่อสะสมครบ</div>
-    </div>
+  <div class="s2-q">
+    <div class="ask">ตั้ง<em>รางวัล.</em></div>
+    <div class="sub">ลูกค้าได้อะไรเมื่อสะสมครบ</div>
+  </div>
 
-    <div class="s2-field" style="padding: 0 20px;">
-      <div class="s2-label">รางวัลที่ลูกค้าจะได้รับ</div>
-      <input class="s2-input" id="reward-desc" name="reward_description" type="text" required
-             value="{% if shop.reward_description != 'Free Coffee' %}{{ shop.reward_description }}{% endif %}"
-             placeholder="เช่น กาแฟ Signature ฟรี 1 แก้ว">
-    </div>
+  <div class="s2-field">
+    <div class="s2-label">รางวัลที่ลูกค้าจะได้รับ</div>
+    <input class="s2-input" id="reward-desc" name="reward_description" type="text" required
+      value="{% if shop.reward_description != 'Free Coffee' %}{{ shop.reward_description }}{% endif %}"
+      placeholder="เช่น กาแฟ Signature ฟรี 1 แก้ว">
+  </div>
 
-    <div class="s2-field" style="margin-top:18px; padding: 0 20px;">
-      <div class="s2-label">รูปรางวัล</div>
-    </div>
+  <div class="s2-field" style="margin-top:18px;">
+    <div class="s2-label">รูปรางวัล</div>
+  </div>
 
-    <div class="s2-rewards" style="padding: 0 20px; margin-top:8px;">
-      {% for img_id in reward_images %}
-        <button type="button" class="s2-reward" :class="{ selected: rewardImage === '{{ img_id }}' }" @click="rewardImage = '{{ img_id }}'">
-          {% include "_partials/reward_svg.html" %}
-        </button>
-      {% endfor %}
-    </div>
+  <div class="s2-rewards" style="margin-top:8px;">
+    {% for img_id in reward_images %}
+    <button type="button" class="s2-reward" :class="{ selected: rewardImage === '{{ img_id }}' }"
+      @click="rewardImage = '{{ img_id }}'">
+      {% include "_partials/reward_svg.html" %}
+    </button>
+    {% endfor %}
+  </div>
 
-    <div class="s2-upload" @click="$refs.rewardFileInput.click()" :class="{ uploading: isUploading }" style="margin: 12px 20px 0;">
-      <input type="file" x-ref="rewardFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
-      <template x-if="!isUploading">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
-          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-          <polyline points="17 8 12 3 7 8"/>
-          <line x1="12" y1="3" x2="12" y2="15"/>
-        </svg>
-      </template>
-      <template x-if="isUploading">
-        <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" style="width:18px;height:18px;">
-          <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
-        </svg>
-      </template>
-      <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้รูปของฉันเอง'"></span>
-    </div>
-
-    <template x-if="customRewardUrl">
-      <div class="s2-rewards" style="margin-top: 10px; padding: 0 20px;">
-        <button type="button" class="s2-reward" :class="{ selected: rewardImage === customRewardUrl }" @click="rewardImage = customRewardUrl">
-          <img :src="customRewardUrl" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
-        </button>
-      </div>
+  <div class="s2-upload" @click="$refs.rewardFileInput.click()" :class="{ uploading: isUploading }"
+    style="margin: 12px 20px 0;">
+    <input type="file" x-ref="rewardFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
+    <template x-if="!isUploading">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
+        stroke-linejoin="round" style="width:18px;height:18px;">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
+        <polyline points="17 8 12 3 7 8" />
+        <line x1="12" y1="3" x2="12" y2="15" />
+      </svg>
     </template>
+    <template x-if="isUploading">
+      <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
+        style="width:18px;height:18px;">
+        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
+      </svg>
+    </template>
+    <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้รูปของฉันเอง'"></span>
+  </div>
 
-    <div class="s2-field" style="margin-top:22px; padding: 0 20px;">
-      <div class="s2-label">เก็บกี่แต้มถึงได้รางวัล</div>
-    </div>
-    <div class="s2-goal-pills" style="padding: 0 20px; margin-top:8px;">
-      {% for g in goals %}
-        <button type="button" class="s2-goal-pill" :class="{ selected: goal === {{ g }} && !customOpen }" @click="goal = {{ g }}; customOpen = false">{{ g }}</button>
-      {% endfor %}
-      <button type="button" class="s2-goal-pill custom" :class="{ selected: customOpen }" @click="customOpen = !customOpen">
-        <span class="plus">+</span>
-        <span>กำหนดเอง</span>
+  <template x-if="customRewardUrl">
+    <div class="s2-rewards" style="margin-top: 10px;">
+      <button type="button" class="s2-reward" :class="{ selected: rewardImage === customRewardUrl }"
+        @click="rewardImage = customRewardUrl">
+        <img :src="customRewardUrl" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
       </button>
     </div>
-    <div x-show="customOpen" x-cloak style="margin: 10px 20px 0;">
-      <input class="s2-input" type="number" min="1" max="99" x-model.number="goal" placeholder="จำนวนแต้ม" style="text-align:center;">
-    </div>
-    <div class="s2-hint" style="margin: 8px 24px 0; font-size:11px; color:var(--ink-soft);">ส่วนใหญ่ใช้ 10 แต้ม กำลังพอดี</div>
+  </template>
 
-    <input type="hidden" name="reward_image" :value="rewardImage">
-    <input type="hidden" name="reward_threshold" :value="goal">
+  <div class="s2-field" style="margin-top:22px;">
+    <div class="s2-label">เก็บกี่แต้มถึงได้รางวัล</div>
+  </div>
+  <div class="s2-goal-pills" style="margin-top:8px;">
+    {% for g in goals %}
+    <button type="button" class="s2-goal-pill" :class="{ selected: goal === {{ g }} && !customOpen }"
+      @click="goal = {{ g }}; customOpen = false">{{ g }}</button>
+    {% endfor %}
+    <button type="button" class="s2-goal-pill custom" :class="{ selected: customOpen }"
+      @click="customOpen = !customOpen">
+      <span class="plus">+</span>
+      <span>กำหนดเอง</span>
+    </button>
+  </div>
+  <div x-show="customOpen" x-cloak style="margin: 10px 20px 0;">
+    <input class="s2-input" type="number" min="1" max="99" x-model.number="goal" placeholder="จำนวนแต้ม"
+      style="text-align:center;">
+  </div>
+  <div class="s2-hint" style="margin: 8px 24px 0; font-size:11px; color:var(--ink-soft);">ส่วนใหญ่ใช้ 10 แต้ม กำลังพอดี
+  </div>
 
-    <div class="s2-foot" style="padding: 20px;">
-      <button type="submit" class="s2-cta-final" style="width:100%;">
-        <span>บันทึกรางวัล</span>
-        <span class="arrow">✓</span>
-      </button>
-    </div>
-  </form>
+  <input type="hidden" name="reward_image" :value="rewardImage">
+  <input type="hidden" name="reward_threshold" :value="goal">
+
+  <div class="s2-foot">
+    <button type="submit" class="s2-cta-final" style="width:100%;">
+      <span>บันทึกรางวัล</span>
+      <span class="arrow">✓</span>
+    </button>
+  </div>
+</form>
 {% endblock %}
