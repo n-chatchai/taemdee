@@ -477,9 +477,55 @@ async def onboard_identity_post(
     db: AsyncSession = Depends(get_session),
 ):
     from app.services.thai_address import lookup_provinces
-    cleaned_name = (name or "").strip() or shop.name
+    cleaned_name = (name or "").strip()
     cleaned_district = (district or "").strip()
     cleaned_province = (province or "").strip()
+
+    if not cleaned_name:
+        from app.services.thai_address import all_districts, district_province_pairs
+        options = generate_logos(shop.name, seed=0)
+        return templates.TemplateResponse(
+            request=request,
+            name="shop/onboard/identity.html",
+            context={
+                "shop": shop,
+                "options": options,
+                "saved_pick": None,
+                "next_gen": 1,
+                "picked_id": None,
+                "custom_text": "",
+                "logos_partial_url": "/shop/onboard/identity/logos_partial",
+                "all_districts": all_districts(),
+                "district_pairs": district_province_pairs(),
+                "initial_province": None,
+                "initial_candidates": [],
+                "name_error": "รบกวนระบุชื่อร้านให้หน่อยนะครับ",
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
+
+    if not cleaned_district or not cleaned_province:
+        from app.services.thai_address import all_districts, district_province_pairs
+        options = generate_logos(cleaned_name, seed=0)
+        return templates.TemplateResponse(
+            request=request,
+            name="shop/onboard/identity.html",
+            context={
+                "shop": shop,
+                "options": options,
+                "saved_pick": None,
+                "next_gen": 1,
+                "picked_id": None,
+                "custom_text": "",
+                "logos_partial_url": "/shop/onboard/identity/logos_partial",
+                "all_districts": all_districts(),
+                "district_pairs": district_province_pairs(),
+                "initial_province": None,
+                "initial_candidates": [],
+                "error": "รบกวนเลือกเขต/อำเภอจากรายการด้านล่างให้หน่อยนะครับ",
+            },
+            status_code=status.HTTP_400_BAD_REQUEST,
+        )
     # Province lookup hierarchy:
     #   1. explicit `province` from form (used for ambiguous picks +
     #      free-text fallback for districts not in the dataset)
@@ -673,10 +719,12 @@ async def onboard_done_get(
     qr_svg = segno.make(scan_url, error="m").svg_inline(
         scale=8, dark="#111111", light="#ffffff", border=1, omitsize=True
     )
+    is_thai = any('\u0e00' <= c <= '\u0e7f' for c in (shop.name or ""))
+    
     return templates.TemplateResponse(
         request=request,
         name="shop/onboard/done.html",
-        context={"shop": shop, "scan_url": scan_url, "qr_svg": qr_svg},
+        context={"shop": shop, "scan_url": scan_url, "qr_svg": qr_svg, "is_thai": is_thai},
     )
 
 
@@ -1417,10 +1465,11 @@ async def shop_qr(
     qr_svg = segno.make(scan_url, error="m").svg_inline(
         scale=8, dark="#111111", light="#ffffff", border=1, omitsize=True
     )
+    is_thai = any('\u0e00' <= c <= '\u0e7f' for c in (shop.name or ""))
     return templates.TemplateResponse(
         request=request,
         name="shop/qr.html",
-        context={"shop": shop, "scan_url": scan_url, "qr_svg": qr_svg},
+        context={"shop": shop, "scan_url": scan_url, "qr_svg": qr_svg, "is_thai": is_thai},
     )
 
 

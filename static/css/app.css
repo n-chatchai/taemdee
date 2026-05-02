@@ -1008,56 +1008,64 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .s8-actions .pill.primary { background: var(--ink); color: var(--bg); }
 
 .qr-card {
+  width: 100%;
+  max-width: 280px;
   background: #fff;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 22px;
-  padding: 24px 20px 18px;
+  border: none;
+  border-radius: 24px;
+  padding: 32px 24px 24px;
   position: relative;
-  overflow: hidden;
-  text-align: center;
+  box-shadow: 0 4px 20px rgba(0,0,0,0.06);
+  display: flex;
+  flex-direction: column;
+  align-items: center;
 }
-.qr-card.mode-preview { background: #FDFAF2; border-radius: 18px; padding: 18px 14px 14px; }
 
-.qr-card .cut-mark {
-  position: absolute;
-  width: 14px;
-  height: 14px;
-  border: 1.5px dashed var(--ink-softer);
-}
+.qr-card .cut-mark { position: absolute; width: 12px; height: 12px; border: 0.5px solid var(--ink-soft); z-index: 10; opacity: 0.4; }
 .qr-card .cut-mark.tl { top: 8px; left: 8px; border-right: none; border-bottom: none; }
 .qr-card .cut-mark.br { bottom: 8px; right: 8px; border-left: none; border-top: none; }
+
 
 .qr-card .card-head {
   display: flex;
   flex-direction: column;
   align-items: center;
+  margin-top: 12px;
   margin-bottom: 24px;
 }
 .qr-card .shop-logo-mark {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 38px;
+  font-size: 32px;
   letter-spacing: -0.04em;
   color: var(--ink);
   line-height: 1;
-  margin-bottom: 8px;
+  margin-bottom: 6px;
 }
-.qr-card.mode-preview .shop-logo-mark { font-size: 30px; }
+.qr-card .shop-logo-mark.is-thai,
+.qr-card .shop-logo-mark.is-thai span {
+  font-family: 'Prompt', sans-serif !important;
+  font-weight: 800 !important;
+  font-size: 28px !important;
+  letter-spacing: 0 !important;
+  font-style: normal !important;
+  text-transform: none !important;
+  color: var(--ink) !important;
+}
 .qr-card .shop-logo-mark .dot { color: var(--accent); }
 .qr-card .shop-logo-img { width: 44px; height: 44px; border-radius: 10px; object-fit: cover; }
-.qr-card.mode-preview .shop-logo-img { width: 36px; height: 36px; }
 
 .qr-card .shop-sub {
   font-family: 'Prompt', sans-serif;
   font-weight: 500;
-  font-size: 14.5px;
+  font-size: 12px;
   color: var(--ink-soft);
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
+  gap: 6px;
+  opacity: 0.8;
 }
-.qr-card.mode-preview .shop-sub { font-size: 11px; }
 .qr-card .shop-sub .dotsep { width: 3px; height: 3px; background: var(--accent); border-radius: 50%; }
 
 .qr-card .qr-wrap { display: flex; justify-content: center; margin-bottom: 16px; position: relative; }
@@ -1068,6 +1076,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 16px;
   padding: 10px;
   position: relative;
+  filter: drop-shadow(0 4px 12px rgba(255, 94, 58, 0.15));
 }
 .qr-card.mode-preview .qr-main { width: 140px; height: 140px; border-radius: 14px; }
 .qr-card .qr-main svg { width: 100%; height: 100%; display: block; }
@@ -1075,49 +1084,54 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   position: absolute;
   top: 50%; left: 50%;
   transform: translate(-50%, -50%);
-  width: 38px; height: 38px;
+  width: 44px; height: 44px;
   background: var(--accent);
-  border-radius: 10px;
-  border: 2px solid #fff;
+  border-radius: 12px;
+  border: 4px solid #fff;
+  box-shadow: 0 4px 10px rgba(0,0,0,0.15);
   display: flex;
+  flex-direction: column;
   align-items: center;
   justify-content: center;
   color: #fff;
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 14px;
-  letter-spacing: -0.02em;
+  z-index: 5;
 }
-.qr-card.mode-preview .qr-center { width: 32px; height: 32px; font-size: 12px; border-radius: 8px; }
+.qr-card .qr-center.brand-mark { padding: 0; }
+.qr-card .qr-center .smile-center { width: 22px; height: 13px; color: #fff; }
+.qr-card .qr-center { width: 44px; height: 44px; font-size: 18px; border-radius: 12px; }
 .qr-card .qr-center .dot { color: var(--butter); }
 
-
-
 .qr-card .trust-strip {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
-  font-size: 9.5px;
+  font-size: 10px;
+  letter-spacing: -0.01em;
   color: var(--ink);
-  text-align: center;
+  margin-bottom: 16px;
   white-space: nowrap;
+  width: 100%;
 }
-.qr-card .trust-strip .ts-sep { color: var(--accent); font-size: 8px; margin: 0 4px; vertical-align: 1px; }
+.qr-card .trust-strip .dotsep { width: 4px; height: 4px; background: var(--accent); border-radius: 50%; opacity: 0.8; }
 
 .qr-card .brand-foot {
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 6px;
-  margin-top: 14px;
+  margin-top: 16px;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 13px;
   letter-spacing: -0.02em;
   color: var(--ink);
+  line-height: 1;
+  opacity: 0.9;
 }
 .qr-card.mode-preview .brand-foot { margin-top: 10px; font-size: 12px; }
 .qr-card .brand-foot .dot { color: var(--accent); }
-.qr-card .brand-foot .smile { width: 20px; height: 12px; color: var(--accent); flex-shrink: 0; }
 
 /* Print stylesheet — what actually goes on the wall. */
 @media print {

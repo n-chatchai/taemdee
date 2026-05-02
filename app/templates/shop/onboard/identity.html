@@ -29,10 +29,18 @@ logoUrl: {{ (shop.logo_url if shop.logo_url and shop.logo_url.startswith("url:")
 
   <div class="s2-field">
     <div class="s2-label">ชื่อร้าน</div>
-    <input id="onboard-name" name="name" type="text" required class="s2-input{% if collision_warning %} warn{% endif %}"
+    <input id="onboard-name" name="name" type="text" class="s2-input{% if collision_warning or name_error %} warn{% endif %}"
       value="{% if shop.name not in ('ร้านใหม่', 'New Shop') %}{{ shop.name }}{% endif %}"
       placeholder="เช่น ร้านกาแฟลุงหมี" hx-get="/shop/onboard/identity/logos_partial" hx-target="#logo-picker-container"
       hx-swap="outerHTML" hx-trigger="keyup changed delay:500ms">
+    {% if name_error %}
+    <div class="s2-warn" style="margin-top: 8px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div class="s2-warn-text"><strong>{{ name_error }}</strong></div>
+    </div>
+    {% endif %}
     {% if collision_warning %}
     <div class="s2-warn">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
@@ -56,8 +64,17 @@ logoUrl: {{ (shop.logo_url if shop.logo_url and shop.logo_url.startswith("url:")
            initialProvince: {{ initial_province|tojson if initial_province else "null" }}
          })' @click.outside="open = false">
     <div class="s2-label">เขต/อำเภอ</div>
-    <input id="onboard-district" type="text" class="s2-input s2-district-input" x-ref="di" x-model="query"
+    <input id="onboard-district" type="text" class="s2-input s2-district-input{% if error %} warn{% endif %}" x-ref="di" x-model="query"
       @focus="open = true" @input="open = true; lookupActive()" placeholder="เช่น นิมมาน" autocomplete="off">
+
+    {% if error %}
+    <div class="s2-warn" style="margin-top: 8px;">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10"/><line x1="12" y1="8" x2="12" y2="12"/><line x1="12" y1="16" x2="12.01" y2="16"/>
+      </svg>
+      <div class="s2-warn-text"><strong>{{ error }}</strong></div>
+    </div>
+    {% endif %}
     <input type="hidden" name="district" :value="picked.district">
     <input type="hidden" name="province" :value="picked.province">
 

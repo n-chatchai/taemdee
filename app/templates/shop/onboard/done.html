@@ -29,11 +29,8 @@
   </div>
 
   <div class="s2-qr-block">
-    {% include "_partials/qr_card.html" with context %}
-
-
-    <div class="s2-qr-actions" style="justify-content: center;">
-      <button type="button" class="s2-qr-download" onclick="downloadQRCard('qr-card-unified', 'taemdee-card-{{ shop.name|slugify }}')">
+    <div class="s8-actions" style="display: flex; flex-direction: column; align-items: center; gap: 24px; padding: 0;">
+      <button type="button" class="pill" onclick="downloadQRCard('qr-card-unified', 'taemdee-card-{{ shop.name|slugify }}')">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
           <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
           <polyline points="7 10 12 15 17 10"/>
@@ -41,9 +38,11 @@
         </svg>
         <span>บันทึกรูป</span>
       </button>
+
+      {% include "_partials/qr_card.html" with context %}
     </div>
 
-    <div class="s2-qr-hint">ติดตั้งที่จุดที่ลูกค้าเห็นชัด</div>
+    <div class="s2-qr-hint" style="margin-top: 16px;">ติดตั้งที่จุดที่ลูกค้าเห็นชัด</div>
   </div>
 
   <form method="POST" action="/shop/onboard/done" class="s2-onboard-form">

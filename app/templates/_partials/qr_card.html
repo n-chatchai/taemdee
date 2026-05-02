@@ -12,15 +12,12 @@
 {% set center_initial = (shop.name or 'm')[0]|lower %}
 {% set is_print = (mode == 'print') %}
 
-<div class="qr-card {% if is_print %}mode-print{% else %}mode-preview{% endif %}" id="qr-card-unified">
-  {# Cut-mark corners only for print mode #}
-  {% if is_print %}
-    <div class="cut-mark tl"></div>
-    <div class="cut-mark br"></div>
-  {% endif %}
+<div class="qr-card" id="qr-card-unified">
+  <div class="cut-mark tl"></div>
+  <div class="cut-mark br"></div>
 
   <div class="card-head">
-    <div class="shop-logo-mark">
+    <div class="shop-logo-mark {% if is_thai %}is-thai{% endif %}">
       {% if logo %}
         {% if logo.is_image %}
           <img src="{{ logo.url }}" class="shop-logo-img">
@@ -32,37 +29,32 @@
       {% endif %}
     </div>
     <div class="shop-sub">
-      <span>{{ shop.name }}</span>
-      {% if branch %}<span class="dotsep"></span><span>{{ branch.name }}</span>{% endif %}
-      {% if shop.location %}<span class="dotsep"></span><span>{{ shop.location }}</span>{% endif %}
+      <span>{{ (branch or shop).name }}</span>
+      {% if shop.location %}
+        <span class="dotsep"></span>
+        <span>{{ shop.location }}</span>
+      {% endif %}
     </div>
   </div>
 
   <div class="qr-wrap">
     <div class="qr-main">
       {{ qr_svg|safe }}
-      <div class="qr-center">
-        {% if logo and logo.is_image %}
-          <img src="{{ logo.url }}" style="width:100%; height:100%; object-fit:cover; border-radius:inherit;">
-        {% else %}
-          {{ center_initial }}<span class="dot">.</span>
-        {% endif %}
+      <div class="qr-center brand-mark">
+        <svg class="smile-center" viewBox="0 0 20 12" fill="none"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
       </div>
     </div>
   </div>
 
-
-
   <div class="trust-strip">
-    ไม่ต้องโหลดแอป <span class="ts-sep">●</span> ไม่บังคับสมัคร <span class="ts-sep">●</span> ติดตามร้านโปรด
+    <span>ไม่ต้องโหลดแอป</span>
+    <span class="dotsep"></span>
+    <span>ไม่บังคับสมัคร</span>
+    <span class="dotsep"></span>
+    <span>ติดตามร้านโปรด</span>
   </div>
 
   <div class="brand-foot">
     <span>taemdee<span class="dot">.</span></span>
-    <svg class="smile" viewBox="0 0 20 12" fill="none">
-      <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-      <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-      <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-    </svg>
   </div>
 </div>

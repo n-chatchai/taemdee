@@ -5,7 +5,7 @@
 {% if branch %}{% set app_bar_back = '/shop/branches/' ~ branch.id %}{% set app_bar_title = 'คิวอาร์ · ' ~ branch.name %}{% else %}{% set app_bar_back = '/shop/dashboard' %}{% set app_bar_title = 'คิวอาร์ร้าน' %}{% endif %}
 {% include "_partials/app_bar.html" %}
 
-  <div class="s8-actions" style="justify-content: center;">
+  <div class="s8-actions" style="display: flex; flex-direction: column; align-items: center; gap: 24px;">
     <button type="button" class="pill" onclick="downloadQRCard('qr-card-unified', 'taemdee-card-{{ (branch or shop).name|slugify }}')">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
@@ -14,9 +14,8 @@
       </svg>
       บันทึกรูป
     </button>
-  </div>
 
-  {% set mode = 'print' %}
-  {% include "_partials/qr_card.html" with context %}
+    {% include "_partials/qr_card.html" with context %}
+  </div>
 
 {% endblock %}
