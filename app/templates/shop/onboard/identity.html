@@ -2,31 +2,11 @@
 {% block title %}ตั้งค่าร้าน · 1/4 · TaemDee{% endblock %}
 
 {% block td_attrs %}
-  x-data="{
-    choice: '{{ picked_id or options[0].id }}',
-    customText: '{{ custom_text }}',
-    isUploading: false,
-    customLogoUrl: '{{ shop.logo_url if shop.logo_url and shop.logo_url.startswith('url:') else '' }}',
-    async handleFileUpload(e) {
-      const file = e.target.files[0];
-      if (!file) return;
-      this.isUploading = true;
-      const formData = new FormData();
-      formData.append('file', file);
-      try {
-        const res = await fetch('/shop/upload/logo', { method: 'POST', body: formData });
-        const data = await res.json();
-        if (data.url) {
-          this.customLogoUrl = 'url:' + data.url;
-          this.choice = 'url:' + data.url;
-        }
-      } catch (err) {
-        console.error('Upload failed', err);
-      } finally {
-        this.isUploading = false;
-      }
-    }
-  }"
+  x-data='identityPage({
+    choice: {{ (picked_id or options[0].id)|tojson }},
+    customText: {{ (custom_text or "")|tojson }},
+    logoUrl: {{ (shop.logo_url if shop.logo_url and shop.logo_url.startswith("url:") else "")|tojson }}
+  })'
 {% endblock %}
 
 {% block content %}
@@ -71,10 +51,10 @@
     </div>
 
     <div class="s2-field" style="margin-top:18px; padding: 0 20px;"
-         x-data="districtPicker({
-           initialDistrict: '{{ shop.district or '' }}',
-           initialProvince: {{ initial_province|tojson if initial_province else 'null' }}
-         })" @click.outside="open = false">
+         x-data='districtPicker({
+           initialDistrict: {{ (shop.district or "")|tojson }},
+           initialProvince: {{ initial_province|tojson if initial_province else "null" }}
+         })' @click.outside="open = false">
       <div class="s2-label">เขต/อำเภอ</div>
       <input id="onboard-district" type="text"
              class="s2-input s2-district-input"
@@ -135,7 +115,7 @@
         <button type="button" class="s2-logo"
                 :class="{ selected: choice === customLogoUrl }"
                 @click="choice = customLogoUrl">
-          <img :src="customLogoUrl.replace('url:', '')" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
+          <img :src="customLogoUrl.startsWith('url:') ? customLogoUrl.slice(4) : customLogoUrl" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
         </button>
       </div>
     </template>
@@ -152,8 +132,36 @@
   </form>
 
   <script>
+    function identityPage(init) {
+      return {
+        choice: init.choice,
+        customText: init.customText,
+        isUploading: false,
+        customLogoUrl: init.logoUrl,
+        async handleFileUpload(e) {
+          const file = e.target.files[0];
+          if (!file) return;
+          this.isUploading = true;
+          const formData = new FormData();
+          formData.append('file', file);
+          try {
+            const res = await fetch('/shop/upload/logo', { method: 'POST', body: formData });
+            const data = await res.json();
+            if (data.url) {
+              this.customLogoUrl = 'url:' + data.url;
+              this.choice = 'url:' + data.url;
+            }
+          } catch (err) {
+            console.error('Upload failed', err);
+          } finally {
+            this.isUploading = false;
+          }
+        }
+      };
+    }
+
     function districtPicker(init) {
-      const PAIRS = {{ district_pairs|tojson }};
+      const PAIRS = {{ district_pairs|tojson|safe }};
       return {
         query: init.initialDistrict,
         picked: { district: init.initialDistrict, province: init.initialProvince || '' },

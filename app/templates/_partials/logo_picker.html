@@ -1,12 +1,12 @@
-<div id="logo-picker-container" x-init="{% if picked_id %}choice = '{{ picked_id }}';{% endif %} {% if custom_text %}customText = '{{ custom_text }}';{% endif %}">
+<div id="logo-picker-container" x-init='if ({{ picked_id|tojson }}) choice = {{ picked_id|tojson }}; if ({{ custom_text|tojson }}) customText = {{ custom_text|tojson }};'>
   <div class="s2-logos">
     {% for opt in options %}
-      <button type="button" class="s2-logo" :class="{ selected: choice === '{{ opt.id }}' }"
-              @click="choice = '{{ opt.id }}'; if(customText==='') customText='{{ opt.text }}'">
+      <button type="button" class="s2-logo" :class='{ selected: choice === {{ opt.id|tojson }} }'
+              @click='choice = {{ opt.id|tojson }}; if(customText==="") customText={{ opt.text|tojson }}'>
         <span class="{{ opt.css_class }}" 
-              :contenteditable="choice === '{{ opt.id }}'" 
+              :contenteditable='choice === {{ opt.id|tojson }}' 
               @input="customText = $event.target.innerText"
-              @blur="if(!customText.trim()) { customText = '{{ opt.text }}'; $event.target.innerText = '{{ opt.text }}'; }"
+              @blur='if(!customText.trim()) { customText = {{ opt.text|tojson }}; $event.target.innerText = {{ opt.text|tojson }}; }'
               @keydown.enter.prevent="$event.target.blur()">{{ opt.text }}{% if opt.show_dot %}<span class="dot" contenteditable="false">.</span>{% endif %}</span>
         <span class="edit-hint">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
@@ -19,13 +19,13 @@
 
   {% if saved_pick %}
     <div class="s2-logos" style="margin-top:8px;">
-      <button type="button" class="s2-logo" :class="{ selected: choice === '{{ saved_pick.id }}' }"
-              @click="choice = '{{ saved_pick.id }}'; if(customText==='') customText='{{ saved_pick.text }}'" title="ที่คุณเลือกไว้">
+      <button type="button" class="s2-logo" :class='{ selected: choice === {{ saved_pick.id|tojson }} }'
+              @click='choice = {{ saved_pick.id|tojson }}; if(customText==="") customText={{ saved_pick.text|tojson }}' title="ที่คุณเลือกไว้">
         <span class="{{ saved_pick.css_class }}"
-              :contenteditable="choice === '{{ saved_pick.id }}'"
-              @input="customText = $event.target.innerText"
-              @blur="if(!customText.trim()) { customText = '{{ saved_pick.text }}'; $event.target.innerText = '{{ saved_pick.text }}'; }"
-              @keydown.enter.prevent="$event.target.blur()">{{ saved_pick.text }}{% if saved_pick.show_dot %}<span class="dot" contenteditable="false">.</span>{% endif %}</span>
+              :contenteditable='choice === {{ saved_pick.id|tojson }}'
+              @input='customText = $event.target.innerText'
+              @blur='if(!customText.trim()) { customText = {{ saved_pick.text|tojson }}; $event.target.innerText = {{ saved_pick.text|tojson }}; }'
+              @keydown.enter.prevent='$event.target.blur()'>{{ saved_pick.text }}{% if saved_pick.show_dot %}<span class="dot" contenteditable="false">.</span>{% endif %}</span>
         <span class="edit-hint">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
             <path d="M11 4H4a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2v-7"/><path d="M18.5 2.5a2.121 2.121 0 013 3L12 15l-4 1 1-4 9.5-9.5z"/>
