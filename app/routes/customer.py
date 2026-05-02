@@ -1178,12 +1178,14 @@ async def my_cards(
         .order_by(Redemption.created_at.desc())
     )).all()
     hero_vouchers = []
-    for redemption in hero_redemptions:
+    for i, redemption in enumerate(hero_redemptions):
         shop = await db.get(Shop, redemption.shop_id)
         if shop is not None:
             hero_vouchers.append({
                 "redemption": redemption,
                 "shop": shop,
+                "emoji": _gift_emoji(shop.reward_image),
+                "icon_color": _GIFT_ICON_PALETTE[i % len(_GIFT_ICON_PALETTE)],
             })
 
     # near + other zones still come from the points view since they're about
