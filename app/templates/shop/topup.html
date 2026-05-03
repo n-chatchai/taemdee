@@ -6,21 +6,18 @@
 {% endblock %}
 
 {% block content %}
-  <div class="s7-top">
-    <a href="/shop/settings" class="x" aria-label="ย้อนกลับ">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-    </a>
-    <div class="help">ช่วยเหลือ?</div>
-  </div>
+{% set app_bar_back = '/shop/settings' %}
+{% set app_bar_title = 'เติมเครดิต' %}
+{% include "_partials/app_bar.html" %}
 
   <div class="s7-balance">
     <div class="lbl">ยอดของคุณ</div>
     <div class="num-row">
-      <span class="num">{{ shop.credit_balance }}</span>
+      <span class="num">{{ credits }}</span>
       <span class="unit">เครดิต</span>
     </div>
     <div class="est">
-      ≈ <strong>ส่งดีรีชได้ {{ sends_remaining }} ครั้ง</strong> ครั้งละ ~50 เครดิต
+      ≈ <strong>ส่งดีรีชได้ {{ sends_remaining }} ครั้ง</strong> · ครั้งละ ~50 เครดิต
     </div>
   </div>
 

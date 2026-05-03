@@ -764,13 +764,18 @@ async def onboard_done_post(
 
 @router.get("/topup", response_class=HTMLResponse)
 async def topup_page(request: Request, shop: Shop = Depends(get_current_shop)):
-    cost_per_send = 50  # rough estimate for the "≈ ส่งดีรีชได้ N ครั้ง" line
-    sends_remaining = shop.credit_balance // cost_per_send if cost_per_send else 0
+    # credit_balance is in satang (1 credit = 100 satang); convert to
+    # credits before estimating sends. ~50 credits per DeeReach send.
+    from app.services.deereach import SATANG_PER_CREDIT
+    cost_per_send_credits = 50
+    credits = shop.credit_balance // SATANG_PER_CREDIT
+    sends_remaining = credits // cost_per_send_credits if cost_per_send_credits else 0
     return templates.TemplateResponse(
         request=request,
         name="shop/topup.html",
         context={
             "shop": shop,
+            "credits": credits,
             "packages": TOPUP_PACKAGES,
             "sends_remaining": sends_remaining,
         },
