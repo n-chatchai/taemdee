@@ -2,16 +2,44 @@
 {% block title %}วิธีออกแต้ม · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-  <form method="POST" action="/shop/issue/methods"
-        x-data="{
+  {# Auto-save form. Each toggle/chip flip schedules a debounced fetch
+     POST to /shop/issue/methods so the owner doesn't have to hunt for
+     a save button. The status pill in the corner shows "กำลังบันทึก..."
+     while in flight and "บันทึกแล้ว ✓" briefly after success. #}
+  <div x-data="{
           staticQr: {{ 'true' if shop.issue_method_static_qr else 'false' }},
           liveQr: {{ 'true' if shop.issue_method_live_qr else 'false' }},
           shopScan: {{ 'true' if shop.issue_method_shop_scan else 'false' }},
           phoneEntry: {{ 'true' if shop.issue_method_phone_entry else 'false' }},
           grant: {{ 'true' if shop.issue_method_grant else 'false' }},
-          dirty: false,
+          saving: false,
+          savedAt: 0,
+          saveTimer: null,
+          scheduleSave() {
+            clearTimeout(this.saveTimer);
+            this.saveTimer = setTimeout(() => this.save(), 250);
+          },
+          async save() {
+            this.saving = true;
+            const fd = new FormData();
+            fd.append('static_qr',   this.staticQr   ? '1' : '0');
+            fd.append('live_qr',     this.liveQr     ? '1' : '0');
+            fd.append('shop_scan',   this.shopScan   ? '1' : '0');
+            fd.append('phone_entry', this.phoneEntry ? '1' : '0');
+            fd.append('grant',       this.grant      ? '1' : '0');
+            try {
+              await fetch('/shop/issue/methods', {
+                method: 'POST',
+                body: fd,
+                credentials: 'same-origin',
+                redirect: 'manual',
+              });
+              this.savedAt = Date.now();
+            } catch (_) {}
+            this.saving = false;
+          }
         }"
-        x-init="$watch('staticQr', () => dirty = true); $watch('liveQr', () => dirty = true); $watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
+        x-init="['staticQr','liveQr','shopScan','phoneEntry','grant'].forEach(k => $watch(k, () => scheduleSave()));">
 
 {% set app_bar_back = '/shop/settings' %}
 {% set app_bar_title = 'วิธีออกแต้ม' %}
@@ -118,11 +146,15 @@
       <div>เปิดมากกว่า 1 วิธี → ปุ่ม "ออกแต้มลูกค้า" หน้าแดชบอร์ดจะ list ตัวเลือกให้เลือก</div>
     </div>
 
-    <div class="s2-foot">
-      <button type="submit" class="next" style="flex:1;" :disabled="!dirty">
-        <span x-text="dirty ? 'บันทึก' : 'บันทึกแล้ว'"></span>
-        <span class="arrow">✓</span>
-      </button>
+    {# Floating auto-save status. Stays out of the way most of the time;
+       fades in while a POST is in flight and lingers ~1.5s after a
+       successful save so the owner gets feedback without a button. #}
+    <div class="s5-autosave-status"
+         x-show="saving || (savedAt && (Date.now() - savedAt) < 1500)"
+         x-cloak
+         x-transition>
+      <span x-show="saving">กำลังบันทึก…</span>
+      <span x-show="!saving && savedAt">บันทึกแล้ว ✓</span>
     </div>
-  </form>
+  </div>
 {% endblock %}

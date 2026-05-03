@@ -5664,6 +5664,25 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
 
+/* Auto-save status pill — pinned to the bottom-right of the viewport
+   so it doesn't fight the s5-toggles for space. Floats in only while
+   a save is in flight or briefly after a successful one. */
+.s5-autosave-status {
+  position: fixed;
+  bottom: 18px;
+  right: 18px;
+  background: var(--ink);
+  color: var(--bg);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  padding: 8px 14px;
+  border-radius: 999px;
+  box-shadow: 0 6px 18px -6px rgba(0, 0, 0, 0.4);
+  z-index: 50;
+  pointer-events: none;
+}
+
 /* Group row — drops the right toggle column so child chips can sit
    under the title. Used when one parent label gates two or more
    sub-options (ลูกค้าสแกน → Static / Dynamic). */
