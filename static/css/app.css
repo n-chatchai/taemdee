@@ -13,6 +13,14 @@ html, body {
   background: #F6F1E5;
 }
 
+/* Reserve the scrollbar gutter so switching between tabs of different
+   heights doesn't shift content horizontally when the vertical
+   scrollbar appears or disappears. `stable` keeps the gutter present
+   on long pages too; on mobile (no visible scrollbar) it's a no-op. */
+html {
+  scrollbar-gutter: stable;
+}
+
 /* Cross-document View Transitions — browser fades between same-origin
    navigations automatically (no JS / no SPA needed). Falls back to a
    regular page load on browsers that don't support it (Firefox, Safari
@@ -7760,7 +7768,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    S3.issue — full-page ออกแต้ม hub: feed + 3 action buttons
    ========================================================== */
 .s3-issue-feed {
-  margin: 0 20px 16px;
+  /* 8px top matches .s3-metrics + .s3-search-bar so the tab content
+     starts at the same Y after the shared s3-day-caption. */
+  margin: 8px 20px 16px;
   background: var(--surface);
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 16px;
@@ -7925,7 +7935,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    ========================================================== */
 .s3-ins-brief {
   display: block;
-  margin: 0 20px 16px;
+  /* 8px top matches the other tab roots so the insights first card
+     lines up with dashboard/issue/customers. */
+  margin: 8px 20px 16px;
   padding: 14px 16px;
   background: var(--surface);
   border: 1px solid rgba(17, 17, 17, 0.12);
