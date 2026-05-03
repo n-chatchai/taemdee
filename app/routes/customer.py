@@ -214,6 +214,46 @@ async def account_menu(
         datetime.now(timezone.utc).astimezone(BKK).weekday()
     ]
 
+    # Connect-status rows. We surface a row per enabled provider so the
+    # customer can tell at a glance which logins back this account. Each
+    # entry: connected flag (drives "ผูกแล้ว ✓" vs "ผูกที่นี่"), enabled
+    # flag (hide entirely if the provider isn't configured globally), and
+    # the start URL for un-claimed customers to bind the identity.
+    from app.core.config import settings as app_settings
+    connect_rows = [
+        {
+            "id": "line",
+            "name": "LINE",
+            "connected": bool(customer.line_id),
+            "enabled": app_settings.is_login_enabled("customer", "line")
+            and bool(app_settings.line_channel_id),
+            "start_url": "/auth/line/customer/start",
+        },
+        {
+            "id": "google",
+            "name": "Google",
+            "connected": bool(customer.google_id),
+            "enabled": app_settings.is_login_enabled("customer", "google")
+            and bool(app_settings.google_client_id),
+            "start_url": "/auth/google/customer/start",
+        },
+        {
+            "id": "facebook",
+            "name": "Facebook",
+            "connected": bool(customer.facebook_id),
+            "enabled": app_settings.is_login_enabled("customer", "facebook")
+            and bool(app_settings.facebook_app_id),
+            "start_url": "/auth/facebook/customer/start",
+        },
+        {
+            "id": "phone",
+            "name": "เบอร์โทร",
+            "connected": bool(customer.phone),
+            "enabled": app_settings.is_login_enabled("customer", "phone"),
+            "start_url": "/card/save",
+        },
+    ]
+
     return templates.TemplateResponse(
         request=request,
         name="card_account.html",
@@ -224,6 +264,8 @@ async def account_menu(
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
             "nav_gifts_badge": await _active_gifts_count(db, customer.id),
             "text_size": customer.text_size or "md",
+            "connect_rows": connect_rows,
+            "is_anonymous": customer.is_anonymous,
         },
     )
 

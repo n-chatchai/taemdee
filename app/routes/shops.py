@@ -853,16 +853,51 @@ async def settings_page(
     db: AsyncSession = Depends(get_session),
 ):
     from app.models import ShopMenuItem
+    from app.core.config import settings as app_settings
     await db.refresh(shop, ["branches"])
     menu_count = (await db.exec(
         select(func.count())
         .select_from(ShopMenuItem)
         .where(ShopMenuItem.shop_id == shop.id)
     )).one()
+
+    # Connect-status rows for the shop owner. Shop schema only carries
+    # line_id, owner_email, and phone — Google sign-in writes owner_email,
+    # phone is the OTP login identity. Disabled providers (no client_id /
+    # not in shop_logins) are filtered out in the template.
+    connect_rows = [
+        {
+            "id": "line",
+            "name": "LINE",
+            "connected": bool(shop.line_id),
+            "enabled": app_settings.is_login_enabled("shop", "line")
+            and bool(app_settings.line_channel_id),
+        },
+        {
+            "id": "google",
+            "name": "Google",
+            "connected": bool(shop.owner_email),
+            "value": shop.owner_email,
+            "enabled": app_settings.is_login_enabled("shop", "google")
+            and bool(app_settings.google_client_id),
+        },
+        {
+            "id": "phone",
+            "name": "เบอร์โทร",
+            "connected": bool(shop.phone),
+            "value": shop.phone,
+            "enabled": app_settings.is_login_enabled("shop", "phone"),
+        },
+    ]
+
     return templates.TemplateResponse(
         request=request,
         name="shop/settings.html",
-        context={"shop": shop, "menu_count": menu_count},
+        context={
+            "shop": shop,
+            "menu_count": menu_count,
+            "connect_rows": connect_rows,
+        },
     )
 
 
