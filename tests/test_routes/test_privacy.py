@@ -22,3 +22,9 @@ async def test_privacy_page_has_user_rights(client):
     body = response.text
     assert "สิทธิ์" in body
     assert "ลบ" in body or "ลบข้อมูล" in body
+
+
+async def test_data_deletion_page_renders(client):
+    """Data deletion page should render."""
+    response = await client.get("/data-deletion")
+    assert response.status_code == 200

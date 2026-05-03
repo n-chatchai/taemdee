@@ -169,6 +169,13 @@ async def switch_role(request: Request):
 async def privacy(request: Request):
     return templates.TemplateResponse(request=request, name="privacy.html")
 
+
+@app.get("/data-deletion", tags=["pages"])
+async def data_deletion(request: Request):
+    """Data deletion request page - required by Facebook Login."""
+    return templates.TemplateResponse(request=request, name="privacy.html")
+
+
 @app.get("/version")
 async def version():
     """Plain-text short git SHA the running process started with. Used by
