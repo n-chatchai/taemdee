@@ -7616,25 +7616,34 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
 }
 
-/* Dashboard "รายการที่ต้องทำ" tile — replaces the prior .s3-item card.
-   Butter-soft surface, no leading icon, accent-orange pill CTA on the
-   right. Title supports inline <strong> for the highlight ("รับ
-   <strong>เครดิต 100</strong>เปิดบัญชี"). */
-.s3-item-form { margin: 0 20px 0; }
-.s3-todo-wrap { margin: 0 20px 12px; }
-.s3-todo-wrap .s3-item-form,
-.s3-todo-wrap .s3-todo { margin: 0; }
-/* Skip row sits centered under each todo. The button is a small
-   underlined affordance; the brief explainer beside it tells the
-   owner what they're giving up so the dismissal feels informed. */
+/* Dashboard "รายการที่ต้องทำ" tile — butter-soft surface, no leading
+   icon, accent-orange pill CTA on the right. Title supports inline
+   <strong> for the highlight ("รับ<strong>เครดิต 100</strong>
+   เปิดบัญชี"). The whole card (main action + skip row) lives inside
+   one .s3-todo-wrap so the dismissal feels like part of the same
+   tile, not a footnote underneath it. */
+.s3-todo-wrap {
+  margin: 0 20px 12px;
+  background: var(--butter-soft);
+  border: 1px solid rgba(17, 17, 17, 0.10);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.s3-todo-wrap .s3-item-form { margin: 0; }
+/* Skip row sits inside the box, separated from the main action by a
+   dashed divider. The button is a small underlined affordance; the
+   brief explainer beside it tells the owner what they're giving up
+   so the dismissal feels informed. */
 .s3-todo-skip {
   margin: 0;
-  padding: 6px 4px 0;
+  padding: 8px 14px;
   display: flex;
   align-items: center;
   justify-content: center;
   gap: 8px;
   flex-wrap: wrap;
+  border-top: 1px dashed rgba(17, 17, 17, 0.12);
+  background: rgba(255, 255, 255, 0.35);
 }
 .s3-skip-btn {
   background: transparent;
@@ -7654,16 +7663,17 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-family: 'Prompt', sans-serif;
   font-style: italic;
   font-size: 11px;
+  text-align: center;
 }
 .s3-todo {
-  /* No horizontal margin — wrapping <form class="s3-item-form"> already
-     supplies the 20px inset. The s10-fontsize tile had the same
-     double-inset bug; same fix here. */
+  /* Inner button — no own background / border / radius now that the
+     wrap supplies them. Keeps padding so the click target still feels
+     comfortable. */
   margin: 0;
   padding: 14px 16px;
-  background: var(--butter-soft);
-  border: 1px solid rgba(17, 17, 17, 0.10);
-  border-radius: 16px;
+  background: transparent;
+  border: none;
+  border-radius: 0;
   display: flex;
   align-items: center;
   gap: 12px;
