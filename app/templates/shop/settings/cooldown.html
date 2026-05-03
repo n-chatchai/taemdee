@@ -6,13 +6,37 @@
 {% set app_bar_title = 'ระยะเวลาห่างระหว่างแต้ม' %}
 {% include "_partials/app_bar.html" %}
 
-<form method="POST" action="/shop/settings/cooldown"
-      x-data="{
+{# Auto-save form. Same pattern as /shop/issue/methods — every input
+   change debounce-fetches a POST so there's no save button to hunt
+   for; a small bottom-right pill confirms each save. #}
+<div x-data="{
         value: {{ cooldown.value }},
         unit: '{{ cooldown.unit }}',
-        dirty: false,
+        saving: false,
+        savedAt: 0,
+        saveTimer: null,
+        scheduleSave() {
+          clearTimeout(this.saveTimer);
+          this.saveTimer = setTimeout(() => this.save(), 350);
+        },
+        async save() {
+          this.saving = true;
+          const fd = new FormData();
+          fd.append('value', String(this.value));
+          fd.append('unit', this.unit);
+          try {
+            await fetch('/shop/settings/cooldown', {
+              method: 'POST',
+              body: fd,
+              credentials: 'same-origin',
+              redirect: 'manual',
+            });
+            this.savedAt = Date.now();
+          } catch (_) {}
+          this.saving = false;
+        }
       }"
-      x-init="['value','unit'].forEach(k => $watch(k, () => dirty = true));">
+      x-init="['value','unit'].forEach(k => $watch(k, () => scheduleSave()));">
 
   <div class="s5-q">
     <div class="ask">ระยะเวลา<em>ห่างแต้ม.</em></div>
@@ -52,11 +76,12 @@
     <div>เฉพาะ "ลูกค้าสแกน" QR เท่านั้น · ร้านสแกนหรือออกแต้มเองยังให้ได้ตามปกติ</div>
   </div>
 
-  <div class="s2-foot">
-    <button type="submit" class="next" style="flex:1;" :disabled="!dirty">
-      <span x-text="dirty ? 'บันทึก' : 'บันทึกแล้ว'"></span>
-      <span class="arrow">✓</span>
-    </button>
+  <div class="s5-autosave-status"
+       x-show="saving || (savedAt && (Date.now() - savedAt) < 1500)"
+       x-cloak
+       x-transition>
+    <span x-show="saving">กำลังบันทึก…</span>
+    <span x-show="!saving && savedAt">บันทึกแล้ว ✓</span>
   </div>
-</form>
+</div>
 {% endblock %}
