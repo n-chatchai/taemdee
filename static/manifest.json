@@ -2,7 +2,7 @@
   "name": "แต้มดี",
   "short_name": "แต้มดี",
   "description": "บัตรสะสมแต้มดิจิทัล สแกน QR แล้วได้แต้มทันที ไม่ต้องโหลดแอป ไม่บังคับสมัครสมาชิก",
-  "start_url": "/",
+  "start_url": "/my-cards",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
