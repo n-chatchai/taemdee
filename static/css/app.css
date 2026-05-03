@@ -5664,6 +5664,58 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
 
+/* Group row — drops the right toggle column so child chips can sit
+   under the title. Used when one parent label gates two or more
+   sub-options (ลูกค้าสแกน → Static / Dynamic). */
+.s5-toggle-row.s5-group-row {
+  grid-template-columns: 40px 1fr;
+  align-items: start;
+  cursor: default;
+}
+.s5-chip-row {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 8px;
+}
+.s5-chip {
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+  padding: 7px 12px;
+  border-radius: 999px;
+  background: rgba(17, 17, 17, 0.05);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  color: var(--ink-soft);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  cursor: pointer;
+  transition: background 0.15s, color 0.15s, border-color 0.15s;
+}
+.s5-chip:hover { color: var(--ink); }
+.s5-chip.on {
+  background: var(--accent);
+  color: #fff;
+  border-color: var(--accent);
+}
+.s5-chip .chip-mark {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px;
+  height: 16px;
+  font-weight: 800;
+  font-size: 11px;
+  border-radius: 50%;
+  background: rgba(255, 255, 255, 0.85);
+  color: var(--ink-soft);
+}
+.s5-chip.on .chip-mark {
+  background: var(--butter);
+  color: var(--ink);
+}
+
 /* ==========================================================
    S5 — Legacy issuance picker (kept for back-compat selectors)
    ========================================================== */

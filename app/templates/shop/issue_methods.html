@@ -23,12 +23,12 @@
     </div>
 
     <div class="s5-toggles">
-      {# ลูกค้าสแกน splits into two paths — printed counter sticker
-         (static, /scan/<id>) and rotating on-screen QR (live,
-         /scan/<id>?t=<jwt>). Owners can disable static while keeping
-         the live rotating QR — handy when worried about photocopied
-         stickers but still want to use S3.qr at the counter. #}
-      <label class="s5-toggle-row primary" @click.prevent="staticQr = !staticQr">
+      {# ลูกค้าสแกน is one box with two child chips — Static
+         (/scan/<id>, the printed counter sticker) and Dynamic
+         (/scan/<id>?t=<jwt>, the rotating S3.qr on-screen QR). Each
+         chip toggles independently so owners can keep one path
+         active without the other. #}
+      <div class="s5-toggle-row primary s5-group-row">
         <div class="t-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -38,32 +38,21 @@
           </svg>
         </div>
         <div class="t-info">
-          <div class="t-name-row"><span class="t-name">QR ติดเคาน์เตอร์</span></div>
-          <div class="t-sub">ลูกค้าสแกน · QR แบบนิ่ง พิมพ์ติดที่ร้าน</div>
+          <div class="t-name-row"><span class="t-name">ลูกค้าสแกน</span></div>
+          <div class="t-sub">QR ที่ลูกค้าสแกนเอง · เลือกเปิดเฉพาะแบบที่ร้านใช้</div>
+          <div class="s5-chip-row">
+            <button type="button" class="s5-chip" :class="{ on: staticQr }" @click="staticQr = !staticQr">
+              <span class="chip-mark" x-text="staticQr ? '✓' : '✕'"></span>
+              <span>Static · ติดเคาน์เตอร์</span>
+            </button>
+            <button type="button" class="s5-chip" :class="{ on: liveQr }" @click="liveQr = !liveQr">
+              <span class="chip-mark" x-text="liveQr ? '✓' : '✕'"></span>
+              <span>Dynamic · หน้าจอ</span>
+            </button>
+          </div>
         </div>
-        <div class="s5-toggle" :class="{ on: staticQr }">
-          <div class="dot"></div>
-        </div>
-      </label>
+      </div>
       <input type="hidden" name="static_qr" :value="staticQr ? '1' : '0'">
-
-      <label class="s5-toggle-row primary" @click.prevent="liveQr = !liveQr">
-        <div class="t-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <rect x="2" y="4" width="20" height="14" rx="2"/>
-            <path d="M8 21h8"/>
-            <path d="M12 18v3"/>
-            <path d="M9 11l3 3 3-3"/>
-          </svg>
-        </div>
-        <div class="t-info">
-          <div class="t-name-row"><span class="t-name">QR หน้าจอ (หมุนเวียน)</span></div>
-          <div class="t-sub">ลูกค้าสแกน · เปิดที่หน้าจอ หมุนเวียนทุก 15 วินาที</div>
-        </div>
-        <div class="s5-toggle" :class="{ on: liveQr }">
-          <div class="dot"></div>
-        </div>
-      </label>
       <input type="hidden" name="live_qr" :value="liveQr ? '1' : '0'">
 
       {# Shop scans the customer's QR with camera #}
