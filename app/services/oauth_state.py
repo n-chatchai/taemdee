@@ -14,7 +14,7 @@ other's state.
 import secrets
 from datetime import timedelta
 from typing import Optional
-import logging
+from loguru import logger
 
 
 from jose import JWTError, jwt
@@ -24,7 +24,6 @@ from app.models.util import utcnow
 
 OAUTH_STATE_TTL_MINUTES = 10
 
-logger = logging.getLogger(__name__)
 
 
 def make_oauth_state(
@@ -65,10 +64,10 @@ def verify_oauth_state(url_state: str, cookie_token: Optional[str]) -> Optional[
             cookie_token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
     except Exception as e:
-        logger.error(f"JWT decode error: {e}")
+        logger.error(f"❌ JWT decode error: {e} | token={cookie_token}")
         return None
     if payload.get("nonce") != url_state:
-        logger.error("Nonce does not match")
+        logger.error(f"❌ Nonce mismatch: url={url_state} vs payload={payload.get('nonce')}")
         return None
     payload.setdefault("role", "shop")
     return payload

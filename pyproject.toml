@@ -27,6 +27,7 @@ dependencies = [
     "pythainlp>=5.3.4",
     "aioboto3>=15.5.0",
     "pillow>=12.2.0",
+    "loguru>=0.7.3",
 ]
 
 [project.optional-dependencies]

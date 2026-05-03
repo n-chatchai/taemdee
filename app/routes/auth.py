@@ -1,5 +1,7 @@
+from datetime import timedelta
 from typing import Optional
-import logging
+from loguru import logger
+from jose import jwt
 
 
 from fastapi import (
@@ -24,6 +26,7 @@ from app.core.auth import (
 )
 from app.core.config import settings
 from app.core.database import get_session
+from app.models.util import utcnow
 from app.core.templates import templates
 from app.models import Customer, CustomerShopMute, Shop
 from app.services.auth import generate_and_send_otp, issue_session_token, verify_otp
@@ -42,7 +45,6 @@ from app.services import google_login, facebook_login
 
 router = APIRouter()
 
-logger = logging.getLogger(__name__)
 
 LINE_STATE_COOKIE = "line_oauth_state"
 GOOGLE_STATE_COOKIE = "google_oauth_state"
@@ -245,6 +247,7 @@ async def line_callback(
     line_oauth_state: Optional[str] = Cookie(None, alias=LINE_STATE_COOKIE),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
+    transfer: Optional[str] = None,
 ):
     """LINE redirected back with code + state. Verify, exchange, then branch
     on the role embedded in the state cookie:
@@ -253,43 +256,79 @@ async def line_callback(
                         refresh customer cookie, → /my-cards
                         (or /card/{shop}/claimed if next_redeem was set)
     """
-    payload = verify_oauth_state(state, line_oauth_state)
-    if not payload:
-        logger.error(
-            f"Invalid OAuth state, state={state}, line_oauth_state={line_oauth_state}"
-        )
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
+    # 1. Transfer Logic: If we received a transfer token from the main domain, 
+    # verify it and proceed directly to login (skipping state check).
+    if transfer:
+        try:
+            payload = jwt.decode(transfer, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+            if payload.get("sub") != "auth_transfer":
+                raise ValueError("Invalid transfer sub")
+            line_id = payload["line_id"]
+            display_name = payload.get("display_name")
+            picture_url = payload.get("picture_url")
+            role = payload.get("role", "shop")
+            logger.success(f"✅ Transfer Token Verified: line_id={line_id} | role={role}")
+            # Skip to the final login part
+            goto_login = True
+        except Exception as e:
+            logger.error(f"❌ Transfer Token Failed: {e}")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
+    else:
+        # Standard flow: Verify state
+        payload = verify_oauth_state(state, line_oauth_state)
+        if not payload:
+            logger.error(f"❌ Invalid OAuth state | state={state} | cookie={line_oauth_state}")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
-    role = payload["role"]
-    next_redeem = payload.get("next_redeem")
+        role = payload["role"]
+        next_redeem = payload.get("next_redeem")
+        goto_login = False
 
-    # 1. Dispatcher Logic: If we are on the main domain but this is a shop login,
-    # redirect the browser to the shop domain's callback so it can set its own cookie.
-    logger.info(f"Dispatcher host: {request.headers}")
+    # 2. Dispatcher Logic: If we are on the main domain but this is a shop login,
+    # exchange the code HERE, then bounce to the shop domain with a Transfer Token.
     host = request.headers.get("host", "").split(":")[0]
     is_main_host = host == settings.main_domain or not (
         host.startswith("shop.") or host == settings.shop_domain
     )
 
-    logger.info(
-        f"Dispatcher Logic, host={host}, is_main_host={is_main_host}, role={role}"
-    )
+    logger.info(f"🌐 Dispatcher Logic: host={host} | role={role} | is_main_host={is_main_host}")
 
-    if role == "shop" and is_main_host:
-        # Bounce to the shop domain to set the cookie there
-        target_url = f"https://{settings.shop_domain}/auth/line/callback?code={code}&state={state}"
+    if not transfer and role == "shop" and is_main_host:
+        # Step A: Exchange code on the main domain where we have the state cookie
+        try:
+            tokens = await exchange_code_for_token(code)
+            profile = await fetch_profile(tokens["access_token"])
+        except LineLoginError as e:
+            logger.error(f"❌ Token Exchange Failed on Main: {e}")
+            raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
+
+        # Step B: Create a Transfer Token (short-lived JWT)
+        transfer_payload = {
+            "sub": "auth_transfer",
+            "line_id": profile["userId"],
+            "display_name": profile.get("displayName"),
+            "picture_url": profile.get("pictureUrl"),
+            "role": "shop",
+            "exp": utcnow() + timedelta(minutes=2),
+        }
+        token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+        
+        target_url = f"https://{settings.shop_domain}/auth/line/callback?transfer={token}"
+        logger.warning(f"↪️ Bouncing Shop Owner with Transfer Token to: {target_url}")
         return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
 
-    # 2. Proceed with token exchange (always use the registered main-domain URI)
-    try:
-        tokens = await exchange_code_for_token(code)
-        profile = await fetch_profile(tokens["access_token"])
-    except LineLoginError as e:
-        raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
+    # 3. Proceed with login if not already done via transfer
+    if not goto_login:
+        try:
+            tokens = await exchange_code_for_token(code)
+            profile = await fetch_profile(tokens["access_token"])
+        except LineLoginError as e:
+            logger.error(f"❌ Token Exchange Failed: {e}")
+            raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
-    line_id = profile["userId"]
-    display_name = profile.get("displayName") or None
-    picture_url = profile.get("pictureUrl") or None
+        line_id = profile["userId"]
+        display_name = profile.get("displayName") or None
+        picture_url = profile.get("pictureUrl") or None
 
     if role == "customer":
         anon, _ = await find_or_create_customer(customer_cookie, db)
