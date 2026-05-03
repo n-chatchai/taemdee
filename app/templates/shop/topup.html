@@ -1,16 +1,12 @@
 {% extends "_layouts/s_base.html" %}
 {% block title %}เติมเครดิต · {{ shop.name }} · TaemDee{% endblock %}
 
-{% block td_attrs %}
-  x-data="{ pkg: 'popular' }"
-{% endblock %}
-
 {% block content %}
 {% set app_bar_back = '/shop/settings' %}
 {% set app_bar_title = 'เติมเครดิต' %}
-{# Three-dot menu on the right — opens a small popover linking to the
-   topup-slip history and the credit transaction log. Alpine handles
-   show/hide; @click.outside closes when the user taps elsewhere. #}
+{# Three-dot overflow menu — topup history + credit ledger. Alpine
+   handles open/close; @click.outside dismisses when the user taps
+   away. #}
 {% set app_bar_action %}
 <div class="appbar-menu" x-data="{ open: false }" @click.outside="open = false">
   <button type="button" class="appbar-menu-btn" @click="open = !open" aria-label="เมนูเพิ่ม">
@@ -39,41 +35,70 @@
     </div>
   </div>
 
+  {# Packages — pure info, not selectable. The owner pays one of these
+     amounts via PromptPay; the server matches the slip's amount to a
+     package on upload, so there's no upfront commit. #}
   <div class="s7-q">
-    <div class="ask">เลือก<em>แพ็คเกจ.</em></div>
-    <div class="sub">เลือกจำนวนเครดิตที่ต้องการ</div>
+    <div class="ask">เลือก<em>จำนวน.</em></div>
+    <div class="sub">โอนตามจำนวน · ระบบเลือกแพ็กเกจให้อัตโนมัติ</div>
   </div>
 
   <div class="s7-packages">
     {% for pkg_id, p in packages.items() %}
-      {% set total = p.credits + p.bonus %}
-      <button type="button" class="s7-pkg {% if pkg_id == 'popular' %}popular{% endif %}"
-              :class="{ 'is-selected': pkg === '{{ pkg_id }}' }"
-              @click="pkg = '{{ pkg_id }}'"
-              style="text-align:left;">
+      <div class="s7-pkg {% if pkg_id == 'popular' %}popular{% endif %}">
         <div class="left">
-          <div class="credits">{{ total }}<span class="unit">เครดิต</span></div>
+          <div class="credits">{{ p.credits }}<span class="unit">เครดิต</span></div>
           <div class="sub">{{ p.label }}</div>
         </div>
         <div class="right">
           <div class="price"><span class="currency">฿</span>{{ p.price }}</div>
-          {% if p.bonus %}<div class="bonus">+{{ p.bonus }} โบนัส</div>{% endif %}
         </div>
-      </button>
+      </div>
     {% endfor %}
   </div>
 
-  <div class="s7-method">
-    <div class="ic">PP</div>
-    <div class="meta">
-      <div class="name">PromptPay</div>
-      <div class="sub">สแกน จ่าย อัปโหลดสลิป</div>
-    </div>
-    <div class="check">✓</div>
+  {# Single PromptPay QR — owner scans from any banking app, types in
+     one of the package amounts, then uploads the slip. The QR is the
+     same regardless of amount; PromptPay accepts any THB value. #}
+  <div class="s7c-qr">
+    <div class="promptpay-logo">PromptPay</div>
+    <div class="qr-box">{{ qr_svg|safe }}</div>
+    <div class="recipient">บริษัท แต้มดี จำกัด</div>
+    <div class="recipient-id">PP · ตัวอย่างเพื่อสาธิต</div>
   </div>
 
-  <a class="s7-cta" :href="`/shop/topup/confirm?pkg=${pkg}`">
-    <span>ดำเนินการต่อ</span>
-    <span class="arrow">→</span>
-  </a>
+  {% if error %}
+    <div class="topup-error">
+      {% if error == 'wrong_amount' %}ยอดในสลิปไม่ตรงกับแพ็กเกจที่มี · กรุณาโอนใหม่ตามจำนวนด้านบน
+      {% elif error == 'bad_receiver' %}สลิปไม่ได้โอนเข้าบัญชีแต้มดี · กรุณาโอนตาม QR ด้านบน
+      {% elif error == 'duplicate' %}สลิปนี้เคยถูกใช้งานแล้ว · ส่งสลิปใหม่
+      {% elif error == 'not_configured' %}ระบบตรวจสลิปอัตโนมัติยังไม่พร้อม · ติดต่อทีมงาน
+      {% else %}ตรวจสลิปไม่สำเร็จ · ลองส่งใหม่อีกครั้ง
+      {% endif %}
+    </div>
+  {% endif %}
+
+  {# Native file input — `capture="environment"` opens the camera on
+     mobile so the owner can shoot the slip directly. Auto-submits as
+     soon as a file is picked; the button label swaps to "กำลังตรวจ
+     สลิป…" while the POST is in flight. #}
+  <form action="/shop/topup/upload" method="POST" enctype="multipart/form-data"
+        x-data="{ name: '', uploading: false }"
+        @submit="uploading = true">
+    <label class="s7c-upload-cta">
+      <input type="file" name="file" accept="image/*" capture="environment"
+             style="display:none;"
+             required
+             @change="name = $event.target.files[0]?.name || ''; if (name) $el.form.requestSubmit();">
+      <div class="l">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span x-text="uploading ? 'กำลังตรวจสลิป…' : (name || 'จ่ายแล้ว · อัปโหลดสลิป')"></span>
+      </div>
+      <span class="arrow">→</span>
+    </label>
+  </form>
 {% endblock %}

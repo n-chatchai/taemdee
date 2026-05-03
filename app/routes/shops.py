@@ -763,13 +763,27 @@ async def onboard_done_post(
 # --------- Top-up (S7 + S7 confirm) — UI placeholder; Slip2Go integration in R7 ---------
 
 @router.get("/topup", response_class=HTMLResponse)
-async def topup_page(request: Request, shop: Shop = Depends(get_current_shop)):
-    # credit_balance is in satang (1 credit = 100 satang); convert to
-    # credits before estimating sends. ~50 credits per DeeReach send.
+async def topup_page(
+    request: Request,
+    error: Optional[str] = None,
+    shop: Shop = Depends(get_current_shop),
+):
+    """Single-page topup. No package selection step — owner pays an
+    amount that matches one of the listed packages via PromptPay, then
+    uploads the slip; record_topup() looks the package up by amount
+    server-side. ?error=<kind> renders an inline banner after a failed
+    upload so the owner can retry without losing context."""
     from app.services.deereach import SATANG_PER_CREDIT
     cost_per_send_credits = 50
     credits = shop.credit_balance // SATANG_PER_CREDIT
     sends_remaining = credits // cost_per_send_credits if cost_per_send_credits else 0
+    # Placeholder PromptPay QR — real PromptPay payload comes from R7 with
+    # Slip2Go's QR generator. Customer types the amount themselves in
+    # their banking app, matching one of the packages listed below.
+    promptpay_payload = f"taemdee-promptpay-stub-{shop.id}"
+    qr_svg = segno.make(promptpay_payload, error="m").svg_inline(
+        scale=4, dark="#111111", light="#ffffff", border=1, omitsize=True
+    )
     return templates.TemplateResponse(
         request=request,
         name="shop/topup.html",
@@ -778,32 +792,6 @@ async def topup_page(request: Request, shop: Shop = Depends(get_current_shop)):
             "credits": credits,
             "packages": TOPUP_PACKAGES,
             "sends_remaining": sends_remaining,
-        },
-    )
-
-
-@router.get("/topup/confirm", response_class=HTMLResponse)
-async def topup_confirm_page(
-    request: Request,
-    pkg: str,
-    error: Optional[str] = None,
-    shop: Shop = Depends(get_current_shop),
-):
-    if pkg not in TOPUP_PACKAGES:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown package")
-    package = TOPUP_PACKAGES[pkg]
-    # Placeholder PromptPay QR — real PromptPay payload generated in R7 with Slip2Go.
-    promptpay_payload = f"taemdee-promptpay-stub-{package['price']}-thb"
-    qr_svg = segno.make(promptpay_payload, error="m").svg_inline(
-        scale=4, dark="#111111", light="#ffffff", border=1, omitsize=True
-    )
-    return templates.TemplateResponse(
-        request=request,
-        name="shop/topup_confirm.html",
-        context={
-            "shop": shop,
-            "package": package,
-            "pkg_id": pkg,
             "qr_svg": qr_svg,
             "error": error,
         },
@@ -812,36 +800,25 @@ async def topup_confirm_page(
 
 @router.post("/topup/upload")
 async def topup_upload(
-    pkg: str = Form(...),
     file: UploadFile = File(...),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    """Receive the slip image, hand to slip.record_topup, surface the
-    outcome via redirect.
-
-    Success → /shop/dashboard with ?topup=N (count of credits granted).
-    Anything else → /shop/topup/confirm?pkg=...&error=<machine-key> so
-    the page can render a friendly inline message and let the owner
-    retry without losing the package they picked.
-    """
+    """Receive the slip image, hand to slip.record_topup with the full
+    package dict — the verified slip amount picks the package. Success
+    → /shop/dashboard?topup=N. Anything else → /shop/topup?error=<kind>
+    so the single page renders an inline banner and lets the owner
+    retry without losing context."""
     from app.services.slip import record_topup
     from app.services.storage import upload_to_r2
-
-    if pkg not in TOPUP_PACKAGES:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown package")
-    package = TOPUP_PACKAGES[pkg]
 
     image_bytes = await file.read()
     if not image_bytes:
         return RedirectResponse(
-            url=f"/shop/topup/confirm?pkg={pkg}&error=verify_failed",
+            url="/shop/topup?error=verify_failed",
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    # Store the slip image. Falls through to a placeholder string when
-    # R2 is unconfigured — TopupSlip.slip_image_url is required but the
-    # row's main job in dev is the dedup hash + audit log, not the URL.
     image_url = await upload_to_r2(
         image_bytes,
         file_name=file.filename or "slip.jpg",
@@ -852,8 +829,7 @@ async def topup_upload(
     result = await record_topup(
         db,
         shop=shop,
-        package_key=pkg,
-        package=package,
+        packages=TOPUP_PACKAGES,
         image_bytes=image_bytes,
         image_url=image_url,
     )
@@ -864,7 +840,7 @@ async def topup_upload(
             status_code=status.HTTP_303_SEE_OTHER,
         )
     return RedirectResponse(
-        url=f"/shop/topup/confirm?pkg={pkg}&error={result.kind}",
+        url=f"/shop/topup?error={result.kind}",
         status_code=status.HTTP_303_SEE_OTHER,
     )
 

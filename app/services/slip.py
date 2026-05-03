@@ -290,33 +290,45 @@ def _slip_dedup_hash(parsed: Slip2GoResponse, image_bytes: bytes) -> str:
     return f"img:{hashlib.sha256(image_bytes).hexdigest()}"
 
 
+def _find_package_by_price(packages: dict, amount_thb: int) -> tuple[Optional[str], Optional[dict]]:
+    """Look up the package whose `price` matches the slip amount. Returns
+    `(key, package)` on hit, `(None, None)` if no package costs that
+    much. Lets the upload flow be one-step: shop owner picks an amount
+    in their banking app rather than committing to a package up-front."""
+    for key, pkg in packages.items():
+        if int(pkg.get("price", 0)) == amount_thb:
+            return key, pkg
+    return None, None
+
+
 async def record_topup(
     db: AsyncSession,
     shop: Shop,
-    package_key: str,
-    package: dict,
+    packages: dict,
     image_bytes: bytes,
     image_url: str,
 ) -> TopupResult:
-    """One-call topup: verify the slip, match the package's price, write
-    the TopupSlip + CreditLog, increment shop.credit_balance.
+    """One-call topup: verify the slip, match its amount to one of the
+    `packages`, write the TopupSlip + CreditLog, increment
+    shop.credit_balance.
 
-    `image_url` is whatever the route stored the JPEG at (R2 key, local
-    path, etc.) — preserved on the TopupSlip row for audit. The slip
-    bytes themselves are also hashed for dedup if Slip2Go can't return
-    a stable identifier.
+    No upfront package selection — the slip's verified THB amount is the
+    source of truth. Owner pays whatever amount fits the offer they want
+    via PromptPay; we look it up here.
     """
     if settings.bank_transfer_skip_check:
-        # Dev shortcut — simulate a clean verify so designers can wire
-        # the upload UI without a real bank slip.
+        # Dev shortcut — simulate a successful verify on the smallest
+        # package so designers can exercise the flow without a real
+        # bank slip. Uses a stable hash + key so re-uploads dedupe.
+        sim_key, sim_pkg = next(iter(packages.items()))
         return await _grant_topup(
             db,
             shop=shop,
-            package_key=package_key,
-            package=package,
-            amount_thb=int(package["price"]),
+            package_key=sim_key,
+            package=sim_pkg,
+            amount_thb=int(sim_pkg["price"]),
             trans_ref=f"SIM-{shop.id}",
-            slip_hash=f"sim:{shop.id}:{package_key}",
+            slip_hash=f"sim:{shop.id}:{sim_key}",
             image_url=image_url,
         )
 
@@ -351,11 +363,12 @@ async def record_topup(
                 amount_thb=amount_thb,
             )
 
-    expected_thb = int(package["price"])
-    if amount_thb != expected_thb:
+    package_key, package = _find_package_by_price(packages, amount_thb)
+    if not package:
+        offered = ", ".join(f"฿{p['price']}" for p in packages.values())
         return TopupResult(
             kind="wrong_amount",
-            message=f"ยอดในสลิป ฿{amount_thb} ไม่ตรงกับแพ็กเกจ ฿{expected_thb} · เลือกแพ็กเกจให้ตรง",
+            message=f"ยอดในสลิป ฿{amount_thb} ไม่ตรงกับแพ็กเกจที่มี ({offered}) · กรุณาโอนใหม่ตามจำนวนที่กำหนด",
             amount_thb=amount_thb,
         )
 
