@@ -222,6 +222,7 @@ async def line_customer_confirm_save(
 
 @router.get("/line/callback")
 async def line_callback(
+    request: Request,
     code: str,
     state: str,
     line_oauth_state: Optional[str] = Cookie(None, alias=LINE_STATE_COOKIE),
@@ -242,8 +243,19 @@ async def line_callback(
     role = payload["role"]
     next_redeem = payload.get("next_redeem")
 
+    # 1. Dispatcher Logic: If we are on the main domain but this is a shop login,
+    # redirect the browser to the shop domain's callback so it can set its own cookie.
+    host = request.headers.get("host", "").split(":")[0]
+    is_main_host = host == settings.main_domain or not (host.startswith("shop.") or host == settings.shop_domain)
+
+    if role == "shop" and is_main_host:
+        # Bounce to the shop domain to set the cookie there
+        target_url = f"https://{settings.shop_domain}/auth/line/callback?code={code}&state={state}"
+        return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+
+    # 2. Proceed with token exchange (always use the registered main-domain URI)
     try:
-        tokens = await exchange_code_for_token(code)
+        tokens = await exchange_code_for_token(code, redirect_uri=settings.line_redirect_uri)
         profile = await fetch_profile(tokens["access_token"])
     except LineLoginError as e:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
@@ -365,8 +377,13 @@ async def google_callback(
 
     next_redeem = payload.get("next_redeem")
 
+    # Dispatcher
+    host = request.headers.get("host", "").split(":")[0]
+    is_main_host = host == settings.main_domain or not (host.startswith("shop.") or host == settings.shop_domain)
+    # (Google/FB currently only used for customers, but logic is here for consistency)
+
     try:
-        tokens = await google_login.exchange_code_for_token(code)
+        tokens = await google_login.exchange_code_for_token(code, redirect_uri=settings.google_redirect_uri)
         profile = await google_login.fetch_profile(tokens["access_token"])
     except google_login.GoogleLoginError as e:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
@@ -410,8 +427,12 @@ async def facebook_callback(
 
     next_redeem = payload.get("next_redeem")
 
+    # Dispatcher
+    host = request.headers.get("host", "").split(":")[0]
+    is_main_host = host == settings.main_domain or not (host.startswith("shop.") or host == settings.shop_domain)
+
     try:
-        tokens = await facebook_login.exchange_code_for_token(code)
+        tokens = await facebook_login.exchange_code_for_token(code, redirect_uri=settings.facebook_redirect_uri)
         profile = await facebook_login.fetch_profile(tokens["access_token"])
     except facebook_login.FacebookLoginError as e:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
