@@ -13,6 +13,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import get_current_shop
 from app.core.database import get_session
+from app.core.urls import customer_base_url
 from app.models import Redemption, Shop, Point
 from app.models.util import utcnow
 from app.routes.auth import _set_session_cookie
@@ -715,7 +716,7 @@ async def onboard_done_get(
     """S2.4 — celebration + the shop's actual print QR ready to download.
     Per the revised design the customer-preview mini phone moved out; the
     onboarding wraps with "here's your QR, save it, then enter the app"."""
-    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
+    scan_url = customer_base_url(request) + f"/scan/{shop.id}"
     qr_svg = segno.make(scan_url, error="m").svg_inline(
         scale=8, dark="#111111", light="#ffffff", border=1, omitsize=True
     )
@@ -1461,7 +1462,7 @@ async def shop_qr(
     request: Request,
     shop: Shop = Depends(get_current_shop),
 ):
-    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
+    scan_url = customer_base_url(request) + f"/scan/{shop.id}"
     qr_svg = segno.make(scan_url, error="m").svg_inline(
         scale=8, dark="#111111", light="#ffffff", border=1, omitsize=True
     )
@@ -1483,7 +1484,7 @@ async def shop_qr_live(
     stale QRs hit the expired-token branch in /scan/{shop_id}."""
     from app.services.auth import LIVE_QR_TTL_SECONDS, issue_live_qr_token
     token = issue_live_qr_token(shop.id)
-    base = str(request.base_url).rstrip("/")
+    base = customer_base_url(request)
     scan_url = f"{base}/scan/{shop.id}?t={token}"
     qr_svg = segno.make(scan_url, error="m").svg_inline(
         scale=10, dark="#111111", light="#ffffff", border=1, omitsize=True
@@ -1509,7 +1510,7 @@ async def shop_qr_live_refresh(
     without a full reload."""
     from app.services.auth import LIVE_QR_TTL_SECONDS, issue_live_qr_token
     token = issue_live_qr_token(shop.id)
-    base = str(request.base_url).rstrip("/")
+    base = customer_base_url(request)
     scan_url = f"{base}/scan/{shop.id}?t={token}"
     qr_svg = segno.make(scan_url, error="m").svg_inline(
         scale=10, dark="#111111", light="#ffffff", border=1, omitsize=True
@@ -1523,7 +1524,7 @@ async def shop_qr_png(
     shop: Shop = Depends(get_current_shop),
 ):
     """High-DPI PNG of just the QR. Used by some legacy flows."""
-    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
+    scan_url = customer_base_url(request) + f"/scan/{shop.id}"
     buf = io.BytesIO()
     segno.make(scan_url, error="h").save(buf, kind="png", scale=30, border=1)
     safe_name = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
@@ -1542,7 +1543,7 @@ async def shop_qr_card_png(
     """High-quality PNG of the full unified card (matching /shop/onboard/done).
     Suitable for printing or sharing.
     """
-    scan_url = str(request.base_url).rstrip("/") + f"/scan/{shop.id}"
+    scan_url = customer_base_url(request) + f"/scan/{shop.id}"
     content = await generate_shop_card_png(shop, scan_url)
     safe_name = "".join(c if c.isalnum() else "-" for c in shop.name).strip("-").lower() or "shop"
     quoted_filename = urllib.parse.quote(f"taemdee-card-{safe_name}.png")
