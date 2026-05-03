@@ -47,7 +47,20 @@ class Settings(BaseSettings):
     facebook_redirect_uri: str = "https://taemdee.com/auth/facebook/callback"
 
     # Slack incoming-webhook for deploy notifications.
-    slack_webhook_url: Optional[str] = None
+    slack_deploy_webhook_url: Optional[str] = None
+
+    # How many "ลูกค้าล่าสุด" feed rows the S3 dock keeps visible.
+    shop_customer_last_scan_display_number: int = 10
+
+    # Welcome-credit grant amount (in CREDITS, not satang)
+    credit_welcome_amount: int = 50
+
+    # Cloudflare R2 Storage.
+    r2_endpoint_url: Optional[str] = None
+    r2_access_key_id: Optional[str] = None
+    r2_secret_access_key: Optional[str] = None
+    r2_bucket: str = "taemdee"
+    r2_public_url: Optional[str] = None
 
     # DeeReach: default SMS sender name (if the provider supports it).
     sms_sender: str = "TaemDee"
