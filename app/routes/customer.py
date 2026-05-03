@@ -888,11 +888,19 @@ async def scan(
         # Forward to /card/{shop_id} so the friendly "ไม่พบร้านนี้" page renders.
         return RedirectResponse(url=f"/card/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
 
-    # Owner has disabled the printed-QR path. Surface the existing
-    # scan-expired page (same friendly "this scan can't issue right now"
-    # treatment as a stale live-QR token) — the customer can ask staff
-    # to issue manually instead.
-    if not shop.issue_method_customer_scan:
+    # Path-specific gate: a request with `?t=<jwt>` came from the live
+    # rotating QR; bare /scan/<id> came from the printed counter
+    # sticker. Each path has its own toggle so a shop can keep the
+    # rotating-QR mode while shutting off photocopied stickers.
+    is_live_request = bool(t)
+    if is_live_request and not shop.issue_method_live_qr:
+        return templates.TemplateResponse(
+            request=request,
+            name="scan_expired.html",
+            context={"shop_id": shop_id},
+            status_code=status.HTTP_410_GONE,
+        )
+    if not is_live_request and not shop.issue_method_static_qr:
         return templates.TemplateResponse(
             request=request,
             name="scan_expired.html",

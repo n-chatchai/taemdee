@@ -67,7 +67,8 @@
         <div class="row-name">วิธีออกแต้ม</div>
         <div class="row-meta">
           {% set methods = [] %}
-          {% if shop.issue_method_customer_scan %}{% set _ = methods.append('ลูกค้าสแกน') %}{% endif %}
+          {% if shop.issue_method_static_qr %}{% set _ = methods.append('QR ติดเคาน์เตอร์') %}{% endif %}
+          {% if shop.issue_method_live_qr %}{% set _ = methods.append('QR หน้าจอ') %}{% endif %}
           {% if shop.issue_method_shop_scan %}{% set _ = methods.append('ร้านสแกน') %}{% endif %}
           {% if shop.issue_method_phone_entry %}{% set _ = methods.append('กรอกเบอร์') %}{% endif %}
           {% if shop.issue_method_grant %}{% set _ = methods.append('ให้แต้ม') %}{% endif %}

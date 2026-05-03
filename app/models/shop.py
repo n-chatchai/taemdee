@@ -32,12 +32,16 @@ class Shop(SQLModel, table=True):
     issuance_method: str = Field(default="all")
 
     # S5 issuance method toggles (multi-select per design 2026-04-26).
-    # All four default ON so a freshly-onboarded shop accepts every
-    # issuance path. Owner can disable any of them at /shop/issue/methods.
-    # Disabling `customer_scan` makes the printed QR refuse new stamps
-    # (used when a shop wants only staff-driven issuance — e.g. theft
-    # or anti-bot regimes).
-    issue_method_customer_scan: bool = Field(default=True)
+    # ลูกค้าสแกน splits into two paths and each can be turned off
+    # independently: `static_qr` is the printed counter sticker
+    # (/scan/<id> with no token), `live_qr` is the rotating on-screen
+    # S3.qr (/scan/<id>?t=<jwt>). All five default ON so freshly
+    # onboarded shops accept every path; owners disable individual
+    # methods at /shop/issue/methods. Disabling static_qr keeps the
+    # rotating QR working — useful when an owner is worried about
+    # photocopied/screenshotted stickers.
+    issue_method_static_qr: bool = Field(default=True)
+    issue_method_live_qr: bool = Field(default=True)
     issue_method_shop_scan: bool = Field(default=True)
     issue_method_phone_entry: bool = Field(default=True)
     issue_method_grant: bool = Field(default=True)

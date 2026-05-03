@@ -528,18 +528,21 @@ async def issue_grant_action(
 
 @router.post("/issue/methods")
 async def save_issuance_methods(
-    customer_scan: str = Form("0"),
+    static_qr: str = Form("0"),
+    live_qr: str = Form("0"),
     shop_scan: str = Form("0"),
     phone_entry: str = Form("0"),
     grant: str = Form("0"),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    """S5 settings — persist the issuance method toggles. All four are
-    user-controlled now; disabling customer_scan makes the printed QR
-    refuse new stamps. Visiting this page also auto-claims the
-    'issue_methods_review' dashboard todo on save."""
-    shop.issue_method_customer_scan = customer_scan == "1"
+    """S5 settings — persist the issuance method toggles. ลูกค้าสแกน is
+    split into static_qr (printed counter sticker) and live_qr (S3.qr
+    rotating on-screen QR) so each can be turned off independently.
+    Visiting this page also auto-claims the 'issue_methods_review'
+    dashboard todo on save."""
+    shop.issue_method_static_qr = static_qr == "1"
+    shop.issue_method_live_qr = live_qr == "1"
     shop.issue_method_shop_scan = shop_scan == "1"
     shop.issue_method_phone_entry = phone_entry == "1"
     shop.issue_method_grant = grant == "1"

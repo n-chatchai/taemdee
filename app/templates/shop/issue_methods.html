@@ -4,13 +4,14 @@
 {% block content %}
   <form method="POST" action="/shop/issue/methods"
         x-data="{
-          customerScan: {{ 'true' if shop.issue_method_customer_scan else 'false' }},
+          staticQr: {{ 'true' if shop.issue_method_static_qr else 'false' }},
+          liveQr: {{ 'true' if shop.issue_method_live_qr else 'false' }},
           shopScan: {{ 'true' if shop.issue_method_shop_scan else 'false' }},
           phoneEntry: {{ 'true' if shop.issue_method_phone_entry else 'false' }},
           grant: {{ 'true' if shop.issue_method_grant else 'false' }},
           dirty: false,
         }"
-        x-init="$watch('customerScan', () => dirty = true); $watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
+        x-init="$watch('staticQr', () => dirty = true); $watch('liveQr', () => dirty = true); $watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
 
 {% set app_bar_back = '/shop/settings' %}
 {% set app_bar_title = 'วิธีออกแต้ม' %}
@@ -22,10 +23,12 @@
     </div>
 
     <div class="s5-toggles">
-      {# Customer scans the printed QR at the counter. Toggling this off
-         makes /scan/<shop_id> refuse new stamps — useful when the owner
-         wants every issuance to go through staff. #}
-      <label class="s5-toggle-row primary" @click.prevent="customerScan = !customerScan">
+      {# ลูกค้าสแกน splits into two paths — printed counter sticker
+         (static, /scan/<id>) and rotating on-screen QR (live,
+         /scan/<id>?t=<jwt>). Owners can disable static while keeping
+         the live rotating QR — handy when worried about photocopied
+         stickers but still want to use S3.qr at the counter. #}
+      <label class="s5-toggle-row primary" @click.prevent="staticQr = !staticQr">
         <div class="t-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -35,14 +38,33 @@
           </svg>
         </div>
         <div class="t-info">
-          <div class="t-name-row"><span class="t-name">ลูกค้าสแกน</span></div>
-          <div class="t-sub">ติด QR ที่เคาน์เตอร์ ลูกค้าสแกนเอง</div>
+          <div class="t-name-row"><span class="t-name">QR ติดเคาน์เตอร์</span></div>
+          <div class="t-sub">ลูกค้าสแกน · QR แบบนิ่ง พิมพ์ติดที่ร้าน</div>
         </div>
-        <div class="s5-toggle" :class="{ on: customerScan }">
+        <div class="s5-toggle" :class="{ on: staticQr }">
           <div class="dot"></div>
         </div>
       </label>
-      <input type="hidden" name="customer_scan" :value="customerScan ? '1' : '0'">
+      <input type="hidden" name="static_qr" :value="staticQr ? '1' : '0'">
+
+      <label class="s5-toggle-row primary" @click.prevent="liveQr = !liveQr">
+        <div class="t-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <rect x="2" y="4" width="20" height="14" rx="2"/>
+            <path d="M8 21h8"/>
+            <path d="M12 18v3"/>
+            <path d="M9 11l3 3 3-3"/>
+          </svg>
+        </div>
+        <div class="t-info">
+          <div class="t-name-row"><span class="t-name">QR หน้าจอ (หมุนเวียน)</span></div>
+          <div class="t-sub">ลูกค้าสแกน · เปิดที่หน้าจอ หมุนเวียนทุก 15 วินาที</div>
+        </div>
+        <div class="s5-toggle" :class="{ on: liveQr }">
+          <div class="dot"></div>
+        </div>
+      </label>
+      <input type="hidden" name="live_qr" :value="liveQr ? '1' : '0'">
 
       {# Shop scans the customer's QR with camera #}
       <label class="s5-toggle-row" @click.prevent="shopScan = !shopScan">
