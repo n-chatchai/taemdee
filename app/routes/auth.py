@@ -427,6 +427,12 @@ def _start_facebook_oauth(
     return redirect
 
 
+@router.get("/google/start")
+async def google_start():
+    """Shop-side Google Login."""
+    return _start_google_oauth(role="shop")
+
+
 @router.get("/google/customer/start")
 async def google_customer_start(next_redeem: Optional[str] = None):
     """Customer-side Google Sign-In. Mirrors the LINE flow — start sets a
@@ -434,6 +440,18 @@ async def google_customer_start(next_redeem: Optional[str] = None):
     `?next_redeem=<shop_id>` carries through state and auto-resumes a C4
     redemption after the callback completes."""
     return _start_google_oauth(role="customer", next_redeem=next_redeem)
+
+
+@router.get("/facebook/start")
+async def facebook_start():
+    """Shop-side Facebook Login."""
+    return _start_facebook_oauth(role="shop")
+
+
+@router.get("/facebook/customer/start")
+async def facebook_customer_start(next_redeem: Optional[str] = None):
+    """Customer-side Facebook Login."""
+    return _start_facebook_oauth(role="customer", next_redeem=next_redeem)
 
 
 @router.get("/google/callback")
