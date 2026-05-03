@@ -88,6 +88,8 @@ async def subdomain_routing(request: Request, call_next):
     """
     host = request.headers.get("host", "").split(":")[0]
     path = request.url.path
+    query = request.url.query
+    suffix = f"?{query}" if query else ""
 
     # System/static routes always allowed on both
     if path.startswith("/static") or path in (
@@ -115,6 +117,8 @@ async def subdomain_routing(request: Request, call_next):
             or path.startswith("/staff")
         ):
             # Customer trying to access /my-cards on shop domain? Bounce to main.
+            # Preserve query string — old printed scan QRs encode shop.* and rely
+            # on ?branch=... / ?t=... carrying through this redirect.
             main_host = (
                 settings.main_domain
                 if settings.environment == "production"
@@ -122,7 +126,7 @@ async def subdomain_routing(request: Request, call_next):
             )
             proto = request.url.scheme
             return RedirectResponse(
-                url=f"{proto}://{main_host}{path}",
+                url=f"{proto}://{main_host}{path}{suffix}",
                 status_code=status.HTTP_303_SEE_OTHER,
             )
     else:
@@ -135,7 +139,7 @@ async def subdomain_routing(request: Request, call_next):
             )
             proto = request.url.scheme
             return RedirectResponse(
-                url=f"{proto}://{shop_host}{path}",
+                url=f"{proto}://{shop_host}{path}{suffix}",
                 status_code=status.HTTP_303_SEE_OTHER,
             )
 
