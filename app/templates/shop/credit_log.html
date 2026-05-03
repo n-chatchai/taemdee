@@ -27,14 +27,7 @@
     <div class="label">ทุกความเคลื่อนไหว</div>
     {% for entry in entries %}
       {% set credits = entry.amount // 100 %}
-      <div class="s10-row" style="cursor:default;">
-        <div class="row-icon">
-          {% if entry.amount > 0 %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="12" y1="5" x2="12" y2="19"/><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          {% else %}
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><line x1="5" y1="12" x2="19" y2="12"/></svg>
-          {% endif %}
-        </div>
+      <div class="s10-row no-icon" style="cursor:default;">
         <div class="row-info">
           <div class="row-name">{{ _reason_th.get(entry.reason, entry.reason) }}</div>
           <div class="row-meta">{{ entry.created_at|bkk_feed_time_short }}</div>

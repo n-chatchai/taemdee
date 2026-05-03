@@ -4933,6 +4933,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   justify-content: center;
 }
 .s10-row .row-icon svg { width: 19px; height: 19px; }
+/* Variant for rows that want no leading icon column — drops the
+   24px slot so the row-info text starts flush left. Used on the
+   topup history + credit log lists where the status / +N delta
+   carries the visual cue instead. */
+.s10-row.no-icon { grid-template-columns: 1fr auto; }
 /* Color variants now drive only the icon stroke color, not a tile. */
 .s10-row .row-icon.butter { color: #BC8B00; }
 .s10-row .row-icon.mint { color: var(--mint-ink); }
