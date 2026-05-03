@@ -6782,7 +6782,8 @@
       </div>
 
       <div class="login-modal-roles">
-        <a href="https://shop.taemdee.com/shop/login" class="login-modal-role primary">
+        {% set shop_host = settings.shop_domain if settings.environment == "production" else "shop." + request.headers.get('host', '').split(':')[0] %}
+        <a href="https://{{ shop_host }}/shop/login" class="login-modal-role primary">
           <div class="role-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
