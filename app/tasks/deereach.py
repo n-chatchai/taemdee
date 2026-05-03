@@ -43,15 +43,11 @@ from app.services import events
 
 log = logging.getLogger(__name__)
 
-# ---------------------------------------------------------------------------
-# Channel cost table (satang)
-# ---------------------------------------------------------------------------
-CHANNEL_COST_SATANG: dict[str, int] = {
-    "web_push": 50,
-    "line": 100,
-    "sms": 300,
-    "inbox": 0,
-}
+# Channel cost table — re-exported from services/deereach.py so the
+# refund maths stay in lockstep with the lock side. Don't redefine
+# here; DEEREACH_CHANNELS in services/deereach.py is the single
+# source of truth.
+from app.services.deereach import CHANNEL_COST_SATANG  # noqa: E402,F401
 
 
 # ---------------------------------------------------------------------------

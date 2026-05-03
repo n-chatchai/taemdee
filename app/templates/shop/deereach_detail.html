@@ -109,16 +109,16 @@
           <div class="cr-info">
             <div class="cr-name">{{ c.display_name or 'ลูกค้า' }}</div>
             <div class="cr-channels">
-              {% for ch_id, ch_label, ch_cost in [
-                ('web_push', 'Web Push', '0.5'),
-                ('line', 'LINE', '1'),
-                ('sms', 'SMS', '3'),
-              ] %}
+              {# Iterate DEEREACH_CHANNELS so labels + costs stay in
+                 lockstep with /shop/topup — single source of truth for
+                 channel pricing. Hidden when a channel is disabled
+                 globally. #}
+              {% for ch_id, ch_cfg in channels.items() if ch_cfg.enabled %}
                 <span class="ch-badge
                   {%- if ch.chosen == ch_id %} active
                   {%- elif ch.available[ch_id] %} available
                   {%- else %} unavailable{% endif %}">
-                  {{ ch_label }} <em>{{ ch_cost }}</em>
+                  {{ ch_cfg.label }} <em>{{ '%g' % ch_cfg.cost_credits }}</em>
                 </span>
               {% endfor %}
             </div>
@@ -181,3 +181,13 @@
 
   <div class="dash-flash is-error" x-show="flash" x-cloak x-text="flash" style="margin: 12px 20px 0;"></div>
 {% endblock %}
+
+{# Bottom nav stays present so the owner can jump tabs without
+   needing the back arrow first. The active tab is "insights" since
+   the deereach editor is reached via the แนะนำ tab. #}
+{% block nav %}
+  {% set nav_active = 'insights' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}
+
+{% block td_class %} td-tabbed{% endblock %}

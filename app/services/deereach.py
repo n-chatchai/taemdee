@@ -44,25 +44,29 @@ log = logging.getLogger(__name__)
 # ---------------------------------------------------------------------------
 SATANG_PER_CREDIT = 100
 
-# Per-channel cost in satang (waterfall order: line > sms > web_push > inbox)
-CHANNEL_COST_SATANG: dict[str, int] = {
-    "line": 100,       # 1 Cr
-    "sms": 300,        # 3 Cr
-    "web_push": 50,    # 0.5 Cr
-    "inbox": 0,        # free
+# DeeReach paid channels — single source of truth for the user-facing
+# list (Thai label, per-message cost in credits, enabled flag) and the
+# satang ledger that drives _pick_channel below. Keys match the
+# internal channel names emitted by _pick_channel and consumed by
+# tasks/deereach.py's send dispatcher; the `label` is what shop
+# owners see on /shop/topup and /shop/deereach. `enabled=False`
+# dark-launches a channel (e.g. SMS off until DLT/sender approval).
+DEEREACH_CHANNELS: dict[str, dict] = {
+    "web_push": {"label": "แต้มดี", "cost_credits": 0.5, "enabled": True},
+    "line":     {"label": "ไลน์",   "cost_credits": 1.0, "enabled": True},
+    "sms":      {"label": "SMS",    "cost_credits": 2.0, "enabled": True},
 }
 
-# Customer-facing message channels — what the shop owner sees on
-# /shop/topup ("send X taemdee messages, Y LINE, Z SMS"). Each entry
-# carries the Thai label, the per-message cost in credits (1 Cr ==
-# 100 satang), and an enabled flag so we can dark-launch channels
-# (e.g. SMS off until DLT/sender-name approval lands) without
-# touching the lower-level CHANNEL_COST_SATANG that drives _pick_channel.
-DEEREACH_CHANNELS: dict[str, dict] = {
-    "taemdee": {"label": "แต้มดี", "cost_credits": 0.5, "enabled": True},
-    "line":    {"label": "ไลน์",   "cost_credits": 1.0, "enabled": True},
-    "sms":     {"label": "SMS",    "cost_credits": 2.0, "enabled": True},
+# Per-channel cost in satang — derived from DEEREACH_CHANNELS so a
+# price tweak only happens in one place. `inbox` (in-app, always
+# reachable, free) is the fallback when no paid channel works and
+# isn't in DEEREACH_CHANNELS by design — it's not a billable option
+# the owner picks, just the floor.
+CHANNEL_COST_SATANG: dict[str, int] = {
+    key: int(cfg["cost_credits"] * SATANG_PER_CREDIT)
+    for key, cfg in DEEREACH_CHANNELS.items()
 }
+CHANNEL_COST_SATANG["inbox"] = 0
 
 
 def sends_remaining_per_channel(credit_balance_satang: int) -> dict[str, int]:

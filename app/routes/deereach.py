@@ -135,6 +135,7 @@ async def deereach_detail(
                 "inbox": True,  # always reachable, no subscription needed
             },
         }
+    from app.services.deereach import DEEREACH_CHANNELS
     # Pass the full audience so the editor's checkboxes cover everyone —
     # the deselect UI can't work on a truncated list. Capped at 200 as a
     # sanity bound; campaigns with >200 recipients don't fit the per-row
@@ -150,6 +151,7 @@ async def deereach_detail(
             "message": message,
             "audience_cost": audience_cost,
             "audience_channels": audience_channels,
+            "channels": DEEREACH_CHANNELS,
             "credit_balance_satang": shop.credit_balance,
         },
     )
