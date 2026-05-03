@@ -64,10 +64,10 @@ def verify_oauth_state(url_state: str, cookie_token: Optional[str]) -> Optional[
             cookie_token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
     except Exception as e:
-        logger.error(f"❌ JWT decode error: {e} | token={cookie_token}")
+        logger.error(f"❌ JWT decode error: {e}")
         return None
     if payload.get("nonce") != url_state:
-        logger.error(f"❌ Nonce mismatch: url={url_state} vs payload={payload.get('nonce')}")
+        logger.error("❌ Nonce mismatch")
         return None
     payload.setdefault("role", "shop")
     return payload

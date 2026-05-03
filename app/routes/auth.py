@@ -242,8 +242,8 @@ async def line_customer_confirm_save(
 @router.get("/line/callback")
 async def line_callback(
     request: Request,
-    code: str,
-    state: str,
+    code: Optional[str] = None,
+    state: Optional[str] = None,
     line_oauth_state: Optional[str] = Cookie(None, alias=LINE_STATE_COOKIE),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
@@ -267,7 +267,7 @@ async def line_callback(
             display_name = payload.get("display_name")
             picture_url = payload.get("picture_url")
             role = payload.get("role", "shop")
-            logger.success(f"✅ Transfer Token Verified: line_id={line_id} | role={role}")
+            logger.success(f"✅ Transfer Token Verified | role={role}")
             # Skip to the final login part
             goto_login = True
         except Exception as e:
@@ -277,7 +277,7 @@ async def line_callback(
         # Standard flow: Verify state
         payload = verify_oauth_state(state, line_oauth_state)
         if not payload:
-            logger.error(f"❌ Invalid OAuth state | state={state} | cookie={line_oauth_state}")
+            logger.error(f"❌ Invalid OAuth state | state={'present' if state else 'missing'} | cookie={'present' if line_oauth_state else 'missing'}")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
         role = payload["role"]
@@ -295,6 +295,8 @@ async def line_callback(
 
     if not transfer and role == "shop" and is_main_host:
         # Step A: Exchange code on the main domain where we have the state cookie
+        if not code:
+             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Code missing for shop login")
         try:
             tokens = await exchange_code_for_token(code)
             profile = await fetch_profile(tokens["access_token"])
