@@ -1,0 +1,109 @@
+{% extends "_layouts/s_base.html" %}
+{% block title %}ระยะเวลาห่างระหว่างแต้ม · {{ shop.name }}{% endblock %}
+
+{% block content %}
+{% set app_bar_back = '/shop/settings' %}
+{% set app_bar_title = 'ระยะเวลาห่างระหว่างแต้ม' %}
+{% include "_partials/app_bar.html" %}
+
+<form method="POST" action="/shop/settings/cooldown"
+      x-data="{
+        enabled: {{ 'true' if cooldown.enabled else 'false' }},
+        value: {{ cooldown.value }},
+        unit: '{{ cooldown.unit }}',
+        dirty: false,
+      }"
+      x-init="['enabled','value','unit'].forEach(k => $watch(k, () => dirty = true));">
+
+  <div class="s5-q">
+    <div class="ask">ระยะเวลา<em>ห่างแต้ม.</em></div>
+    <div class="ask-th">กันลูกค้าสแกนรัวๆ · เลือก 1 คะแนนต่อ X วัน/สัปดาห์/เดือน</div>
+  </div>
+
+  {# Mode picker — ไม่จำกัด vs. throttle. The throttle row reveals a
+     [number] [unit] pair so the owner can express "1 ต่อ 2 สัปดาห์"
+     without converting to minutes. #}
+  <div class="s5-toggles">
+    <label class="s5-toggle-row" @click.prevent="enabled = false">
+      <div class="t-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="t-info">
+        <div class="t-name-row"><span class="t-name">ไม่จำกัด</span></div>
+        <div class="t-sub">สแกนกี่ครั้งก็ได้แต้ม · ค่าเริ่มต้น</div>
+      </div>
+      <div class="s5-toggle" :class="{ on: !enabled }">
+        <div class="dot"></div>
+      </div>
+    </label>
+
+    <label class="s5-toggle-row" @click.prevent="enabled = true">
+      <div class="t-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="4" width="18" height="18" rx="2"/>
+          <line x1="16" y1="2" x2="16" y2="6"/>
+          <line x1="8" y1="2" x2="8" y2="6"/>
+          <line x1="3" y1="10" x2="21" y2="10"/>
+        </svg>
+      </div>
+      <div class="t-info">
+        <div class="t-name-row"><span class="t-name">จำกัด 1 คะแนนต่อช่วงเวลา</span></div>
+        <div class="t-sub">เลือกได้ตามวัน/สัปดาห์/เดือน — สแกนซ้ำใน {{ '' }}ช่วงเวลานั้นจะไม่ได้แต้มเพิ่ม</div>
+      </div>
+      <div class="s5-toggle" :class="{ on: enabled }">
+        <div class="dot"></div>
+      </div>
+    </label>
+  </div>
+
+  {# Throttle controls — only shown when enabled. Number input + unit
+     select map directly to the POST params; we keep the names short
+     so the saved minute count is computed server-side. #}
+  <div class="s10-section" x-show="enabled" x-cloak x-transition>
+    <div class="label">1 คะแนนต่อ</div>
+    <div class="s10-cooldown-row">
+      <input
+        type="number"
+        name="value"
+        class="s10-cooldown-num"
+        min="1"
+        max="365"
+        x-model.number="value"
+        :disabled="!enabled"
+      />
+      <select
+        name="unit"
+        class="s10-cooldown-unit"
+        x-model="unit"
+        :disabled="!enabled"
+      >
+        <option value="day">วัน</option>
+        <option value="week">สัปดาห์</option>
+        <option value="month">เดือน</option>
+      </select>
+    </div>
+    <div class="s10-cooldown-presets">
+      <button type="button" @click="value = 1; unit = 'day'">1 วัน</button>
+      <button type="button" @click="value = 1; unit = 'week'">1 สัปดาห์</button>
+      <button type="button" @click="value = 2; unit = 'week'">2 สัปดาห์</button>
+      <button type="button" @click="value = 1; unit = 'month'">1 เดือน</button>
+    </div>
+  </div>
+
+  <div class="s5-tip">
+    <div class="tip-bulb">!</div>
+    <div>เฉพาะ "ลูกค้าสแกน" QR เท่านั้น · ร้านสแกนหรือออกแต้มเองยังให้ได้ตามปกติ</div>
+  </div>
+
+  <input type="hidden" name="enabled" :value="enabled ? '1' : '0'">
+  <div class="s2-foot">
+    <button type="submit" class="next" style="flex:1;" :disabled="!dirty">
+      <span x-text="dirty ? 'บันทึก' : 'บันทึกแล้ว'"></span>
+      <span class="arrow">✓</span>
+    </button>
+  </div>
+</form>
+{% endblock %}

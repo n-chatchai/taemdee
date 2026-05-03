@@ -78,6 +78,31 @@
       <div class="arrow-r">›</div>
     </a>
 
+    <a href="/shop/settings/cooldown" class="s10-row">
+      <div class="row-icon mint">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="12" cy="12" r="10"/>
+          <polyline points="12 6 12 12 16 14"/>
+        </svg>
+      </div>
+      <div class="row-info">
+        <div class="row-name">ระยะเวลาห่างแต้ม</div>
+        <div class="row-meta">
+          {% set _cd = shop.scan_cooldown_minutes or 0 %}
+          {% if _cd <= 0 %}
+            ไม่จำกัด · ลูกค้าสแกนกี่ครั้งก็ได้แต้ม
+          {% elif _cd % 43200 == 0 %}
+            1 คะแนนต่อ {{ _cd // 43200 }} เดือน
+          {% elif _cd % 10080 == 0 %}
+            1 คะแนนต่อ {{ _cd // 10080 }} สัปดาห์
+          {% else %}
+            1 คะแนนต่อ {{ (_cd // 1440) or 1 }} วัน
+          {% endif %}
+        </div>
+      </div>
+      <div class="arrow-r">›</div>
+    </a>
+
     <a href="/shop/themes" class="s10-row">
       <div class="row-icon butter">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">

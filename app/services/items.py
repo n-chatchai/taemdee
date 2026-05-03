@@ -61,6 +61,13 @@ ITEMS: list[DashboardItem] = [
         cta="เปิดดู →",
         link="/shop/issue/methods",
     ),
+    DashboardItem(
+        kind="cooldown_review",
+        label="ตั้ง<strong>ระยะเวลาห่างระหว่างแต้ม</strong>",
+        sub="กันลูกค้าสแกนรัวๆ · 1 คะแนนต่อ วัน/สัปดาห์/เดือน",
+        cta="ตั้งค่า →",
+        link="/shop/settings/cooldown",
+    ),
 ]
 
 
@@ -149,4 +156,5 @@ async def _claim_no_op(db: AsyncSession, shop: Shop) -> None:
 _CLAIM_HANDLERS: dict[str, Callable[[AsyncSession, Shop], Awaitable[None]]] = {
     "welcome_credit": _claim_welcome_credit,
     "issue_methods_review": _claim_no_op,
+    "cooldown_review": _claim_no_op,
 }

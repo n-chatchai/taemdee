@@ -4857,6 +4857,49 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 /* Connect-status rows — provider icon keeps its brand color, connected
    rows lose the cursor + pointer (read-only), and a small check chip
    replaces the arrow when linked. */
+/* Scan-cooldown form — number + unit pair sits inline so it reads
+   like a sentence ("1 คะแนนต่อ [2] [สัปดาห์]"). Preset buttons round
+   out the unit options into common shop intervals. */
+.s10-cooldown-row {
+  display: flex;
+  gap: 10px;
+  margin: 10px 0 12px;
+}
+.s10-cooldown-num,
+.s10-cooldown-unit {
+  background: var(--surface);
+  border: 1.5px solid rgba(17, 17, 17, 0.18);
+  border-radius: 12px;
+  padding: 12px 14px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: var(--text-md);
+  color: var(--ink);
+}
+.s10-cooldown-num { width: 90px; text-align: center; -moz-appearance: textfield; }
+.s10-cooldown-num::-webkit-outer-spin-button,
+.s10-cooldown-num::-webkit-inner-spin-button { -webkit-appearance: none; margin: 0; }
+.s10-cooldown-unit { flex: 1; appearance: none; background-image: linear-gradient(45deg, transparent 50%, var(--ink-soft) 50%), linear-gradient(135deg, var(--ink-soft) 50%, transparent 50%); background-position: calc(100% - 16px) 18px, calc(100% - 11px) 18px; background-size: 5px 5px; background-repeat: no-repeat; padding-right: 30px; }
+.s10-cooldown-num:disabled,
+.s10-cooldown-unit:disabled { opacity: 0.4; cursor: not-allowed; }
+.s10-cooldown-presets {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-bottom: 8px;
+}
+.s10-cooldown-presets button {
+  background: transparent;
+  border: 1px dashed rgba(17, 17, 17, 0.3);
+  border-radius: 99px;
+  padding: 6px 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+.s10-cooldown-presets button:hover { color: var(--ink); border-color: var(--ink); }
+
 .s10-row.connect-row.connected { cursor: default; }
 .s10-row .row-icon.connect-icon-line { background: #06C755; color: #fff; border-color: #06C755; }
 .s10-row .row-icon.connect-icon-google { background: #fff; color: var(--ink); }
