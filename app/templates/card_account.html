@@ -91,7 +91,14 @@ when you're already here). #}
           {% if row.connected %}
             {% if row.id == 'phone' and masked_phone %}{{ masked_phone }} · ผูกแล้ว{% else %}ผูกแล้ว{% endif %}
           {% elif is_anonymous %}
-            ยังไม่ได้ผูก · ผูกที่นี่
+            {# Browser path: "ผูกที่นี่" tap-to-link prompt.
+               PWA path: same row but "ต้องเปิดในเบราว์เซอร์" — iOS PWAs
+               can't complete OAuth in-context (cookie store is isolated
+               from system Safari), so the prompt has to point users
+               outside. Both spans render; CSS swaps them based on the
+               .pwa-standalone class set by pwa_head.html. #}
+            <span class="connect-prompt-browser">ยังไม่ได้ผูก · ผูกที่นี่</span>
+            <span class="connect-prompt-pwa">ยังไม่ได้ผูก · เปิดในเบราว์เซอร์เพื่อผูก</span>
           {% else %}
             ยังไม่ได้ผูก
           {% endif %}
