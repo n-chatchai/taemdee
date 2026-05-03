@@ -39,7 +39,10 @@ def _isolate_dev_settings(monkeypatch):
     """
     monkeypatch.setattr(settings, "line_channel_id", None)
     monkeypatch.setattr(settings, "line_channel_secret", None)
+    monkeypatch.setattr(settings, "google_client_id", None)
+    monkeypatch.setattr(settings, "facebook_app_id", None)
     monkeypatch.setattr(settings, "login_otp_simulate", False)
+    monkeypatch.setattr(settings, "phone_login_enabled", False)
 
 
 @pytest.fixture
