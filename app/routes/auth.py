@@ -316,7 +316,7 @@ async def line_callback(
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         
         target_url = f"https://{settings.shop_domain}/auth/line/callback?transfer={token}"
-        logger.warning(f"↪️ Bouncing Shop Owner with Transfer Token to: {target_url}")
+        logger.warning(f"↪️ Bouncing Shop Owner to: https://{settings.shop_domain}/auth/line/callback?transfer=...")
         return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
 
     # 3. Proceed with login if not already done via transfer
