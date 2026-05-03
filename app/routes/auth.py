@@ -113,28 +113,20 @@ async def logout(response: Response):
 
 
 def _start_line_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
-    """Common OAuth kickoff — only the role-tagged state cookie + optional
-    next_redeem hint differ between the shop and customer flows."""
+    """Common OAuth kickoff. State is a self-contained signed JWT in the
+    URL — no companion cookie — so PWAs that hop into the system
+    browser for OAuth can come back without a cross-context cookie
+    miss."""
     if not line_is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "LINE Login not configured (set LINE_CHANNEL_ID + LINE_CHANNEL_SECRET in .env)",
         )
 
-    nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
-    redirect = RedirectResponse(
-        url=build_authorize_url(nonce), status_code=status.HTTP_302_FOUND
+    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem)
+    return RedirectResponse(
+        url=build_authorize_url(state_jwt), status_code=status.HTTP_302_FOUND
     )
-    redirect.set_cookie(
-        key=LINE_STATE_COOKIE,
-        value=cookie_token,
-        httponly=True,
-        secure=settings.environment == "production",
-        samesite="lax",
-        max_age=600,  # matches OAUTH_STATE_TTL_MINUTES
-        path="/auth/line",
-    )
-    return redirect
 
 
 @router.get("/line/start")
@@ -394,20 +386,11 @@ def _start_google_oauth(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Google Login disabled or not configured",
         )
-    nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
-    redirect = RedirectResponse(
-        url=google_login.build_authorize_url(nonce), status_code=status.HTTP_302_FOUND
+    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem)
+    return RedirectResponse(
+        url=google_login.build_authorize_url(state_jwt),
+        status_code=status.HTTP_302_FOUND,
     )
-    redirect.set_cookie(
-        key=GOOGLE_STATE_COOKIE,
-        value=cookie_token,
-        httponly=True,
-        secure=settings.environment == "production",
-        samesite="lax",
-        max_age=600,
-        path="/auth/google",
-    )
-    return redirect
 
 
 def _start_facebook_oauth(
@@ -418,20 +401,11 @@ def _start_facebook_oauth(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Facebook Login disabled or not configured",
         )
-    nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
-    redirect = RedirectResponse(
-        url=facebook_login.build_authorize_url(nonce), status_code=status.HTTP_302_FOUND
+    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem)
+    return RedirectResponse(
+        url=facebook_login.build_authorize_url(state_jwt),
+        status_code=status.HTTP_302_FOUND,
     )
-    redirect.set_cookie(
-        key=FACEBOOK_STATE_COOKIE,
-        value=cookie_token,
-        httponly=True,
-        secure=settings.environment == "production",
-        samesite="lax",
-        max_age=600,
-        path="/auth/facebook",
-    )
-    return redirect
 
 
 @router.get("/google/start")
