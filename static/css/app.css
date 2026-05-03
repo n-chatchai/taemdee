@@ -4638,16 +4638,14 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    ========================================================== */
 
 .s10-shop-card {
-  margin: 22px 20px 0;
-  padding: 16px 16px;
+  margin: 16px 16px 0;
+  padding: 12px 14px;
   background: var(--ink);
   color: var(--bg);
-  border-radius: 22px;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  box-shadow: none;
+  border-radius: 18px;
   display: flex;
   align-items: center;
-  gap: 14px;
+  gap: 12px;
   position: relative;
   overflow: hidden;
 }
@@ -4655,49 +4653,60 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   content: '';
   position: absolute;
   top: -30px; right: -30px;
-  width: 120px; height: 120px;
-  background: radial-gradient(circle, rgba(255, 217, 82, 0.5) 0%, transparent 60%);
+  width: 100px; height: 100px;
+  background: radial-gradient(circle, rgba(255, 217, 82, 0.42) 0%, transparent 60%);
   border-radius: 50%;
 }
 .s10-shop-card .logo {
-  width: 52px;
-  height: 52px;
+  width: 42px;
+  height: 42px;
   background: var(--accent);
   color: #fff;
-  border-radius: 14px;
+  border-radius: 12px;
   display: flex;
   align-items: center;
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 22px;
+  font-size: 18px;
   letter-spacing: -0.03em;
   flex-shrink: 0;
-  border: 1.5px solid var(--bg);
   position: relative;
 }
-.s10-shop-card .info { flex: 1; line-height: 1.2; position: relative; }
+.s10-shop-card .info { flex: 1; line-height: 1.2; position: relative; min-width: 0; }
 .s10-shop-card .name {
   font-weight: 700;
-  font-size: 17px;
+  font-size: 15px;
   letter-spacing: -0.02em;
-  margin-bottom: 2px;
+  margin-bottom: 1px;
 }
 .s10-shop-card .name .dot { color: var(--butter); }
 .s10-shop-card .meta {
-  font-style: italic;
   font-weight: 400;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink-softer);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
 
-.s10-section { padding: 22px 20px 0; }
+/* iOS-style grouped settings list — each section is a small uppercase
+   mini-header followed by ONE rounded card. Rows inside the card are
+   flat with hairline dividers, no per-row borders or colored icon
+   tiles. Much lighter than the previous "every row is its own card +
+   tinted icon chip" design. */
+.s10-section {
+  padding: 0;
+  margin: 18px 16px 0;
+}
 .s10-section .label {
-  font-weight: 700;
-  font-size: var(--text-base);
-  color: var(--ink-soft);
-  margin-bottom: 8px;
-  padding-left: 4px;
+  font-weight: 600;
+  font-size: 11px;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--ink-softer);
+  margin: 0 6px 6px;
+  padding: 0;
 }
 
 /* S2.1 / S10.location — province picker (text input styled with chevron). */
@@ -4814,15 +4823,18 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 600;
   color: var(--ink);
 }
+/* Lighter row card — no per-row border, single subtle bg, smaller
+   icon glyph (no colored tile). Stacks tightly so a section with 6
+   rows reads as a clean list, not a column of chunky chips. */
 .s10-row {
   background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
+  border: none;
+  border-radius: 12px;
   box-shadow: none;
-  padding: 12px 14px;
-  margin-bottom: 8px;
+  padding: 10px 14px;
+  margin: 0 0 4px;
   display: grid;
-  grid-template-columns: 36px 1fr auto;
+  grid-template-columns: 24px 1fr auto;
   gap: 12px;
   align-items: center;
   cursor: pointer;
@@ -4830,36 +4842,42 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: inherit;
 }
 .s10-row .row-icon {
-  width: 36px;
-  height: 36px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-radius: 10px;
-  border: 1px solid rgba(17, 17, 17, 0.18);
+  width: 24px;
+  height: 24px;
+  background: transparent;
+  color: var(--ink-soft);
+  border: none;
+  border-radius: 0;
   display: flex;
   align-items: center;
   justify-content: center;
 }
-.s10-row .row-icon svg { width: 16px; height: 16px; }
-.s10-row .row-icon.butter { background: var(--butter); color: var(--ink); }
-.s10-row .row-icon.mint { background: var(--mint); color: var(--mint-ink); }
-.s10-row .row-info { line-height: 1.2; }
+.s10-row .row-icon svg { width: 19px; height: 19px; }
+/* Color variants now drive only the icon stroke color, not a tile. */
+.s10-row .row-icon.butter { color: #BC8B00; }
+.s10-row .row-icon.mint { color: var(--mint-ink); }
+.s10-row .row-info { line-height: 1.2; min-width: 0; }
 .s10-row .row-name {
-  font-weight: 700;
-  font-size: var(--text-md);
+  font-weight: 600;
+  font-size: 14.5px;
   letter-spacing: -0.01em;
-  margin-bottom: 1px;
+  margin-bottom: 0;
 }
 .s10-row .row-meta {
-  font-style: italic;
+  font-style: normal;
   font-weight: 400;
-  font-size: var(--text-sm);
-  color: var(--ink-soft);
+  font-size: 11.5px;
+  color: var(--ink-softer);
+  margin-top: 1px;
+  overflow: hidden;
+  text-overflow: ellipsis;
+  white-space: nowrap;
 }
 .s10-row .arrow-r {
   font-family: 'JetBrains Mono', monospace;
-  color: var(--ink-soft);
-  font-size: var(--text-md);
+  color: var(--ink-softer);
+  font-size: 18px;
+  line-height: 1;
 }
 
 /* Connect-status rows — provider icon keeps its brand color, connected
@@ -4928,21 +4946,22 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-size: 13px;
 }
 .s10-logout {
-  margin: 24px 20px 20px;
-  padding: 12px 14px;
+  margin: 22px 16px 18px;
+  padding: 10px 14px;
   background: transparent;
-  border: 1px dashed rgba(17, 17, 17, 0.3);
-  border-radius: 14px;
+  border: none;
+  border-radius: 12px;
   font-family: inherit;
-  font-weight: 700;
-  font-size: var(--text-base);
-  color: var(--ink);
-  width: calc(100% - 40px);
+  font-weight: 600;
+  font-size: 13.5px;
+  color: var(--ink-soft);
+  width: calc(100% - 32px);
   cursor: pointer;
   text-align: center;
   text-decoration: none;
   display: block;
 }
+.s10-logout:hover { color: var(--ink); }
 /* C6.notifications — channel preference radio list + muted-shop rows.
    Wrapped in a single rounded surface (.notif-radio-list) so the two
    options read as one control; .selected paints the accent dot. */
@@ -11123,25 +11142,21 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 /* C6 ขนาดตัวอักษร — sm/md/lg picker (ported from design 5800-5860). */
 .s10-fontsize {
   background: var(--surface);
-  border: 1px solid rgba(17,17,17,0.18);
-  border-radius: 14px;
-  padding: 14px 14px 12px;
-  /* Match .s10-row's flush-left layout — the parent .s10-section
-     already provides the 20px horizontal inset, and a second 20px
-     margin here was making this card narrower than its neighbours. */
-  margin: 0 0 8px;
+  border: none;
+  border-radius: 12px;
+  padding: 10px 14px;
+  margin: 0 0 4px;
 }
 .s10-fontsize .fs-head {
   display: flex;
   align-items: center;
   gap: 12px;
-  margin-bottom: 12px;
+  margin-bottom: 8px;
 }
 .s10-fontsize .fs-icon {
-  width: 36px; height: 36px;
-  background: var(--accent-soft); color: var(--accent);
-  border-radius: 10px;
-  border: 1px solid rgba(17,17,17,0.18);
+  width: 24px; height: 24px;
+  background: transparent; color: var(--ink-soft);
+  border: none; border-radius: 0;
   display: flex; align-items: center; justify-content: center;
   flex-shrink: 0;
   font-family: 'Host Grotesk', sans-serif;
