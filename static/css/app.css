@@ -7658,32 +7658,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
 }
 
-/* Settings cog (top-right) — bare icon, no chrome per design. Size
-   tightened 38→32 in the latest design rev so it doesn't crowd the
-   greeting line. */
-.s3-top .settings-btn {
-  width: 32px;
-  height: 32px;
-  background: transparent;
-  color: var(--ink);
-  border: none;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-.s3-top .settings-btn svg { width: 18px; height: 18px; }
-.s3-top .settings-btn:active { transform: scale(0.92); }
-.s3-top .actions { gap: 4px; }
-
-/* Notification bell (next to cog) — same bare-icon chrome + accent dot
-   when there's something unread. Same 32×32 footprint as the cog. */
+/* Settings cog + notification bell (top-right) — bare-icon chrome,
+   no surface. Bumped from 32→36 footprint and 18→22 SVG so the
+   tap target feels right-sized next to the bigger glass dock. */
+.s3-top .settings-btn,
 .s3-top .bell-btn {
-  position: relative;
-  width: 32px;
-  height: 32px;
+  width: 36px;
+  height: 36px;
   background: transparent;
   color: var(--ink);
   border: none;
@@ -7693,12 +7674,16 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   cursor: pointer;
   text-decoration: none;
   flex-shrink: 0;
+  position: relative;
 }
-.s3-top .bell-btn svg { width: 18px; height: 18px; }
+.s3-top .settings-btn svg,
+.s3-top .bell-btn svg { width: 22px; height: 22px; }
+.s3-top .settings-btn:active,
 .s3-top .bell-btn:active { transform: scale(0.92); }
+.s3-top .actions { gap: 4px; }
 .s3-top .bell-btn .bell-badge {
   position: absolute;
-  top: 7px; right: 6px;
+  top: 8px; right: 7px;
   width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--accent);
