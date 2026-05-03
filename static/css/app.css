@@ -1051,6 +1051,21 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-left: 3px;
 }
 
+/* Settings-list empty state — used by topup history + credit log when
+   the section has no rows. Lives outside the s10-row chrome so the
+   text doesn't wrap into a tiny meta column. */
+.s10-empty {
+  margin: 0;
+  padding: 16px 14px;
+  background: var(--surface);
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  text-align: center;
+}
+.s10-empty a { color: var(--accent); font-weight: 600; }
+
 /* ==========================================================
    S8 — Shop QR (printable / shareable)
    ========================================================== */

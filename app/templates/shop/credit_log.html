@@ -6,9 +6,19 @@
 {% set app_bar_title = 'ประวัติเครดิต' %}
 {% include "_partials/app_bar.html" %}
 
+  {# Friendly Thai labels per CreditLog.reason. The actual reason
+     strings emitted by the codebase are:
+       topup           — slip topup grant
+       welcome_credit  — services/items.py one-time welcome bonus
+       deereach_lock   — credits held when a campaign is queued
+       deereach_refund — credits returned when a message fails to send
+       correction      — manual admin adjustment
+     Fall-through shows the raw key so a new reason isn't silently mistranslated. #}
   {% set _reason_th = {
     'topup': 'เติมเครดิต',
     'welcome_credit': 'เครดิตต้อนรับ',
+    'deereach_lock': 'ส่งข้อความ',
+    'deereach_refund': 'คืนเครดิต · ส่งไม่ได้บางส่วน',
     'deereach_send': 'ส่งข้อความ',
     'correction': 'ปรับยอด',
   } %}
@@ -35,11 +45,7 @@
         </div>
       </div>
     {% else %}
-      <div class="s10-row" style="cursor:default;">
-        <div class="row-info">
-          <div class="row-meta" style="font-style:italic;">ยังไม่มีความเคลื่อนไหว</div>
-        </div>
-      </div>
+      <div class="s10-empty">ยังไม่มีความเคลื่อนไหว</div>
     {% endfor %}
   </div>
 {% endblock %}
