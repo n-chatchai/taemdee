@@ -52,6 +52,30 @@ CHANNEL_COST_SATANG: dict[str, int] = {
     "inbox": 0,        # free
 }
 
+# Customer-facing message channels — what the shop owner sees on
+# /shop/topup ("send X taemdee messages, Y LINE, Z SMS"). Each entry
+# carries the Thai label, the per-message cost in credits (1 Cr ==
+# 100 satang), and an enabled flag so we can dark-launch channels
+# (e.g. SMS off until DLT/sender-name approval lands) without
+# touching the lower-level CHANNEL_COST_SATANG that drives _pick_channel.
+DEEREACH_CHANNELS: dict[str, dict] = {
+    "taemdee": {"label": "แต้มดี", "cost_credits": 0.5, "enabled": True},
+    "line":    {"label": "ไลน์",   "cost_credits": 1.0, "enabled": True},
+    "sms":     {"label": "SMS",    "cost_credits": 2.0, "enabled": True},
+}
+
+
+def sends_remaining_per_channel(credit_balance_satang: int) -> dict[str, int]:
+    """How many messages of each enabled channel `credit_balance_satang`
+    would buy, ignoring everything else. Used by the /shop/topup hero
+    to surface the same number broken down per channel."""
+    credits = credit_balance_satang / SATANG_PER_CREDIT
+    return {
+        key: int(credits / cfg["cost_credits"]) if cfg["cost_credits"] > 0 else 0
+        for key, cfg in DEEREACH_CHANNELS.items()
+        if cfg["enabled"]
+    }
+
 # Win-back: customer's last stamp at this shop is between MIN and MAX days ago.
 # Design says "14+ วัน" — bump min to 14 and widen the upper bound to a year so
 # we don't silently drop customers who have been gone longer.

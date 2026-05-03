@@ -30,9 +30,17 @@
       <span class="num">{{ credits }}</span>
       <span class="unit">เครดิต</span>
     </div>
+    {# Per-channel send estimate. Hidden when balance is zero so a
+       fresh shop doesn't see "0 ครั้ง · 0 ครั้ง · 0 ครั้ง" — they're
+       on the topup page about to fix that anyway. #}
+    {% if credits > 0 %}
     <div class="est">
-      ≈ <strong>ส่งข้อความได้ {{ sends_remaining }} ครั้ง</strong> · ครั้งละ ~50 เครดิต
+      ส่งข้อความได้
+      {% for key, cfg in channels.items() if cfg.enabled %}
+        <strong>{{ cfg.label }} {{ '{:,}'.format(sends_by_channel[key]) }} ครั้ง</strong>{% if not loop.last %} · {% endif %}
+      {% endfor %}
     </div>
+    {% endif %}
   </div>
 
   {# Packages — pure info, not selectable. The owner pays one of these

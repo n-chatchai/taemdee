@@ -773,10 +773,13 @@ async def topup_page(
     uploads the slip; record_topup() looks the package up by amount
     server-side. ?error=<kind> renders an inline banner after a failed
     upload so the owner can retry without losing context."""
-    from app.services.deereach import SATANG_PER_CREDIT
-    cost_per_send_credits = 50
+    from app.services.deereach import (
+        DEEREACH_CHANNELS,
+        SATANG_PER_CREDIT,
+        sends_remaining_per_channel,
+    )
     credits = shop.credit_balance // SATANG_PER_CREDIT
-    sends_remaining = credits // cost_per_send_credits if cost_per_send_credits else 0
+    sends_by_channel = sends_remaining_per_channel(shop.credit_balance)
     # Placeholder PromptPay QR — real PromptPay payload comes from R7 with
     # Slip2Go's QR generator. Customer types the amount themselves in
     # their banking app, matching one of the packages listed below.
@@ -791,7 +794,8 @@ async def topup_page(
             "shop": shop,
             "credits": credits,
             "packages": TOPUP_PACKAGES,
-            "sends_remaining": sends_remaining,
+            "channels": DEEREACH_CHANNELS,
+            "sends_by_channel": sends_by_channel,
             "qr_svg": qr_svg,
             "error": error,
         },
