@@ -26,14 +26,13 @@
     </a>
     <div class="nav-links">
       <a href="#shops">สำหรับร้าน</a>
-      <a href="#customers">สำหรับลูกค้า</a>
       <a href="#how">วิธีใช้</a>
       <a href="#faq">คำถามบ่อย</a>
     </div>
     <div class="nav-cta">
       {% if is_logged_in %}
         {% if valid_shop %}
-          <a href="https://shop.taemdee.com/shop/dashboard" class="primary">
+          <a href="https://{{ settings.shop_domain }}/shop/dashboard" class="primary">
             แดชบอร์ดร้านค้า
             <span class="arrow-circle">→</span>
           </a>
@@ -45,6 +44,10 @@
         {% endif %}
       {% else %}
         <a href="#login-modal" class="secondary">เข้าสู่ระบบ</a>
+        <a href="https://{{ settings.shop_domain }}/shop/login" class="primary">
+          เปิดร้านฟรี
+          <span class="arrow-circle">→</span>
+        </a>
       {% endif %}
     </div>
   </div>
@@ -78,6 +81,7 @@
             </svg>
           </div>
           <div class="role-text">
+            <div class="role-label">SHOP</div>
             <div class="role-name">สำหรับร้าน</div>
             <div class="role-meta">เปิดร้านฟรี ในไม่กี่นาที</div>
           </div>
@@ -90,6 +94,7 @@
             </svg>
           </div>
           <div class="role-text">
+            <div class="role-label">CUSTOMER</div>
             <div class="role-name">สำหรับลูกค้า</div>
             <div class="role-meta">สแกน QR เก็บแต้ม</div>
           </div>
@@ -101,6 +106,28 @@
         <span class="check-mini">✓</span>
         ไม่มีค่ารายเดือน · ไม่ต้องใส่บัตรเครดิต · ไม่ต้องโหลดแอป
       </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== STATS BAND ==================== -->
+<section class="stats-band">
+  <div class="container">
+    <div class="stat-block">
+      <div class="n">12k+</div>
+      <div class="l">ร้านค้าที่ใช้งาน</div>
+    </div>
+    <div class="stat-block">
+      <div class="n">1.2M</div>
+      <div class="l">แต้มที่ออกแล้ว</div>
+    </div>
+    <div class="stat-block">
+      <div class="n">450k</div>
+      <div class="l">ผู้ใช้งานสะสมแต้ม</div>
+    </div>
+    <div class="stat-block">
+      <div class="n">99%</div>
+      <div class="l">ความพึงพอใจ</div>
     </div>
   </div>
 </section>
@@ -137,7 +164,7 @@
           <li><span class="check-tile">✓</span><span>แจ้งเตือนเมื่อมีแต้มออก พร้อมปุ่มยกเลิกได้ทันที</span></li>
           <li><span class="check-tile">✓</span><span>ส่งโปรชวนลูกค้าที่หายไปกลับ ในคลิกเดียว</span></li>
         </ul>
-        <a href="/shop/login" class="btn-primary btn-hero">
+        <a href="https://{{ settings.shop_domain }}/shop/login" class="btn-primary btn-hero">
           ลองใช้ฟรี
           <span class="arrow-pill">→</span>
         </a>
@@ -169,39 +196,12 @@
               <div class="ds-tile balance"><div class="n">412</div><div class="l">เครดิต</div></div>
             </div>
             <div class="dash-reach">
-              <div class="dr-header">
-                <span class="dr-h-title">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c3.5 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z" stroke="currentColor" stroke-width="0"/></svg>
-                  แต้มดี
-                </span>
-                <span class="dr-h-meta">อัพเดททุกเช้า</span>
-              </div>
-
-              <div class="dr-feed-card">
-                <div class="dr-fc-tags">
-                  <span class="dr-fc-pill">วินแบ็ค</span>
-                  <span class="dr-fc-count">23 คน</span>
-                </div>
-                <div class="dr-fc-head">ดึงลูกค้าเก่ากลับมา</div>
-                <div class="dr-fc-meta">23 คนไม่ได้มา 60 วันแล้ว ส่งข้อความชวนกลับ?</div>
-                <button class="dr-fc-btn">
-                  <span>ส่งเลย</span>
-                  <span class="cost">50 เครดิต</span>
-                </button>
-              </div>
-
-              <div class="dr-feed-card">
-                <div class="dr-fc-tags">
-                  <span class="dr-fc-pill alt">ใกล้ครบ</span>
-                  <span class="dr-fc-count">12 คน</span>
-                </div>
-                <div class="dr-fc-head">กระตุ้นคนใกล้ครบ</div>
-                <div class="dr-fc-meta">12 คนเหลืออีก 1-2 แต้มก็ครบ ส่งเตือน?</div>
-                <button class="dr-fc-btn">
-                  <span>ส่งเลย</span>
-                  <span class="cost">24 เครดิต</span>
-                </button>
-              </div>
+              <div class="dr-kicker">วินแบ็ค</div>
+              <div class="dr-head">ดึงลูกค้าเก่ากลับมา</div>
+              <button class="dr-btn">
+                <span>ส่งข้อความชวนลูกค้าที่หายไป</span>
+                <span class="dr-cost">50 เครดิต</span>
+              </button>
             </div>
           </div>
         </div>
@@ -238,7 +238,7 @@
         <p>ใช้กล้องในเครื่องสแกน QR ที่เคาน์เตอร์ เปิดบัตรสะสมแต้มในเบราว์เซอร์</p>
         <div class="how-mini">
           <div class="how-mini-phone">
-            <div class="how-mini-screen how-mini-qr">
+            <div class="how-mini-screen">
               <div class="qr-frame">
                 <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
                   <rect x="0" y="0" width="36" height="36" fill="#FDFAF2"/>
@@ -293,7 +293,7 @@
         <p>แต้มขึ้นบนบัตรของลูกค้า เห็นเลยว่าใกล้รับรางวัลแค่ไหน</p>
         <div class="how-mini">
           <div class="how-mini-phone">
-            <div class="how-mini-screen how-mini-stamp">
+            <div class="how-mini-screen">
               <div class="hms-num">7<span class="hms-sub">/10</span></div>
               <div class="hms-stamps">
                 <div class="hms-s on"></div>
@@ -324,9 +324,9 @@
         <p>เก็บครบ — ลูกค้ากดที่หน้าเคาน์เตอร์เพื่อรับรางวัล ไม่มีคูปองให้ปริ้น</p>
         <div class="how-mini">
           <div class="how-mini-phone">
-            <div class="how-mini-screen how-mini-reward">
+            <div class="how-mini-screen">
               <div class="hmr-badge">
-                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+                <svg viewBox="0 0 16 16" fill="currentColor" width="16" height="16"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
               </div>
               <div class="hmr-num">10<span class="hms-sub">/10</span></div>
               <div class="hmr-msg">พร้อมรับรางวัล</div>
@@ -392,18 +392,14 @@
         <div class="section-phone">
           <div class="screen">
             <div class="td">
-
-              <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
-
+              <div class="c1-avatar">ส</div>
               <div class="shop-head">
                 <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-                <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
+                <div class="shop-sub">ร้านกาแฟลุงหมี · เชียงใหม่</div>
               </div>
-
               <div class="c1-greet-bubble">
-                <span class="cgb-text">สวัสดีครับ<strong>พี่สมศรี</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ</span>
+                สวัสดีครับ <strong>พี่สมศรี</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ
               </div>
-
               <div class="hero-num-wrap">
                 <div class="hero-label">แต้มของพี่ที่ร้านลุงหมี</div>
                 <div class="hero-num">
@@ -414,24 +410,17 @@
                   <em>อีก 3 ครั้ง!</em> <span class="of">/ ได้กาแฟฟรี</span>
                 </div>
               </div>
-
               <div class="stamps-wrap">
                 <div class="stamps">
-                  <div class="stamp on"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp on butter"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp on butter"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
+                  <div class="stamp on"></div><div class="stamp on"></div><div class="stamp on butter"></div>
+                  <div class="stamp on"></div><div class="stamp on"></div><div class="stamp on butter"></div>
+                  <div class="stamp on"></div><div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
                 </div>
               </div>
-
               <div class="reward-pill">
                 <div class="badge-tilted">ใกล้แล้ว!</div>
                 <div class="gift">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
                     <polyline points="20 12 20 22 4 22 4 12"/>
                     <rect x="2" y="7" width="20" height="5"/>
                     <line x1="12" y1="22" x2="12" y2="7"/>
@@ -444,13 +433,9 @@
                   <div class="rname">กาแฟ Signature ฟรี 1 แก้ว</div>
                 </div>
               </div>
-
               <div class="footer-mark">
-                <span class="fm-brand">
-                  <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                  <span class="brand">taemdee<span class="dot">.</span></span>
-                </span>
-                <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
+                <span class="fm-brand">แต้มดี<span class="dot">.</span></span>
+                <div class="fm-install">เพิ่มลงหน้าจอ</div>
               </div>
             </div>
           </div>
@@ -487,7 +472,6 @@
           จ่ายเฉพาะตอนส่งโปรชวนลูกค้าเก่ากลับมา
         </div>
       </details>
-
       <details class="faq-item">
         <summary>
           <span>ลูกค้าต้องโหลดแอปไหม?</span>
@@ -498,7 +482,6 @@
           ลูกค้าจะเข้าสู่ระบบด้วย LINE หรือเบอร์โทรก็ได้ถ้าอยากให้แต้มไม่หายเมื่อเปลี่ยนเครื่อง
         </div>
       </details>
-
       <details class="faq-item">
         <summary>
           <span>มีหลายสาขาใช้ได้ไหม?</span>
@@ -507,41 +490,6 @@
         <div class="answer">
           ได้ครับ เพิ่มสาขาได้ไม่จำกัด ทุกสาขาจะมี QR ของตัวเอง
           แต่ลูกค้าใช้บัตรเดียวกันสะสมแต้มและรับรางวัลได้ทุกสาขา
-          (โหมด "รวมรางวัล" ตั้งแบบล็อกถาวรเมื่อเพิ่มสาขาที่ 2)
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary>
-          <span>ทีมงานหลายคนใช้ได้ไหม?</span>
-          <span class="toggle-icon">+</span>
-        </summary>
-        <div class="answer">
-          ได้ครับ เชิญพนักงานเข้าทีมได้ผ่าน LINE หรือ SMS
-          ตั้งสิทธิ์ได้ว่าใครออกแต้มได้ ใครยกเลิกแต้มได้ ใครส่งโปรชวนกลับได้
-          เจ้าของร้านควบคุมการเข้าถึงข้อมูลทุกอย่าง
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary>
-          <span>เติมเครดิตยังไง?</span>
-          <span class="toggle-icon">+</span>
-        </summary>
-        <div class="answer">
-          เติมผ่าน PromptPay ได้ทุกธนาคาร อัพโหลดสลิปแล้วระบบตรวจสอบอัตโนมัติ เครดิตเข้าทันที
-          (ถ้าตรวจไม่ผ่าน จะส่งทีมงานเช็คให้ภายในวันเดียวกัน)
-        </div>
-      </details>
-
-      <details class="faq-item">
-        <summary>
-          <span>เครดิตหมดอายุไหม?</span>
-          <span class="toggle-icon">+</span>
-        </summary>
-        <div class="answer">
-          ไม่หมดอายุครับ เครดิตที่เติมแล้วใช้ได้ตลอดไป ไม่มีกำหนด
-          เก็บไว้ใช้ส่งโปรชวนลูกค้ากลับเมื่อต้องการได้
         </div>
       </details>
     </div>
@@ -552,30 +500,18 @@
 <section class="final-cta" id="cta">
   <div class="container">
     <div class="cta-card">
-      <div class="kicker-mini">
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        เริ่มได้เลย
-      </div>
+      <div class="kicker-mini">เริ่มได้เลย</div>
       <h2>เปิดร้านใหม่ <em>ในไม่กี่นาที.</em><br><span class="hl-light">ไม่มีค่ารายเดือน.</span></h2>
       <p>ใส่ชื่อร้าน เลือกรางวัล พิมพ์ QR ติดที่เคาน์เตอร์ — เริ่มเก็บลูกค้าประจำได้ตั้งแต่วันแรก ไม่ต้องเซ็นสัญญา ไม่ต้องใส่บัตรเครดิต</p>
       <div class="cta-buttons">
-        <a href="/shop/login" class="btn-primary">
+        <a href="https://{{ settings.shop_domain }}/shop/login" class="btn-primary">
           เปิดร้านฟรี
           <span class="arrow-pill">→</span>
         </a>
-        <a href="/my-cards" class="btn-secondary">
+        <a href="/customer/login" class="btn-secondary">
           ลูกค้า · ดูบัตรของฉัน
           <span class="arrow-pill" style="background:var(--accent);">→</span>
         </a>
-      </div>
-      <div class="trust">
-        <span><span class="dot"></span>฿0 ค่าใช้จ่าย</span>
-        <span><span class="dot"></span>ไม่ต้องใส่บัตรเครดิต</span>
-        <span><span class="dot"></span>ยกเลิกได้ทุกเมื่อ</span>
       </div>
     </div>
   </div>
@@ -585,7 +521,7 @@
 <footer class="foot">
   <div class="container">
     <div class="foot-brand">
-      <a href="#" class="nav-logo" style="font-size: 26px;">
+      <a href="/" class="nav-logo" style="font-size: 26px;">
         <svg class="logo-stamp" viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
           <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
           <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
@@ -606,14 +542,7 @@
     <div class="foot-col">
       <ul>
         <li><a href="#faq">คำถามบ่อย</a></li>
-        <li><a href="#">ติดต่อเรา</a></li>
-        <li><a href="#">คู่มือใช้งาน</a></li>
-      </ul>
-    </div>
-    <div class="foot-col">
-      <ul>
-        <li><a href="#">นโยบายความเป็นส่วนตัว</a></li>
-        <li><a href="#">ข้อตกลงการใช้งาน</a></li>
+        <li><a href="/privacy">นโยบายความเป็นส่วนตัว</a></li>
       </ul>
     </div>
   </div>
@@ -622,16 +551,7 @@
       <span>© 2026 แต้มดี · บริษัท แต้มดี จำกัด</span>
       <div class="socials">
         <a class="social-pill" aria-label="Facebook">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
-        </a>
-        <a class="social-pill" aria-label="Instagram">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-        </a>
-        <a class="social-pill social-pill-line" aria-label="LINE">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#fff" d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
-            <text x="12" y="13.2" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="5.6" font-weight="900" fill="#06C755" letter-spacing="-0.3">LINE</text>
-          </svg>
+          <svg viewBox="0 0 24 24" fill="currentColor" width="18" height="18"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
         </a>
       </div>
     </div>
@@ -655,9 +575,9 @@
     </div>
 
     <div class="login-modal-roles">
-      <a href="/shop/login" class="login-modal-role primary">
+      <a href="https://{{ settings.shop_domain }}/shop/login" class="login-modal-role primary">
         <div class="role-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
             <path d="M3 9l1-5h16l1 5"/>
             <path d="M5 9v11a1 1 0 001 1h12a1 1 0 001-1V9"/>
             <line x1="9" y1="13" x2="15" y2="13"/>
@@ -669,9 +589,9 @@
         </div>
         <span class="role-arrow">→</span>
       </a>
-      <a href="/me" class="login-modal-role">
+      <a href="/customer/login" class="login-modal-role">
         <div class="role-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" width="18" height="18">
             <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z"/>
           </svg>
         </div>

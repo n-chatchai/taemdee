@@ -2,9 +2,15 @@ from sqlmodel import select
 
 from app.core.auth import SESSION_COOKIE_NAME
 from app.models import OtpCode, Shop
+from app.core.config import settings
+
+settings.shop_logins = "line,phone,google,facebook"
+settings.customer_logins = "line,phone,google,facebook"
 
 
-async def test_otp_request_creates_code(client, db):
+async def test_otp_request_creates_code(client, db, monkeypatch):
+    monkeypatch.setattr(settings, "shop_logins", "line,phone,google,facebook")
+    monkeypatch.setattr(settings, "customer_logins", "line,phone,google,facebook")
     response = await client.post("/auth/otp/request", data={"phone": "0812345678"})
     assert response.status_code == 200
     assert response.json() == {"ok": True}
@@ -15,7 +21,9 @@ async def test_otp_request_creates_code(client, db):
     assert len(otp.code) == 4
 
 
-async def test_otp_verify_creates_shop_and_session(client, db):
+async def test_otp_verify_creates_shop_and_session(client, db, monkeypatch):
+    monkeypatch.setattr(settings, "shop_logins", "line,phone,google,facebook")
+    monkeypatch.setattr(settings, "customer_logins", "line,phone,google,facebook")
     await client.post("/auth/otp/request", data={"phone": "0812345678"})
     result = await db.exec(select(OtpCode).where(OtpCode.phone == "0812345678"))
     otp = result.first()
