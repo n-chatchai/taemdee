@@ -8,6 +8,24 @@
 {% block content %}
 {% set app_bar_back = '/shop/settings' %}
 {% set app_bar_title = 'เติมเครดิต' %}
+{# Three-dot menu on the right — opens a small popover linking to the
+   topup-slip history and the credit transaction log. Alpine handles
+   show/hide; @click.outside closes when the user taps elsewhere. #}
+{% set app_bar_action %}
+<div class="appbar-menu" x-data="{ open: false }" @click.outside="open = false">
+  <button type="button" class="appbar-menu-btn" @click="open = !open" aria-label="เมนูเพิ่ม">
+    <svg viewBox="0 0 24 24" fill="currentColor" aria-hidden="true">
+      <circle cx="12" cy="5" r="2"/>
+      <circle cx="12" cy="12" r="2"/>
+      <circle cx="12" cy="19" r="2"/>
+    </svg>
+  </button>
+  <div class="appbar-menu-pop" x-show="open" x-cloak x-transition.opacity>
+    <a href="/shop/topup/history">ประวัติเติมเงิน</a>
+    <a href="/shop/credit/log">ประวัติเครดิต</a>
+  </div>
+</div>
+{% endset %}
 {% include "_partials/app_bar.html" %}
 
   <div class="s7-balance">
@@ -17,7 +35,7 @@
       <span class="unit">เครดิต</span>
     </div>
     <div class="est">
-      ≈ <strong>ส่งดีรีชได้ {{ sends_remaining }} ครั้ง</strong> · ครั้งละ ~50 เครดิต
+      ≈ <strong>ส่งข้อความได้ {{ sends_remaining }} ครั้ง</strong> · ครั้งละ ~50 เครดิต
     </div>
   </div>
 

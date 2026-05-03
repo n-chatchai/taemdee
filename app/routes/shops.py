@@ -371,9 +371,9 @@ VALID_THEMES = ("taemdee", "mono", "night", "pastel")
 # settle on the long-term offer. Re-add bonus per-package later by setting
 # `bonus` here AND switching slip._credits_for_package() to add it.
 TOPUP_PACKAGES = {
-    "small":   {"credits": 100,   "bonus": 0, "price": 100,   "label": "ส่งดีรีชได้ ~2 ครั้ง"},
-    "popular": {"credits": 200,   "bonus": 0, "price": 200,   "label": "ส่งดีรีชได้ ~4 ครั้ง · เหมาะกับร้านใหม่"},
-    "big":     {"credits": 1000,  "bonus": 0, "price": 1000,  "label": "ส่งดีรีชได้ ~20 ครั้ง"},
+    "small":   {"credits": 100,   "bonus": 0, "price": 100,   "label": "ส่งข้อความได้ ~2 ครั้ง"},
+    "popular": {"credits": 200,   "bonus": 0, "price": 200,   "label": "ส่งข้อความได้ ~4 ครั้ง · เหมาะกับร้านใหม่"},
+    "big":     {"credits": 1000,  "bonus": 0, "price": 1000,  "label": "ส่งข้อความได้ ~20 ครั้ง"},
 }
 
 
@@ -866,6 +866,52 @@ async def topup_upload(
     return RedirectResponse(
         url=f"/shop/topup/confirm?pkg={pkg}&error={result.kind}",
         status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.get("/topup/history", response_class=HTMLResponse)
+async def topup_history(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Topup-slip log — every slip the shop has uploaded, regardless of
+    outcome. Newest first. Surfaced from the topup three-dot menu so
+    owners can audit their own history without admin help."""
+    from app.models import TopupSlip
+    rows = (await db.exec(
+        select(TopupSlip)
+        .where(TopupSlip.shop_id == shop.id)
+        .order_by(TopupSlip.created_at.desc())
+        .limit(100)
+    )).all()
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/topup_history.html",
+        context={"shop": shop, "slips": list(rows)},
+    )
+
+
+@router.get("/credit/log", response_class=HTMLResponse)
+async def credit_log(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Credit ledger — every CreditLog entry (topup grants, DeeReach
+    sends, manual corrections) for this shop, newest first. Same
+    three-dot menu entrypoint as topup history."""
+    from app.models import CreditLog
+    rows = (await db.exec(
+        select(CreditLog)
+        .where(CreditLog.shop_id == shop.id)
+        .order_by(CreditLog.created_at.desc())
+        .limit(200)
+    )).all()
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/credit_log.html",
+        context={"shop": shop, "entries": list(rows)},
     )
 
 

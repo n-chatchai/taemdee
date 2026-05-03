@@ -986,6 +986,71 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .app-bar .placeholder { width: 36px; height: 36px; }
 
+/* Three-dot overflow menu in app-bar's right slot. The button itself
+   reuses .x's circular chrome so it sits balanced opposite the back
+   arrow; the popover is a small rounded card anchored bottom-right
+   of the button. */
+.appbar-menu { position: relative; }
+.appbar-menu-btn {
+  width: 36px;
+  height: 36px;
+  background: rgba(17, 17, 17, 0.05);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  color: var(--ink);
+  padding: 0;
+}
+.appbar-menu-btn svg { width: 18px; height: 18px; }
+.appbar-menu-pop {
+  position: absolute;
+  top: calc(100% + 6px);
+  right: 0;
+  min-width: 180px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.10);
+  border-radius: 12px;
+  box-shadow: 0 12px 28px -8px rgba(17, 17, 17, 0.22);
+  padding: 4px;
+  z-index: 20;
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+}
+.appbar-menu-pop a {
+  padding: 10px 12px;
+  border-radius: 8px;
+  text-decoration: none;
+  color: var(--ink);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 500;
+  font-size: 13.5px;
+}
+.appbar-menu-pop a:hover { background: rgba(17, 17, 17, 0.04); }
+
+/* Credit-log row delta — green tint when credits arrived (topup,
+   welcome credit), red tint when they left (deereach send). The
+   number sits where .arrow-r usually does in a settings row. */
+.credit-delta {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  white-space: nowrap;
+}
+.credit-delta.up { color: var(--mint-ink, #1A6B3A); }
+.credit-delta.down { color: var(--ink-soft); }
+.credit-delta .cdl-unit {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 500;
+  font-size: 10.5px;
+  color: var(--ink-softer);
+  margin-left: 3px;
+}
+
 /* ==========================================================
    S8 — Shop QR (printable / shareable)
    ========================================================== */
