@@ -85,6 +85,19 @@ class Settings(BaseSettings):
     # Asset versioning (set by deploy script to bust caches).
     asset_version: str = "dev"
 
+    # Slip2Go (PromptPay slip verification). When `slip2go_api_secret`
+    # is empty, /shop/topup/upload returns a friendly "verifier not
+    # configured" error. `bank_transfer_skip_check` simulates a
+    # successful verify in dev so designers can exercise the flow
+    # without uploading a real bank slip.
+    slip2go_api_secret: Optional[str] = None
+    slip2go_success_codes: str = "200000,200200"
+    slip2go_success_messages: str = "Slip found,Slip is valid"
+    bank_receiver_bank_id: Optional[str] = None       # e.g. "014" for SCB
+    bank_receiver_account_suffix: Optional[str] = None
+    bank_receiver_name: Optional[str] = None          # comma-separated tokens, any-of match
+    bank_transfer_skip_check: bool = False            # dev-only simulation
+
     # --- Helper methods to check if a provider is enabled ---
     def is_login_enabled(self, role: str, provider: str) -> bool:
         """Checks if a provider (line, phone, google, facebook) is enabled for a role."""

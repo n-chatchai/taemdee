@@ -367,10 +367,13 @@ async def skip_dashboard_item(
 
 
 VALID_THEMES = ("taemdee", "mono", "night", "pastel")
+# Bonus credits intentionally zeroed — pricing is 1 ฿ = 1 credit while we
+# settle on the long-term offer. Re-add bonus per-package later by setting
+# `bonus` here AND switching slip._credits_for_package() to add it.
 TOPUP_PACKAGES = {
-    "small":   {"credits": 100,   "bonus": 0,   "price": 100,   "label": "ส่งดีรีชได้ ~2 ครั้ง"},
-    "popular": {"credits": 220,   "bonus": 20,  "price": 200,   "label": "ส่งดีรีชได้ ~4 ครั้ง · เหมาะกับร้านใหม่"},
-    "big":     {"credits": 1200,  "bonus": 200, "price": 1000,  "label": "ส่งดีรีชได้ ~24 ครั้ง"},
+    "small":   {"credits": 100,   "bonus": 0, "price": 100,   "label": "ส่งดีรีชได้ ~2 ครั้ง"},
+    "popular": {"credits": 200,   "bonus": 0, "price": 200,   "label": "ส่งดีรีชได้ ~4 ครั้ง · เหมาะกับร้านใหม่"},
+    "big":     {"credits": 1000,  "bonus": 0, "price": 1000,  "label": "ส่งดีรีชได้ ~20 ครั้ง"},
 }
 
 
@@ -778,6 +781,7 @@ async def topup_page(request: Request, shop: Shop = Depends(get_current_shop)):
 async def topup_confirm_page(
     request: Request,
     pkg: str,
+    error: Optional[str] = None,
     shop: Shop = Depends(get_current_shop),
 ):
     if pkg not in TOPUP_PACKAGES:
@@ -791,7 +795,72 @@ async def topup_confirm_page(
     return templates.TemplateResponse(
         request=request,
         name="shop/topup_confirm.html",
-        context={"shop": shop, "package": package, "pkg_id": pkg, "qr_svg": qr_svg},
+        context={
+            "shop": shop,
+            "package": package,
+            "pkg_id": pkg,
+            "qr_svg": qr_svg,
+            "error": error,
+        },
+    )
+
+
+@router.post("/topup/upload")
+async def topup_upload(
+    pkg: str = Form(...),
+    file: UploadFile = File(...),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Receive the slip image, hand to slip.record_topup, surface the
+    outcome via redirect.
+
+    Success → /shop/dashboard with ?topup=N (count of credits granted).
+    Anything else → /shop/topup/confirm?pkg=...&error=<machine-key> so
+    the page can render a friendly inline message and let the owner
+    retry without losing the package they picked.
+    """
+    from app.services.slip import record_topup
+    from app.services.storage import upload_to_r2
+
+    if pkg not in TOPUP_PACKAGES:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "Unknown package")
+    package = TOPUP_PACKAGES[pkg]
+
+    image_bytes = await file.read()
+    if not image_bytes:
+        return RedirectResponse(
+            url=f"/shop/topup/confirm?pkg={pkg}&error=verify_failed",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    # Store the slip image. Falls through to a placeholder string when
+    # R2 is unconfigured — TopupSlip.slip_image_url is required but the
+    # row's main job in dev is the dedup hash + audit log, not the URL.
+    image_url = await upload_to_r2(
+        image_bytes,
+        file_name=file.filename or "slip.jpg",
+        content_type=file.content_type or "image/jpeg",
+        folder=f"slips/{shop.id}",
+    ) or f"local://slip-{shop.id}-{file.filename or 'unknown'}"
+
+    result = await record_topup(
+        db,
+        shop=shop,
+        package_key=pkg,
+        package=package,
+        image_bytes=image_bytes,
+        image_url=image_url,
+    )
+
+    if result.kind == "success":
+        return RedirectResponse(
+            url=f"/shop/dashboard?topup={result.credits_granted}",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+    return RedirectResponse(
+        url=f"/shop/topup/confirm?pkg={pkg}&error={result.kind}",
+        status_code=status.HTTP_303_SEE_OTHER,
     )
 
 

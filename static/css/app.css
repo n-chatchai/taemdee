@@ -8922,19 +8922,20 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .dash-flash.is-ok { background: var(--mint); color: var(--mint-ink); }
 .dash-flash.is-error { background: var(--accent); color: #fff; }
 
-/* S7c — "Slip upload coming soon" inline note (replaces alert) */
-.topup-soon-note {
+/* S7c — verification error banner shown after a failed slip upload.
+   Sits between the steps and the upload CTA so the owner sees what
+   went wrong before they press the button again. */
+.topup-error {
   margin: 12px 20px 0;
-  padding: 12px 14px;
-  background: var(--butter-soft);
-  border: 1px dashed rgba(17, 17, 17, 0.3);
-  border-radius: 14px;
+  padding: 11px 14px;
+  background: var(--accent-soft);
+  border: 1px solid rgba(255, 94, 58, 0.35);
+  border-radius: 12px;
   font-family: 'Prompt', sans-serif;
-  font-size: 15px;
+  font-size: 12.5px;
   line-height: 1.5;
   color: var(--ink);
 }
-.topup-soon-note[hidden] { display: none; }
 
 /* ==========================================================
    Manual-issue FAB — one-tap walk-in stamp on the shop dashboard

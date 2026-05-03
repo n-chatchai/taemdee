@@ -9,13 +9,10 @@
   <div class="s7c-meta">
     <div class="label">คุณกำลังเติม</div>
     <div class="pkg">
-      <span class="accent">{{ package.credits + package.bonus }}</span>
+      <span class="accent">{{ package.credits }}</span>
       <span class="unit">เครดิต</span>
     </div>
-    <div class="price">
-      ฿{{ package.price }}
-      {% if package.bonus %} · บวกโบนัส {{ package.bonus }} เครดิต{% endif %}
-    </div>
+    <div class="price">฿{{ package.price }}</div>
   </div>
 
   <div class="s7c-qr">
@@ -36,25 +33,45 @@
     <div class="n">2</div>
     <div class="text">
       อัปโหลดสลิปการโอน
-      <span class="sub">ระบบตรวจสอบอัตโนมัติใน ~5 วินาที (Slip2Go มาในรุ่นถัดไป)</span>
+      <span class="sub">Slip2Go ตรวจอัตโนมัติ · ยอดต้องตรงกับแพ็กเกจ ฿{{ package.price }}</span>
     </div>
   </div>
 
-  <button class="s7c-upload-cta" type="button"
-          onclick="document.getElementById('topup-soon-note').hidden = false;">
-    <div class="l">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
-        <polyline points="17 8 12 3 7 8"/>
-        <line x1="12" y1="3" x2="12" y2="15"/>
-      </svg>
-      จ่ายแล้ว · อัปโหลดสลิป
+  {# Error banner — server returned ?error=<kind> after a failed upload.
+     Each kind maps to a specific friendly message; unknown kinds fall
+     back to a generic "ลองส่งใหม่" line. #}
+  {% if error %}
+    <div class="topup-error">
+      {% if error == 'wrong_amount' %}ยอดในสลิปไม่ตรงกับแพ็กเกจ ฿{{ package.price }} · เลือกแพ็กเกจให้ตรงก่อนส่ง
+      {% elif error == 'bad_receiver' %}สลิปไม่ได้โอนเข้าบัญชีแต้มดี · กรุณาโอนตาม QR ด้านบน
+      {% elif error == 'duplicate' %}สลิปนี้เคยถูกใช้งานแล้ว · ส่งสลิปใหม่
+      {% elif error == 'not_configured' %}ระบบตรวจสลิปอัตโนมัติยังไม่พร้อม · ติดต่อทีมงาน
+      {% else %}ตรวจสลิปไม่สำเร็จ · ลองส่งใหม่อีกครั้ง
+      {% endif %}
     </div>
-    <span class="arrow">→</span>
-  </button>
+  {% endif %}
 
-  <div id="topup-soon-note" class="topup-soon-note" hidden style="margin: 0 20px 20px; padding: 12px; border-radius: 12px; background: var(--bg-soft); font-size: 11px; color: var(--ink-soft); line-height: 1.4;">
-    <strong>เร็วๆ นี้</strong> — ขณะนี้ระบบตรวจสลิปอัตโนมัติ (Slip2Go)
-    ยังอยู่ในระหว่างติดตั้ง · ติดต่อทีมงานเพื่อช่วยเติมเครดิตให้ก่อนได้
-  </div>
+  {# Native file input — `capture="environment"` opens the camera on
+     mobile so the owner can shoot the slip directly. The button label
+     swaps to a filename once the user picks a file (Alpine x-text). #}
+  <form action="/shop/topup/upload" method="POST" enctype="multipart/form-data"
+        x-data="{ name: '', uploading: false }"
+        @submit="uploading = true">
+    <input type="hidden" name="pkg" value="{{ pkg_id }}">
+    <label class="s7c-upload-cta">
+      <input type="file" name="file" accept="image/*" capture="environment"
+             style="display:none;"
+             required
+             @change="name = $event.target.files[0]?.name || ''; if (name) $el.form.requestSubmit();">
+      <div class="l">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+          <polyline points="17 8 12 3 7 8"/>
+          <line x1="12" y1="3" x2="12" y2="15"/>
+        </svg>
+        <span x-text="uploading ? 'กำลังตรวจสลิป…' : (name || 'จ่ายแล้ว · อัปโหลดสลิป')"></span>
+      </div>
+      <span class="arrow">→</span>
+    </label>
+  </form>
 {% endblock %}
