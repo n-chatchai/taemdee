@@ -1510,16 +1510,18 @@ _COOLDOWN_UNITS = ("day", "week", "month")
 def _cooldown_form_state(minutes: int) -> dict:
     """Reverse the saved minute count into the (value, unit) pair the
     form should pre-select. Prefers the coarsest unit that divides
-    evenly so '14 วัน' renders as '2 สัปดาห์'."""
+    evenly so '14 วัน' renders as '2 สัปดาห์'. A shop with no cooldown
+    yet (minutes <= 0) falls back to 1 day so the form lands on the
+    "1 คะแนนต่อ 1 วัน" default."""
     if minutes <= 0:
-        return {"enabled": False, "value": 1, "unit": "day"}
+        return {"value": 1, "unit": "day"}
     for unit in ("month", "week", "day"):
         per_unit = _COOLDOWN_UNIT_MINUTES[unit]
         if minutes % per_unit == 0:
-            return {"enabled": True, "value": minutes // per_unit, "unit": unit}
+            return {"value": minutes // per_unit, "unit": unit}
     # Fallback for legacy non-day-aligned values (admin-edited rows
     # before this UI existed) — show as days, rounded down.
-    return {"enabled": True, "value": max(minutes // _COOLDOWN_UNIT_MINUTES["day"], 1), "unit": "day"}
+    return {"value": max(minutes // _COOLDOWN_UNIT_MINUTES["day"], 1), "unit": "day"}
 
 
 @router.get("/settings/cooldown", response_class=HTMLResponse)
@@ -1539,20 +1541,20 @@ async def settings_cooldown_get(
 
 @router.post("/settings/cooldown")
 async def settings_cooldown_post(
-    enabled: str = Form("0"),
     value: int = Form(1),
     unit: str = Form("day"),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    if enabled != "1":
-        shop.scan_cooldown_minutes = 0
-    else:
-        if unit not in _COOLDOWN_UNITS:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "หน่วยเวลาไม่ถูกต้อง")
-        if value < 1:
-            value = 1
-        shop.scan_cooldown_minutes = value * _COOLDOWN_UNIT_MINUTES[unit]
+    """Save the cooldown as N units (วัน/สัปดาห์/เดือน) → minutes.
+    Form always submits at least 1 / day; min=1 in the input enforces
+    that on the client. Server clamps just in case the form was
+    bypassed."""
+    if unit not in _COOLDOWN_UNITS:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "หน่วยเวลาไม่ถูกต้อง")
+    if value < 1:
+        value = 1
+    shop.scan_cooldown_minutes = value * _COOLDOWN_UNIT_MINUTES[unit]
     db.add(shop)
     await db.commit()
     # Tick the dashboard todo on save (silently no-op if already claimed).
