@@ -14,7 +14,7 @@ from app.core.config import settings
 from app.models import OtpCode
 from app.models.util import utcnow
 
-log = logging.getLogger(__name__)
+from loguru import logger
 
 OTP_EXPIRY_MINUTES = 5
 
@@ -39,8 +39,7 @@ async def generate_and_send_otp(db: AsyncSession, phone: str) -> str:
         raise NotImplementedError("SMS provider not yet wired for production")
     else:
         # development / test / staging — log to stdout
-        print(f"\n>>> [OTP {settings.environment}] {phone} → {code}  (expires in {OTP_EXPIRY_MINUTES} min)\n", flush=True)
-        log.info("otp issued env=%s phone=%s code=%s", settings.environment, phone, code)
+        logger.info(f"\n>>> [OTP {settings.environment}] {phone} → {code}  (expires in {OTP_EXPIRY_MINUTES} min)\n", flush=True)
     return code
 
 
@@ -116,8 +115,11 @@ def issue_customer_token(customer_id: UUID) -> str:
 
 
 def decode_customer_token(token: str) -> Optional[UUID]:
+    logger.debug(f"Decoding customer token: {token[:20]}")
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+        logger.debug(f"Decoded customer token payload: {payload}")
         return UUID(payload["customer_id"])
     except (JWTError, KeyError, ValueError):
+        logger.warning("Failed to decode customer token: %s", token[:20])
         return None

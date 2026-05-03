@@ -59,6 +59,14 @@
         ใช้เบอร์โทรศัพท์
       </button>
       {% endif %}
+
+      <button type="button" class="s1-btn" style="background: var(--surface); color: var(--ink-soft); border-style: dashed;" @click="step = 'recovery'; error = ''">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;">
+          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+          <path d="M12 8v4"/><path d="M12 16h.01"/>
+        </svg>
+        ใช้รหัสกู้คืน (Recovery Code)
+      </button>
     </div>
     
     <div style="padding: 16px 22px; text-align: center;">
@@ -86,6 +94,20 @@
       <input id="phone-input" type="tel" inputmode="numeric"
              x-model="phone" placeholder="08XXXXXXXX" required>
       <button type="submit" class="s1-btn s1-btn-phone">รับรหัส OTP</button>
+      <button type="button" class="back" @click="step = 'choose'">เปลี่ยนวิธี</button>
+      <div x-show="error" x-cloak class="err" x-text="error"></div>
+    </form>
+
+    <!-- Step recovery: recovery code entry -->
+    <form class="s1-otp-form"
+          x-show="step === 'recovery'" x-cloak
+          method="POST" action="/recover">
+      <label for="recovery-input">ใส่รหัสกู้คืน 12 ตัว</label>
+      <input id="recovery-input" type="text" name="code"
+             placeholder="XXXX-XXXX-XXXX" 
+             style="text-transform:uppercase; letter-spacing:0.04em; font-family:'JetBrains Mono', monospace;"
+             required>
+      <button type="submit" class="s1-btn s1-btn-phone" style="background: var(--accent);">กู้คืนบัญชี</button>
       <button type="button" class="back" @click="step = 'choose'">เปลี่ยนวิธี</button>
       <div x-show="error" x-cloak class="err" x-text="error"></div>
     </form>

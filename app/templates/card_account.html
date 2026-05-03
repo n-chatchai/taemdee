@@ -3,125 +3,139 @@
 {% block title %}บัญชีของพี่ · TaemDee แต้มดี{% endblock %}
 
 {% block head_extra %}
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
+<script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 {% endblock %}
 
 {% block body_top %}
-  {# Server→localStorage reconcile for the text-size picker. Lets a fresh
-     device pick up the cross-device-saved value the next time the user
-     opens any customer page (the pwa_head bootstrap reads localStorage). #}
-  <script>(function(){try{
-    var s = '{{ text_size }}';
-    if (s === 'sm' || s === 'lg') {
-      localStorage.setItem('td_text_size', s);
-      document.documentElement.classList.add('fs-' + s);
-    } else {
-      localStorage.removeItem('td_text_size');
-      document.documentElement.classList.remove('fs-sm','fs-lg');
-    }
-  }catch(_){}}())</script>
+{# Server→localStorage reconcile for the text-size picker. Lets a fresh
+device pick up the cross-device-saved value the next time the user
+opens any customer page (the pwa_head bootstrap reads localStorage). #}
+<script>(function () {
+    try {
+      var s = '{{ text_size }}';
+      if (s === 'sm' || s === 'lg') {
+        localStorage.setItem('td_text_size', s);
+        document.documentElement.classList.add('fs-' + s);
+      } else {
+        localStorage.removeItem('td_text_size');
+        document.documentElement.classList.remove('fs-sm', 'fs-lg');
+      }
+    } catch (_) { }
+  }())</script>
 {% endblock %}
 
 {% block td_attrs %} x-data="{ armed: false }"{% endblock %}
 
 {% block content %}
-  {# Falls back to the page_head default 'qr_gear' — design treats the
-     gear as part of the consistent dock-anchored chrome even on the
-     settings page itself (the icon links back to /card/account, no-op
-     when you're already here). #}
-  {% include "_partials/page_head.html" %}
+{# Falls back to the page_head default 'qr_gear' — design treats the
+gear as part of the consistent dock-anchored chrome even on the
+settings page itself (the icon links back to /card/account, no-op
+when you're already here). #}
+{% include "_partials/page_head.html" %}
 
-  {% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
-  {% set has_picture = customer.picture_url|string|length > 0 %}
-  <div class="c6-profile-card">
-    <div class="avatar">
-      {% if has_picture %}
-        <img src="{{ customer.picture_url }}" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
-      {% else %}
-        {{ initial }}
-      {% endif %}
+{% set initial = (customer.display_name[0]|upper) if customer.display_name else 'ต' %}
+{% set has_picture = customer.picture_url|string|length > 0 %}
+<div class="c6-profile-card">
+  <div class="avatar">
+    {% if has_picture %}
+    <img src="{{ customer.picture_url }}" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
+    {% else %}
+    {{ initial }}
+    {% endif %}
+  </div>
+  <div class="info">
+    <div class="name">{{ customer.display_name or 'ลูกค้าแต้มดี' }}</div>
+    <div class="meta">
+      {% if masked_phone %}<span>{{ masked_phone }}</span>{% endif %}
     </div>
-    <div class="info">
-      <div class="name">{{ customer.display_name or 'ลูกค้าแต้มดี' }}</div>
-      <div class="meta">
-        {% if masked_phone %}<span>{{ masked_phone }}</span>{% endif %}
+  </div>
+</div>
+
+<div class="s10-section">
+  <div class="label">ตั้งค่า</div>
+
+  {# C6 ขนาดตัวอักษร — sm/md/lg picker. Server saves customer.text_size,
+  JS mirrors choice into localStorage so the next page-load applies
+  the zoom on first paint via the bootstrap script in pwa_head. #}
+  <div class="s10-fontsize" data-text-size-current="{{ text_size }}">
+    <div class="fs-head">
+      <div class="fs-icon">Aa</div>
+      <div class="fs-info">
+        <div class="fs-name">ขนาดตัวอักษร</div>
       </div>
+    </div>
+    <div class="fs-options">
+      <button type="button" class="fs-opt sm{% if text_size == 'sm' %} active{% endif %}"
+        data-text-size="sm">เล็ก</button>
+      <button type="button" class="fs-opt md{% if text_size == 'md' %} active{% endif %}"
+        data-text-size="md">กลาง</button>
+      <button type="button" class="fs-opt lg{% if text_size == 'lg' %} active{% endif %}"
+        data-text-size="lg">ใหญ่</button>
     </div>
   </div>
 
-  <div class="s10-section">
-    <div class="label">ตั้งค่า</div>
-
-    {# C6 ขนาดตัวอักษร — sm/md/lg picker. Server saves customer.text_size,
-       JS mirrors choice into localStorage so the next page-load applies
-       the zoom on first paint via the bootstrap script in pwa_head. #}
-    <div class="s10-fontsize" data-text-size-current="{{ text_size }}">
-      <div class="fs-head">
-        <div class="fs-icon">Aa</div>
-        <div class="fs-info">
-          <div class="fs-name">ขนาดตัวอักษร</div>
-        </div>
-      </div>
-      <div class="fs-options">
-        <button type="button" class="fs-opt sm{% if text_size == 'sm' %} active{% endif %}" data-text-size="sm">เล็ก</button>
-        <button type="button" class="fs-opt md{% if text_size == 'md' %} active{% endif %}" data-text-size="md">กลาง</button>
-        <button type="button" class="fs-opt lg{% if text_size == 'lg' %} active{% endif %}" data-text-size="lg">ใหญ่</button>
-      </div>
+  <a href="/card/account/notifications" class="s10-row">
+    <div class="row-icon mint">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9" />
+        <path d="M13.73 21a2 2 0 01-3.46 0" />
+      </svg>
     </div>
-
-    <a href="/card/account/notifications" class="s10-row">
-      <div class="row-icon mint">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/><path d="M13.73 21a2 2 0 01-3.46 0"/></svg>
-      </div>
-      <div class="row-info">
-        <div class="row-name">การแจ้งเตือน</div>
-      </div>
-      <div class="arrow-r">›</div>
-    </a>
-
-    <div class="s10-row">
-      <div class="row-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
-      </div>
-      <div class="row-info">
-        <div class="row-name">ความเป็นส่วนตัว</div>
-      </div>
-      <div class="arrow-r">›</div>
+    <div class="row-info">
+      <div class="row-name">การแจ้งเตือน</div>
     </div>
+    <div class="arrow-r">›</div>
+  </a>
 
-    <div class="s10-row">
-      <div class="row-icon butter">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><circle cx="12" cy="12" r="10"/><path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3"/><line x1="12" y1="17" x2="12.01" y2="17"/></svg>
-      </div>
-      <div class="row-info">
-        <div class="row-name">ช่วยเหลือ</div>
-      </div>
-      <div class="arrow-r">›</div>
+  <div class="s10-row">
+    <div class="row-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z" />
+      </svg>
     </div>
+    <div class="row-info">
+      <div class="row-name">ความเป็นส่วนตัว</div>
+    </div>
+    <div class="arrow-r">›</div>
   </div>
 
-
-  <form action="/card/account/logout" method="POST" style="margin:0;">
-    <button type="submit" class="s10-logout">ออกจากระบบ</button>
-  </form>
-
-  {# PDPA delete — two-tap arm/confirm pattern (no browser alert/confirm
-     per memory). First tap flips Alpine state, second tap submits. #}
-  <form action="/card/account/delete" method="POST" style="margin:0;"
-        @submit.prevent="armed ? $el.submit() : (armed = true)">
-    <button type="submit" class="c6-delete-account" :class="{ armed }">
-      <span x-show="!armed">ลบบัญชี · แต้มและข้อมูลทั้งหมดจะถูกลบ</span>
-      <span x-show="armed" x-cloak>แตะอีกครั้งเพื่อยืนยันลบบัญชี</span>
-    </button>
-  </form>
-
-  <div class="c6-version">
-    <span class="brand">taemdee<span class="dot">.</span></span> · เวอร์ชัน 1.0.2
+  <div class="s10-row">
+    <div class="row-icon butter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    </div>
+    <div class="row-info">
+      <div class="row-name">ช่วยเหลือ</div>
+    </div>
+    <div class="arrow-r">›</div>
   </div>
+</div>
+
+
+<form action="/card/account/logout" method="POST" style="margin:0;">
+  <button type="submit" class="s10-logout">ออกจากระบบ</button>
+</form>
+
+{# PDPA delete — two-tap arm/confirm pattern (no browser alert/confirm
+per memory). First tap flips Alpine state, second tap submits. #}
+<form action="/card/account/delete" method="POST" style="margin:0;"
+  @submit.prevent="armed ? $el.submit() : (armed = true)">
+  <button type="submit" class="c6-delete-account" :class="{ armed }">
+    <span x-show="!armed">ลบบัญชี · แต้มและข้อมูลทั้งหมดจะถูกลบ</span>
+    <span x-show="armed" x-cloak>แตะอีกครั้งเพื่อยืนยันลบบัญชี</span>
+  </button>
+</form>
+
 {% endblock %}
 
 {% block body_end %}
-  <script>
+<script>
     // C6 ขนาดตัวอักษร — wire the picker. Server is source of truth, but we
     // also mirror to localStorage so the next page-load applies the zoom on
     // first paint via the bootstrap script in pwa_head.
@@ -142,13 +156,13 @@
           try {
             if (size === 'md') localStorage.removeItem('td_text_size');
             else localStorage.setItem('td_text_size', size);
-          } catch (_) {}
+          } catch (_) { }
           // Persist server-side (cross-device)
           const fd = new FormData();
           fd.set('size', size);
-          try { await fetch('/card/account/text-size', { method: 'POST', body: fd }); } catch (_) {}
+          try { await fetch('/card/account/text-size', { method: 'POST', body: fd }); } catch (_) { }
         });
       });
     })();
-  </script>
+</script>
 {% endblock %}

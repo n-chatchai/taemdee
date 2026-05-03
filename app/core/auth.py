@@ -11,11 +11,15 @@ from uuid import UUID
 
 from fastapi import Cookie, Depends, HTTPException, Response, status
 from sqlmodel.ext.asyncio.session import AsyncSession
+from loguru import logger
 
-from app.core.config import settings
 from app.core.database import get_session
 from app.models import Customer, Shop, StaffMember
-from app.services.auth import decode_customer_token, decode_session_token, issue_customer_token
+from app.services.auth import (
+    decode_customer_token,
+    decode_session_token,
+    issue_customer_token,
+)
 
 SESSION_COOKIE_NAME = "session"
 CUSTOMER_COOKIE_NAME = "customer"
@@ -81,11 +85,14 @@ async def get_session_context(
     if not payload:
         raise SessionAuthError("session_invalid")
 
-    return SessionContext(
-        shop_id=UUID(payload["shop_id"]),
-        staff_id=UUID(payload["staff_id"]) if payload.get("staff_id") else None,
-        role=payload["role"],
-    )
+    try:
+        return SessionContext(
+            shop_id=UUID(payload["shop_id"]),
+            staff_id=UUID(payload["staff_id"]) if payload.get("staff_id") else None,
+            role=payload["role"],
+        )
+    except (KeyError, ValueError, TypeError):
+        raise SessionAuthError("session_invalid")
 
 
 async def get_current_shop(
@@ -128,11 +135,15 @@ async def find_or_create_customer(
     - If invalid cookie: raise CustomerAuthError (triggers login redirect).
     - If no cookie: create new anonymous customer.
     """
+
+    if not customer_cookie:
+        raise CustomerAuthError("login_required")
+
     if customer_cookie:
         customer_id = decode_customer_token(customer_cookie)
         if not customer_id:
             raise CustomerAuthError("token_invalid")
-            
+
         existing = await db.get(Customer, customer_id)
         if existing:
             return existing, False
@@ -175,7 +186,9 @@ def require_permission(perm: str) -> Callable:
         if staff is None:
             raise HTTPException(status.HTTP_403_FORBIDDEN, "Permission denied")
         if not getattr(staff, perm, False):
-            raise HTTPException(status.HTTP_403_FORBIDDEN, f"Missing permission: {perm}")
+            raise HTTPException(
+                status.HTTP_403_FORBIDDEN, f"Missing permission: {perm}"
+            )
         return ctx
 
     return _check

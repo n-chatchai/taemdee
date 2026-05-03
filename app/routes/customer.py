@@ -542,15 +542,7 @@ async def view_card(
         )
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
-    # Anyone with display_name still NULL hasn't completed C2 onboarding —
-    # bounce them through the dedicated /onboard flow. /onboard now
-    # issues a Point inline if there isn't one yet, so the customer
-    # ends up at /my-cards with at least one card after the flow.
-    if customer.display_name is None:
-        response = RedirectResponse(url=f"/onboard/{shop_id}", status_code=status.HTTP_303_SEE_OTHER)
-        if was_created:
-            set_customer_cookie(response, customer.id)
-        return response
+    # (Redirect removed; nickname sheet will slide up in-page if name is default)
     point_count = await active_point_count(db, shop.id, customer.id)
     branch_obj = await _resolve_branch(db, shop.id, branch, customer.id)
 
@@ -897,14 +889,7 @@ async def scan(
     # yet shouldn't reset them through onboarding when they likely
     # already have stamps to view. Returners with display_name set
     # ("คุณลูกค้า" included) skip onboarding regardless.
-    if just_stamped and customer.display_name is None:
-        redirect_url = f"/onboard/{shop_id}"
-        if branch_obj:
-            redirect_url += f"?branch={branch_obj.id}"
-        response = RedirectResponse(url=redirect_url, status_code=status.HTTP_303_SEE_OTHER)
-        if was_created:
-            set_customer_cookie(response, customer.id)
-        return response
+    # (Onboarding redirect removed; nickname sheet will handle this in-page)
 
     # Auto-redeem fires inside issue_point() now — single source of truth
     # across every issuance entry point. If this scan tripped the threshold,
@@ -1098,6 +1083,32 @@ async def claim_phone(
 
 
 SKIP_NICKNAME_DEFAULT = "คุณลูกค้า"
+
+
+
+@router.post("/collect-name")
+async def save_collected_name(
+    name: str = Form(""),
+    next_url: str = Form("/my-cards"),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Save the nickname and return to where they were (or /my-cards)."""
+    from app.core.auth import decode_customer_token
+    customer_id = decode_customer_token(customer_cookie) if customer_cookie else None
+    if not customer_id:
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+    customer = await db.get(Customer, customer_id)
+    if not customer:
+        return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+
+    cleaned = name.strip()
+    customer.display_name = cleaned if cleaned else SKIP_NICKNAME_DEFAULT
+    db.add(customer)
+    await db.commit()
+    
+    return RedirectResponse(url=next_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/card/nickname")

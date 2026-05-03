@@ -42,20 +42,28 @@ async def revalidate_html_responses(request, call_next):
     """Force fresh HTML on every request — covers iOS Safari PWA tap-to-open
     where the standalone webview otherwise serves a stale cached page after
     a deploy.
-
-    Use `no-cache, must-revalidate` (not `no-store`): browsers MUST hit the
-    server before reusing the cached copy, but the page is still eligible
-    for the in-memory bfcache used by back-forward / iOS swipe-back gesture.
-    `no-store` would block bfcache too — making swipe-back a full reload,
-    which feels slow and breaks View Transitions on the way back.
-
-    Static assets (CSS/JS/images) keep their browser-cache because they're
-    already URL-busted via ?v=<git-sha> on every link tag.
     """
     response = await call_next(request)
     if response.headers.get("content-type", "").startswith("text/html"):
         response.headers["Cache-Control"] = "no-cache, must-revalidate"
     return response
+
+
+@app.middleware("http")
+async def inject_customer_context(request: Request, call_next):
+    """Make the current Customer object available in all Jinja templates via request.state.customer."""
+    customer = None
+    customer_cookie = request.cookies.get(CUSTOMER_COOKIE_NAME)
+    if customer_cookie:
+        from app.core.database import SessionFactory
+        from app.services.auth import decode_customer_token
+        customer_id = decode_customer_token(customer_cookie)
+        if customer_id:
+            async with SessionFactory() as db:
+                customer = await db.get(Customer, customer_id)
+    
+    request.state.customer = customer
+    return await call_next(request)
 
 
 @app.middleware("http")
@@ -83,42 +91,62 @@ async def subdomain_routing(request: Request, call_next):
         if not (path.startswith("/shop") or path.startswith("/auth") or path.startswith("/staff")):
             # Customer trying to access /my-cards on shop domain? Bounce to main.
             main_host = settings.main_domain if settings.environment == "production" else host.replace("shop.", "")
-            return RedirectResponse(url=f"https://{main_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
+            proto = "https" if settings.environment == "production" else "http"
+            return RedirectResponse(url=f"{proto}://{main_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
     else:
         # On main domain, bounce any /shop/* requests to the shop subdomain
         if path.startswith("/shop"):
             shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
-            return RedirectResponse(url=f"https://{shop_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
+            proto = "https" if settings.environment == "production" else "http"
+            return RedirectResponse(url=f"{proto}://{shop_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
 
     return await call_next(request)
 
 
 @app.exception_handler(SessionAuthError)
 @app.exception_handler(CustomerAuthError)
+@app.exception_handler(status.HTTP_401_UNAUTHORIZED)
 async def auth_error_handler(request: Request, exc: HTTPException):
     """When a session is missing/invalid, redirect to the appropriate login page.
     
-    - Host starts with 'shop.' or matches settings.shop_domain -> /shop/login
-    - Otherwise -> /customer/login
+    - SessionAuthError -> /shop/login
+    - CustomerAuthError -> /customer/login
+    - Plain 401 -> host/path sniffing fallback
     """
-    host = request.headers.get("host", "").split(":")[0]
-    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
-    path = request.url.path
-    
-    # Determine the target login URL
-    if is_shop_host or path.startswith("/shop"):
-        login_url = f"/shop/login?reason={getattr(exc, 'reason', 'invalid')}"
+    # 1. Determine if this is a Shop or Customer error
+    is_shop = False
+    if isinstance(exc, SessionAuthError):
+        is_shop = True
+    elif isinstance(exc, CustomerAuthError):
+        is_shop = False
+    else:
+        # Fallback for plain 401s: sniff host and path
+        host = request.headers.get("host", "").split(":")[0]
+        is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+        path = request.url.path
+        is_shop = is_shop_host or path.startswith("/shop")
+
+    # 2. Set redirect target and cookie to clear
+    reason = getattr(exc, "reason", "invalid")
+    if is_shop:
+        login_url = f"/shop/login?reason={reason}"
         cookie_to_clear = SESSION_COOKIE_NAME
     else:
-        login_url = f"/customer/login?reason={getattr(exc, 'reason', 'invalid')}"
+        login_url = f"/customer/login?reason={reason}"
         cookie_to_clear = CUSTOMER_COOKIE_NAME
 
+    # 3. Handle HTML vs JSON/API responses
     accept = request.headers.get("accept", "")
-    if "text/html" in accept:
+    # Check for HTMX or HTML requests
+    is_html = "text/html" in accept or "*/*" in accept or not accept
+    
+    if is_html:
         response = RedirectResponse(url=login_url, status_code=status.HTTP_303_SEE_OTHER)
-        response.delete_cookie(cookie_to_clear, path="/")
+        if cookie_to_clear:
+            response.delete_cookie(cookie_to_clear, path="/")
         return response
 
+    # For API/JSON requests, return standard 401
     from fastapi.exception_handlers import http_exception_handler
     return await http_exception_handler(request, exc)
 
