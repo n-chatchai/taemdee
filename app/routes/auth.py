@@ -53,11 +53,17 @@ FACEBOOK_STATE_COOKIE = "facebook_oauth_state"
 
 @router.post("/otp/request")
 async def request_otp(
+    request: Request,
     phone: str = Form(...),
     db: AsyncSession = Depends(get_session),
 ):
-    if not settings.is_login_enabled("shop", "phone"):
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Phone login disabled for shops")
+    # Determine role based on host
+    host = request.headers.get("host", "").split(":")[0]
+    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    role = "shop" if is_shop_host else "customer"
+
+    if not settings.is_login_enabled(role, "phone"):
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, f"Phone login disabled for {role}s")
     code = await generate_and_send_otp(db, phone)
     res = {"ok": True}
     if settings.login_otp_simulate:
@@ -313,8 +319,9 @@ async def line_callback(
         }
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         
-        target_url = f"https://{settings.shop_domain}/auth/line/callback?transfer={token}"
-        logger.warning(f"↪️ Bouncing Shop Owner to: https://{settings.shop_domain}/auth/line/callback?transfer=...")
+        shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
+        target_url = f"https://{shop_host}/auth/line/callback?transfer={token}"
+        logger.warning(f"↪️ Bouncing Shop Owner to: https://{shop_host}/auth/line/callback?transfer=...")
         return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
 
     # 3. Proceed with login if not already done via transfer
@@ -479,7 +486,10 @@ async def google_callback(
     is_main_host = host == settings.main_domain or not (
         host.startswith("shop.") or host == settings.shop_domain
     )
-    # (Google/FB currently only used for customers, but logic is here for consistency)
+    # (Google currently only used for customers, but logic is here for consistency)
+    if is_main_host and (host.startswith("shop.") or host == settings.shop_domain):
+        # This shouldn't happen if routers are mounted correctly, but for safety:
+        pass
 
     try:
         tokens = await google_login.exchange_code_for_token(code)

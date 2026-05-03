@@ -136,9 +136,6 @@ async def find_or_create_customer(
     - If no cookie: create new anonymous customer.
     """
 
-    if not customer_cookie:
-        raise CustomerAuthError("login_required")
-
     if customer_cookie:
         customer_id = decode_customer_token(customer_cookie)
         if not customer_id:
