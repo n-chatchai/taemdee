@@ -165,6 +165,10 @@ async def switch_role(request: Request):
     )
 
 
+@app.get("/privacy", tags=["pages"])
+async def privacy(request: Request):
+    return templates.TemplateResponse(request=request, name="privacy.html")
+
 @app.get("/version")
 async def version():
     """Plain-text short git SHA the running process started with. Used by
