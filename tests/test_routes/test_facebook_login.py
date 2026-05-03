@@ -11,6 +11,7 @@ async def test_facebook_customer_start_unconfigured_returns_503(client):
 async def test_facebook_customer_start_configured_redirects(client, monkeypatch):
     monkeypatch.setattr(settings, "facebook_app_id", "1234567890")
     monkeypatch.setattr(settings, "facebook_app_secret", "fake-secret")
+    monkeypatch.setattr(settings, "customer_logins", "line,google,facebook")
 
     response = await client.get("/auth/facebook/customer/start", follow_redirects=False)
     assert response.status_code == 302

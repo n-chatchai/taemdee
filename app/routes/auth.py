@@ -456,6 +456,7 @@ async def facebook_customer_start(next_redeem: Optional[str] = None):
 
 @router.get("/google/callback")
 async def google_callback(
+    request: Request,
     code: str,
     state: str,
     google_oauth_state: Optional[str] = Cookie(None, alias=GOOGLE_STATE_COOKIE),
@@ -511,6 +512,7 @@ async def facebook_customer_start(next_redeem: Optional[str] = None):
 
 @router.get("/facebook/callback")
 async def facebook_callback(
+    request: Request,
     code: str,
     state: str,
     facebook_oauth_state: Optional[str] = Cookie(None, alias=FACEBOOK_STATE_COOKIE),
