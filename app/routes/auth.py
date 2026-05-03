@@ -140,6 +140,7 @@ async def line_start():
 
 
 @router.get("/line/customer/start")
+async def line_customer_start(next_redeem: Optional[str] = None):
     if not settings.is_login_enabled("customer", "line"):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for customers")
     return _start_line_oauth(role="customer", next_redeem=next_redeem)
