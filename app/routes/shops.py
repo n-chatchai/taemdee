@@ -21,7 +21,7 @@ from app.services.auth import issue_session_token
 from app.services.branch import s3_top_context
 from app.services.deereach import compute_suggestions
 from app.services.events import stream as event_stream
-from app.services.items import ItemError, claim as claim_item, list_available as list_available_items
+from app.services.items import ItemError, claim as claim_item, list_available as list_available_items, skip as skip_item
 from app.services.card_gen import generate_shop_card_png
 from app.services.logo_gen import VALID_STYLE_IDS, generate_logos, render_style
 from app.services.referrals import (
@@ -345,6 +345,22 @@ async def claim_dashboard_item(
     happened instead of a silent retry."""
     try:
         await claim_item(db, shop, kind)
+    except ItemError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
+    return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/items/{kind}/skip")
+async def skip_dashboard_item(
+    kind: str,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Dismiss the todo without running its side effect — the
+    dashboard hides it from now on. Same idempotency contract as
+    /claim: already-skipped/unknown kinds raise 400."""
+    try:
+        await skip_item(db, shop, kind)
     except ItemError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
     return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)

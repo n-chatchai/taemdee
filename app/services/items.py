@@ -41,6 +41,9 @@ class DashboardItem:
     # a link instead of a POST claim form. The destination route is
     # responsible for marking the item claimed (e.g. on form save).
     link: Optional[str] = None
+    # Brief one-liner shown beside the 'ข้าม' (skip) button so the owner
+    # knows what they're giving up by dismissing the todo.
+    skip_explain: str = "ปิดได้ตอนนี้ · ดูได้ในตั้งค่าภายหลัง"
 
 
 # Registry of all dashboard item kinds. Order = display order.
@@ -53,6 +56,7 @@ ITEMS: list[DashboardItem] = [
         label="รับ<strong>เครดิต {amount}</strong>เปิดบัญชี",
         sub="ครั้งเดียว · ส่งดีรีชหาลูกค้าได้ {amount} ครั้ง",
         cta="รับเลย →",
+        skip_explain="ข้ามไปก่อน · เครดิตจะไม่เข้าบัญชี",
     ),
     DashboardItem(
         kind="issue_methods_review",
@@ -60,6 +64,7 @@ ITEMS: list[DashboardItem] = [
         sub="ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ · ให้แต้ม — เปิด/ปิดได้",
         cta="เปิดดู →",
         link="/shop/issue/methods",
+        skip_explain="ค่าเริ่มต้นพร้อมใช้ · ตั้งค่าเปลี่ยนได้ที่ /ตั้งค่า",
     ),
     DashboardItem(
         kind="cooldown_review",
@@ -67,6 +72,7 @@ ITEMS: list[DashboardItem] = [
         sub="กันลูกค้าสแกนรัวๆ · 1 คะแนนต่อ วัน/สัปดาห์/เดือน",
         cta="ตั้งค่า →",
         link="/shop/settings/cooldown",
+        skip_explain="ค่าเริ่มต้น = ไม่จำกัด · ปรับได้ที่ตั้งค่าภายหลัง",
     ),
 ]
 
@@ -92,8 +98,35 @@ async def list_available(db: AsyncSession, shop: Shop) -> list[DashboardItem]:
             sub=it.sub.format(amount=amount),
             cta=it.cta,
             link=it.link,
+            skip_explain=it.skip_explain,
         ))
     return out
+
+
+_KNOWN_KINDS = {it.kind for it in ITEMS}
+
+
+async def skip(db: AsyncSession, shop: Shop, kind: str) -> ShopItem:
+    """Dismiss a dashboard todo without running its side effect.
+    Inserts the same ShopItem row claim() would, so the dashboard
+    filters it out, but skips the registered handler — the difference
+    matters for kinds like welcome_credit where the handler grants
+    real credit. Idempotent: a second skip raises ItemError, surfaced
+    as 400 by the route."""
+    if kind not in _KNOWN_KINDS:
+        raise ItemError(f"Unknown item kind: {kind}")
+
+    row = ShopItem(shop_id=shop.id, kind=kind)
+    db.add(row)
+    try:
+        await db.flush()
+    except IntegrityError:
+        await db.rollback()
+        raise ItemError(f"Already dismissed: {kind}")
+    await db.commit()
+    await db.refresh(row)
+    log.info("Shop %s skipped dashboard item %s", shop.id, kind)
+    return row
 
 
 async def claim(db: AsyncSession, shop: Shop, kind: str) -> ShopItem:

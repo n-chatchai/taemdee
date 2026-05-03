@@ -82,29 +82,37 @@
       <span class="todo-count">{{ items|length }}</span>
     </div>
     {% for it in items %}
-      {# Two flavors: review-style todos that link to a page (claim is
-         marked when the destination saves), and side-effect todos that
-         POST to /shop/items/<kind>/claim. Label allows inline <strong>
-         so the credit amount can stay highlighted. #}
-      {% if it.link %}
-        <a href="{{ it.link }}" class="s3-todo">
-          <div class="td-info">
-            <div class="td-h">{{ it.label|safe }}</div>
-            <div class="td-s">{{ it.sub }}</div>
-          </div>
-          <span class="td-cta">{{ it.cta }}</span>
-        </a>
-      {% else %}
-        <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
-          <button type="submit" class="s3-todo">
+      {# Two flavors of main action: review-style todos that link to a
+         page (claim is marked when the destination saves) vs. side-
+         effect todos that POST /shop/items/<kind>/claim. The skip
+         row beneath always POSTs /skip — dismisses the todo without
+         running the handler so 'ข้าม' on welcome_credit doesn't grant
+         any credit. The explainer copy comes from items.py. #}
+      <div class="s3-todo-wrap">
+        {% if it.link %}
+          <a href="{{ it.link }}" class="s3-todo">
             <div class="td-info">
               <div class="td-h">{{ it.label|safe }}</div>
               <div class="td-s">{{ it.sub }}</div>
             </div>
             <span class="td-cta">{{ it.cta }}</span>
-          </button>
+          </a>
+        {% else %}
+          <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
+            <button type="submit" class="s3-todo">
+              <div class="td-info">
+                <div class="td-h">{{ it.label|safe }}</div>
+                <div class="td-s">{{ it.sub }}</div>
+              </div>
+              <span class="td-cta">{{ it.cta }}</span>
+            </button>
+          </form>
+        {% endif %}
+        <form method="POST" action="/shop/items/{{ it.kind }}/skip" class="s3-todo-skip">
+          <button type="submit" class="s3-skip-btn">ข้าม</button>
+          <span class="s3-skip-explain">{{ it.skip_explain }}</span>
         </form>
-      {% endif %}
+      </div>
     {% endfor %}
   {% endif %}
 

@@ -7620,7 +7620,41 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Butter-soft surface, no leading icon, accent-orange pill CTA on the
    right. Title supports inline <strong> for the highlight ("รับ
    <strong>เครดิต 100</strong>เปิดบัญชี"). */
-.s3-item-form { margin: 0 20px 8px; }
+.s3-item-form { margin: 0 20px 0; }
+.s3-todo-wrap { margin: 0 20px 12px; }
+.s3-todo-wrap .s3-item-form,
+.s3-todo-wrap .s3-todo { margin: 0; }
+/* Skip row sits centered under each todo. The button is a small
+   underlined affordance; the brief explainer beside it tells the
+   owner what they're giving up so the dismissal feels informed. */
+.s3-todo-skip {
+  margin: 0;
+  padding: 6px 4px 0;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.s3-skip-btn {
+  background: transparent;
+  border: none;
+  padding: 0;
+  color: var(--ink-soft);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  cursor: pointer;
+  text-decoration: underline;
+  text-underline-offset: 2px;
+}
+.s3-skip-btn:hover { color: var(--ink); }
+.s3-skip-explain {
+  color: var(--ink-softer);
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-size: 11px;
+}
 .s3-todo {
   /* No horizontal margin — wrapping <form class="s3-item-form"> already
      supplies the 20px inset. The s10-fontsize tile had the same
