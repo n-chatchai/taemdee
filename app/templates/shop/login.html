@@ -63,7 +63,8 @@
     </div>
     
     <div style="padding: 16px 22px; text-align: center;">
-      <a href="/customer/login" style="font-size: 14px; font-weight: 600; color: var(--ink-soft); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
+      {% set main_host = settings.main_domain if settings.environment == "production" else request.headers.get('host', '').replace('shop.', '') %}
+      <a href="https://{{ main_host }}/customer/login" style="font-size: 14px; font-weight: 600; color: var(--ink-soft); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
         <span>คุณคือลูกค้า?</span>
         <span style="color: var(--accent); text-decoration: underline; text-underline-offset: 3px;">เข้าสู่ระบบที่นี่ →</span>
       </a>

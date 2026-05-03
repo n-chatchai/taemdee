@@ -91,13 +91,13 @@ async def subdomain_routing(request: Request, call_next):
         if not (path.startswith("/shop") or path.startswith("/auth") or path.startswith("/staff")):
             # Customer trying to access /my-cards on shop domain? Bounce to main.
             main_host = settings.main_domain if settings.environment == "production" else host.replace("shop.", "")
-            proto = "https" if settings.environment == "production" else "http"
+            proto = request.url.scheme
             return RedirectResponse(url=f"{proto}://{main_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
     else:
         # On main domain, bounce any /shop/* requests to the shop subdomain
         if path.startswith("/shop"):
             shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
-            proto = "https" if settings.environment == "production" else "http"
+            proto = request.url.scheme
             return RedirectResponse(url=f"{proto}://{shop_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
 
     return await call_next(request)
