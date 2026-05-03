@@ -310,7 +310,7 @@
     }
 
     .login-modal-head h3 em {
-      font-style: italic;
+      font-style: normal;
       color: var(--accent);
     }
 
@@ -328,96 +328,17 @@
       margin-bottom: 16px;
     }
 
-    .login-modal-role {
-      background: var(--surface);
-      border: 1.5px solid var(--ink);
-      border-radius: 14px;
-      padding: 14px 14px;
-      display: flex;
-      align-items: center;
-      gap: 12px;
-      cursor: pointer;
-      text-decoration: none;
-      color: var(--ink);
-      transition: transform 0.15s, box-shadow 0.15s;
+    .login-modal-roles .role-card {
       box-shadow: 2px 2px 0 var(--ink);
     }
 
-    .login-modal-role:hover {
-      transform: translate(-2px, -2px);
+    .login-modal-roles .role-card:hover {
       box-shadow: 4px 4px 0 var(--ink);
     }
 
-    .login-modal-role.primary {
-      background: var(--ink);
-      color: #FFF;
-    }
-
-    .login-modal-role.primary .role-icon {
-      background: var(--accent);
-      color: #FFF;
-      border-color: var(--accent);
-    }
-
-    .login-modal-role.primary .role-meta {
-      color: var(--butter);
-      opacity: 1;
-    }
-
-    .login-modal-role.primary .role-arrow {
-      color: var(--butter);
-    }
-
-    .login-modal-role.primary:hover {
-      box-shadow: 5px 5px 0 var(--accent);
-    }
-
-    .login-modal-role .role-icon {
-      width: 40px;
-      height: 40px;
-      background: var(--bg);
-      border: 1.5px solid var(--ink);
-      border-radius: 11px;
-      display: flex;
-      align-items: center;
-      justify-content: center;
-      flex-shrink: 0;
-      color: var(--accent);
-    }
-
-    .login-modal-role .role-icon svg {
-      width: 18px;
-      height: 18px;
-    }
-
-    .login-modal-role .role-info {
-      flex: 1;
-      line-height: 1.25;
-    }
-
-    .login-modal-role .role-name {
-      font-family: 'Prompt', sans-serif;
-      font-weight: 700;
-      font-size: 14px;
-      letter-spacing: -0.015em;
-    }
-
-    .login-modal-role .role-meta {
-      font-family: 'Prompt', sans-serif;
-      font-size: 11px;
-      color: var(--ink-soft);
-      margin-top: 1px;
-    }
-
-    .login-modal-role .role-arrow {
-      font-size: 18px;
-      color: var(--ink-softer);
-      flex-shrink: 0;
-      font-weight: 700;
-    }
-
-    .login-modal-role:hover .role-arrow {
-      color: var(--accent);
+    .login-modal-roles .role-meta {
+      white-space: normal;
+      font-style: normal;
     }
 
     .login-modal-foot {
@@ -6783,7 +6704,7 @@
 
       <div class="login-modal-roles">
         {% set shop_host = settings.shop_domain if settings.environment == "production" else "shop." + request.headers.get('host', '').split(':')[0] %}
-        <a href="https://{{ shop_host }}/shop/login" class="login-modal-role primary">
+        <a href="https://{{ shop_host }}/shop/login" class="role-card role-shop">
           <div class="role-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
@@ -6792,24 +6713,24 @@
               <line x1="9" y1="13" x2="15" y2="13" />
             </svg>
           </div>
-          <div class="role-info">
+          <div class="role-text">
             <div class="role-name">ฉันเป็นเจ้าของร้าน</div>
             <div class="role-meta">เข้าแดชบอร์ด · ออกแต้มและจัดการลูกค้า</div>
           </div>
-          <span class="role-arrow">→</span>
+          <div class="role-arrow">→</div>
         </a>
-        <a href="https://{{ settings.main_domain }}/customer/login" class="login-modal-role">
+        <a href="https://{{ settings.main_domain }}/customer/login" class="role-card role-cust">
           <div class="role-icon">
             <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
               stroke-linejoin="round">
               <path d="M19 21l-7-5-7 5V5a2 2 0 012-2h10a2 2 0 012 2z" />
             </svg>
           </div>
-          <div class="role-info">
+          <div class="role-text">
             <div class="role-name">ฉันเป็นลูกค้า</div>
             <div class="role-meta">เข้าดูบัตรสะสมแต้มทุกร้าน</div>
           </div>
-          <span class="role-arrow">→</span>
+          <div class="role-arrow">→</div>
         </a>
       </div>
 
