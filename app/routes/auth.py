@@ -1,6 +1,15 @@
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, Response, status
+from fastapi import (
+    APIRouter,
+    Cookie,
+    Depends,
+    Form,
+    HTTPException,
+    Request,
+    Response,
+    status,
+)
 from fastapi.responses import RedirectResponse
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
@@ -206,12 +215,14 @@ async def line_customer_confirm_save(
             target_shop_id = None
 
     if dr_consent != "on" and target_shop_id:
-        existing_mute = (await db.exec(
-            select(CustomerShopMute).where(
-                CustomerShopMute.customer_id == customer.id,
-                CustomerShopMute.shop_id == target_shop_id,
+        existing_mute = (
+            await db.exec(
+                select(CustomerShopMute).where(
+                    CustomerShopMute.customer_id == customer.id,
+                    CustomerShopMute.shop_id == target_shop_id,
+                )
             )
-        )).first()
+        ).first()
         if not existing_mute:
             db.add(CustomerShopMute(customer_id=customer.id, shop_id=target_shop_id))
             await db.commit()
@@ -248,7 +259,9 @@ async def line_callback(
     # 1. Dispatcher Logic: If we are on the main domain but this is a shop login,
     # redirect the browser to the shop domain's callback so it can set its own cookie.
     host = request.headers.get("host", "").split(":")[0]
-    is_main_host = host == settings.main_domain or not (host.startswith("shop.") or host == settings.shop_domain)
+    is_main_host = host == settings.main_domain or not (
+        host.startswith("shop.") or host == settings.shop_domain
+    )
 
     if role == "shop" and is_main_host:
         # Bounce to the shop domain to set the cookie there
@@ -257,7 +270,7 @@ async def line_callback(
 
     # 2. Proceed with token exchange (always use the registered main-domain URI)
     try:
-        tokens = await exchange_code_for_token(code, redirect_uri=settings.line_redirect_uri)
+        tokens = await exchange_code_for_token(code)
         profile = await fetch_profile(tokens["access_token"])
     except LineLoginError as e:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
@@ -268,8 +281,12 @@ async def line_callback(
 
     if role == "customer":
         anon, _ = await find_or_create_customer(customer_cookie, db)
-        onboard_name = anon.display_name  # Name from onboard.greet (before LINE overwrites)
-        claimed = await claim_by_line(db, anon, line_id, display_name=display_name, picture_url=picture_url)
+        onboard_name = (
+            anon.display_name
+        )  # Name from onboard.greet (before LINE overwrites)
+        claimed = await claim_by_line(
+            db, anon, line_id, display_name=display_name, picture_url=picture_url
+        )
 
         # Hand off to C3.line — design splits "LINE OAuth came back" from
         # "decide DeeReach consent". Carry next_redeem through as a query
@@ -281,7 +298,9 @@ async def line_callback(
         target_url = "/auth/line/customer/confirm"
         if next_redeem:
             target_url += f"?next_redeem={next_redeem}"
-        redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+        redirect = RedirectResponse(
+            url=target_url, status_code=status.HTTP_303_SEE_OTHER
+        )
         redirect.set_cookie(
             key="c3_line_ctx",
             value=f"{display_name or ''}|||{onboard_name or ''}|||{picture_url or ''}",
@@ -301,13 +320,17 @@ async def line_callback(
         await db.commit()
         await db.refresh(shop)
 
-    redirect = RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+    redirect = RedirectResponse(
+        url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+    )
     _set_session_cookie(redirect, issue_session_token(shop.id))
     redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
     return redirect
 
 
-def _start_google_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
+def _start_google_oauth(
+    role: str, next_redeem: Optional[str] = None
+) -> RedirectResponse:
     if not settings.google_login_enabled or not google_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -329,7 +352,9 @@ def _start_google_oauth(role: str, next_redeem: Optional[str] = None) -> Redirec
     return redirect
 
 
-def _start_facebook_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
+def _start_facebook_oauth(
+    role: str, next_redeem: Optional[str] = None
+) -> RedirectResponse:
     if not settings.facebook_login_enabled or not facebook_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -381,18 +406,22 @@ async def google_callback(
 
     # Dispatcher
     host = request.headers.get("host", "").split(":")[0]
-    is_main_host = host == settings.main_domain or not (host.startswith("shop.") or host == settings.shop_domain)
+    is_main_host = host == settings.main_domain or not (
+        host.startswith("shop.") or host == settings.shop_domain
+    )
     # (Google/FB currently only used for customers, but logic is here for consistency)
 
     try:
-        tokens = await google_login.exchange_code_for_token(code, redirect_uri=settings.google_redirect_uri)
+        tokens = await google_login.exchange_code_for_token(code)
         profile = await google_login.fetch_profile(tokens["access_token"])
     except google_login.GoogleLoginError as e:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
     google_id = profile.get("sub")
     if not google_id:
-        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Google userinfo missing 'sub'")
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, "Google userinfo missing 'sub'"
+        )
     display_name = profile.get("name") or None
 
     anon, _ = await find_or_create_customer(customer_cookie, db)
@@ -431,17 +460,21 @@ async def facebook_callback(
 
     # Dispatcher
     host = request.headers.get("host", "").split(":")[0]
-    is_main_host = host == settings.main_domain or not (host.startswith("shop.") or host == settings.shop_domain)
+    is_main_host = host == settings.main_domain or not (
+        host.startswith("shop.") or host == settings.shop_domain
+    )
 
     try:
-        tokens = await facebook_login.exchange_code_for_token(code, redirect_uri=settings.facebook_redirect_uri)
+        tokens = await facebook_login.exchange_code_for_token(code)
         profile = await facebook_login.fetch_profile(tokens["access_token"])
     except facebook_login.FacebookLoginError as e:
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
     facebook_id = profile.get("id")
     if not facebook_id:
-        raise HTTPException(status.HTTP_502_BAD_GATEWAY, "Facebook profile missing 'id'")
+        raise HTTPException(
+            status.HTTP_502_BAD_GATEWAY, "Facebook profile missing 'id'"
+        )
     display_name = profile.get("name") or None
 
     anon, _ = await find_or_create_customer(customer_cookie, db)
@@ -454,7 +487,9 @@ async def facebook_callback(
     return redirect
 
 
-async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem: Optional[str]):
+async def _redeem_after_claim(
+    db: AsyncSession, customer: Customer, next_redeem: Optional[str]
+):
     """If `next_redeem` is a valid shop id and the just-claimed customer has
     a full card there, fire the redemption and return /card/{shop}/claimed?r=...
     so the caller redirects to C5 directly. Returns None on any failure
@@ -464,6 +499,7 @@ async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem:
         return None
     try:
         from uuid import UUID as _UUID
+
         shop_id = _UUID(next_redeem)
     except ValueError:
         return None
@@ -473,6 +509,7 @@ async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem:
     from app.models.util import bkk_feed_time
     from app.services.events import feed_row_html, publish
     from app.services.redemption import RedemptionError, redeem
+
     try:
         redemption = await redeem(db, shop, customer)
     except RedemptionError:
@@ -480,7 +517,12 @@ async def _redeem_after_claim(db: AsyncSession, customer: Customer, next_redeem:
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("redemption", redemption.id, bkk_feed_time(redemption.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html(
+            "redemption",
+            redemption.id,
+            bkk_feed_time(redemption.created_at),
+            customer.display_name or "ลูกค้า",
+        ),
     )
     return f"/card/{shop.id}/claimed?r={redemption.id}"
 
