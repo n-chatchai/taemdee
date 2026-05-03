@@ -7112,7 +7112,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 /* Tabbed layouts (customers / insights / etc.) reserve room at the bottom
    for the floating glass nav. */
-.td.td-tabbed { padding-bottom: 100px; }
+.td.td-tabbed { padding-bottom: 112px; }
 
 /* ==========================================================
    S3 — Home dashboard: merged metrics card (time pills + hero + trend
@@ -7858,7 +7858,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 90px;
+  bottom: 104px;
   z-index: 5;
   margin: 0 auto;
   max-width: calc(100% - 40px);
@@ -7870,7 +7870,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 /* Padding-bottom on the page must clear the fixed action card +
    bottom nav. Tighter card → tighter clearance. */
-.td.td-issue { padding-bottom: 188px; }
+.td.td-issue { padding-bottom: 200px; }
 .s3-issue-actions .sap-actions-h {
   margin-bottom: 7px;
   font-family: 'Prompt', sans-serif;
@@ -8152,147 +8152,150 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Position fixed because .td has overflow-x:hidden — same trick we use for
    .s3-dock and .s3-footer-brand (sticky behaves badly inside it).
    ========================================================== */
-.s3-glass-nav {
+/* Liquid-glass dock — both shop (.s3-glass-nav) and customer
+   (.c-glass-nav) share the same chassis. Heavier blur + saturation
+   read as "wet glass"; the ::before pseudo paints a refractive
+   highlight strip across the top so the surface looks like polished
+   glass picking up ambient light. Bigger than the old version (more
+   padding + larger icons + bolder labels) so taps land easier and the
+   shape feels intentional rather than hidden. */
+.s3-glass-nav,
+.c-glass-nav {
   position: fixed;
   left: 0;
   right: 0;
-  bottom: 12px;
+  bottom: 14px;
   z-index: 6;
   margin: 0 auto;
-  max-width: calc(100% - 40px);
-  padding: 8px;
-  border-radius: 22px;
+  max-width: calc(100% - 24px);
+  padding: 10px;
+  border-radius: 28px;
   background: linear-gradient(
-    135deg,
-    rgba(255, 250, 240, 0.7) 0%,
-    rgba(255, 240, 220, 0.6) 50%,
-    rgba(255, 250, 240, 0.7) 100%
+    180deg,
+    rgba(255, 255, 255, 0.55) 0%,
+    rgba(255, 245, 230, 0.42) 55%,
+    rgba(246, 241, 229, 0.55) 100%
   );
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(17, 17, 17, 0.05),
-    0 8px 24px -8px rgba(17, 17, 17, 0.18),
-    0 2px 8px -2px rgba(17, 17, 17, 0.08);
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(17, 17, 17, 0.06),
+    inset 0 0 22px rgba(255, 217, 82, 0.10),
+    0 14px 40px -12px rgba(17, 17, 17, 0.24),
+    0 4px 14px -4px rgba(17, 17, 17, 0.10);
   display: grid;
   grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
+  gap: 5px;
+  isolation: isolate;
 }
-.s3-glass-nav .gn-tab {
+/* Top specular highlight — a curved sliver of brighter translucency
+   that mimics light refracting off the dock's upper edge. */
+.s3-glass-nav::before,
+.c-glass-nav::before {
+  content: '';
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 55%;
+  border-radius: 27px 27px 60% 60% / 27px 27px 100% 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.40) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+.s3-glass-nav .gn-tab,
+.c-glass-nav .gn-tab {
+  position: relative;
   display: flex;
   flex-direction: column;
   align-items: center;
   justify-content: center;
-  gap: 3px;
-  padding: 8px 4px;
-  border-radius: 16px;
+  gap: 4px;
+  padding: 10px 6px 8px;
+  border-radius: 20px;
   cursor: pointer;
   text-decoration: none;
   color: var(--ink-soft);
-  transition: all 0.15s ease;
+  transition: transform 0.15s ease, color 0.15s ease, background 0.18s ease;
+  z-index: 1;
 }
-.s3-glass-nav .gn-tab .gn-icon {
-  width: 22px;
-  height: 22px;
+.s3-glass-nav .gn-tab .gn-icon,
+.c-glass-nav .gn-tab .gn-icon {
+  width: 24px;
+  height: 24px;
   display: flex;
   align-items: center;
   justify-content: center;
   position: relative;
 }
-.s3-glass-nav .gn-tab .gn-icon svg {
+.s3-glass-nav .gn-tab .gn-icon svg,
+.c-glass-nav .gn-tab .gn-icon svg {
   width: 100%;
   height: 100%;
   stroke-width: 2;
 }
-.s3-glass-nav .gn-tab .gn-label {
+.s3-glass-nav .gn-tab .gn-label,
+.c-glass-nav .gn-tab .gn-label {
   font-family: 'Prompt', sans-serif;
-  font-size: 10.5px;
-  font-weight: 500;
+  font-size: 11px;
+  font-weight: 600;
   letter-spacing: 0;
   line-height: 1;
 }
-.s3-glass-nav .gn-tab.active {
+.s3-glass-nav .gn-tab.active,
+.c-glass-nav .gn-tab.active {
   background: linear-gradient(
-    135deg,
-    rgba(17, 17, 17, 0.92) 0%,
-    rgba(17, 17, 17, 1) 100%
+    140deg,
+    rgba(17, 17, 17, 0.96) 0%,
+    rgba(34, 34, 34, 0.92) 100%
   );
   color: var(--butter);
   box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 2px 8px -2px rgba(17, 17, 17, 0.3);
+    inset 0 1px 0 rgba(255, 255, 255, 0.18),
+    inset 0 -1px 0 rgba(0, 0, 0, 0.4),
+    0 4px 14px -4px rgba(17, 17, 17, 0.45);
 }
-.s3-glass-nav .gn-tab.active .gn-icon svg   @keyframes c-gn-badge-pulse {
-    0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
-    70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
-    100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
-  }
-
-  /* ───────── Page head · top-level system page header (Inbox, C7) ───────── */
-  .page-head {
-    padding: 14px 22px 14px;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    gap: 12px;
-    flex-shrink: 0;
-  }
-  .page-head .ph-text {
-    flex: 1;
-    min-width: 0;
-  }
-  .page-head h1 {
-    font-family: 'Prompt', sans-serif;
-    font-size: var(--text-xl);
-    font-weight: 600;
-    color: var(--ink);
-    line-height: 1.25;
-    margin: 0;
-  }
-  .page-head .ph-sub {
-    font-family: 'Prompt', sans-serif;
-    font-size: var(--text-xs);
-    color: var(--ink-soft);
-    margin-top: 3px;
-  }
-  .page-head .ph-actions {
-    display: flex;
-    gap: 8px;
-    flex-shrink: 0;
-  }
-  .page-head .ph-icon-btn {
-    width: 38px;
-    height: 38px;
-    background: rgba(17,17,17,0.05);
-    border-radius: 50%;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    cursor: pointer;
-    color: var(--ink);
-    text-decoration: none;
-  }
-  .page-head .ph-icon-btn svg { width: 18px; height: 18px; }
-  .page-head .ph-icon-btn.active { background: var(--ink); color: #fff; }
-  .page-head .ph-icon-btn.role-switch svg { stroke-width: 2.4; }
-.s3-glass-nav .gn-tab:active {
+.s3-glass-nav .gn-tab.active .gn-icon svg,
+.c-glass-nav .gn-tab.active .gn-icon svg {
+  fill: rgba(255, 217, 82, 0.15);
+}
+.s3-glass-nav .gn-tab:active,
+.c-glass-nav .gn-tab:active {
   transform: scale(0.96);
 }
-/* Pulsing badge on the "ออกแต้ม" tab when there's a pending action. */
-.s3-glass-nav .gn-badge {
+/* Pulsing badge on tabs with pending action (shop "ออกแต้ม", customer
+   inbox / gifts). Same animation, single source of truth. */
+.s3-glass-nav .gn-badge,
+.c-glass-nav .gn-badge {
   position: absolute;
   top: -2px; right: -4px;
-  width: 8px; height: 8px;
+  min-width: 8px; height: 8px;
   border-radius: 50%;
   background: var(--accent);
   box-shadow: 0 0 0 2px var(--bg);
   animation: gn-badge-pulse 1.6s ease-out infinite;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  color: #fff;
+  line-height: 1;
+}
+.c-glass-nav .gn-badge.has-count {
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  top: -4px; right: -8px;
+  border-radius: 99px;
 }
 @keyframes gn-badge-pulse {
-  0% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
-  70% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
+  0%   { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
+  70%  { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
   100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
 }
 
@@ -10851,117 +10854,15 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Inbox/C6/C9/C8 — mirrors shop-side .s3-glass-nav. Position FIXED, not
    sticky (design says sticky but .td overflow-x:hidden breaks sticky-
    bottom in prod — see memory feedback_dock_position_fixed). */
-.c-glass-nav {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 12px;
-  z-index: 6;
-  margin: 0 auto;
-  max-width: calc(100% - 32px);
-  padding: 6px;
-  border-radius: 22px;
-  background: linear-gradient(
-    135deg,
-    rgba(255, 250, 240, 0.7) 0%,
-    rgba(255, 240, 220, 0.6) 50%,
-    rgba(255, 250, 240, 0.7) 100%
-  );
-  backdrop-filter: blur(16px) saturate(180%);
-  -webkit-backdrop-filter: blur(16px) saturate(180%);
-  border: 1px solid rgba(255, 255, 255, 0.5);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.6),
-    inset 0 -1px 0 rgba(17, 17, 17, 0.05),
-    0 8px 24px -8px rgba(17, 17, 17, 0.18),
-    0 2px 8px -2px rgba(17, 17, 17, 0.08);
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 4px;
-}
-.c-glass-nav .gn-tab {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 3px;
-  padding: 8px 4px;
-  border-radius: 16px;
-  cursor: pointer;
-  text-decoration: none;
-  color: var(--ink-soft);
-  transition: all 0.15s ease;
-}
-.c-glass-nav .gn-tab .gn-icon {
-  width: 22px;
-  height: 22px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  position: relative;
-}
-.c-glass-nav .gn-tab .gn-icon svg {
-  width: 100%;
-  height: 100%;
-  stroke-width: 2;
-}
-.c-glass-nav .gn-tab .gn-label {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-2xs);
-  font-weight: 500;
-  line-height: 1;
-}
-.c-glass-nav .gn-tab.active {
-  background: linear-gradient(
-    135deg,
-    rgba(17, 17, 17, 0.92) 0%,
-    rgba(17, 17, 17, 1) 100%
-  );
-  color: var(--butter);
-  box-shadow:
-    inset 0 1px 0 rgba(255, 255, 255, 0.1),
-    0 2px 8px -2px rgba(17, 17, 17, 0.3);
-}
-.c-glass-nav .gn-tab.active .gn-icon svg {
-  fill: rgba(255, 217, 82, 0.15);
-}
-.c-glass-nav .gn-tab:active {
-  transform: scale(0.96);
-}
-.c-glass-nav .gn-badge {
-  position: absolute;
-  top: -2px; right: -4px;
-  min-width: 8px; height: 8px;
-  border-radius: 50%;
-  background: var(--accent);
-  box-shadow: 0 0 0 2px var(--bg);
-  animation: c-gn-badge-pulse 1.6s ease-out infinite;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Prompt', sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  color: #fff;
-  line-height: 1;
-}
-.c-glass-nav .gn-badge.has-count {
-  min-width: 16px; height: 16px;
-  padding: 0 4px;
-  top: -4px; right: -8px;
-  border-radius: 99px;
-}
-@keyframes c-gn-badge-pulse {
-  0%   { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0.5); }
-  70%  { box-shadow: 0 0 0 2px var(--bg), 0 0 0 8px rgba(255, 94, 58, 0); }
-  100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
-}
+/* .c-glass-nav now shares its full chassis with .s3-glass-nav above —
+   styles, badge, animation are defined once in the combined selector
+   block. Customer-specific tweaks (if any) belong here in the future. */
 
 /* When the dock is present, leave room at the bottom of `.td` so it doesn't
    sit on top of the last content row. Applied via .has-c-dock on the
    container so it's opt-in per page. */
 .td.has-c-dock {
-  padding-bottom: 88px;
+  padding-bottom: 102px;
 }
 
 /* C5 voucher · served state. After the shop scans the customer's QR
