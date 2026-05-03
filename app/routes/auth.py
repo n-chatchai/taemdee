@@ -1,4 +1,6 @@
 from typing import Optional
+import logging
+
 
 from fastapi import (
     APIRouter,
@@ -39,6 +41,8 @@ from app.services.line_login import (
 from app.services import google_login, facebook_login
 
 router = APIRouter()
+
+logger = logging.getLogger(__name__)
 
 LINE_STATE_COOKIE = "line_oauth_state"
 GOOGLE_STATE_COOKIE = "google_oauth_state"
@@ -251,6 +255,9 @@ async def line_callback(
     """
     payload = verify_oauth_state(state, line_oauth_state)
     if not payload:
+        logger.error(
+            f"Invalid OAuth state, state={state}, line_oauth_state={line_oauth_state}"
+        )
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
     role = payload["role"]
@@ -258,9 +265,14 @@ async def line_callback(
 
     # 1. Dispatcher Logic: If we are on the main domain but this is a shop login,
     # redirect the browser to the shop domain's callback so it can set its own cookie.
+    logger.info(f"Dispatcher host: {request.headers}")
     host = request.headers.get("host", "").split(":")[0]
     is_main_host = host == settings.main_domain or not (
         host.startswith("shop.") or host == settings.shop_domain
+    )
+
+    logger.info(
+        f"Dispatcher Logic, host={host}, is_main_host={is_main_host}, role={role}"
     )
 
     if role == "shop" and is_main_host:

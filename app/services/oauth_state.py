@@ -14,6 +14,8 @@ other's state.
 import secrets
 from datetime import timedelta
 from typing import Optional
+import logging
+
 
 from jose import JWTError, jwt
 
@@ -22,8 +24,12 @@ from app.models.util import utcnow
 
 OAUTH_STATE_TTL_MINUTES = 10
 
+logger = logging.getLogger(__name__)
 
-def make_oauth_state(role: str = "shop", next_redeem: Optional[str] = None) -> tuple[str, str]:
+
+def make_oauth_state(
+    role: str = "shop", next_redeem: Optional[str] = None
+) -> tuple[str, str]:
     """Returns (url_state, cookie_token).
 
     `url_state` is a random nonce that travels in the URL `state` parameter
@@ -40,7 +46,9 @@ def make_oauth_state(role: str = "shop", next_redeem: Optional[str] = None) -> t
     }
     if next_redeem:
         payload["next_redeem"] = next_redeem
-    cookie_token = jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+    cookie_token = jwt.encode(
+        payload, settings.jwt_secret, algorithm=settings.jwt_algorithm
+    )
     return nonce, cookie_token
 
 
@@ -56,9 +64,11 @@ def verify_oauth_state(url_state: str, cookie_token: Optional[str]) -> Optional[
         payload = jwt.decode(
             cookie_token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
         )
-    except JWTError:
+    except Exception as e:
+        logger.error(f"JWT decode error: {e}")
         return None
     if payload.get("nonce") != url_state:
+        logger.error("Nonce does not match")
         return None
     payload.setdefault("role", "shop")
     return payload
