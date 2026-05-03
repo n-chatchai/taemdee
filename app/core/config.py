@@ -19,9 +19,29 @@ class Settings(BaseSettings):
     # How long a session cookie stays valid.
     session_expire_days: int = 30
 
-    # Domains for subdomain separation.
-    main_domain: str = "taemdee.com"
-    shop_domain: str = "shop.taemdee.com"
+    # Domain for the platform. Subdomain "shop." is automatically prefixed for shops.
+    domain_name: str = "taemdee.com"
+
+    @property
+    def main_domain(self) -> str:
+        return self.domain_name
+
+    @property
+    def shop_domain(self) -> str:
+        return f"shop.{self.domain_name}"
+
+    # --- Redirect URIs (automatically derived from domain_name) ---
+    @property
+    def line_redirect_uri(self) -> str:
+        return f"https://{self.domain_name}/auth/line/callback"
+
+    @property
+    def google_redirect_uri(self) -> str:
+        return f"https://{self.domain_name}/auth/google/callback"
+
+    @property
+    def facebook_redirect_uri(self) -> str:
+        return f"https://{self.domain_name}/auth/facebook/callback"
 
     # "development" or "production". Controls cookie Secure flag + SMS sending.
     environment: str = "development"
@@ -29,7 +49,6 @@ class Settings(BaseSettings):
     # LINE Login (optional — if unset, the LINE button returns 503).
     line_channel_id: Optional[str] = None
     line_channel_secret: Optional[str] = None
-    line_redirect_uri: str = "https://taemdee.com/auth/line/callback"
     login_otp_simulate: bool = False
 
     # Login methods enabled for each role (comma-separated: line,phone,google,facebook)
@@ -39,12 +58,10 @@ class Settings(BaseSettings):
     # Google OAuth 2.0 (optional — if unset, the Google button returns 503).
     google_client_id: Optional[str] = None
     google_client_secret: Optional[str] = None
-    google_redirect_uri: str = "https://taemdee.com/auth/google/callback"
 
     # Facebook Login (optional — if unset, the FB button returns 503).
     facebook_app_id: Optional[str] = None
     facebook_app_secret: Optional[str] = None
-    facebook_redirect_uri: str = "https://taemdee.com/auth/facebook/callback"
 
     # Slack incoming-webhook for deploy notifications.
     slack_deploy_webhook_url: Optional[str] = None
