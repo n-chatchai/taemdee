@@ -60,13 +60,6 @@
       </button>
       {% endif %}
 
-      <button type="button" class="s1-btn" style="background: var(--surface); color: var(--ink-soft); border-style: dashed;" @click="step = 'recovery'; error = ''">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;">
-          <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
-          <path d="M12 8v4"/><path d="M12 16h.01"/>
-        </svg>
-        ใช้รหัสกู้คืน (Recovery Code)
-      </button>
     </div>
     
     <div style="padding: 16px 22px; text-align: center;">
@@ -139,6 +132,12 @@
     </form>
 
     <div class="s1-foot">
+      <div style="margin-bottom: 14px;">
+        <button type="button" @click="step = 'recovery'; error = '';" 
+                style="background:none; border:none; color:var(--ink-softest); font-size:12px; text-decoration:underline; cursor:pointer; font-family:'Prompt', sans-serif;">
+          เข้าด้วยรหัสกู้คืน (Recovery Code)
+        </button>
+      </div>
       ถือว่ายอมรับ <a>ข้อตกลง</a> และ <a>นโยบายความเป็นส่วนตัว</a>
     </div>
 
