@@ -26,6 +26,7 @@ class Settings(BaseSettings):
     line_channel_secret: Optional[str] = None
     line_redirect_uri: str = "https://taemdee.com/auth/line/callback"
     login_otp_simulate: bool = False
+    phone_login_enabled: bool = True
 
     # Google OAuth 2.0 (optional — if unset, the Google button returns 503).
     # Get the client id/secret from Google Cloud Console → APIs & Services →
@@ -34,6 +35,7 @@ class Settings(BaseSettings):
     google_client_id: Optional[str] = None
     google_client_secret: Optional[str] = None
     google_redirect_uri: str = "https://taemdee.com/auth/google/callback"
+    google_login_enabled: bool = True
 
     # Facebook Login (optional — if unset, the FB button returns 503).
     # App ID + App Secret from Meta for Developers → My Apps → Settings → Basic.
@@ -42,6 +44,7 @@ class Settings(BaseSettings):
     facebook_app_id: Optional[str] = None
     facebook_app_secret: Optional[str] = None
     facebook_redirect_uri: str = "https://taemdee.com/auth/facebook/callback"
+    facebook_login_enabled: bool = True
 
     # Slack incoming-webhook for deploy notifications. Read by scripts/deploy.sh
     # via the same env var name; surfaced here so it lives in the same .env

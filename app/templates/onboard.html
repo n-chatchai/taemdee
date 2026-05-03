@@ -1,148 +1,4 @@
-<!DOCTYPE html>
-<html lang="th">
-<head>
-  <meta charset="UTF-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ยินดีต้อนรับ · {{ shop.name }} · TaemDee</title>
-  <link rel="preconnect" href="https://fonts.googleapis.com">
-  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  {% include "_partials/pwa_head.html" %}
-  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
-  <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
-</head>
-<body>
-  {# C2 onboarding — 3 client-side steps. Triggered from /scan/{shop_id}
-     when customer.display_name is NULL (first-ever scan). On completion the
-     final step redirects to /card/{shop.id}. #}
-  {% set logo = shop_logo(shop) %}
-  <div class="td onboarding" :class="'step-' + step" x-data="{
-        step: 1, name: '', error: '', pointCount: Number('{{ point_count or 0 }}'),
-        async submitName() {
-          const shopId = '{{ shop.id or "" }}';
-          if (!shopId) { this.error = 'ข้อมูลร้านค้าไม่ถูกต้อง'; return; }
-          const fd = new FormData();
-          fd.append('name', this.name.trim());
-          fd.append('shop_id', shopId);
-          try {
-            const r = await fetch('/card/nickname', {
-              method: 'POST',
-              body: fd,
-              credentials: 'same-origin'
-            });
-            if (!r.ok) { const j = await r.json().catch(() => ({}));
-              this.error = j.detail || (r.status + ' — บันทึกไม่สำเร็จ'); return; }
-            const res = await r.json();
-            if (res.point_count !== undefined) this.pointCount = Number(res.point_count);
-          } catch (_) { this.error = 'บันทึกไม่สำเร็จ — ตรวจสอบอินเทอร์เน็ต'; return; }
-          this.error = ''; this.step = 2;
-        }
-      }">
-
-    <div class="shop-head hero" x-show="step <= 2">
-      <div class="shop-logo-mark">
-        {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-        {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
-      </div>
-      <div class="shop-sub">
-        {{ shop.name }}{% if shop.location %} · {{ shop.location }}{% endif %}
-      </div>
-    </div>
-
-    <div class="ob-shop-strip" x-show="step === 3" x-cloak>
-      <span class="strip-logo">
-        {% if logo %}{{ logo.text[0]|upper }}{% else %}{{ shop.name[0]|upper }}{% endif %}
-      </span>
-      <span class="strip-name">ที่ <strong>{{ shop.name }}</strong></span>
-    </div>
-
-    <div class="ob-step-dots">
-      <span class="ob-dot" :class="step === 1 ? 'active' : (step > 1 ? 'done' : '')"></span>
-      <span class="ob-dot" :class="step === 2 ? 'active' : (step > 2 ? 'done' : '')"></span>
-      <span class="ob-dot" :class="step === 3 ? 'active' : ''"></span>
-    </div>
-
-    {# === Step 1: Greeting + nickname (C2.1) === #}
-    <div class="ob-canvas" x-show="step === 1" x-transition>
-      <div class="ob-avatar-wrap">
-        <svg class="ob-spark s-1" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="ob-spark s-2" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <svg class="ob-spark s-3" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        <div class="ob-avatar">
-          <svg viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#fff"/><circle cx="64" cy="42" r="6" fill="#fff"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-        </div>
-      </div>
-
-      <div class="ob-bubble">
-        สวัสดีครับ ผมชื่อ<span class="ob-name">น้องแต้ม</span><br>
-        <strong>{{ shop.name }}</strong><br>
-        ให้ผมมาดูแลแต้มของพี่ครับ
-      </div>
-
-      <div class="ob-q">ให้ผมเรียกพี่ว่าอะไรดีครับ?</div>
-      <div class="ob-input-wrap">
-        {# No autofocus on purpose — autofocus on mobile pops the
-           keyboard immediately + scrolls past the greeting copy before
-           the customer can read it. Per chatchai's feedback, the user
-           taps the field when they're ready. #}
-        <input type="text" class="ob-input"
-               placeholder="ลูกค้า (ค่าเริ่มต้น)" maxlength="40"
-               x-model="name" autocomplete="given-name"
-               @keydown.enter.prevent="submitName()" />
-      </div>
-      <div class="ob-skip-hint">ข้ามได้ — ผมจะเรียกว่า "ลูกค้า"</div>
-      <div x-show="error" x-cloak style="color:var(--accent); font-size:13px; margin-top:8px;" x-text="error"></div>
-    </div>
-    <div class="ob-bottom" x-show="step === 1" x-transition>
-      <button class="ob-next full" @click="submitName()">
-        <span>ต่อไป</span>
-        <span class="arrow">→</span>
-      </button>
-    </div>
-
-    {# === Step 2: First stamp + reward (C2.2) === #}
-    <div class="ob-canvas" x-show="step === 2" x-cloak x-transition>
-      <div class="ob-big-num">
-        <div class="ob-num-label">ผมเก็บแต้มแรกให้แล้ว</div>
-        <div class="ob-num">
-          <span x-text="pointCount"></span>
-          <svg class="ob-num-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-        </div>
-        <div class="ob-num-sub">อีก <strong x-text="{{ shop.reward_threshold }} - pointCount"></strong><strong> ครั้ง</strong> ได้รางวัล</div>
-      </div>
-
-      <div class="stamps-wrap" style="padding: 0; margin-bottom: 18px;">
-        <div class="stamps">
-          {% for i in range(1, shop.reward_threshold + 1) %}
-            <div class="stamp" :class="{ 'on': pointCount >= {{ i }} }"></div>
-          {% endfor %}
-        </div>
-      </div>
-
-      <div class="ob-reward-card">
-        <div class="ob-rc-line">ครบ {{ shop.reward_threshold }} รับ</div>
-        <div class="ob-rc-reward"><strong>{{ shop.reward_description }}</strong></div>
-        <div class="ob-rc-icon">
-          {% set img_id = shop.reward_image %}
-          {% include "_partials/reward_svg.html" %}
-        </div>
-      </div>
-    </div>
-    <div class="ob-bottom" x-show="step === 2" x-cloak x-transition>
-      <button class="ob-next full" @click="step = 3">
-        <span>ต่อไป</span>
-        <span class="arrow">→</span>
-      </button>
-    </div>
-
-    {# === Step 3: Save warning + link account (onboard.link_account) === #}
-    <div class="ob-canvas" x-show="step === 3" x-cloak x-transition>
-      <div class="ob-warn-s">บัตรพี่จะถูกเก็บในเครื่องนี้นะครับ ถ้าเปลี่ยนเครื่องแต้มจะหาย</div>
-
-      <div class="ob-protect-card">
-        <div class="ob-pc-text">
-          <div class="ob-pc-h">ผูกบัญชี<strong>แต้มดี</strong></div>
-          <div class="ob-pc-s">เก็บแต้มไว้ตลอด · เปลี่ยนเครื่องก็ไม่หาย</div>
-        </div>
+</div>
       </div>
     </div>
     <div class="ob-bottom stack" x-show="step === 3" x-cloak x-transition>
@@ -150,10 +6,13 @@
          for all four is wired (auth.py); the phone pill keeps the
          existing OTP route at /card/save. #}
       <div class="ob-social-row">
+{% if settings.line_channel_id %}
         <a class="ob-social-pill line" href="/auth/line/customer/start">
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
           <span>LINE</span>
         </a>
+{% endif %}
+{% if settings.google_login_enabled and settings.google_client_id %}
         <a class="ob-social-pill" href="/auth/google/customer/start">
           <svg viewBox="0 0 24 24" fill="none">
             <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -163,10 +22,14 @@
           </svg>
           <span>Google</span>
         </a>
+{% endif %}
+{% if settings.facebook_login_enabled and settings.facebook_app_id %}
         <a class="ob-social-pill" href="/auth/facebook/customer/start">
           <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
           <span>Facebook</span>
         </a>
+{% endif %}
+{% if settings.phone_login_enabled %}
         <a class="ob-social-pill" href="/card/save">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="5" y="2" width="14" height="20" rx="2"/>
@@ -174,15 +37,8 @@
           </svg>
           <span>เบอร์โทร</span>
         </a>
+{% endif %}
       </div>
 
       <a class="ob-skip center" href="/onboard/{{ shop.id }}/recovery">ไว้ก่อนครับ</a>
     </div>
-
-    <div class="ob-footer-mark">
-      <svg class="smile-stamp" viewBox="0 0 100 100"><rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/><circle cx="36" cy="42" r="6" fill="#FFD952"/><circle cx="64" cy="42" r="6" fill="#FFD952"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-      <span>taemdee<span class="dot">.</span></span>
-    </div>
-  </div>
-</body>
-</html>
