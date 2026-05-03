@@ -47,6 +47,7 @@
         </button>
       </form>
 
+      {% if settings.line_channel_id %}
       {% if has_line %}
         <form method="POST" action="/card/account/notifications" style="margin:0;">
           <input type="hidden" name="channel" value="line">
@@ -68,7 +69,9 @@
           </div>
         </div>
       {% endif %}
+      {% endif %}
 
+      {% if settings.phone_login_enabled %}
       {% if has_phone %}
         <form method="POST" action="/card/account/notifications" style="margin:0;">
           <input type="hidden" name="channel" value="sms">
@@ -89,6 +92,7 @@
             <div class="nr-desc">ยังไม่ได้ผูกเบอร์ · <a class="nr-link" href="/card/save">ผูกที่นี่</a></div>
           </div>
         </div>
+      {% endif %}
       {% endif %}
 
     </div>

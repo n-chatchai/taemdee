@@ -41,6 +41,8 @@ async def request_otp(
     phone: str = Form(...),
     db: AsyncSession = Depends(get_session),
 ):
+    if not settings.phone_login_enabled:
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Phone login disabled")
     code = await generate_and_send_otp(db, phone)
     res = {"ok": True}
     if settings.login_otp_simulate:
@@ -306,10 +308,10 @@ async def line_callback(
 
 
 def _start_google_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
-    if not google_login.is_configured():
+    if not settings.google_login_enabled or not google_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Google Login not configured (set GOOGLE_CLIENT_ID + GOOGLE_CLIENT_SECRET in .env)",
+            "Google Login disabled or not configured",
         )
     nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
     redirect = RedirectResponse(
@@ -328,10 +330,10 @@ def _start_google_oauth(role: str, next_redeem: Optional[str] = None) -> Redirec
 
 
 def _start_facebook_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
-    if not facebook_login.is_configured():
+    if not settings.facebook_login_enabled or not facebook_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
-            "Facebook Login not configured (set FACEBOOK_APP_ID + FACEBOOK_APP_SECRET in .env)",
+            "Facebook Login disabled or not configured",
         )
     nonce, cookie_token = make_oauth_state(role=role, next_redeem=next_redeem)
     redirect = RedirectResponse(
