@@ -21,13 +21,13 @@
     <div class="pp-sub">เก็บแต้มไว้ให้ตลอด · เปลี่ยนเครื่องก็ใช้ต่อได้</div>
 
     <div class="ob-social-row" style="margin: 14px 0 8px;">
-      {% if settings.line_channel_id %}
+      {% if settings.is_login_enabled('customer', 'line') and settings.line_channel_id %}
       <a class="ob-social-pill line" href="/auth/line/customer/start">
         <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
         <span>LINE</span>
       </a>
       {% endif %}
-      {% if settings.google_login_enabled and settings.google_client_id %}
+      {% if settings.is_login_enabled('customer', 'google') and settings.google_client_id %}
       <a class="ob-social-pill" href="/auth/google/customer/start">
         <svg viewBox="0 0 24 24" fill="none">
           <path d="M22.56 12.25c0-.78-.07-1.53-.2-2.25H12v4.26h5.92c-.26 1.37-1.04 2.53-2.21 3.31v2.77h3.57c2.08-1.92 3.28-4.74 3.28-8.09z" fill="#4285F4"/>
@@ -38,13 +38,13 @@
         <span>Google</span>
       </a>
       {% endif %}
-      {% if settings.facebook_login_enabled and settings.facebook_app_id %}
+      {% if settings.is_login_enabled('customer', 'facebook') and settings.facebook_app_id %}
       <a class="ob-social-pill" href="/auth/facebook/customer/start">
         <svg viewBox="0 0 24 24" fill="#1877F2"><path d="M24 12.073c0-6.627-5.373-12-12-12s-12 5.373-12 12c0 5.99 4.388 10.954 10.125 11.854v-8.385H7.078v-3.47h3.047V9.43c0-3.007 1.792-4.669 4.533-4.669 1.312 0 2.686.235 2.686.235v2.953H15.83c-1.491 0-1.956.925-1.956 1.874v2.25h3.328l-.532 3.47h-2.796v8.385C19.612 23.027 24 18.062 24 12.073z"/></svg>
         <span>Facebook</span>
       </a>
       {% endif %}
-      {% if settings.phone_login_enabled %}
+      {% if settings.is_login_enabled('customer', 'phone') %}
       <a class="ob-social-pill" href="/card/save">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <rect x="5" y="2" width="14" height="20" rx="2"/>

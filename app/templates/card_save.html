@@ -70,7 +70,7 @@
           </button>
         </form>
 
-        {% if settings.line_channel_id %}
+        {% if settings.is_login_enabled('customer', 'line') and settings.line_channel_id %}
         <div class="alt-line">
           หรือ
           <a class="alt-link"

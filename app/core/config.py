@@ -1,3 +1,4 @@
+import os
 from typing import Optional
 
 from pydantic_settings import BaseSettings, SettingsConfigDict
@@ -30,55 +31,49 @@ class Settings(BaseSettings):
     line_channel_secret: Optional[str] = None
     line_redirect_uri: str = "https://taemdee.com/auth/line/callback"
     login_otp_simulate: bool = False
-    phone_login_enabled: bool = False
+
+    # Login methods enabled for each role (comma-separated: line,phone,google,facebook)
+    customer_logins: str = "line,google"
+    shop_logins: str = "line,google"
 
     # Google OAuth 2.0 (optional — if unset, the Google button returns 503).
-    # Get the client id/secret from Google Cloud Console → APIs & Services →
-    # Credentials → "Create OAuth client ID" (Web application). The redirect
-    # URI must match the one registered there exactly.
     google_client_id: Optional[str] = None
     google_client_secret: Optional[str] = None
     google_redirect_uri: str = "https://taemdee.com/auth/google/callback"
-    google_login_enabled: bool = False
 
     # Facebook Login (optional — if unset, the FB button returns 503).
-    # App ID + App Secret from Meta for Developers → My Apps → Settings → Basic.
-    # Redirect URI must be added under Facebook Login → Settings → Valid OAuth
-    # Redirect URIs.
     facebook_app_id: Optional[str] = None
     facebook_app_secret: Optional[str] = None
     facebook_redirect_uri: str = "https://taemdee.com/auth/facebook/callback"
-    facebook_login_enabled: bool = False
 
-    # Slack incoming-webhook for deploy notifications. Read by scripts/deploy.sh
-    # via the same env var name; surfaced here so it lives in the same .env
-    # registry as everything else and is documented next to its peers.
-    slack_deploy_webhook_url: Optional[str] = None
+    # Slack incoming-webhook for deploy notifications.
+    slack_webhook_url: Optional[str] = None
 
-    # How many "ลูกค้าล่าสุด" feed rows the S3 dock keeps visible. The route
-    # passes this into the dashboard template and the SSE handler trims old
-    # rows past this cap as new events arrive. Default 3 matches the original
-    # design; bump to 5/10 if a busy shop wants more history at a glance.
-    shop_customer_last_scan_display_number: int = 10
+    # DeeReach: default SMS sender name (if the provider supports it).
+    sms_sender: str = "TaemDee"
 
-    # Welcome-credit grant amount (in CREDITS, not satang) — handed to
-    # every shop the first time they tap the dashboard's 'รับเครดิตต้อนรับ'
-    # item. 0 disables the item. Stored as credits because the value is
-    # shop-facing — converted to satang internally when applied.
-    credit_welcome_amount: int = 50
+    # Asset versioning (set by deploy script to bust caches).
+    asset_version: str = "dev"
 
-    # Cloudflare R2 Storage. Leave R2_ENDPOINT_URL empty to disable uploads.
-    # R2_ENDPOINT_URL is the S3 API host (https://<account>.r2.cloudflarestorage.com)
-    # used for signed PUTs only. R2_PUBLIC_URL is the browser-facing host —
-    # the "Public Development URL" (pub-xxxx.r2.dev) you toggle on in the R2
-    # dashboard, or a custom domain. The API host returns
-    # `InvalidArgument: Authorization` to unsigned browser GETs, so the URL
-    # we persist must come from R2_PUBLIC_URL, not R2_ENDPOINT_URL.
-    r2_endpoint_url: Optional[str] = None
-    r2_access_key_id: Optional[str] = None
-    r2_secret_access_key: Optional[str] = None
-    r2_bucket: str = "taemdee"
-    r2_public_url: Optional[str] = None
+    # --- Helper methods to check if a provider is enabled ---
+    def is_login_enabled(self, role: str, provider: str) -> bool:
+        """Checks if a provider (line, phone, google, facebook) is enabled for a role."""
+        methods_str = self.customer_logins if role == "customer" else self.shop_logins
+        enabled_methods = {s.strip().lower() for s in methods_str.split(",")}
+        return provider.lower() in enabled_methods
+
+    # Legacy properties for existing templates (will eventually migrate them)
+    @property
+    def google_login_enabled(self) -> bool:
+        return self.is_login_enabled("customer", "google")
+
+    @property
+    def facebook_login_enabled(self) -> bool:
+        return self.is_login_enabled("customer", "facebook")
+
+    @property
+    def phone_login_enabled(self) -> bool:
+        return self.is_login_enabled("customer", "phone")
 
 
 settings = Settings()

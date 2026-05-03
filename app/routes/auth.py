@@ -56,8 +56,8 @@ async def request_otp(
     phone: str = Form(...),
     db: AsyncSession = Depends(get_session),
 ):
-    if not settings.phone_login_enabled:
-        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Phone login disabled")
+    if not settings.is_login_enabled("shop", "phone"):
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "Phone login disabled for shops")
     code = await generate_and_send_otp(db, phone)
     res = {"ok": True}
     if settings.login_otp_simulate:
@@ -134,17 +134,14 @@ def _start_line_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectR
 @router.get("/line/start")
 async def line_start():
     """Shop-side LINE Login: generate state, set cookie, redirect to LINE."""
+    if not settings.is_login_enabled("shop", "line"):
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for shops")
     return _start_line_oauth(role="shop")
 
 
 @router.get("/line/customer/start")
-async def line_customer_start(next_redeem: Optional[str] = None):
-    """Customer-side LINE Login — opened from the C2.signup picker. After
-    LINE OAuth comes back, the callback hands off to /auth/line/customer/confirm
-    (C3.line) so the customer can review the bound LINE handle and toggle
-    DeeReach consent before landing on /my-cards (or /card/{shop}/claimed
-    if `next_redeem=<shop_id>` is set — auto-resumes the redeem the guest
-    was trying to do at the C4 gate)."""
+    if not settings.is_login_enabled("customer", "line"):
+        raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for customers")
     return _start_line_oauth(role="customer", next_redeem=next_redeem)
 
 
@@ -384,7 +381,7 @@ async def line_callback(
 def _start_google_oauth(
     role: str, next_redeem: Optional[str] = None
 ) -> RedirectResponse:
-    if not settings.google_login_enabled or not google_login.is_configured():
+    if not settings.is_login_enabled(role, "google") or not google_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Google Login disabled or not configured",
@@ -408,7 +405,7 @@ def _start_google_oauth(
 def _start_facebook_oauth(
     role: str, next_redeem: Optional[str] = None
 ) -> RedirectResponse:
-    if not settings.facebook_login_enabled or not facebook_login.is_configured():
+    if not settings.is_login_enabled(role, "facebook") or not facebook_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Facebook Login disabled or not configured",

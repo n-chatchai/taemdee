@@ -42,7 +42,8 @@ def _isolate_dev_settings(monkeypatch):
     monkeypatch.setattr(settings, "google_client_id", None)
     monkeypatch.setattr(settings, "facebook_app_id", None)
     monkeypatch.setattr(settings, "login_otp_simulate", False)
-    monkeypatch.setattr(settings, "phone_login_enabled", False)
+    monkeypatch.setattr(settings, "customer_logins", "line,google")
+    monkeypatch.setattr(settings, "shop_logins", "line,google")
 
 
 @pytest.fixture

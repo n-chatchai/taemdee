@@ -47,7 +47,7 @@
         </button>
       </form>
 
-      {% if settings.line_channel_id %}
+      {% if settings.is_login_enabled('customer', 'line') and settings.line_channel_id %}
       {% if has_line %}
         <form method="POST" action="/card/account/notifications" style="margin:0;">
           <input type="hidden" name="channel" value="line">
@@ -71,7 +71,7 @@
       {% endif %}
       {% endif %}
 
-      {% if settings.phone_login_enabled %}
+      {% if settings.is_login_enabled('customer', 'phone') %}
       {% if has_phone %}
         <form method="POST" action="/card/account/notifications" style="margin:0;">
           <input type="hidden" name="channel" value="sms">
