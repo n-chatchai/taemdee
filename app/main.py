@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
-from fastapi.responses import RedirectResponse
+from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from loguru import logger
 
 from app.core.auth import (
     CUSTOMER_COOKIE_NAME,
@@ -15,7 +17,16 @@ from app.core.config import settings
 from app.core.database import engine, get_session
 from app.core.templates import ASSET_VERSION, templates
 from app.models import Customer, Shop
-from app.routes import auth, branches, customer, deereach, issuance, shops, staff_join, team
+from app.routes import (
+    auth,
+    branches,
+    customer,
+    deereach,
+    issuance,
+    shops,
+    staff_join,
+    team,
+)
 from app.services.auth import decode_customer_token, decode_session_token
 
 
@@ -26,6 +37,7 @@ async def lifespan(app: FastAPI):
     # (services/web_push.ensure_vapid_keys); the web process reads them
     # lazily via load_vapid_keys when /push/vapid-public is hit.
     from app.services import events
+
     await events.start()
     try:
         yield
@@ -57,11 +69,12 @@ async def inject_customer_context(request: Request, call_next):
     if customer_cookie:
         from app.core.database import SessionFactory
         from app.services.auth import decode_customer_token
+
         customer_id = decode_customer_token(customer_cookie)
         if customer_id:
             async with SessionFactory() as db:
                 customer = await db.get(Customer, customer_id)
-    
+
     request.state.customer = customer
     return await call_next(request)
 
@@ -77,28 +90,54 @@ async def subdomain_routing(request: Request, call_next):
     path = request.url.path
 
     # System/static routes always allowed on both
-    if path.startswith("/static") or path in ("/manifest.json", "/favicon.ico", "/version", "/privacy", "/data-deletion"):
+    if path.startswith("/static") or path in (
+        "/manifest.json",
+        "/favicon.ico",
+        "/version",
+        "/privacy",
+        "/data-deletion",
+    ):
         return await call_next(request)
 
     # In local dev, taemdee.local is the main domain, shop.taemdee.local is the shop domain.
     # We detect "shop." prefix or match settings exactly.
     is_shop_host = host.startswith("shop.") or host == settings.shop_domain
-    
+
     if is_shop_host:
         if path == "/":
-            return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+            return RedirectResponse(
+                url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+            )
         # Auth routes (like /auth/otp/verify) are shared but usually hit from the shop side
-        if not (path.startswith("/shop") or path.startswith("/auth") or path.startswith("/staff")):
+        if not (
+            path.startswith("/shop")
+            or path.startswith("/auth")
+            or path.startswith("/staff")
+        ):
             # Customer trying to access /my-cards on shop domain? Bounce to main.
-            main_host = settings.main_domain if settings.environment == "production" else host.replace("shop.", "")
+            main_host = (
+                settings.main_domain
+                if settings.environment == "production"
+                else host.replace("shop.", "")
+            )
             proto = request.url.scheme
-            return RedirectResponse(url=f"{proto}://{main_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
+            return RedirectResponse(
+                url=f"{proto}://{main_host}{path}",
+                status_code=status.HTTP_303_SEE_OTHER,
+            )
     else:
         # On main domain, bounce any /shop/* requests to the shop subdomain
         if path.startswith("/shop"):
-            shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
+            shop_host = (
+                settings.shop_domain
+                if settings.environment == "production"
+                else f"shop.{host}"
+            )
             proto = request.url.scheme
-            return RedirectResponse(url=f"{proto}://{shop_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
+            return RedirectResponse(
+                url=f"{proto}://{shop_host}{path}",
+                status_code=status.HTTP_303_SEE_OTHER,
+            )
 
     return await call_next(request)
 
@@ -108,7 +147,7 @@ async def subdomain_routing(request: Request, call_next):
 @app.exception_handler(status.HTTP_401_UNAUTHORIZED)
 async def auth_error_handler(request: Request, exc: HTTPException):
     """When a session is missing/invalid, redirect to the appropriate login page.
-    
+
     - SessionAuthError -> /shop/login
     - CustomerAuthError -> /customer/login
     - Plain 401 -> host/path sniffing fallback
@@ -139,15 +178,18 @@ async def auth_error_handler(request: Request, exc: HTTPException):
     accept = request.headers.get("accept", "")
     # Check for HTMX or HTML requests
     is_html = "text/html" in accept or "*/*" in accept or not accept
-    
+
     if is_html:
-        response = RedirectResponse(url=login_url, status_code=status.HTTP_303_SEE_OTHER)
+        response = RedirectResponse(
+            url=login_url, status_code=status.HTTP_303_SEE_OTHER
+        )
         if cookie_to_clear:
             response.delete_cookie(cookie_to_clear, path="/")
         return response
 
     # For API/JSON requests, return standard 401
     from fastapi.exception_handlers import http_exception_handler
+
     return await http_exception_handler(request, exc)
 
 
@@ -159,9 +201,14 @@ async def manifest(request: Request):
     """Serve dynamic manifest based on subdomain."""
     host = request.headers.get("host", "").split(":")[0]
     is_shop_host = host.startswith("shop.") or host == settings.shop_domain
-    
+
     filename = "manifest_shop.json" if is_shop_host else "manifest.json"
-    return RedirectResponse(url=f"/static/{filename}")
+
+    logger.info(f"Serving {filename} for {host}")
+    return FileResponse(
+        f"static/{filename}",
+        media_type="application/json",
+    )
 
 
 @app.get("/favicon.ico")

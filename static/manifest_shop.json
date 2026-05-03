@@ -1,7 +1,7 @@
 {
   "name": "ร้านแต้มดี",
   "short_name": "ร้านแต้มดี",
-  "description": "ระบบจัดการแต้มสะสมสำหรับร้านค้า TaemDee — ดูแดชบอร์ด ออกแต้ม และจัดการลูกค้าได้ทันที",
+  "description": "ระบบจัดการแต้มสะสมสำหรับร้านค้าแต้มดี — ฟรีระบบสมาชิก จ่ายแค่ตอนส่งข้อความหาลูกค้า ",
   "start_url": "/shop/dashboard",
   "scope": "/",
   "display": "standalone",
@@ -10,7 +10,10 @@
   "theme_color": "#3ABFAD",
   "lang": "th",
   "dir": "ltr",
-  "categories": ["business", "shopping"],
+  "categories": [
+    "business",
+    "shopping"
+  ],
   "icons": [
     {
       "src": "taemdee-icons/taemdee-icon-192.png",
