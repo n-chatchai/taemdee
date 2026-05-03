@@ -9855,23 +9855,43 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   gap: 8px;
   margin-bottom: 8px;
 }
+/* .s13d-search is a wrapper holding the magnifying-glass SVG + the
+   actual <input> — style it as a pill flex container, then size the
+   icon and clear the input chrome inside. Previously this rule
+   styled .s13d-search as if it were the input itself, leaving the
+   SVG with no size constraint so it ballooned to fill the row. */
 .s13d-search {
   flex: 1;
-  appearance: none;
-  -webkit-appearance: none;
-  padding: 8px 12px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 8px 14px;
   background: var(--bg);
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 999px;
+  min-width: 0;
+}
+.s13d-search:focus-within { border-color: var(--accent); }
+.s13d-search svg {
+  width: 16px;
+  height: 16px;
+  color: var(--ink-softer);
+  flex-shrink: 0;
+}
+.s13d-search input {
+  flex: 1;
+  min-width: 0;
+  background: transparent;
+  border: none;
+  outline: none;
+  padding: 0;
+  appearance: none;
+  -webkit-appearance: none;
   font-family: 'Prompt', sans-serif;
   font-size: 13px;
   color: var(--ink);
-  outline: none;
 }
-.s13d-search:focus {
-  border-color: var(--accent);
-}
-.s13d-search::placeholder { color: var(--ink-softer); }
+.s13d-search input::placeholder { color: var(--ink-softer); }
 .s13d-select-all {
   appearance: none;
   -webkit-appearance: none;
