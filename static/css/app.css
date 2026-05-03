@@ -7861,16 +7861,51 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   bottom: 104px;
   z-index: 5;
   margin: 0 auto;
-  max-width: calc(100% - 40px);
-  padding: 10px 10px 10px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  box-shadow: 0 8px 24px -10px rgba(17, 17, 17, 0.18);
+  max-width: calc(100% - 24px);
+  padding: 12px 12px 12px;
+  border-radius: 24px;
+  /* Liquid glass — matches the dock chassis below it so the two
+     floating layers read as a coherent stack of polished surfaces. */
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.62) 0%,
+    rgba(255, 245, 230, 0.48) 55%,
+    rgba(246, 241, 229, 0.62) 100%
+  );
+  backdrop-filter: blur(28px) saturate(200%);
+  -webkit-backdrop-filter: blur(28px) saturate(200%);
+  border: 1px solid rgba(255, 255, 255, 0.65);
+  box-shadow:
+    inset 0 1.5px 0 rgba(255, 255, 255, 0.9),
+    inset 0 -1px 0 rgba(17, 17, 17, 0.06),
+    inset 0 0 22px rgba(255, 217, 82, 0.10),
+    0 14px 40px -12px rgba(17, 17, 17, 0.24),
+    0 4px 14px -4px rgba(17, 17, 17, 0.10);
+  isolation: isolate;
+}
+/* Specular top highlight — same trick as the dock so the wet-glass
+   illusion reads as a deliberate pair, not two unrelated panels. */
+.s3-issue-actions::before {
+  content: '';
+  position: absolute;
+  inset: 1px 1px auto 1px;
+  height: 55%;
+  border-radius: 23px 23px 60% 60% / 23px 23px 100% 100%;
+  background: linear-gradient(
+    180deg,
+    rgba(255, 255, 255, 0.40) 0%,
+    rgba(255, 255, 255, 0.05) 100%
+  );
+  pointer-events: none;
+  z-index: 0;
+}
+.s3-issue-actions > * {
+  position: relative;
+  z-index: 1;
 }
 /* Padding-bottom on the page must clear the fixed action card +
    bottom nav. Tighter card → tighter clearance. */
-.td.td-issue { padding-bottom: 200px; }
+.td.td-issue { padding-bottom: 210px; }
 .s3-issue-actions .sap-actions-h {
   margin-bottom: 7px;
   font-family: 'Prompt', sans-serif;
