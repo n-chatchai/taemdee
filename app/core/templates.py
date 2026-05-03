@@ -13,7 +13,7 @@ import unicodedata
 from fastapi.templating import Jinja2Templates
 
 from app.core.config import settings
-from app.models.util import bkk_feed_time, bkk_hms, bkk_short_date
+from app.models.util import bkk_feed_time, bkk_feed_time_short, bkk_hms, bkk_short_date
 from app.services.logo_gen import VALID_STYLE_IDS, render_style
 
 
@@ -84,6 +84,7 @@ templates.env.globals["shop_logo"] = shop_logo
 templates.env.filters.update({
     "bkk_hms": bkk_hms,
     "bkk_feed_time": bkk_feed_time,
+    "bkk_feed_time_short": bkk_feed_time_short,
     "bkk_short_date": bkk_short_date,
     "slugify": slugify,
 })

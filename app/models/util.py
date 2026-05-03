@@ -47,3 +47,15 @@ def bkk_short_date(dt: datetime) -> str:
     where time-of-day is noise compared to the day of send."""
     bkk = dt.replace(tzinfo=timezone.utc).astimezone(BKK)
     return f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]}"
+
+
+def bkk_feed_time_short(dt: datetime) -> str:
+    """Compact feed-row label for table columns where the full
+    `bkk_feed_time` (weekday + date + HH:MM:SS) is too wide. Renders
+    just `HH:MM` for today and `25 เม.ย. HH:MM` once the row crosses
+    midnight, so staff still get day context without seconds."""
+    bkk = dt.replace(tzinfo=timezone.utc).astimezone(BKK)
+    today = datetime.now(timezone.utc).astimezone(BKK).date()
+    if bkk.date() == today:
+        return bkk.strftime("%H:%M")
+    return f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]} {bkk.strftime('%H:%M')}"

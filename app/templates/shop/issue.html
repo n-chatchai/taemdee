@@ -30,7 +30,7 @@
               id="row-{{ item.id }}"
               data-kind="{{ kind }}"
               data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
-            <td class="t">{{ item.created_at|bkk_feed_time }}</td>
+            <td class="t">{{ item.created_at|bkk_feed_time_short }}</td>
             <td class="n">{{ customer_name }}</td>
             <td class="m">{{ method_th }}</td>
             <td class="s">{{ staff_name }}</td>
