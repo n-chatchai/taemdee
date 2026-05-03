@@ -61,7 +61,7 @@ ITEMS: list[DashboardItem] = [
     DashboardItem(
         kind="issue_methods_review",
         label="ทบทวน<strong>วิธีออกแต้ม</strong>",
-        sub="ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ · ให้แต้ม — เปิด/ปิดได้",
+        sub="ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ · ค้นชื่อลูกค้า — เปิด/ปิดได้",
         cta="เปิดดู →",
         link="/shop/issue/methods",
         skip_explain="ค่าเริ่มต้นพร้อมใช้ · ตั้งค่าเปลี่ยนได้ที่ /ตั้งค่า",
