@@ -7608,6 +7608,19 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   width: 100%;
   border-collapse: collapse;
 }
+.s3-issue-feed .sap-table thead th {
+  text-align: left;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+  color: var(--ink-softest);
+  padding: 8px 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.08);
+}
+.s3-issue-feed .sap-table thead th.a {
+  text-align: right;
+}
 .s3-issue-feed .sap-table td {
   padding: 8px 0;
   font-family: 'Prompt', sans-serif;
@@ -7623,6 +7636,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   padding-right: 10px;
 }
 .s3-issue-feed .sap-table td.n { font-weight: 600; color: var(--ink); }
+.s3-issue-feed .sap-table td.m,
+.s3-issue-feed .sap-table td.s {
+  font-size: 12px;
+  color: var(--ink-soft);
+}
 .s3-issue-feed .sap-table td.a {
   text-align: right;
   font-size: 13px;
@@ -8381,6 +8399,38 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   color: var(--ink);
   min-width: 28px;
   text-align: center;
+}
+.search-confirm {
+  display: flex;
+  width: calc(100% - 32px);
+  margin: 16px;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 16px 20px;
+  border-radius: 16px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  align-items: center;
+  justify-content: space-between;
+  cursor: pointer;
+  border: none;
+  box-shadow: 4px 4px 0 rgba(17, 17, 17, 0.15);
+  transition: transform 0.1s;
+}
+.search-confirm:active {
+  transform: scale(0.98);
+}
+.search-confirm .arrow {
+  width: 24px;
+  height: 24px;
+  background: var(--accent);
+  color: #fff;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 14px;
 }
 .phone-display {
   margin: 18px 20px 12px;

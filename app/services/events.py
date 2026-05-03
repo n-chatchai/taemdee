@@ -176,11 +176,14 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
         _subscribers[shop_id].remove(q)
 
 
-def feed_row_html(kind: str, item_id: UUID, when_label: str, customer_name: str = "ลูกค้า") -> str:
+def feed_row_html(kind: str, item_id: UUID, when_label: str, customer_name: str = "ลูกค้า", amount_str: str = "1 แต้ม") -> str:
     """Render one feed row for the shop dashboard live feed (S3 dock) and SSE
     stream. Emits a `<tr class="feed-row">` carrying data-detail-url so a
     tap opens the S3.detail bottom sheet (where the void button lives now)."""
-    label = '<span class="icon-mini">+</span><strong>1 แต้ม</strong>' if kind == "point" else "<strong>รับรางวัล</strong>"
+    if kind == "point":
+        label = f'<span class="icon-mini">+</span><strong>{amount_str}</strong>'
+    else:
+        label = "<strong>รับรางวัล</strong>"
     detail_url = f"/shop/feed/{kind}/{item_id}"
     return (
         f'<tr class="feed-row" id="row-{item_id}" data-detail-url="{detail_url}">'

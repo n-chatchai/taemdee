@@ -15,17 +15,28 @@
       </span>
     </div>
     <table class="sap-table" id="sap-table">
+      <thead>
+        <tr>
+          <th class="t">เวลา</th>
+          <th class="n">ลูกค้า</th>
+          <th class="m">วิธีรับ</th>
+          <th class="s">โดย</th>
+          <th class="a">จำนวน</th>
+        </tr>
+      </thead>
       <tbody id="sap-tbody">
-        {% for kind, item, customer_name in feed[:feed_cap] %}
+        {% for kind, item, customer_name, amount, method_th, staff_name in feed %}
           <tr class="feed-row{% if loop.first %} latest{% endif %}"
               id="row-{{ item.id }}"
               data-kind="{{ kind }}"
               data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
             <td class="t">{{ item.created_at|bkk_feed_time }}</td>
             <td class="n">{{ customer_name }}</td>
+            <td class="m">{{ method_th }}</td>
+            <td class="s">{{ staff_name }}</td>
             <td class="a">
               {% if kind == 'point' %}
-                <span class="icon-mini">+</span> <strong>1 แต้ม</strong>
+                <span class="icon-mini">+</span> <strong>{{ amount }} แต้ม</strong>
               {% else %}
                 <strong>รับรางวัล</strong>
               {% endif %}

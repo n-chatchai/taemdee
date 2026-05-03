@@ -23,8 +23,8 @@
     async grant() {
       if (!this.selected) return;
       const fd = new FormData();
-      fd.append('customer_id', this.selected.id);
-      fd.append('points', this.points);
+      fd.set('customer_id', this.selected.id);
+      fd.set('points', this.points);
       const r = await fetch('/shop/issue/grant', { method: 'POST', body: fd });
       if (r.ok) {
         window.location.href = '/shop/dashboard';

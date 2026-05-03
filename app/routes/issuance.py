@@ -1,13 +1,15 @@
 """Staff-side issuance: shop_scan / phone_entry, and stamp voids."""
 
 from typing import Optional
-from uuid import UUID
+from uuid import UUID, uuid4
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
+
+from loguru import logger
 
 from app.core.auth import (
     SessionContext,
@@ -40,26 +42,124 @@ async def issue_page(
 
     feed_cap = app_settings.shop_customer_last_scan_display_number
 
-    recent_points = (await db.exec(
-        select(Point).where(Point.shop_id == shop.id)
-        .order_by(Point.created_at.desc()).limit(feed_cap)
-    )).all()
-    recent_redemptions = (await db.exec(
-        select(Redemption).where(Redemption.shop_id == shop.id)
-        .order_by(Redemption.created_at.desc()).limit(feed_cap)
-    )).all()
+    recent_points = (
+        await db.exec(
+            select(Point)
+            .where(Point.shop_id == shop.id)
+            .order_by(Point.created_at.desc())
+            .limit(feed_cap)
+        )
+    ).all()
+    recent_redemptions = (
+        await db.exec(
+            select(Redemption)
+            .where(Redemption.shop_id == shop.id)
+            .order_by(Redemption.created_at.desc())
+            .limit(feed_cap)
+        )
+    ).all()
 
-    customer_ids = {p.customer_id for p in recent_points} | {r.customer_id for r in recent_redemptions}
+    customer_ids = {p.customer_id for p in recent_points} | {
+        r.customer_id for r in recent_redemptions
+    }
+    staff_ids = {p.issued_by_staff_id for p in recent_points if p.issued_by_staff_id} | {
+        r.served_by_staff_id for r in recent_redemptions if r.served_by_staff_id
+    }
+
     customers_by_id = {}
     if customer_ids:
-        rows = (await db.exec(select(Customer).where(Customer.id.in_(customer_ids)))).all()
+        rows = (
+            await db.exec(select(Customer).where(Customer.id.in_(customer_ids)))
+        ).all()
         customers_by_id = {c.id: (c.display_name or "ลูกค้า") for c in rows}
-    feed = sorted(
-        [("point", p, customers_by_id.get(p.customer_id, "ลูกค้า")) for p in recent_points]
-        + [("redemption", r, customers_by_id.get(r.customer_id, "ลูกค้า")) for r in recent_redemptions],
+
+    staff_by_id = {}
+    if staff_ids:
+        rows = (
+            await db.exec(select(StaffMember).where(StaffMember.id.in_(staff_ids)))
+        ).all()
+        staff_by_id = {s.id: (s.name or "พนักงาน") for s in rows}
+
+    def get_method_th(kind, item):
+        if kind == "redemption":
+            return "แลกรางวัล"
+        m = getattr(item, "issuance_method", "")
+        mapping = {
+            "customer_scan": "ลูกค้าสแกน",
+            "shop_scan": "ร้านสแกน",
+            "phone_entry": "กรอกเบอร์",
+            "system": "ค้นชื่อ",
+        }
+        return mapping.get(m, "ไม่ระบุ")
+
+    def get_staff_name(kind, item):
+        sid = (
+            item.issued_by_staff_id
+            if kind == "point"
+            else item.served_by_staff_id
+        )
+        return staff_by_id.get(sid, "—")
+
+    raw_feed = sorted(
+        [
+            (
+                "point",
+                p,
+                customers_by_id.get(p.customer_id, "ลูกค้า"),
+                get_method_th("point", p),
+                get_staff_name("point", p),
+            )
+            for p in recent_points
+        ]
+        + [
+            (
+                "redemption",
+                r,
+                customers_by_id.get(r.customer_id, "ลูกค้า"),
+                get_method_th("redemption", r),
+                get_staff_name("redemption", r),
+            )
+            for r in recent_redemptions
+        ],
         key=lambda x: x[1].created_at,
         reverse=True,
-    )[:feed_cap]
+    )
+
+    feed = []
+    for kind, item, customer_name, method_th, staff_name in raw_feed:
+        # Group points if they have the same grant_id (Perfect grouping)
+        # OR if they are within 10s of each other (Legacy fallback)
+        can_group = False
+        if (
+            feed
+            and kind == "point"
+            and feed[-1][0] == "point"
+            and feed[-1][2] == customer_name
+        ):
+            if item.grant_id and feed[-1][1].grant_id == item.grant_id:
+                can_group = True
+            elif not item.grant_id and not feed[-1][1].grant_id:
+                # Legacy fallback
+                if abs((feed[-1][1].created_at - item.created_at).total_seconds()) < 10:
+                    can_group = True
+
+        if can_group:
+            # Update the existing entry's amount (amount is at index 3 in our tuple)
+            feed[-1] = (
+                feed[-1][0],
+                feed[-1][1],
+                feed[-1][2],
+                feed[-1][3] + 1,
+                feed[-1][4],
+                feed[-1][5],
+            )
+        else:
+            # Add new entry with initial amount of 1:
+            # (kind, item, customer_name, amount, method_th, staff_name)
+            feed.append((kind, item, customer_name, 1, method_th, staff_name))
+
+    # Apply the display limit after grouping
+    feed = feed[:feed_cap]
 
     s3_top = await s3_top_context(db, shop)
     return templates.TemplateResponse(
@@ -137,7 +237,7 @@ async def issue_scan_grant(
             status.HTTP_400_BAD_REQUEST,
             "QR นี้ไม่ใช่บัตรลูกค้าแต้มดี — ลองใช้วิธี 'กรอกเบอร์' แทน",
         )
-    suffix = raw[idx + len(_CUSTOMER_ID_PATH_PREFIX):]
+    suffix = raw[idx + len(_CUSTOMER_ID_PATH_PREFIX) :]
     customer_id_str = suffix.split("/")[0].split("?")[0].strip()
     try:
         customer_uuid = UUID(customer_id_str)
@@ -160,17 +260,21 @@ async def issue_scan_grant(
     # stamp. Avoids the awkward "stamp the customer who's collecting their
     # free coffee" race + powers C5 "✓ ใช้แล้ว HH:MM" state.
     from datetime import timedelta
+
     served_window_start = utcnow() - timedelta(minutes=30)
-    pending_redemption = (await db.exec(
-        select(Redemption).where(
-            Redemption.customer_id == customer.id,
-            Redemption.shop_id == shop.id,
-            Redemption.is_voided == False,  # noqa: E712
-            Redemption.served_at.is_(None),
-            Redemption.created_at >= served_window_start,
+    pending_redemption = (
+        await db.exec(
+            select(Redemption)
+            .where(
+                Redemption.customer_id == customer.id,
+                Redemption.shop_id == shop.id,
+                Redemption.is_voided == False,  # noqa: E712
+                Redemption.served_at.is_(None),
+                Redemption.created_at >= served_window_start,
+            )
+            .order_by(Redemption.created_at.desc())
         )
-        .order_by(Redemption.created_at.desc())
-    )).first()
+    ).first()
     if pending_redemption is not None:
         pending_redemption.served_at = utcnow()
         pending_redemption.served_by_staff_id = staff.id if staff else None
@@ -180,7 +284,8 @@ async def issue_scan_grant(
             shop.id,
             "feed-row",
             feed_row_html(
-                "redemption", pending_redemption.id,
+                "redemption",
+                pending_redemption.id,
                 bkk_feed_time(pending_redemption.served_at),
                 customer.display_name or "ลูกค้า",
             ),
@@ -194,7 +299,9 @@ async def issue_scan_grant(
 
     try:
         point, auto_redemption = await issue_point(
-            db, shop, customer,
+            db,
+            shop,
+            customer,
             method="shop_scan",
             staff_id=staff.id if staff else None,
         )
@@ -204,11 +311,19 @@ async def issue_scan_grant(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html(
+            "point",
+            point.id,
+            bkk_feed_time(point.created_at),
+            customer.display_name or "ลูกค้า",
+        ),
     )
     from app.services.events import publish_customer
+
     if auto_redemption is not None:
-        await _publish_auto_redeem_events(db, shop, customer, auto_redemption, also_redirect=True)
+        await _publish_auto_redeem_events(
+            db, shop, customer, auto_redemption, also_redirect=True
+        )
     else:
         # Plain stamp — bounce the customer to /card/<shop>?stamped=1 for
         # the +1 celebration overlay.
@@ -247,20 +362,23 @@ async def _publish_auto_redeem_events(
         shop.id,
         "feed-row",
         feed_row_html(
-            "redemption", redemption.id,
+            "redemption",
+            redemption.id,
             bkk_feed_time(redemption.created_at),
             customer.display_name or "ลูกค้า",
         ),
     )
-    gifts_count = (await db.exec(
-        select(func.count())
-        .select_from(Redemption)
-        .where(
-            Redemption.customer_id == customer.id,
-            Redemption.served_at.is_(None),
-            Redemption.is_voided == False,  # noqa: E712
+    gifts_count = (
+        await db.exec(
+            select(func.count())
+            .select_from(Redemption)
+            .where(
+                Redemption.customer_id == customer.id,
+                Redemption.served_at.is_(None),
+                Redemption.is_voided == False,  # noqa: E712
+            )
         )
-    )).one()
+    ).one()
     publish_customer(customer.id, "gifts-update", str(gifts_count))
     if also_redirect:
         publish_customer(customer.id, "redeemed", f"{shop.id}:{redemption.id}")
@@ -302,29 +420,35 @@ async def search_customers(
     customers = list(result.all())
     out = []
     for c in customers:
-        active = (await db.exec(
-            select(func.count())
-            .select_from(Point)
-            .where(
-                Point.shop_id == shop.id,
-                Point.customer_id == c.id,
-                Point.is_voided == False,  # noqa: E712
-                Point.redemption_id.is_(None),
+        active = (
+            await db.exec(
+                select(func.count())
+                .select_from(Point)
+                .where(
+                    Point.shop_id == shop.id,
+                    Point.customer_id == c.id,
+                    Point.is_voided == False,  # noqa: E712
+                    Point.redemption_id.is_(None),
+                )
             )
-        )).one()
-        last_visit = (await db.exec(
-            select(Point.created_at)
-            .where(Point.shop_id == shop.id, Point.customer_id == c.id)
-            .order_by(Point.created_at.desc())
-            .limit(1)
-        )).first()
-        out.append({
-            "id": str(c.id),
-            "display_name": c.display_name or "ลูกค้า",
-            "phone": c.phone or "",
-            "active_points": active,
-            "last_visit_iso": last_visit.isoformat() if last_visit else None,
-        })
+        ).one()
+        last_visit = (
+            await db.exec(
+                select(Point.created_at)
+                .where(Point.shop_id == shop.id, Point.customer_id == c.id)
+                .order_by(Point.created_at.desc())
+                .limit(1)
+            )
+        ).first()
+        out.append(
+            {
+                "id": str(c.id),
+                "display_name": c.display_name or "ลูกค้า",
+                "phone": c.phone or "",
+                "active_points": active,
+                "last_visit_iso": last_visit.isoformat() if last_visit else None,
+            }
+        )
     return {"results": out}
 
 
@@ -340,27 +464,51 @@ async def issue_grant_action(
     fires the SSE feed-row + toast pipeline, just like a customer scan.
     Uses method='system' to bypass cooldown — manual grants are intentional.
     """
+    logger.info(f"Granting points, customer_id: {customer_id}, points: {points}")
     customer = await db.get(Customer, customer_id)
     if not customer:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Customer not found")
-    points = max(1, min(int(points or 1), 10))
+    points = int(points[0] if isinstance(points, list) else points)
+    points = max(1, min(points, 10))
 
     issued_ids = []
     auto_redemption = None
-    for _ in range(points):
+    grant_id = uuid4()
+    logger.info(f"Starting issuance loop for {points} points (grant_id: {grant_id})")
+    issued_count = 0
+    last_point = None
+    for i in range(points):
         try:
             point, redemption = await issue_point(
-                db, shop, customer,
+                db,
+                shop,
+                customer,
                 method="system",
                 staff_id=staff.id if staff else None,
+                grant_id=grant_id,
             )
+            issued_count += 1
+            last_point = point
+            issued_ids.append(str(point.id))
+            if redemption:
+                auto_redemption = redemption
         except IssuanceError as e:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
-        issued_ids.append(str(point.id))
+            logger.error(f"Failed to issue point {i+1}: {e}")
+            break
+
+    logger.info(f"Successfully issued {issued_count} points total")
+
+    if last_point:
         publish(
             shop.id,
             "feed-row",
-            feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
+            feed_row_html(
+                "point",
+                last_point.id,
+                bkk_feed_time(last_point.created_at),
+                customer.display_name or "ลูกค้า",
+                amount_str=f"{issued_count} แต้ม" if issued_count > 1 else "1 แต้ม",
+            ),
         )
         # A grant of N can in principle trip the threshold partway
         # through; capture the latest auto-redemption that fired so we
@@ -414,13 +562,17 @@ async def staff_issue_point(
     """
     if method == "shop_scan":
         if not customer_id:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "customer_id is required for shop_scan")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "customer_id is required for shop_scan"
+            )
         customer = await db.get(Customer, customer_id)
         if not customer:
             raise HTTPException(status.HTTP_404_NOT_FOUND, "Customer not found")
     elif method == "phone_entry":
         if not phone:
-            raise HTTPException(status.HTTP_400_BAD_REQUEST, "phone is required for phone_entry")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "phone is required for phone_entry"
+            )
         result = await db.exec(select(Customer).where(Customer.phone == phone))
         customer = result.first()
         if not customer:
@@ -435,7 +587,9 @@ async def staff_issue_point(
 
     try:
         point, auto_redemption = await issue_point(
-            db, shop, customer,
+            db,
+            shop,
+            customer,
             method=method,
             branch_id=branch_id,
             staff_id=staff.id if staff else None,
@@ -446,7 +600,12 @@ async def staff_issue_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html(
+            "point",
+            point.id,
+            bkk_feed_time(point.created_at),
+            customer.display_name or "ลูกค้า",
+        ),
     )
     if auto_redemption is not None:
         await _publish_auto_redeem_events(db, shop, customer, auto_redemption)
@@ -478,7 +637,9 @@ async def staff_issue_manual_point(
 
     try:
         point, _ = await issue_point(
-            db, shop, customer,
+            db,
+            shop,
+            customer,
             method="shop_scan",
             branch_id=branch_id,
             staff_id=staff.id if staff else None,
@@ -489,7 +650,12 @@ async def staff_issue_manual_point(
     publish(
         shop.id,
         "feed-row",
-        feed_row_html("point", point.id, bkk_feed_time(point.created_at), customer.display_name or "ลูกค้า"),
+        feed_row_html(
+            "point",
+            point.id,
+            bkk_feed_time(point.created_at),
+            customer.display_name or "ลูกค้า",
+        ),
     )
     return {"point_id": str(point.id), "customer_id": str(customer.id)}
 
@@ -509,7 +675,9 @@ async def feed_detail(
     elif kind == "redemption":
         item = await db.get(Redemption, item_id)
     else:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "kind ต้องเป็น point หรือ redemption")
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST, "kind ต้องเป็น point หรือ redemption"
+        )
     if not item or item.shop_id != shop.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบกิจกรรมที่ระบุ")
 
@@ -534,9 +702,26 @@ async def feed_detail(
     elif kind == "point" and item.issuance_method == "customer_scan":
         issuer = "ลูกค้า (สแกนเอง)"
 
-    weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[item.created_at.weekday()]
-    month_th = ("ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.", "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.")[item.created_at.month - 1]
-    time_full = f"{bkk_hms(item.created_at)} · {weekday_th} {item.created_at.day} {month_th}"
+    weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[
+        item.created_at.weekday()
+    ]
+    month_th = (
+        "ม.ค.",
+        "ก.พ.",
+        "มี.ค.",
+        "เม.ย.",
+        "พ.ค.",
+        "มิ.ย.",
+        "ก.ค.",
+        "ส.ค.",
+        "ก.ย.",
+        "ต.ค.",
+        "พ.ย.",
+        "ธ.ค.",
+    )[item.created_at.month - 1]
+    time_full = (
+        f"{bkk_hms(item.created_at)} · {weekday_th} {item.created_at.day} {month_th}"
+    )
 
     new_count = await active_point_count(db, shop.id, item.customer_id)
 

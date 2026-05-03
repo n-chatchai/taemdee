@@ -25,6 +25,8 @@ class Point(SQLModel, table=True):
     issuance_method: str
     # Null for customer_scan (nobody clicked); set for shop_scan / phone_entry / system.
     issued_by_staff_id: Optional[UUID] = Field(default=None, foreign_key="staff_members.id")
+    # Links points issued in a single manual grant action.
+    grant_id: Optional[UUID] = Field(default=None, index=True)
 
     # Null until consumed by a redemption. A point whose redemption was voided is treated as
     # available again (see services/redemption.py).

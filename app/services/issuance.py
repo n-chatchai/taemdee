@@ -50,6 +50,7 @@ async def issue_point(
     *,
     branch_id: Optional[UUID] = None,
     staff_id: Optional[UUID] = None,
+    grant_id: Optional[UUID] = None,
 ) -> Tuple[Point, Optional[Redemption]]:
     """Issue a stamp; auto-redeem if it brings the customer to threshold.
 
@@ -90,6 +91,7 @@ async def issue_point(
         branch_id=branch_id,
         issuance_method=method,
         issued_by_staff_id=staff_id,
+        grant_id=grant_id,
     )
     db.add(stamp)
     await db.commit()
