@@ -187,22 +187,8 @@
       <div class="arrow-r">›</div>
     </a>
 
-    <a href="/shop/settings/menu" class="s10-row">
-      <div class="row-icon">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18"/><path d="M3 12h18"/><path d="M3 19h18"/></svg>
-      </div>
-      <div class="row-info">
-        <div class="row-name">เมนูเด็ด</div>
-        <div class="row-meta">
-          {% if menu_count %}{{ menu_count }} รายการ · ลูกค้าเห็นที่หน้า "ทำความรู้จัก"{% else %}ยังไม่มีเมนู · เพิ่มได้{% endif %}
-        </div>
-      </div>
-      <div class="arrow-r">›</div>
-    </a>
-  </div>
-
-  <div class="s10-section">
-    <div class="label">ทีม</div>
+    {# เมนูเด็ด moved into /shop/settings/story — both feed the customer's
+       "ทำความรู้จัก" page so they live together as one entry. #}
 
     <a href="/shop/team" class="s10-row">
       <div class="row-icon">
@@ -238,7 +224,7 @@
       <div class="arrow-r">›</div>
     </a>
 
-    <a href="/shop/refer" class="s10-row">
+    <div class="s10-row s10-row-soon" aria-disabled="true">
       <div class="row-icon mint">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
           <circle cx="18" cy="5" r="3"/><circle cx="6" cy="12" r="3"/><circle cx="18" cy="19" r="3"/>
@@ -250,8 +236,8 @@
         <div class="row-name">แนะนำเพื่อน</div>
         <div class="row-meta">ทั้งคุณและเพื่อนได้ 100 เครดิตฟรี</div>
       </div>
-      <div class="arrow-r">›</div>
-    </a>
+      <span class="s10-soon-tag">เร็วๆ นี้</span>
+    </div>
   </div>
 
 

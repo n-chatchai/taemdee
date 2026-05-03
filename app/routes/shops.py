@@ -1352,13 +1352,27 @@ async def settings_contact_post(
 
 
 @router.get("/settings/story", response_class=HTMLResponse)
-async def settings_story_get(request: Request, shop: Shop = Depends(get_current_shop)):
+async def settings_story_get(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
     """S10.story — owner editor for the C9 emotional layer. Two textareas:
-    `thanks_message` (short personal note) and `story_text` (longer paragraph)."""
+    `thanks_message` (short personal note) and `story_text` (longer paragraph).
+    Menu management was lifted out of the standalone settings row and into
+    a sub-link at the bottom of this page so the "เรื่องราวของร้าน +
+    เมนูเด็ด" pair lives in one place — both feed the customer-facing
+    "ทำความรู้จัก" page."""
+    from app.models import ShopMenuItem
+    menu_count = (await db.exec(
+        select(func.count())
+        .select_from(ShopMenuItem)
+        .where(ShopMenuItem.shop_id == shop.id)
+    )).one()
     return templates.TemplateResponse(
         request=request,
         name="shop/settings/story.html",
-        context={"shop": shop},
+        context={"shop": shop, "menu_count": menu_count},
     )
 
 

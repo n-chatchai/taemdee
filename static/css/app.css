@@ -4880,6 +4880,28 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1;
 }
 
+/* Disabled row — feature flagged off / coming soon. Drops the
+   pointer + dims the icon and copy so it reads as informational
+   rather than a tappable action. */
+.s10-row.s10-row-soon {
+  cursor: default;
+  opacity: 0.7;
+}
+.s10-row.s10-row-soon .row-icon,
+.s10-row.s10-row-soon .row-name { color: var(--ink-soft); }
+.s10-row.s10-row-soon .row-meta { color: var(--ink-softer); }
+.s10-soon-tag {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 10.5px;
+  letter-spacing: 0.04em;
+  background: rgba(17, 17, 17, 0.06);
+  color: var(--ink-soft);
+  padding: 4px 9px;
+  border-radius: 999px;
+  white-space: nowrap;
+}
+
 /* Connect-status rows — provider icon keeps its brand color, connected
    rows lose the cursor + pointer (read-only), and a small check chip
    replaces the arrow when linked. */

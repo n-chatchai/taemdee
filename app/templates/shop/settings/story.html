@@ -35,4 +35,24 @@
       </button>
     </div>
   </form>
+
+  {# Menu management — lives here because both story copy and menu
+     items render on the customer-facing "ทำความรู้จัก" page. Keeping
+     them under one settings entry keeps the story / menu pairing
+     visible to the owner. #}
+  <div class="s10-section">
+    <div class="label">เมนูเด็ด</div>
+    <a href="/shop/settings/menu" class="s10-row">
+      <div class="row-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 5h18"/><path d="M3 12h18"/><path d="M3 19h18"/></svg>
+      </div>
+      <div class="row-info">
+        <div class="row-name">จัดการเมนูเด็ด</div>
+        <div class="row-meta">
+          {% if menu_count %}{{ menu_count }} รายการ · ลูกค้าเห็นที่หน้า "ทำความรู้จัก"{% else %}ยังไม่มีเมนู · เพิ่มได้{% endif %}
+        </div>
+      </div>
+      <div class="arrow-r">›</div>
+    </a>
+  </div>
 {% endblock %}
