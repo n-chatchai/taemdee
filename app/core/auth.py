@@ -23,13 +23,7 @@ CUSTOMER_COOKIE_MAX_AGE = 365 * 24 * 3600  # 1 year
 
 
 class SessionAuthError(HTTPException):
-    """401 raised when the shop session is missing / invalid / orphaned.
-
-    Carries a `reason` slug so handlers can distinguish cases without string-
-    matching the human-readable detail. The detail itself is informative
-    (specific cause + Thai-ready hint) so it's also useful in logs / API
-    JSON responses.
-    """
+    """401 raised when the shop session is missing / invalid / orphaned."""
 
     REASONS = {
         "session_missing": "ยังไม่ได้เข้าสู่ระบบ — กรุณาเข้าสู่ระบบเพื่อใช้แดชบอร์ด",
@@ -41,6 +35,24 @@ class SessionAuthError(HTTPException):
     def __init__(self, reason: str):
         if reason not in self.REASONS:
             raise ValueError(f"Unknown SessionAuthError reason: {reason}")
+        self.reason = reason
+        super().__init__(
+            status_code=status.HTTP_401_UNAUTHORIZED,
+            detail=self.REASONS[reason],
+        )
+
+
+class CustomerAuthError(HTTPException):
+    """401 raised when a customer identity token is invalid or required."""
+
+    REASONS = {
+        "token_invalid": "รหัสสมาชิกไม่ถูกต้องหรือหมดอายุ — กรุณาเข้าสู่ระบบใหม่",
+        "login_required": "กรุณาเข้าสู่ระบบเพื่อเข้าถึงส่วนนี้",
+    }
+
+    def __init__(self, reason: str):
+        if reason not in self.REASONS:
+            raise ValueError(f"Unknown CustomerAuthError reason: {reason}")
         self.reason = reason
         super().__init__(
             status_code=status.HTTP_401_UNAUTHORIZED,
@@ -111,18 +123,22 @@ async def find_or_create_customer(
     customer_cookie: Optional[str],
     db: AsyncSession,
 ) -> tuple[Customer, bool]:
-    """Resolve the customer for this request — anonymous by default.
-
-    Returns (customer, was_created). The route is responsible for calling
-    `set_customer_cookie` on its actual returned response when `was_created` is True.
-    (We can't use a FastAPI dep here because FastAPI doesn't merge sub-response
-    headers when the route returns a Response object directly.)
+    """Resolve the customer for this request.
+    - If valid cookie: return existing customer.
+    - If invalid cookie: raise CustomerAuthError (triggers login redirect).
+    - If no cookie: create new anonymous customer.
     """
-    customer_id = decode_customer_token(customer_cookie) if customer_cookie else None
-    if customer_id:
+    if customer_cookie:
+        customer_id = decode_customer_token(customer_cookie)
+        if not customer_id:
+            raise CustomerAuthError("token_invalid")
+            
         existing = await db.get(Customer, customer_id)
         if existing:
             return existing, False
+        else:
+            # Token valid but customer deleted? Also invalid.
+            raise CustomerAuthError("token_invalid")
 
     new_customer = Customer(is_anonymous=True)
     db.add(new_customer)

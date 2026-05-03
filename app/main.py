@@ -1,11 +1,16 @@
 from contextlib import asynccontextmanager
 
-from fastapi import Depends, FastAPI, Request, status
+from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import RedirectResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import CUSTOMER_COOKIE_NAME, SESSION_COOKIE_NAME, SessionAuthError
+from app.core.auth import (
+    CUSTOMER_COOKIE_NAME,
+    SESSION_COOKIE_NAME,
+    CustomerAuthError,
+    SessionAuthError,
+)
 from app.core.config import settings
 from app.core.database import engine, get_session
 from app.core.templates import ASSET_VERSION, templates
@@ -89,28 +94,32 @@ async def subdomain_routing(request: Request, call_next):
 
 
 @app.exception_handler(SessionAuthError)
-async def session_auth_error_handler(request: Request, exc: SessionAuthError):
-    """When a session is missing/invalid/points at a deleted shop:
-
-    - HTML browser requests → 303 redirect to /shop/login + clear the bad cookie.
-      The destination page can show `?reason=...` if it ever wants to surface
-      the specific cause.
-    - JSON / API clients → standard 401 with the informative `detail` string.
-
-    Detection is by exception TYPE (not string match), so detail messages can
-    evolve freely without breaking the handler.
+@app.exception_handler(CustomerAuthError)
+async def auth_error_handler(request: Request, exc: HTTPException):
+    """When a session is missing/invalid, redirect to the appropriate login page.
+    
+    - Host starts with 'shop.' or matches settings.shop_domain -> /shop/login
+    - Otherwise -> /customer/login
     """
+    host = request.headers.get("host", "").split(":")[0]
+    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    path = request.url.path
+    
+    # Determine the target login URL
+    if is_shop_host or path.startswith("/shop"):
+        login_url = f"/shop/login?reason={getattr(exc, 'reason', 'invalid')}"
+        cookie_to_clear = SESSION_COOKIE_NAME
+    else:
+        login_url = f"/customer/login?reason={getattr(exc, 'reason', 'invalid')}"
+        cookie_to_clear = CUSTOMER_COOKIE_NAME
+
     accept = request.headers.get("accept", "")
     if "text/html" in accept:
-        response = RedirectResponse(
-            url=f"/shop/login?reason={exc.reason}",
-            status_code=status.HTTP_303_SEE_OTHER,
-        )
-        response.delete_cookie(SESSION_COOKIE_NAME, path="/")
+        response = RedirectResponse(url=login_url, status_code=status.HTTP_303_SEE_OTHER)
+        response.delete_cookie(cookie_to_clear, path="/")
         return response
 
     from fastapi.exception_handlers import http_exception_handler
-
     return await http_exception_handler(request, exc)
 
 
