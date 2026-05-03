@@ -1,16 +1,16 @@
 {
-  "name": "แต้มดี",
-  "short_name": "แต้มดี",
-  "description": "บัตรสะสมแต้มดิจิทัล สำหรับร้านเล็กในไทย — สแกน QR แล้วได้แต้มทันที ไม่ต้องโหลดแอป",
-  "start_url": "/",
+  "name": "ร้านแต้มดี",
+  "short_name": "ร้านแต้มดี",
+  "description": "ระบบจัดการแต้มสะสมสำหรับร้านค้า TaemDee — ดูแดชบอร์ด ออกแต้ม และจัดการลูกค้าได้ทันที",
+  "start_url": "/shop/dashboard",
   "scope": "/",
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F6F1E5",
-  "theme_color": "#FF5E3A",
+  "theme_color": "#3ABFAD",
   "lang": "th",
   "dir": "ltr",
-  "categories": ["business", "shopping", "lifestyle"],
+  "categories": ["business", "shopping"],
   "icons": [
     {
       "src": "taemdee-icons/taemdee-icon-192.png",

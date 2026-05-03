@@ -17,7 +17,7 @@ This guide provides step-by-step instructions for deploying the TaemDee applicat
 3.  **Origin CA Certificate**:
     *   Go to **SSL/TLS** > **Origin Server** > **Create Certificate**.
     *   Generate a private key and CSR with Cloudflare.
-    *   Hostnames: `taemdee.com`, `www.taemdee.com`.
+    *   Hostnames: `taemdee.com`, `www.taemdee.com`, `shop.taemdee.com`.
     *   Click **Create**.
     *   **Action**: Save the **Origin Certificate** as `taemdee.origin.pem` and the **Private Key** as `taemdee.origin.key`. You will need these for Nginx.
 
@@ -225,6 +225,7 @@ shop sends a DeeReach campaign you'll see lines like
     ```
 
     ```nginx
+    # 1. Main Domain (Marketing + Customer)
     server {
         listen 80;
         server_name taemdee.com www.taemdee.com;
@@ -238,9 +239,14 @@ shop sends a DeeReach campaign you'll see lines like
         ssl_certificate /etc/ssl/certs/taemdee.origin.pem;
         ssl_certificate_key /etc/ssl/private/taemdee.origin.key;
 
+        # Recommendations for premium performance + security
+        client_max_body_size 10M;
+        keepalive_timeout 70;
+
         location /static/ {
             alias /path/to/your/app/static/;
             expires 30d;
+            add_header Cache-Control "public, no-transform";
         }
 
         location / {
@@ -249,6 +255,42 @@ shop sends a DeeReach campaign you'll see lines like
             proxy_set_header X-Real-IP $remote_addr;
             proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
             proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_redirect off;
+        }
+    }
+
+    # 2. Shop Domain (Dashboard)
+    server {
+        listen 80;
+        server_name shop.taemdee.com;
+        return 301 https://$host$request_uri;
+    }
+
+    server {
+        listen 443 ssl http2;
+        server_name shop.taemdee.com;
+
+        ssl_certificate /etc/ssl/certs/taemdee.origin.pem;
+        ssl_certificate_key /etc/ssl/private/taemdee.origin.key;
+
+        client_max_body_size 10M;
+        keepalive_timeout 70;
+
+        location /static/ {
+            alias /path/to/your/app/static/;
+            expires 30d;
+            add_header Cache-Control "public, no-transform";
+        }
+
+        location / {
+            proxy_pass http://127.0.0.1:9100;
+            proxy_set_header Host $host;
+            proxy_set_header X-Real-IP $remote_addr;
+            proxy_set_header X-Forwarded-For $proxy_add_x_forwarded_for;
+            proxy_set_header X-Forwarded-Proto $scheme;
+            proxy_set_header X-Forwarded-Host $host;
+            proxy_redirect off;
         }
     }
     ```

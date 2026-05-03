@@ -32,10 +32,17 @@
     </div>
     <div class="nav-cta">
       {% if is_logged_in %}
-        <a href="/shop/dashboard" class="primary">
-          แดชบอร์ด
-          <span class="arrow-circle">→</span>
-        </a>
+        {% if valid_shop %}
+          <a href="https://shop.taemdee.com/shop/dashboard" class="primary">
+            แดชบอร์ดร้านค้า
+            <span class="arrow-circle">→</span>
+          </a>
+        {% else %}
+          <a href="/my-cards" class="primary">
+            บัตรของฉัน
+            <span class="arrow-circle">→</span>
+          </a>
+        {% endif %}
       {% else %}
         <a href="#login-modal" class="secondary">เข้าสู่ระบบ</a>
       {% endif %}

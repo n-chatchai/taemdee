@@ -6,6 +6,7 @@ from fastapi.staticfiles import StaticFiles
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import CUSTOMER_COOKIE_NAME, SESSION_COOKIE_NAME, SessionAuthError
+from app.core.config import settings
 from app.core.database import engine, get_session
 from app.core.templates import ASSET_VERSION, templates
 from app.models import Customer, Shop
@@ -52,6 +53,41 @@ async def revalidate_html_responses(request, call_next):
     return response
 
 
+@app.middleware("http")
+async def subdomain_routing(request: Request, call_next):
+    """Separate shop.taemdee.com from taemdee.com.
+
+    - shop.* domain → only /shop, /auth, /static allowed. Root / redirects to /shop/dashboard.
+    - main domain → marketing + customer routes. /shop/* redirects to shop.* domain.
+    """
+    host = request.headers.get("host", "").split(":")[0]
+    path = request.url.path
+
+    # System/static routes always allowed on both
+    if path.startswith("/static") or path in ("/manifest.json", "/favicon.ico", "/version", "/privacy", "/data-deletion"):
+        return await call_next(request)
+
+    # In local dev, taemdee.local is the main domain, shop.taemdee.local is the shop domain.
+    # We detect "shop." prefix or match settings exactly.
+    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    
+    if is_shop_host:
+        if path == "/":
+            return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+        # Auth routes (like /auth/otp/verify) are shared but usually hit from the shop side
+        if not (path.startswith("/shop") or path.startswith("/auth") or path.startswith("/staff")):
+            # Customer trying to access /my-cards on shop domain? Bounce to main.
+            main_host = settings.main_domain if settings.environment == "production" else host.replace("shop.", "")
+            return RedirectResponse(url=f"https://{main_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
+    else:
+        # On main domain, bounce any /shop/* requests to the shop subdomain
+        if path.startswith("/shop"):
+            shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
+            return RedirectResponse(url=f"https://{shop_host}{path}", status_code=status.HTTP_303_SEE_OTHER)
+
+    return await call_next(request)
+
+
 @app.exception_handler(SessionAuthError)
 async def session_auth_error_handler(request: Request, exc: SessionAuthError):
     """When a session is missing/invalid/points at a deleted shop:
@@ -82,10 +118,13 @@ app.mount("/static", StaticFiles(directory="static"), name="static")
 
 
 @app.get("/manifest.json")
-async def manifest_redirect():
-    """Some browsers (and the PWA install crawler) look for the manifest
-    at the root. Redirect to the URL-busted static copy."""
-    return RedirectResponse(url="/static/manifest.json")
+async def manifest(request: Request):
+    """Serve dynamic manifest based on subdomain."""
+    host = request.headers.get("host", "").split(":")[0]
+    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    
+    filename = "manifest_shop.json" if is_shop_host else "manifest.json"
+    return RedirectResponse(url=f"/static/{filename}")
 
 
 @app.get("/favicon.ico")
@@ -127,41 +166,16 @@ async def home(request: Request, db: AsyncSession = Depends(get_session)):
         if customer_id and await db.get(Customer, customer_id):
             valid_customer = True
 
-    if valid_shop and valid_customer:
-        return templates.TemplateResponse(
-            request=request,
-            name="role_picker.html",
-            context={},
-        )
-    if valid_shop:
-        return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
-    if valid_customer:
-        # Both claimed and guest customers land on /my-cards now — guests
-        # see the same list with the green signup banner pinned at the
-        # bottom (revised C7 design).
-        return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+    is_logged_in = valid_shop or valid_customer
 
     return templates.TemplateResponse(
         request=request,
         name="home.html",
-        context={"is_logged_in": False},
-    )
-
-
-@app.get("/switch")
-async def switch_role(request: Request):
-    """Force-render the role picker. PWA standalone mode hides the URL bar
-    so once an installed icon launches into /shop/dashboard or /my-cards,
-    the user can't get back to / to switch sides — / would auto-redirect
-    them right back to where they came from. Settings menus on both sides
-    link here. Each tile still targets its dashboard directly; if a tile is
-    tapped without that side's cookie, the dashboard's own auth bounces the
-    user to its login page.
-    """
-    return templates.TemplateResponse(
-        request=request,
-        name="role_picker.html",
-        context={},
+        context={
+            "is_logged_in": is_logged_in,
+            "valid_shop": valid_shop,
+            "valid_customer": valid_customer,
+        },
     )
 
 
