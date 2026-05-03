@@ -31,11 +31,13 @@ class Shop(SQLModel, table=True):
     # Kept nullable for back-compat with existing rows; no longer read at runtime.
     issuance_method: str = Field(default="all")
 
-    # S5 issuance method toggles (multi-select per design 2026-04-26):
-    # `customer_scan` is implicit — every shop has a printable QR; not stored.
-    # The other three default ON so the FAB sheet is useful from day one
-    # (matches the S3.choose mockup with all 3 methods listed). Owner can
-    # disable individual methods at /shop/issue.
+    # S5 issuance method toggles (multi-select per design 2026-04-26).
+    # All four default ON so a freshly-onboarded shop accepts every
+    # issuance path. Owner can disable any of them at /shop/issue/methods.
+    # Disabling `customer_scan` makes the printed QR refuse new stamps
+    # (used when a shop wants only staff-driven issuance — e.g. theft
+    # or anti-bot regimes).
+    issue_method_customer_scan: bool = Field(default=True)
     issue_method_shop_scan: bool = Field(default=True)
     issue_method_phone_entry: bool = Field(default=True)
     issue_method_grant: bool = Field(default=True)

@@ -4,12 +4,13 @@
 {% block content %}
   <form method="POST" action="/shop/issue/methods"
         x-data="{
+          customerScan: {{ 'true' if shop.issue_method_customer_scan else 'false' }},
           shopScan: {{ 'true' if shop.issue_method_shop_scan else 'false' }},
           phoneEntry: {{ 'true' if shop.issue_method_phone_entry else 'false' }},
           grant: {{ 'true' if shop.issue_method_grant else 'false' }},
           dirty: false,
         }"
-        x-init="$watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
+        x-init="$watch('customerScan', () => dirty = true); $watch('shopScan', () => dirty = true); $watch('phoneEntry', () => dirty = true); $watch('grant', () => dirty = true);">
 
 {% set app_bar_back = '/shop/settings' %}
 {% set app_bar_title = 'วิธีออกแต้ม' %}
@@ -21,8 +22,10 @@
     </div>
 
     <div class="s5-toggles">
-      {# Customer scan — always on, locked. The shop's printed QR. #}
-      <div class="s5-toggle-row primary">
+      {# Customer scans the printed QR at the counter. Toggling this off
+         makes /scan/<shop_id> refuse new stamps — useful when the owner
+         wants every issuance to go through staff. #}
+      <label class="s5-toggle-row primary" @click.prevent="customerScan = !customerScan">
         <div class="t-icon">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
             <rect x="3" y="3" width="7" height="7" rx="1"/>
@@ -32,16 +35,14 @@
           </svg>
         </div>
         <div class="t-info">
-          <div class="t-name-row">
-            <span class="t-name">ลูกค้าสแกน</span>
-            <span class="t-tag">ปิดไม่ได้</span>
-          </div>
+          <div class="t-name-row"><span class="t-name">ลูกค้าสแกน</span></div>
           <div class="t-sub">ติด QR ที่เคาน์เตอร์ ลูกค้าสแกนเอง</div>
         </div>
-        <div class="s5-toggle on locked" aria-disabled="true" title="ปิดไม่ได้ — เป็นค่าหลักของร้าน">
+        <div class="s5-toggle" :class="{ on: customerScan }">
           <div class="dot"></div>
         </div>
-      </div>
+      </label>
+      <input type="hidden" name="customer_scan" :value="customerScan ? '1' : '0'">
 
       {# Shop scans the customer's QR with camera #}
       <label class="s5-toggle-row" @click.prevent="shopScan = !shopScan">

@@ -528,21 +528,31 @@ async def issue_grant_action(
 
 @router.post("/issue/methods")
 async def save_issuance_methods(
+    customer_scan: str = Form("0"),
     shop_scan: str = Form("0"),
     phone_entry: str = Form("0"),
     grant: str = Form("0"),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    """S5 settings — persist the manual-issuance toggles. customer_scan is
-    implicit (every shop has a printable QR); only the 3 opt-in methods
-    are stored.
-    """
+    """S5 settings — persist the issuance method toggles. All four are
+    user-controlled now; disabling customer_scan makes the printed QR
+    refuse new stamps. Visiting this page also auto-claims the
+    'issue_methods_review' dashboard todo on save."""
+    shop.issue_method_customer_scan = customer_scan == "1"
     shop.issue_method_shop_scan = shop_scan == "1"
     shop.issue_method_phone_entry = phone_entry == "1"
     shop.issue_method_grant = grant == "1"
     db.add(shop)
+    # Commit shop changes first — claim_item rolls the session back on a
+    # duplicate-claim IntegrityError, which would otherwise drop the
+    # toggles the owner just saved.
     await db.commit()
+    from app.services.items import claim as claim_item, ItemError
+    try:
+        await claim_item(db, shop, "issue_methods_review")
+    except ItemError:
+        pass  # Already-claimed → silent no-op.
     return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
 
 

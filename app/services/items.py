@@ -37,6 +37,10 @@ class DashboardItem:
     label: str       # short title — e.g. 'รับเครดิตต้อนรับ'
     sub: str         # one-line description under the title
     cta: str         # button label — e.g. 'รับเลย'
+    # Optional GET target — when set, the dashboard renders the todo as
+    # a link instead of a POST claim form. The destination route is
+    # responsible for marking the item claimed (e.g. on form save).
+    link: Optional[str] = None
 
 
 # Registry of all dashboard item kinds. Order = display order.
@@ -49,6 +53,13 @@ ITEMS: list[DashboardItem] = [
         label="รับ<strong>เครดิต {amount}</strong>เปิดบัญชี",
         sub="ครั้งเดียว · ส่งดีรีชหาลูกค้าได้ {amount} ครั้ง",
         cta="รับเลย →",
+    ),
+    DashboardItem(
+        kind="issue_methods_review",
+        label="ทบทวน<strong>วิธีออกแต้ม</strong>",
+        sub="ลูกค้าสแกน · ร้านสแกน · กรอกเบอร์ · ให้แต้ม — เปิด/ปิดได้",
+        cta="เปิดดู →",
+        link="/shop/issue/methods",
     ),
 ]
 
@@ -73,6 +84,7 @@ async def list_available(db: AsyncSession, shop: Shop) -> list[DashboardItem]:
             label=it.label.format(amount=amount),
             sub=it.sub.format(amount=amount),
             cta=it.cta,
+            link=it.link,
         ))
     return out
 
@@ -127,6 +139,14 @@ async def _claim_welcome_credit(db: AsyncSession, shop: Shop) -> None:
     ))
 
 
+async def _claim_no_op(db: AsyncSession, shop: Shop) -> None:
+    """Marker-only claim — no side effect. Used for review/visit-style
+    todos where the act of viewing the linked page is the completion
+    criterion (the route ticks the claim itself)."""
+    return None
+
+
 _CLAIM_HANDLERS: dict[str, Callable[[AsyncSession, Shop], Awaitable[None]]] = {
     "welcome_credit": _claim_welcome_credit,
+    "issue_methods_review": _claim_no_op,
 }

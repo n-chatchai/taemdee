@@ -82,18 +82,29 @@
       <span class="todo-count">{{ items|length }}</span>
     </div>
     {% for it in items %}
-      {# Each todo is its own POST form so the per-kind claim is one
-         tap. Label allows inline <strong> ("รับ<strong>เครดิต 100</strong>
-         เปิดบัญชี") — items.py is the source of HTML safe markup. #}
-      <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
-        <button type="submit" class="s3-todo">
+      {# Two flavors: review-style todos that link to a page (claim is
+         marked when the destination saves), and side-effect todos that
+         POST to /shop/items/<kind>/claim. Label allows inline <strong>
+         so the credit amount can stay highlighted. #}
+      {% if it.link %}
+        <a href="{{ it.link }}" class="s3-todo">
           <div class="td-info">
             <div class="td-h">{{ it.label|safe }}</div>
             <div class="td-s">{{ it.sub }}</div>
           </div>
           <span class="td-cta">{{ it.cta }}</span>
-        </button>
-      </form>
+        </a>
+      {% else %}
+        <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
+          <button type="submit" class="s3-todo">
+            <div class="td-info">
+              <div class="td-h">{{ it.label|safe }}</div>
+              <div class="td-s">{{ it.sub }}</div>
+            </div>
+            <span class="td-cta">{{ it.cta }}</span>
+          </button>
+        </form>
+      {% endif %}
     {% endfor %}
   {% endif %}
 
