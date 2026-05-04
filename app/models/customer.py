@@ -48,6 +48,13 @@ class Customer(SQLModel, table=True):
     # 3 groups of 4 (e.g. "1234-5678-9012"). Stored hyphen-included.
     recovery_code: Optional[str] = Field(default=None, unique=True, index=True)
 
+    # LINE Messaging API friend gate. NULL = unknown (haven't asked LINE
+    # yet); "friended" = the OA's webhook reported a follow event;
+    # "unfollowed" = an unfollow webhook OR a 403 from a push attempt.
+    # DeeReach's `line` reachability filter requires status="friended".
+    line_friend_status: Optional[str] = Field(default=None)
+    line_messaging_blocked_at: Optional[datetime] = Field(default=None)
+
     # link.prompt cooldown — set when a still-anonymous customer taps "ไว้ก่อน"
     # on the soft prompt that appears once they've collected ≥3 stamps. Re-show
     # only after 14 days. NULL = never snoozed (eligible to show as soon as

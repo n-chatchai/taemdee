@@ -109,13 +109,44 @@ def _send_web_push(customer: Customer, message: str) -> bool:
         return False
 
 
-def _send_line(line_id: Optional[str], message: str) -> bool:
-    """Stub: succeeds if the customer has a LINE id. R6c: LINE Messaging API."""
+def _send_line(customer: Customer, message: str) -> bool:
+    """Push the campaign message to the customer's LINE via the platform
+    OA's Messaging API. Returns True only when LINE accepts the push.
+
+    Falls back to the log-only stub when the OA isn't configured (dev
+    without real LINE creds). On a 403 (recipient hasn't followed the
+    OA), flips customer.line_friend_status to 'unfollowed' and clears
+    line_messaging_blocked_at so DeeReach's reachability gate stops
+    counting them as a `line` recipient until they follow again.
+    """
+    line_id = customer.line_id
     if not line_id:
-        log.warning("line STUB → no line_id, marking failed")
+        log.warning("line → no line_id on customer=%s, marking failed", customer.id)
         return False
-    log.info("line STUB → line_id=%s msg=%r", line_id, message[:40])
-    return True
+
+    if not settings.line_messaging_configured:
+        # Dev without real LINE creds — keep the previous stub behaviour
+        # so existing tests + local campaigns still resolve.
+        log.info("line STUB (no OA token) → line_id=%s msg=%r", line_id, message[:40])
+        return True
+
+    from app.services.line_messaging import push_text
+    from app.models.util import utcnow
+
+    result = push_text(line_id, message)
+    if result.delivered:
+        return True
+
+    if result.friend_gated:
+        # Reflect the unfollow on the customer row so the next campaign's
+        # reachability filter skips this line_id entirely. Persisted
+        # opportunistically — same async-session-from-sync pattern as
+        # the rest of this task.
+        customer.line_friend_status = "unfollowed"
+        customer.line_messaging_blocked_at = utcnow()
+        log.info("line friend-gated → customer=%s, status flipped to unfollowed", customer.id)
+
+    return False
 
 
 def _send_sms(phone: Optional[str], message: str) -> bool:
@@ -160,7 +191,7 @@ async def _dispatch_channel(
     if channel == "web_push":
         return _send_web_push(customer, message)
     if channel == "line":
-        return _send_line(customer.line_id, message)
+        return _send_line(customer, message)
     if channel == "sms":
         return _send_sms(customer.phone, message)
     if channel == "inbox":

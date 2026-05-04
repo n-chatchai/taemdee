@@ -85,6 +85,7 @@
 {% block content %}
   {% set is_guest = customer and customer.is_anonymous %}
   {% include "_partials/page_head.html" %}
+  {% include "_partials/line_friend_prompt.html" %}
 
   {# Hero carousel — all unused vouchers (Redemption served_at IS NULL).
      Auto-redeem on /scan creates the Redemption inline, so by the time

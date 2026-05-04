@@ -502,20 +502,39 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
     ]
 
 
+def _line_reachable(customer: Customer) -> bool:
+    """LINE Messaging API can only push to users who've added the
+    @taemdee OA as a friend. NULL friend_status is treated as "maybe"
+    so a first send still gets attempted (and the dispatcher flips
+    status to 'unfollowed' on a 403). Explicit 'unfollowed' is the
+    permanent skip signal — customer has either tapped block or LINE
+    returned 403 in a prior campaign.
+    """
+    if not customer.line_id:
+        return False
+    return customer.line_friend_status != "unfollowed"
+
+
 def _pick_channel(customer: Customer) -> str:
     """Waterfall: use customer's preferred channel, else pick cheapest available.
 
     Per PRD §10 the waterfall favours the cheapest reachable channel:
     web_push (0.5 Cr) > line (1 Cr) > sms (3 Cr) > inbox (0 Cr fallback).
     `inbox` is always available (DB write only — no external API call).
+    `line` is only reachable when the customer has friended the OA — see
+    _line_reachable.
     """
     pref = customer.preferred_channel
+    if pref == "line" and not _line_reachable(customer):
+        # Honour the customer's preference up to a hard reachability
+        # gate — explicit unfollow shouldn't be silently re-attempted.
+        pref = None
     if pref in CHANNEL_COST_SATANG:
         return pref
     # Waterfall fallback — cheapest first.
     if customer.web_push_endpoint:
         return "web_push"
-    if customer.line_id:
+    if _line_reachable(customer):
         return "line"
     if customer.phone:
         return "sms"

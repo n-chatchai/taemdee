@@ -1,0 +1,30 @@
+{# Soft inline banner — shown to LINE-linked customers who haven't yet
+   added @taemdee as a friend. Without that, DeeReach campaigns marked
+   with channel='line' fail with 403 (LINE Messaging API requires the
+   recipient to follow the bot). Auto-hides for customers without a
+   line_id, with line_friend_status='friended', or when the OA isn't
+   configured at all (line_oa_basic_id default '@taemdee' guards but
+   the messaging-configured check matters too).
+
+   Renders nothing for owners or when LINE Messaging is unconfigured —
+   safe to drop into any customer-side base template that already has
+   `customer` in scope (c_base.html sets request.state.customer).
+#}
+{% set _lfp_customer = customer if customer is defined else request.state.customer %}
+{% if _lfp_customer
+      and _lfp_customer.line_id
+      and _lfp_customer.line_friend_status != 'friended'
+      and settings.line_messaging_configured %}
+<a href="{{ settings.line_oa_friend_url }}" target="_blank" rel="noopener" class="line-friend-prompt">
+  <span class="lfp-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="currentColor">
+      <path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
+    </svg>
+  </span>
+  <span class="lfp-text">
+    <span class="lfp-h">เพิ่ม <strong>{{ settings.line_oa_basic_id }}</strong> เป็นเพื่อน</span>
+    <span class="lfp-s">เพื่อรับโปร · ข่าวสารร้านโปรดผ่าน LINE</span>
+  </span>
+  <span class="lfp-arrow" aria-hidden="true">›</span>
+</a>
+{% endif %}

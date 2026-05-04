@@ -51,6 +51,27 @@ class Settings(BaseSettings):
     line_channel_secret: Optional[str] = None
     login_otp_simulate: bool = False
 
+    # LINE Messaging API — single platform OA (@taemdee). Login channel
+    # and Messaging channel must share the same LINE Provider so the
+    # userId captured during LINE Login is interchangeable with the
+    # recipient id needed to push messages. When unset, _send_line in
+    # tasks/deereach.py falls back to its log-only stub so dev keeps
+    # working without real LINE creds.
+    line_oa_channel_access_token: Optional[str] = None
+    line_oa_channel_secret: Optional[str] = None
+    # The OA's friend-link handle, used by the customer-side
+    # "เพิ่มเพื่อน @taemdee" prompt. https://line.me/R/ti/p/{basic_id}
+    # Take the value with the leading "@" included.
+    line_oa_basic_id: str = "@taemdee"
+
+    @property
+    def line_messaging_configured(self) -> bool:
+        return bool(self.line_oa_channel_access_token and self.line_oa_channel_secret)
+
+    @property
+    def line_oa_friend_url(self) -> str:
+        return f"https://line.me/R/ti/p/{self.line_oa_basic_id}"
+
     # Login methods enabled for each role (comma-separated: line,phone,google,facebook).
     # Facebook is disabled until we push the FB app through Meta's
     # business verification — going Live for real users now requires it

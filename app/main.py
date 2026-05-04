@@ -29,6 +29,7 @@ from app.routes import (
     shops,
     staff_join,
     team,
+    webhooks,
 )
 from app.services.auth import decode_customer_token, decode_session_token
 
@@ -221,7 +222,11 @@ class SubdomainRoutingMiddleware:
             return
 
         path = scope["path"]
-        if path.startswith("/static") or path in self._SYSTEM_PATHS:
+        if (
+            path.startswith("/static")
+            or path.startswith("/webhooks/")
+            or path in self._SYSTEM_PATHS
+        ):
             await self.app(scope, receive, send)
             return
 
@@ -464,3 +469,4 @@ app.include_router(branches.router, prefix="/shop/branches", tags=["branches"])
 app.include_router(team.router, prefix="/shop/team", tags=["team"])
 app.include_router(staff_join.router, tags=["staff-join"])
 app.include_router(deereach.router, prefix="/shop/deereach", tags=["deereach"])
+app.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])
