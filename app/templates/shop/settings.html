@@ -1,4 +1,5 @@
 {% extends "_layouts/s_base.html" %}
+{% set nav_active = 'settings' %}
 {% block title %}ตั้งค่า · {{ shop.name }}{% endblock %}
 
 {% block content %}
@@ -286,4 +287,10 @@
         onsubmit="event.preventDefault(); fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/shop/login');">
     <button type="submit" class="s10-logout">ออกจากระบบ</button>
   </form>
+{% endblock %}
+
+{% block td_class %} td-tabbed{% endblock %}
+
+{% block nav %}
+  {% include "_partials/glass_nav.html" %}
 {% endblock %}
