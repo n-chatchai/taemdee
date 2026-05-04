@@ -10771,8 +10771,15 @@ form.s10-row { margin: 0 0 4px; }
   color: #fff;
   letter-spacing: -0.025em;
   background: var(--ink);
+  overflow: hidden;
 }
 .inbox-detail-hero .idh-logo .dot { color: var(--accent); }
+.inbox-detail-hero .idh-logo .idh-logo-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .inbox-detail-hero .idh-text { flex: 1; min-width: 0; }
 .inbox-detail-hero .idh-shop {
   font-family: 'Prompt', sans-serif;
@@ -11776,8 +11783,15 @@ form.s10-row { margin: 0 0 4px; }
   color: #fff;
   letter-spacing: -0.025em;
   background: var(--ink);
+  overflow: hidden;
 }
 .inbox-card .ic-logo .dot { color: var(--accent); }
+.inbox-card .ic-logo img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
 .inbox-card .ic-body { flex: 1; min-width: 0; }
 .inbox-card .ic-row {
   display: flex;

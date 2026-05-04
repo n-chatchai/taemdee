@@ -141,14 +141,24 @@
     <textarea class="s13d-message s13d-message-edit" x-model="message" rows="4" maxlength="500" placeholder="พิมพ์ข้อความที่อยากส่งให้ลูกค้า..."></textarea>
     <div class="s13d-vars">
       <div class="var-chip" @click="message += '{name}'">ชื่อลูกค้า</div>
-      <div class="var-chip" @click="message += '{points}'">แต้มสะสม</div>
+      <div class="var-chip" @click="message += '{shop_name}'">ชื่อร้าน</div>
+      <div class="var-chip" @click="message += '{shop_reward}'">รางวัล</div>
     </div>
   </div>
 
   <div class="s13d-section">
     <div class="s13d-h"><span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span></div>
     <div class="s13d-preview">
-      <div class="prev-line" x-text="message || 'ใส่ข้อความเพื่อดูตัวอย่าง'"></div>
+      {# Mirror the server-side _substitute_placeholders so the owner
+         previews exactly what the customer will receive. {name}
+         shows "ลูกค้า" in the preview (we don't know which audience
+         row to sample); {shop_name} / {shop_reward} use real values. #}
+      <div class="prev-line"
+           x-text="(message || 'ใส่ข้อความเพื่อดูตัวอย่าง')
+             .replace(/\{name\}/g, 'ลูกค้า')
+             .replace(/\{shop_name\}/g, '{{ shop.name }}')
+             .replace(/\{shop_reward\}/g, '{{ shop.reward_description or "" }}')
+             .replace(/\{points\}/g, '')"></div>
     </div>
   </div>
 

@@ -178,6 +178,36 @@ async def _send_inbox(
     return True
 
 
+def _substitute_placeholders(text: str, customer: Customer, shop: Shop) -> str:
+    """Replace template placeholders with concrete values per recipient.
+
+    Supported tokens (matches the chips in /shop/deereach editor):
+      {name}        → customer.display_name (fallback "ลูกค้า")
+      {points}      → customer's active stamps at this shop (TODO once
+                      we wire it; placeholder swap-to-empty for now so
+                      it doesn't read as literal "{points}")
+      {shop_name}   → shop.name
+      {shop_reward} → shop.reward_description
+
+    Owners insert placeholders via /shop/deereach var-chips and the
+    dispatcher fills them at send time. Without this, customers used
+    to see literal "สวัสดีพี่{name}" in their LINE/inbox message.
+    """
+    if not text:
+        return text
+    name = customer.display_name or "ลูกค้า"
+    return (
+        text
+        .replace("{name}", name)
+        .replace("{shop_name}", shop.name or "")
+        .replace("{shop_reward}", shop.reward_description or "")
+        # TODO: {points} requires a query for active-stamp count at this
+        # shop. Stripped to empty for now so the literal token doesn't
+        # ship to customers.
+        .replace("{points}", "")
+    )
+
+
 async def _dispatch_channel(
     channel: str,
     customer: Customer,
@@ -277,8 +307,14 @@ async def _run(campaign_id: UUID) -> None:
                 db.add(msg)
                 continue
 
-            # Get the message text from the campaign record
-            message_text = campaign.message_text or ""
+            # Per-recipient template substitution — owner-typed messages
+            # may include {name}/{shop_name}/etc. via the var-chip UI.
+            # campaign.message_text is the un-substituted template; we
+            # render it for each customer here so {name} resolves to
+            # the recipient's display_name, not the same literal for all.
+            message_text = _substitute_placeholders(
+                campaign.message_text or "", customer, shop,
+            )
 
             success = await _dispatch_channel(
                 msg.channel, customer, message_text,
