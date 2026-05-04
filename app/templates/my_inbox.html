@@ -19,21 +19,12 @@
     <div class="inbox-list">
       {% for it in items %}
         {% set unread = it.row.read_at is none %}
-        {% set logo = shop_logo(it.shop) if it.shop else None %}
         <a class="inbox-card{% if not unread %} read{% endif %}"
            href="/my-inbox/{{ it.row.id }}"
            data-unread="{{ '1' if unread else '0' }}">
           {% if unread %}<span class="ic-unread-dot"></span>{% endif %}
           <div class="ic-logo">
-            {% if logo and logo.is_image %}
-              <img src="{{ logo.url }}" alt="">
-            {% elif logo %}
-              <span class="{{ logo.css_class }}">{{ logo.text[0]|upper if logo.text else '?' }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-            {% elif it.shop %}
-              {{ it.shop.name[0]|upper }}<span class="dot">.</span>
-            {% else %}
-              T<span class="dot">.</span>
-            {% endif %}
+            {% with shop = it.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
           </div>
           <div class="ic-body">
             <div class="ic-row">

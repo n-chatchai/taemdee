@@ -4151,7 +4151,15 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-size: 14px;
   letter-spacing: -0.04em;
   margin-bottom: 10px;
+  overflow: hidden;
 }
+.cl-mini-logo .shop-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cl-mini-logo .dot { color: var(--accent); }
 .cl-mini-name {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
@@ -4276,7 +4284,15 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-size: 13px;
   letter-spacing: -0.04em;
   flex-shrink: 0;
+  overflow: hidden;
 }
+.cl-other-logo .shop-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.cl-other-logo .dot { color: var(--accent); }
 .cl-other-info {
   flex: 1;
   min-width: 0;
@@ -5538,6 +5554,13 @@ form.s10-row { margin: 0 0 4px; }
   color: var(--ink);
   background: var(--bg);
   flex-shrink: 0;
+  overflow: hidden;
+}
+.notif-mute-row .nm-logo .shop-avatar-img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
 }
 .notif-mute-row .nm-logo .dot { color: var(--accent); }
 .notif-mute-row .nm-name {

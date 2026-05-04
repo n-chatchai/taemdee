@@ -104,11 +104,9 @@
     <div class="label">ร้านที่ปิดเสียง · {{ muted|length }}</div>
     {% if muted %}
       {% for m in muted %}
-        {% set logo = shop_logo(m.shop) %}
         <div class="notif-mute-row">
           <div class="nm-logo">
-            {% if logo %}<span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-            {% else %}{{ m.shop.name[0]|upper }}{% endif %}
+            {% with shop = m.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
           </div>
           <div class="nm-name">{{ m.shop.name }}</div>
           <form method="POST" action="/card/account/mute/{{ m.shop.id }}/unmute" style="margin:0;">

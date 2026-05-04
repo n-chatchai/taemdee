@@ -1,0 +1,23 @@
+{# Compact shop-avatar inner — caller wraps in their own .ic-logo /
+   .cl-mini-logo / .cl-other-logo / .idh-logo / etc box and styles
+   size + radius. This partial just renders the contents:
+
+     - image logo  → <img> filling the parent (object-fit: cover)
+     - text logo   → <span class="lt-*">FirstChar<dot></span>
+                     (drops the lt-* class so the shop's typography
+                     style still reads in the small bubble)
+     - no logo     → first character of shop.name + dot
+
+   Pass `shop` (the Shop row) and optionally `fallback_char` (default
+   'T' for None-shop edge cases). The wrapper styles `<img>` via
+   width/height: 100% — see e.g. .inbox-card .ic-logo img. #}
+{% set _av_logo = shop_logo(shop) if shop else None %}
+{% if _av_logo and _av_logo.is_image %}
+  <img src="{{ _av_logo.url }}" alt="" class="shop-avatar-img">
+{% elif _av_logo and _av_logo.text %}
+  <span class="{{ _av_logo.css_class }}">{{ _av_logo.text[0]|upper }}{% if _av_logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+{% elif shop and shop.name %}
+  {{ shop.name[0]|upper }}<span class="dot">.</span>
+{% else %}
+  {{ fallback_char|default('T') }}<span class="dot">.</span>
+{% endif %}
