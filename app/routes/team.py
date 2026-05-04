@@ -178,6 +178,32 @@ async def revoke(
     return RedirectResponse(url="/shop/team", status_code=status.HTTP_303_SEE_OTHER)
 
 
+@router.post("/account/disconnect/{provider}")
+async def staff_disconnect(
+    provider: str,
+    staff: Optional[StaffMember] = Depends(get_current_staff),
+    db: AsyncSession = Depends(get_session),
+):
+    """Unlink a provider from the active staff/owner row. Mirrors the
+    customer-side /card/account/disconnect/{provider} — same generic
+    helpers, same last-identity guard, same error shape.
+    """
+    if staff is None:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Owner-without-staff sessions can't disconnect — sign out and back in.",
+        )
+    from app.services.identity import IdentityConflict
+    from app.services.team import disconnect_staff_provider
+    try:
+        await disconnect_staff_provider(db, staff, provider)
+    except IdentityConflict as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+    return RedirectResponse(
+        url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
 @router.post("/profile")
 async def staff_update_profile(
     display_name: str = Form(...),

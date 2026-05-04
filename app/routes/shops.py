@@ -1035,6 +1035,7 @@ async def settings_page(
             "connected": bool(staff and staff.line_id),
             "enabled": app_settings.is_login_enabled("shop", "line")
             and bool(app_settings.line_channel_id),
+            "start_url": "/auth/line/start",
         },
         {
             "id": "google",
@@ -1042,6 +1043,7 @@ async def settings_page(
             "connected": bool(staff and staff.google_id),
             "enabled": app_settings.is_login_enabled("shop", "google")
             and bool(app_settings.google_client_id),
+            "start_url": "/auth/google/start",
         },
         {
             "id": "facebook",
@@ -1049,6 +1051,7 @@ async def settings_page(
             "connected": bool(staff and staff.facebook_id),
             "enabled": app_settings.is_login_enabled("shop", "facebook")
             and bool(app_settings.facebook_app_id),
+            "start_url": "/auth/facebook/start",
         },
         {
             "id": "phone",
@@ -1056,6 +1059,9 @@ async def settings_page(
             "connected": bool(staff and staff.phone),
             "value": _mask_phone(staff.phone) if staff else None,
             "enabled": app_settings.is_login_enabled("shop", "phone"),
+            # OTP page lives under customer routes; shop staff use the
+            # same interactive form (no shop-specific OTP UI yet).
+            "start_url": "/card/save",
         },
     ]
 

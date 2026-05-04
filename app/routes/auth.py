@@ -443,49 +443,16 @@ async def line_callback(
         redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
         return redirect
 
-    # role == "shop". Owners are now StaffMember rows with is_owner=True,
-    # so the resolution order is:
-    #   1. Match StaffMember by line_id (owner OR pending invite)
-    #      - Pending → accept it (writes accepted_at) and proceed.
-    #   2. No StaffMember match → look up Shop by line_id (pre-unification
-    #      shops still exist as Shop rows but no owner-staff). Lazy-create
-    #      the owner StaffMember; subsequent logins hit step 1.
-    #   3. Neither → fully new owner: create Shop + owner StaffMember.
-    from app.services.team import (
-        accept_invite,
-        create_owner_staff,
-        find_staff_by_line,
-    )
+    # role == "shop". Generic resolver handles: existing owner-staff
+    # match → just sign in; pending invite → accept_invite + sign in;
+    # no staff but Shop has matching line_id (pre-unification) → lazy-
+    # create owner-staff; fully new → create Shop + owner-staff.
+    from app.services.team import resolve_shop_signin
 
-    staff_match = await find_staff_by_line(db, line_id)
-    if staff_match is not None:
-        if staff_match.accepted_at is None:
-            await accept_invite(db, staff_match)
-            # Bind the LINE id and any profile bits the invite was missing.
-            if not staff_match.line_id:
-                staff_match.line_id = line_id
-            if not staff_match.display_name and display_name:
-                staff_match.display_name = display_name
-            if not staff_match.picture_url and picture_url:
-                staff_match.picture_url = picture_url
-            db.add(staff_match)
-            await db.commit()
-            await db.refresh(staff_match)
-        shop = await db.get(Shop, staff_match.shop_id)
-    else:
-        result = await db.exec(select(Shop).where(Shop.line_id == line_id))
-        shop = result.first()
-        if shop is None:
-            shop = Shop(line_id=line_id, name=display_name or "Shop")
-            db.add(shop)
-            await db.commit()
-            await db.refresh(shop)
-        staff_match = await create_owner_staff(
-            db, shop,
-            line_id=line_id,
-            display_name=display_name,
-            picture_url=picture_url,
-        )
+    shop, staff_match = await resolve_shop_signin(
+        db, "line", line_id,
+        display_name=display_name, picture_url=picture_url,
+    )
 
     redirect = RedirectResponse(
         url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
@@ -559,6 +526,71 @@ async def _render_pair_complete(
     )
 
 
+async def _resolve_customer_oauth(
+    request: Request,
+    db: AsyncSession,
+    customer_cookie: Optional[str],
+    provider: str,
+    provider_label: str,
+    ext_id: str,
+    *,
+    display_name: Optional[str] = None,
+    picture_url: Optional[str] = None,
+    pair_code: Optional[str] = None,
+    state_cookie_name: Optional[str] = None,
+    state_cookie_path: str = "/",
+):
+    """Customer-side OAuth finalizer — shared by /auth/{line,google,
+    facebook}/callback. Handles the common claim/link/pair-complete
+    branch so the per-provider callbacks only differ in token
+    exchange + profile parsing + post-redirect.
+
+    Returns either:
+      - a Response (pair-complete page, for the PWA handoff branch),
+        with the OAuth state cookie cleared
+      - a Customer (the resolved claimed row) — caller picks the
+        redirect target and sets the customer cookie
+    """
+    from app.services.soft_wall import (
+        IdentityConflict,
+        claim_by_provider,
+        link_to_claimed,
+    )
+
+    anon, _ = await find_or_create_customer(customer_cookie, db)
+    if anon.is_anonymous:
+        claimed = await claim_by_provider(
+            db, anon, provider, ext_id,
+            display_name=display_name, picture_url=picture_url,
+        )
+    else:
+        try:
+            claimed = await link_to_claimed(
+                db, anon,
+                provider=provider, ext_id=ext_id,
+                display_name=display_name, picture_url=picture_url,
+            )
+        except IdentityConflict as e:
+            if pair_code:
+                response = await _render_pair_complete(
+                    request, db, pair_code, anon.id, provider, provider_label,
+                )
+                if state_cookie_name:
+                    response.delete_cookie(state_cookie_name, path=state_cookie_path)
+                return response
+            raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+
+    if pair_code:
+        response = await _render_pair_complete(
+            request, db, pair_code, claimed.id, provider, provider_label,
+        )
+        if state_cookie_name:
+            response.delete_cookie(state_cookie_name, path=state_cookie_path)
+        return response
+
+    return claimed
+
+
 @router.get("/google/start")
 async def google_start():
     """Shop-side Google Login."""
@@ -601,27 +633,18 @@ async def google_callback(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Google OAuth came back. Verify state, exchange code, claim the
-    anonymous Customer with the `sub` from the userinfo endpoint, then
-    bounce to /my-cards (or /card/{shop}/claimed if next_redeem is set).
-    No C3.confirm step yet — DeeReach defaults to opt-in; consent UI
-    will be a follow-up frontend pass."""
+    """Google OAuth came back. Customer flow claims-or-links the
+    Customer; shop flow runs the StaffMember-first resolver so the
+    owner can sign in via Google (and any pending invite gets
+    accepted on first match).
+    """
     payload = verify_oauth_state(state, google_oauth_state)
     if not payload:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
+    role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
     pair_code = payload.get("pair")
-
-    # Dispatcher
-    host = request.headers.get("host", "").split(":")[0]
-    is_main_host = host == settings.main_domain or not (
-        host.startswith("shop.") or host == settings.shop_domain
-    )
-    # (Google currently only used for customers, but logic is here for consistency)
-    if is_main_host and (host.startswith("shop.") or host == settings.shop_domain):
-        # This shouldn't happen if routers are mounted correctly, but for safety:
-        pass
 
     try:
         tokens = await google_login.exchange_code_for_token(code)
@@ -635,32 +658,38 @@ async def google_callback(
             status.HTTP_502_BAD_GATEWAY, "Google userinfo missing 'sub'"
         )
     display_name = profile.get("name") or None
+    picture_url = profile.get("picture") or None
 
-    anon, _ = await find_or_create_customer(customer_cookie, db)
-    if anon.is_anonymous:
-        claimed = await claim_by_google(db, anon, google_id, display_name=display_name)
-    else:
-        from app.services.soft_wall import IdentityConflict, link_to_claimed
-        try:
-            claimed = await link_to_claimed(
-                db, anon, google_id=google_id, display_name=display_name,
-            )
-        except IdentityConflict as e:
-            if pair_code:
-                response = await _render_pair_complete(
-                    request, db, pair_code, anon.id, "google", "Google",
-                )
-                response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
-                return response
-            raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+    if role == "shop":
+        from app.services.team import resolve_shop_signin
 
-    # PWA pairing handoff — see LINE callback for the full comment.
-    if pair_code:
-        response = await _render_pair_complete(
-            request, db, pair_code, claimed.id, "google", "Google",
+        shop, staff_match = await resolve_shop_signin(
+            db, "google", google_id,
+            display_name=display_name, picture_url=picture_url,
         )
-        response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
-        return response
+        redirect = RedirectResponse(
+            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+        )
+        _set_session_cookie(
+            redirect,
+            issue_session_token(
+                shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner
+            ),
+        )
+        redirect.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
+        return redirect
+
+    # role == "customer"
+    result = await _resolve_customer_oauth(
+        request, db, customer_cookie,
+        "google", "Google", google_id,
+        display_name=display_name, picture_url=picture_url,
+        pair_code=pair_code,
+        state_cookie_name=GOOGLE_STATE_COOKIE, state_cookie_path="/auth/google",
+    )
+    if isinstance(result, Response):
+        return result
+    claimed = result
 
     target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
@@ -678,22 +707,18 @@ async def facebook_callback(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Facebook OAuth came back. Same shape as the Google callback —
-    exchange code, claim by `id` from /me, redirect to /my-cards. The
-    `email` field may be missing if the user denied that permission;
-    we don't rely on it for the claim, only display_name."""
+    """Facebook OAuth came back. Customer flow claims-or-links the
+    Customer; shop flow runs the StaffMember-first resolver. The
+    `email` field may be missing if the user denied that permission —
+    we don't rely on it, only display_name + the `id` claim.
+    """
     payload = verify_oauth_state(state, facebook_oauth_state)
     if not payload:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
+    role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
     pair_code = payload.get("pair")
-
-    # Dispatcher
-    host = request.headers.get("host", "").split(":")[0]
-    is_main_host = host == settings.main_domain or not (
-        host.startswith("shop.") or host == settings.shop_domain
-    )
 
     try:
         tokens = await facebook_login.exchange_code_for_token(code)
@@ -707,32 +732,42 @@ async def facebook_callback(
             status.HTTP_502_BAD_GATEWAY, "Facebook profile missing 'id'"
         )
     display_name = profile.get("name") or None
+    picture_url = (
+        profile.get("picture", {}).get("data", {}).get("url")
+        if isinstance(profile.get("picture"), dict)
+        else None
+    )
 
-    anon, _ = await find_or_create_customer(customer_cookie, db)
-    if anon.is_anonymous:
-        claimed = await claim_by_facebook(db, anon, facebook_id, display_name=display_name)
-    else:
-        from app.services.soft_wall import IdentityConflict, link_to_claimed
-        try:
-            claimed = await link_to_claimed(
-                db, anon, facebook_id=facebook_id, display_name=display_name,
-            )
-        except IdentityConflict as e:
-            if pair_code:
-                response = await _render_pair_complete(
-                    request, db, pair_code, anon.id, "facebook", "Facebook",
-                )
-                response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
-                return response
-            raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+    if role == "shop":
+        from app.services.team import resolve_shop_signin
 
-    # PWA pairing handoff — see LINE callback for the full comment.
-    if pair_code:
-        response = await _render_pair_complete(
-            request, db, pair_code, claimed.id, "facebook", "Facebook",
+        shop, staff_match = await resolve_shop_signin(
+            db, "facebook", facebook_id,
+            display_name=display_name, picture_url=picture_url,
         )
-        response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
-        return response
+        redirect = RedirectResponse(
+            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+        )
+        _set_session_cookie(
+            redirect,
+            issue_session_token(
+                shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner
+            ),
+        )
+        redirect.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
+        return redirect
+
+    # role == "customer"
+    result = await _resolve_customer_oauth(
+        request, db, customer_cookie,
+        "facebook", "Facebook", facebook_id,
+        display_name=display_name, picture_url=picture_url,
+        pair_code=pair_code,
+        state_cookie_name=FACEBOOK_STATE_COOKIE, state_cookie_path="/auth/facebook",
+    )
+    if isinstance(result, Response):
+        return result
+    claimed = result
 
     target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)

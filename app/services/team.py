@@ -1,4 +1,10 @@
-"""Team (staff) management — invite, accept, update permissions, revoke."""
+"""Team (staff) management — invite, accept, update permissions, revoke.
+
+Provider link/disconnect for staff goes through services/identity.py
+(same generic helpers the customer side uses); this module wraps them
+with staff-specific glue (display_name + picture_url copy on link,
+revoked_at scoping on lookups).
+"""
 
 import secrets
 from datetime import timedelta
@@ -10,9 +16,25 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import Shop, StaffMember
 from app.models.util import utcnow
+from app.services.identity import (
+    IdentityConflict,
+    bind_provider,
+    find_row_by_provider,
+    unbind_provider,
+)
 
 VALID_PERMISSIONS = {"can_void", "can_deereach", "can_topup", "can_settings"}
 INVITE_TOKEN_TTL_HOURS = 24
+
+# Staff identity field set — no recovery_code (staff don't use the
+# anonymous-claim flow), so the four social/phone columns are it.
+_STAFF_IDENTITY_FIELDS = ("line_id", "google_id", "facebook_id", "phone")
+_STAFF_LINK_CONFLICT = "บัญชีนี้ผูกกับสตาฟอื่นอยู่แล้ว"
+_STAFF_LAST_IDENTITY = (
+    "ปลดเชื่อมไม่ได้ · ต้องเหลืออย่างน้อย 1 ช่องทางเพื่อเข้าสู่ระบบครั้งหน้า"
+)
+# Common scoping for staff lookups — never resolve a revoked staff row.
+_STAFF_LOOKUP_FILTERS = (StaffMember.revoked_at.is_(None),)
 
 
 def _generate_invite_token() -> str:
@@ -144,44 +166,148 @@ async def find_pending_invite_by_phone(
     return result.first()
 
 
-async def find_staff_by_line(
-    db: AsyncSession, line_id: str
+async def find_staff_by_provider(
+    db: AsyncSession, provider: str, ext_id: str,
 ) -> Optional[StaffMember]:
-    """Look up any (non-revoked) StaffMember by their LINE id — owner or
-    invited. Used by the LINE callback to decide whether the visitor is
-    an existing shop user vs. a fresh signup.
+    """Look up any (non-revoked) StaffMember by their bound provider id.
+    Used by the OAuth + OTP callbacks to decide whether the visitor is
+    an existing shop user (owner OR pending invite) vs. a fresh signup.
+    Provider names match services/identity.PROVIDER_FIELDS.
     """
-    if not line_id:
-        return None
-    result = await db.exec(
-        select(StaffMember)
-        .where(
-            StaffMember.line_id == line_id,
-            StaffMember.revoked_at.is_(None),
-        )
-        .order_by(StaffMember.invited_at.desc())
+    return await find_row_by_provider(
+        db, StaffMember, provider, ext_id,
+        extra_filters=_STAFF_LOOKUP_FILTERS,
     )
-    return result.first()
 
 
-async def find_staff_by_phone(
-    db: AsyncSession, phone: str
-) -> Optional[StaffMember]:
-    """Same as find_staff_by_line but keyed on the phone number used for
-    OTP login. Either an owner (is_owner=True, accepted_at set) or a
-    pending/accepted invite.
+# Back-compat aliases for the existing callsites in routes/auth.py +
+# routes/shops.py. Same behaviour, fewer call sites going forward.
+async def find_staff_by_line(db: AsyncSession, line_id: str) -> Optional[StaffMember]:
+    return await find_staff_by_provider(db, "line", line_id)
+
+
+async def find_staff_by_phone(db: AsyncSession, phone: str) -> Optional[StaffMember]:
+    return await find_staff_by_provider(db, "phone", phone)
+
+
+async def link_staff_provider(
+    db: AsyncSession,
+    staff: StaffMember,
+    provider: str,
+    ext_id: str,
+    *,
+    display_name: Optional[str] = None,
+    picture_url: Optional[str] = None,
+) -> StaffMember:
+    """Add a 2nd provider to an already-accepted staff row. Mirror of
+    soft_wall.link_to_claimed for the customer side. Refuses to merge
+    onto a different staff — surfaces as IdentityConflict.
     """
-    if not phone:
-        return None
-    result = await db.exec(
-        select(StaffMember)
-        .where(
-            StaffMember.phone == phone,
-            StaffMember.revoked_at.is_(None),
-        )
-        .order_by(StaffMember.invited_at.desc())
+    staff = await bind_provider(
+        db, staff, provider, ext_id,
+        model=StaffMember,
+        conflict_message=_STAFF_LINK_CONFLICT,
+        extra_filters=_STAFF_LOOKUP_FILTERS,
     )
-    return result.first()
+    if display_name and not staff.display_name:
+        staff.display_name = display_name
+    if picture_url and not staff.picture_url:
+        staff.picture_url = picture_url
+    db.add(staff)
+    await db.commit()
+    await db.refresh(staff)
+    return staff
+
+
+async def disconnect_staff_provider(
+    db: AsyncSession,
+    staff: StaffMember,
+    provider: str,
+) -> StaffMember:
+    """Unlink one provider from a staff row. Last-identity guard ensures
+    the staff retains at least one way to sign in.
+    """
+    return await unbind_provider(
+        db, staff, provider,
+        identity_fields=_STAFF_IDENTITY_FIELDS,
+        last_identity_message=_STAFF_LAST_IDENTITY,
+    )
+
+
+async def resolve_shop_signin(
+    db: AsyncSession,
+    provider: str,
+    ext_id: str,
+    *,
+    display_name: Optional[str] = None,
+    picture_url: Optional[str] = None,
+) -> tuple[Shop, StaffMember]:
+    """Generic OAuth/OTP shop-side resolver — shared by LINE, Google,
+    Facebook, and phone callbacks. Returns the (Shop, StaffMember) pair
+    the route should issue a session for.
+
+    Order:
+      1. Find StaffMember by provider id. If pending, accept_invite +
+         backfill missing identity / display_name / picture_url.
+      2. No staff match → look up Shop by the matching column for
+         line/phone (pre-unification shops still on the Shop row).
+         Lazy-create the owner-staff. Google/Facebook: no Shop column,
+         so step 2 is skipped.
+      3. Neither → brand-new shop signup. Create Shop + owner-staff.
+    """
+    staff = await find_staff_by_provider(db, provider, ext_id)
+    if staff is not None:
+        if staff.accepted_at is None:
+            await accept_invite(db, staff)
+            # Backfill the OAuth identity column + profile bits the
+            # invite row was missing. The matching `provider` column
+            # was already set by the owner during the invite (or it
+            # would not have matched in find_staff_by_provider).
+            changed = False
+            if display_name and not staff.display_name:
+                staff.display_name = display_name
+                changed = True
+            if picture_url and not staff.picture_url:
+                staff.picture_url = picture_url
+                changed = True
+            if changed:
+                db.add(staff)
+                await db.commit()
+                await db.refresh(staff)
+        shop = await db.get(Shop, staff.shop_id)
+        return shop, staff
+
+    # Step 2 — pre-unification shops have phone/line_id on Shop directly.
+    # google_id / facebook_id are staff-only columns, so the lookup
+    # naturally falls through to step 3 for those providers.
+    shop: Optional[Shop] = None
+    if provider == "line":
+        shop = (await db.exec(select(Shop).where(Shop.line_id == ext_id))).first()
+    elif provider == "phone":
+        shop = (await db.exec(select(Shop).where(Shop.phone == ext_id))).first()
+
+    if shop is None:
+        # Step 3 — fresh signup.
+        if provider == "line":
+            shop = Shop(line_id=ext_id, name=display_name or "Shop")
+        elif provider == "phone":
+            shop = Shop(phone=ext_id, name=display_name or "Shop")
+        else:
+            shop = Shop(name=display_name or "Shop")
+        db.add(shop)
+        await db.commit()
+        await db.refresh(shop)
+
+    staff = await create_owner_staff(
+        db, shop,
+        line_id=ext_id if provider == "line" else None,
+        google_id=ext_id if provider == "google" else None,
+        facebook_id=ext_id if provider == "facebook" else None,
+        phone=ext_id if provider == "phone" else None,
+        display_name=display_name,
+        picture_url=picture_url,
+    )
+    return shop, staff
 
 
 async def create_owner_staff(
@@ -190,16 +316,22 @@ async def create_owner_staff(
     *,
     line_id: Optional[str] = None,
     phone: Optional[str] = None,
+    google_id: Optional[str] = None,
+    facebook_id: Optional[str] = None,
     display_name: Optional[str] = None,
     picture_url: Optional[str] = None,
 ) -> StaffMember:
     """Create the owner StaffMember row for a Shop. Owners have every
     permission set, accepted_at is stamped immediately (no invite-token
     dance), and is_owner=True so permission gates short-circuit.
+    Accepts any of the four provider identity columns so all four
+    OAuth/OTP shop callbacks can use a common create path.
     """
     staff = StaffMember(
         shop_id=shop.id,
         line_id=line_id,
+        google_id=google_id,
+        facebook_id=facebook_id,
         phone=phone,
         display_name=display_name,
         picture_url=picture_url,

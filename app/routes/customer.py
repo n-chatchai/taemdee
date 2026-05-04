@@ -1169,7 +1169,21 @@ async def claim_phone(
         )
 
     customer, _ = await find_or_create_customer(customer_cookie, db)
-    claimed = await claim_by_phone(db, customer, phone, display_name=display_name)
+    # Anonymous → standard claim (may merge into an existing phone-owner).
+    # Already claimed → link this phone as a 2nd identity instead, so we
+    # don't accidentally absorb the claimed customer into another row that
+    # happens to own this phone.
+    if customer.is_anonymous:
+        claimed = await claim_by_phone(db, customer, phone, display_name=display_name)
+    else:
+        from app.services.soft_wall import IdentityConflict, link_to_claimed
+        try:
+            claimed = await link_to_claimed(
+                db, customer, provider="phone", ext_id=phone,
+                display_name=display_name,
+            )
+        except IdentityConflict as e:
+            raise HTTPException(status.HTTP_409_CONFLICT, str(e))
 
     next_url = "/my-cards"
     target_shop_id: Optional[uuid.UUID] = None
