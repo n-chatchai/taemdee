@@ -135,7 +135,7 @@
       <div class="cl-carousel">
         {% for c in near_cards %}
           {% set logo = shop_logo(c.shop) %}
-          <a class="cl-mini" href="/card/{{ c.shop.id }}" style="--shop-color: {{ c.shop_color }};">
+          <a class="cl-mini" href="/story/{{ c.shop.id }}" style="--shop-color: {{ c.shop_color }};">
             <div class="cl-mini-logo">
               {% if logo %}{% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">{% else %}{{ logo.text[0]|upper }}{% endif %}{% else %}{{ c.shop.name[0]|upper }}{% endif %}
             </div>
@@ -176,7 +176,7 @@
     <div class="cl-other" id="cl-other-list">
       {% for c in other_cards %}
         {% set logo = shop_logo(c.shop) %}
-        <a class="cl-other-row" href="/card/{{ c.shop.id }}" data-shop-name="{{ c.shop.name }}" style="--shop-color: {{ c.shop_color }};">
+        <a class="cl-other-row" href="/story/{{ c.shop.id }}" data-shop-name="{{ c.shop.name }}" style="--shop-color: {{ c.shop_color }};">
           <div class="cl-other-logo">
             {% if logo %}{% if logo.is_image %}<img src="{{ logo.url }}" style="width:100%; height:100%; border-radius:inherit; object-fit:cover;">{% else %}{{ logo.text[0]|upper }}{% endif %}{% else %}{{ c.shop.name[0]|upper }}{% endif %}
           </div>
