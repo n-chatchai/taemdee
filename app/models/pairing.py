@@ -27,7 +27,7 @@ class Pairing(SQLModel, table=True):
     Redeem requires both, so a leaked `code` can't be used from another
     browser context.
     """
-    __tablename__ = "pairings"
+    __tablename__ = "pwa_token_pairings"
 
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     code: str = Field(unique=True, index=True, max_length=64)
