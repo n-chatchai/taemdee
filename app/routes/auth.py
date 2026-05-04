@@ -352,25 +352,15 @@ async def line_callback(
 
         # PWA OAuth pairing handoff (docs/pwa-oauth-pairing.md): if state
         # carried `pair=<code>`, the user came in from a PWA's
-        # /auth/pair/start. Mark the Pairing row claimed (this NOTIFYs the
-        # PWA's SSE) and render a "completion" page telling the user to
-        # return to the app — the PWA's redeem call will finish the
-        # cookie handoff in its own context.
+        # /auth/pair/start. Mark the Pairing row claimed (this NOTIFYs
+        # the PWA's SSE) and render a "completion" page — the PWA's
+        # redeem call will finish the cookie handoff in its own context.
         if pair_code:
-            from app.services.pairing import claim_pairing
-            row = await claim_pairing(
-                db, code=pair_code, customer_id=claimed.id, provider="line",
+            response = await _render_pair_complete(
+                request, db, pair_code, claimed.id, "line", "LINE",
             )
-            template_response = templates.TemplateResponse(
-                request=request,
-                name="auth/pair_complete.html",
-                context={
-                    "ok": row is not None,
-                    "provider_label": "LINE",
-                },
-            )
-            template_response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
-            return template_response
+            response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
+            return response
 
         # Hand off to C3.line — design splits "LINE OAuth came back" from
         # "decide DeeReach consent". Carry next_redeem through as a query
@@ -413,14 +403,16 @@ async def line_callback(
 
 
 def _start_google_oauth(
-    role: str, next_redeem: Optional[str] = None
+    role: str,
+    next_redeem: Optional[str] = None,
+    pair: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "google") or not google_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Google Login disabled or not configured",
         )
-    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem)
+    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem, pair=pair)
     return RedirectResponse(
         url=google_login.build_authorize_url(state_jwt),
         status_code=status.HTTP_302_FOUND,
@@ -428,17 +420,46 @@ def _start_google_oauth(
 
 
 def _start_facebook_oauth(
-    role: str, next_redeem: Optional[str] = None
+    role: str,
+    next_redeem: Optional[str] = None,
+    pair: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "facebook") or not facebook_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Facebook Login disabled or not configured",
         )
-    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem)
+    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem, pair=pair)
     return RedirectResponse(
         url=facebook_login.build_authorize_url(state_jwt),
         status_code=status.HTTP_302_FOUND,
+    )
+
+
+# Shared pair-completion render. Each provider callback dips into this
+# branch when state.pair is set: claim the Pairing row (NOTIFYs the
+# PWA's SSE) and render auth/pair_complete.html telling the user to
+# return to the app. Don't issue the customer cookie redirect here —
+# the PWA finishes that via /auth/pair/<code>/redeem in its own context.
+async def _render_pair_complete(
+    request: Request,
+    db: AsyncSession,
+    pair_code: str,
+    customer_id,
+    provider: str,
+    provider_label: str,
+):
+    from app.services.pairing import claim_pairing
+    row = await claim_pairing(
+        db, code=pair_code, customer_id=customer_id, provider=provider,
+    )
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/pair_complete.html",
+        context={
+            "ok": row is not None,
+            "provider_label": provider_label,
+        },
     )
 
 
@@ -449,12 +470,15 @@ async def google_start():
 
 
 @router.get("/google/customer/start")
-async def google_customer_start(next_redeem: Optional[str] = None):
-    """Customer-side Google Sign-In. Mirrors the LINE flow — start sets a
-    short-lived state cookie + redirects to Google's consent screen.
-    `?next_redeem=<shop_id>` carries through state and auto-resumes a C4
-    redemption after the callback completes."""
-    return _start_google_oauth(role="customer", next_redeem=next_redeem)
+async def google_customer_start(
+    next_redeem: Optional[str] = None,
+    pair: Optional[str] = None,
+):
+    """Customer-side Google Sign-In. Mirrors the LINE flow — stateless
+    JWT carries role + optional next_redeem + optional pair (PWA
+    handoff). `?next_redeem=<shop_id>` auto-resumes a C4 redemption
+    after the callback completes."""
+    return _start_google_oauth(role="customer", next_redeem=next_redeem, pair=pair)
 
 
 @router.get("/facebook/start")
@@ -464,9 +488,12 @@ async def facebook_start():
 
 
 @router.get("/facebook/customer/start")
-async def facebook_customer_start(next_redeem: Optional[str] = None):
+async def facebook_customer_start(
+    next_redeem: Optional[str] = None,
+    pair: Optional[str] = None,
+):
     """Customer-side Facebook Login."""
-    return _start_facebook_oauth(role="customer", next_redeem=next_redeem)
+    return _start_facebook_oauth(role="customer", next_redeem=next_redeem, pair=pair)
 
 
 @router.get("/google/callback")
@@ -488,6 +515,7 @@ async def google_callback(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
     next_redeem = payload.get("next_redeem")
+    pair_code = payload.get("pair")
 
     # Dispatcher
     host = request.headers.get("host", "").split(":")[0]
@@ -515,17 +543,19 @@ async def google_callback(
     anon, _ = await find_or_create_customer(customer_cookie, db)
     claimed = await claim_by_google(db, anon, google_id, display_name=display_name)
 
+    # PWA pairing handoff — see LINE callback for the full comment.
+    if pair_code:
+        response = await _render_pair_complete(
+            request, db, pair_code, claimed.id, "google", "Google",
+        )
+        response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
+        return response
+
     target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     set_customer_cookie(redirect, claimed.id)
     redirect.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
     return redirect
-
-
-@router.get("/facebook/customer/start")
-async def facebook_customer_start(next_redeem: Optional[str] = None):
-    """Customer-side Facebook Login. Same shape as Google/LINE."""
-    return _start_facebook_oauth(role="customer", next_redeem=next_redeem)
 
 
 @router.get("/facebook/callback")
@@ -546,6 +576,7 @@ async def facebook_callback(
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
 
     next_redeem = payload.get("next_redeem")
+    pair_code = payload.get("pair")
 
     # Dispatcher
     host = request.headers.get("host", "").split(":")[0]
@@ -568,6 +599,14 @@ async def facebook_callback(
 
     anon, _ = await find_or_create_customer(customer_cookie, db)
     claimed = await claim_by_facebook(db, anon, facebook_id, display_name=display_name)
+
+    # PWA pairing handoff — see LINE callback for the full comment.
+    if pair_code:
+        response = await _render_pair_complete(
+            request, db, pair_code, claimed.id, "facebook", "Facebook",
+        )
+        response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
+        return response
 
     target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)

@@ -147,11 +147,15 @@ unknown / expired / wrong-pwa code.
 
 ### LINE / Google / Facebook callback (modified)
 
-The existing OAuth callbacks gain a tiny branch: if `state` carries a
-`pair` field (from the JWT we already added), look up the Pairing row, fill
-its `customer_id` and `provider`, call `pg_notify('pair_<code>', '…')`,
-and render a friendly "completion" page instead of the redirect — telling
-the user "เข้าสู่ระบบสำเร็จ · กลับไปที่แอปแต้มดี".
+All three OAuth callbacks gain the same branch: if `state` carries a
+`pair` field (from the JWT we already added), look up the Pairing row,
+fill its `customer_id` and `provider`, signal the SSE listener, and
+render `auth/pair_complete.html` (the "เข้าสู่ระบบสำเร็จ · กลับไปที่
+แอปแต้มดี" page) instead of redirecting back into the in-browser flow.
+
+The shared logic lives in `_render_pair_complete()` in `routes/auth.py`
+so each provider's branch is one helper call. `provider` is recorded on
+the Pairing row for audit (`"line"`, `"google"`, or `"facebook"`).
 
 ## Client flow (PWA, Alpine)
 
@@ -189,10 +193,17 @@ flow still runs — no pair, no SSE, just a regular OAuth round-trip.
 
 ## Scope
 
-Initial implementation: **LINE only** (the channel the operator said is
-essential). Google / Facebook can opt in later by adding the same
-`?pair=` branch to their callbacks — model and routes are already
-provider-agnostic.
+All three customer-side OAuth providers carry the pair flow:
+
+| Provider | Customer start endpoint | Pair-aware callback |
+|---|---|---|
+| LINE | `/auth/line/customer/start?pair=<code>` | `/auth/line/callback` |
+| Google | `/auth/google/customer/start?pair=<code>` | `/auth/google/callback` |
+| Facebook | `/auth/facebook/customer/start?pair=<code>` | `/auth/facebook/callback` |
+
+Shop-side OAuth (LINE / Google for owners) doesn't go through the PWA
+since the shop dashboard is a regular browser app, so no pair branch
+is wired there.
 
 ## Non-goals
 
