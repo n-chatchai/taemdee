@@ -5124,7 +5124,7 @@ form.s10-row { margin: 0 0 4px; }
 .pair-overlay {
   position: fixed;
   inset: 0;
-  background: rgba(17, 17, 17, 0.55);
+  background: rgba(17, 17, 17, 0.6);
   backdrop-filter: blur(6px);
   -webkit-backdrop-filter: blur(6px);
   z-index: 1500;
@@ -5135,60 +5135,69 @@ form.s10-row { margin: 0 0 4px; }
 }
 .pair-overlay[hidden] { display: none; }
 .pair-overlay-card {
-  background: var(--bg);
-  border-radius: 18px;
-  padding: 24px 22px 18px;
+  background: #fff;
+  border-radius: 20px;
+  padding: 26px 22px 18px;
   max-width: 320px;
+  width: 100%;
   text-align: center;
   font-family: 'Prompt', sans-serif;
-  box-shadow: 0 20px 50px -10px rgba(17, 17, 17, 0.4);
+  box-shadow: 0 20px 50px -10px rgba(17, 17, 17, 0.45);
 }
 .pair-overlay-spin {
   width: 36px; height: 36px;
   border-radius: 50%;
   border: 3px solid rgba(17, 17, 17, 0.12);
-  border-top-color: var(--accent);
+  border-top-color: #FF5E3A;
   margin: 0 auto 14px;
   animation: pair-spin 0.9s linear infinite;
 }
 @keyframes pair-spin { to { transform: rotate(360deg); } }
 .pair-overlay-h {
-  font-size: 16px;
+  font-size: 17px;
   font-weight: 700;
   letter-spacing: -0.01em;
-  margin-bottom: 6px;
+  color: #111;
+  margin: 0 0 6px;
 }
 .pair-overlay-s {
-  font-size: 13px;
-  color: var(--ink-soft);
-  line-height: 1.5;
-  margin-bottom: 16px;
+  font-size: 13.5px;
+  color: #555;
+  line-height: 1.55;
+  margin: 0 0 18px;
 }
 .pair-overlay-primary {
-  background: var(--accent);
+  display: block;
+  width: 100%;
+  background: #FF5E3A;
   color: #fff;
   border: none;
   border-radius: 999px;
-  padding: 11px 22px;
-  margin-bottom: 8px;
+  padding: 13px 22px;
+  margin: 0 0 10px;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 13.5px;
+  font-size: 14.5px;
   cursor: pointer;
-  box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.45);
+  box-shadow: 0 6px 16px -4px rgba(255, 94, 58, 0.45);
+  transition: transform .1s ease, opacity .15s ease;
 }
 .pair-overlay-primary:active { transform: scale(0.97); }
+.pair-overlay-primary:disabled { opacity: .65; cursor: progress; }
 .pair-overlay-cancel {
+  display: block;
+  width: 100%;
   background: transparent;
-  border: 1px solid rgba(17, 17, 17, 0.18);
+  border: 0;
   border-radius: 999px;
   padding: 8px 18px;
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
-  font-size: 12.5px;
-  color: var(--ink-soft);
+  font-size: 13px;
+  color: #888;
   cursor: pointer;
 }
+.pair-overlay-cancel:active { color: #555; }
 
 /* OAuth pair-complete landing page (rendered to the external browser
    after a PWA-initiated OAuth flow). Centered card + green/red icon,
