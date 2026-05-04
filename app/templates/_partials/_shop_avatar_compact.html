@@ -3,10 +3,13 @@
    size + radius. This partial just renders the contents:
 
      - image logo  → <img> filling the parent (object-fit: cover)
-     - text logo   → <span class="lt-*">FirstChar<dot></span>
-                     (drops the lt-* class so the shop's typography
-                     style still reads in the small bubble)
-     - no logo     → first character of shop.name + dot
+     - text logo   → <span class="lt-*">FullText<dot></span>
+                     The full styled wordmark — the shop's typography
+                     reads correctly. The wrapper rule scales font-size
+                     down (.cl-other-logo span { font-size: 10px }, etc.)
+                     so 4-6 char Thai wordmarks fit a 36-38px square.
+     - no logo     → first character of shop.name + dot (fallback when
+                     the shop never set a logo)
 
    Pass `shop` (the Shop row) and optionally `fallback_char` (default
    'T' for None-shop edge cases). The wrapper styles `<img>` via
@@ -15,7 +18,7 @@
 {% if _av_logo and _av_logo.is_image %}
   <img src="{{ _av_logo.url }}" alt="" class="shop-avatar-img">
 {% elif _av_logo and _av_logo.text %}
-  <span class="{{ _av_logo.css_class }}">{{ _av_logo.text[0]|upper }}{% if _av_logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
+  <span class="{{ _av_logo.css_class }}">{{ _av_logo.text }}{% if _av_logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
 {% elif shop and shop.name %}
   {{ shop.name[0]|upper }}<span class="dot">.</span>
 {% else %}

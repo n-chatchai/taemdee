@@ -4148,10 +4148,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 14px;
+  font-size: 10px;
   letter-spacing: -0.04em;
+  line-height: 1;
   margin-bottom: 10px;
   overflow: hidden;
+  padding: 2px 4px;
 }
 .cl-mini-logo .shop-avatar-img {
   width: 100%;
@@ -4288,10 +4290,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 13px;
+  font-size: 10px;
   letter-spacing: -0.04em;
+  line-height: 1;
   flex-shrink: 0;
   overflow: hidden;
+  padding: 2px 4px;
 }
 .cl-other-logo .shop-avatar-img {
   width: 100%;
@@ -11823,11 +11827,13 @@ form.s10-row { margin: 0 0 4px; }
   flex-shrink: 0;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: var(--text-sm);
+  font-size: 10px;
+  line-height: 1;
   color: #fff;
   letter-spacing: -0.025em;
   background: var(--ink);
   overflow: hidden;
+  padding: 2px 4px;
 }
 .inbox-card .ic-logo > span,
 .inbox-card .ic-logo > span > span:not(.dot) { color: inherit; }
