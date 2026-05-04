@@ -148,10 +148,24 @@ async def find_or_create_customer(
             raise CustomerAuthError("token_invalid")
 
         existing = await db.get(Customer, customer_id)
-        if existing:
-            return existing, False
-        else:
+        if existing is None:
             raise CustomerAuthError("token_invalid")
+
+        # Follow the merged_into chain so iOS PWA cookies that didn't
+        # see the OAuth callback's Set-Cookie still land on the right
+        # customer after a merge. Cap the chain depth so a corrupted
+        # cycle can't infinite-loop.
+        for _ in range(8):
+            if existing.merged_into_id is None:
+                return existing, False
+            target = await db.get(Customer, existing.merged_into_id)
+            if target is None:
+                # Target was deleted entirely (e.g., PDPA on the
+                # merged customer). Fall back to treating the cookie
+                # as invalid so the caller mints fresh.
+                raise CustomerAuthError("token_invalid")
+            existing = target
+        return existing, False
 
     # Anonymous customers still need a User row — Customer.user_id is
     # NOT NULL. The user starts blank (no provider id, no display_name);

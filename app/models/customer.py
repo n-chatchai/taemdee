@@ -40,6 +40,16 @@ class Customer(SQLModel, table=True):
     # on the soft prompt that appears once they've collected ≥3 stamps.
     last_link_prompt_snoozed_at: Optional[datetime] = Field(default=None)
 
+    # Set by merge_users when this customer's data is folded into another.
+    # The row stays in the DB (data already migrated to target) so any
+    # stale cookie pointing here can transparently resolve to the merged
+    # target via find_or_create_customer's chain follow. Without this,
+    # iOS PWA cookies that don't see the OAuth callback's Set-Cookie
+    # would 404 their own customer and lose the merged identity.
+    merged_into_id: Optional[UUID] = Field(
+        default=None, foreign_key="customers.id", index=True,
+    )
+
     created_at: datetime = Field(default_factory=utcnow)
 
     # ── Relationships ──────────────────────────────────────────────────────

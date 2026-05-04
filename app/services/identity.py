@@ -210,7 +210,14 @@ async def merge_users(
         if not src_cust.is_anonymous:
             tgt_cust.is_anonymous = False
         db.add(tgt_cust)
-        await db.delete(src_cust)
+        # Soft-delete: don't drop src row. Mark merged_into_id so any
+        # stale cookie still pointing at src can transparently resolve
+        # to tgt via find_or_create_customer's chain follow. Critical
+        # for the iOS PWA OAuth case where the callback runs in Safari
+        # and can't update the PWA's cookie.
+        src_cust.merged_into_id = tgt_cust.id
+        src_cust.user_id = target.id  # break the FK to-be-deleted source user
+        db.add(src_cust)
     elif src_cust is not None:
         # Only source has a customer — reassign FK to target.
         src_cust.user_id = target.id
