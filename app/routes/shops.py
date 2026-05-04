@@ -802,6 +802,49 @@ async def topup_page(
     )
 
 
+@router.post("/profile")
+async def shop_update_profile(
+    display_name: str = Form(...),
+    use_default: Optional[str] = Form(None),
+    next_url: str = Form("/shop/dashboard"),
+    picture: Optional[UploadFile] = File(None),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Owner updates shop.name + shop.logo_url from the s3_top avatar
+    sheet — quick rename + reupload. Style-picker variants stay at
+    /shop/settings/identity for richer edits.
+
+    `use_default=1` clears the logo_url so the avatar falls back to the
+    shop's first character. An uploaded picture is stored in R2 and
+    saved as 'url:<r2-url>' (matches the existing url:* convention used
+    by shop_logo()).
+    """
+    new_name = display_name.strip()
+    if new_name:
+        shop.name = new_name
+
+    if use_default == "1":
+        shop.logo_url = None
+    elif picture is not None and picture.filename:
+        image_bytes = await picture.read()
+        if image_bytes:
+            url = await upload_to_r2(
+                image_bytes,
+                file_name=picture.filename,
+                content_type=picture.content_type or "image/jpeg",
+                folder=f"shop-logos/{shop.id}",
+            )
+            if url:
+                shop.logo_url = f"url:{url}"
+
+    db.add(shop)
+    await db.commit()
+
+    safe_next = next_url if next_url.startswith("/") else "/shop/dashboard"
+    return RedirectResponse(url=safe_next, status_code=status.HTTP_303_SEE_OTHER)
+
+
 @router.post("/topup/upload")
 async def topup_upload(
     file: UploadFile = File(...),

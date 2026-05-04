@@ -11566,6 +11566,16 @@ form.s10-row { margin: 0 0 4px; }
 }
 .pe-save:active,
 .pe-cancel:active { transform: scale(0.98); }
+.pe-advanced-link {
+  display: block;
+  text-align: center;
+  margin: 14px 0 4px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  text-decoration: none;
+}
+.pe-advanced-link:active { color: var(--ink); }
 
 /* Inbox filter pills — tab-like row above the list. */
 .inbox-filters {

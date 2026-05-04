@@ -61,13 +61,20 @@
         {% endif %}
       </button>
     {% else %}
-      <a class="s3-avatar" href="/shop/settings/identity" title="แก้ไขข้อมูลร้าน" aria-label="แก้ไขข้อมูลร้าน">
+      {# Owner session — opens the shop profile sheet (quick rename +
+         logo image). The full identity editor with the lt-* style
+         picker still lives at /shop/settings/identity, linked from
+         the bottom of the sheet. Earlier this was a plain anchor that
+         navigated away, which felt jarring next to the customer side
+         where the avatar always slides up a sheet. #}
+      <button type="button" class="s3-avatar" data-open="shop-profile-edit"
+              title="แก้ไขข้อมูลร้าน" aria-label="แก้ไขข้อมูลร้าน">
         {% if _s3_logo and _s3_logo.is_image %}
           <img src="{{ _s3_logo.url }}" alt="">
         {% else %}
           <span>{{ (shop.name[0]|upper) if shop.name else 'ร' }}</span>
         {% endif %}
-      </a>
+      </button>
     {% endif %}
   </div>
 </div>

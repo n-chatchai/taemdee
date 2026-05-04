@@ -63,12 +63,15 @@
     {% include "_partials/footer_mark.html" %}
     {% block nav %}{% endblock %}
 
-    {# Staff-only profile-edit sheet — tapped open from the s3_top
-       avatar when the active session is a staff session. Owners get the
-       shop-identity link path instead, so this partial intentionally
-       stays absent from the DOM for owner sessions. #}
+    {# Profile-edit sheets — tapped open from the s3_top avatar.
+       Staff session → staff sheet (edits StaffMember). Owner session
+       → shop sheet (edits Shop.name + Shop.logo_url). Each is gated
+       internally by the matching request.state.* check, so only the
+       right one is in the DOM. #}
     {% if request.state.staff %}
       {% include "_partials/staff_profile_edit_sheet.html" %}
+    {% elif request.state.shop %}
+      {% include "_partials/shop_profile_edit_sheet.html" %}
     {% endif %}
   </div>
   {% include "_partials/sse_listener.html" %}
