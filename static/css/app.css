@@ -1250,11 +1250,11 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   position: relative;
 }
 /* Default sizing for the wordmark + sub-line, used outside of the .hero
-   variant. Matches the design baseline so any page that drops .shop-head
-   in without the .hero modifier still reads as a proper shop header
-   instead of body-default text. */
+   variant. Block-level on both so the sub-line always wraps below the
+   wordmark — earlier inline-block/inline-flex on these two siblings let
+   them collapse onto the same row on wider phones. */
 .shop-head .shop-logo-mark {
-  display: inline-block;
+  display: block;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
   font-size: 30px;
@@ -1267,8 +1267,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 400;
   font-size: var(--text-sm);
   color: var(--ink-soft);
-  display: inline-flex;
+  display: flex;
   align-items: center;
+  justify-content: center;
   gap: 6px;
 }
 .shop-head .shop-sub .dotsep {
@@ -1276,6 +1277,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   height: 3px;
   background: var(--accent);
   border-radius: 50%;
+  flex-shrink: 0;
 }
 /* Larger version for the C1/C2 first-impression hero. */
 .shop-head.hero {
@@ -2113,7 +2115,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin: 24px 20px 0;
   background: var(--surface);
   border-radius: 20px;
-  padding: 18px;
+  padding: 10px 14px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -2135,17 +2137,17 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
 .reward-pill .gift {
-  width: 56px;
-  height: 56px;
+  width: 72px;
+  height: 72px;
   background: var(--accent);
   color: #fff;
-  border-radius: 14px;
+  border-radius: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.reward-pill .gift svg { width: 26px; height: 26px; }
+.reward-pill .gift svg { width: 34px; height: 34px; }
 /* Built-in SVG illustrations are decorative line art that read fine in
    the 34px chip. Uploaded photos in the same chip just look like tiny
    blobs, so when the gift contains an <img> we bump the chip to 64px
