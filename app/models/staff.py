@@ -45,14 +45,6 @@ class StaffMember(SQLModel, table=True):
     invite_token: Optional[str] = Field(default=None, unique=True, index=True)
     invite_token_expires_at: Optional[datetime] = Field(default=None)
 
-    # Username + PIN login (alternative to OAuth/phone). Owner sets
-    # username + 6-digit PIN at staff creation; staff signs in via
-    # /staff/pin-login at the shop subdomain. Username is unique
-    # within (shop_id) — different shops can each have a "001". PIN
-    # is bcrypt-hashed, never stored cleartext.
-    username: Optional[str] = Field(default=None, index=True)
-    pin_hash: Optional[str] = Field(default=None)
-
     # ── Relationships ──────────────────────────────────────────────────────
     shop: "Shop" = Relationship(back_populates="staff_members")
     # lazy='joined' so the @property accessors below stay sync-safe in

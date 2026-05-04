@@ -58,24 +58,30 @@ def is_valid_pin(pin: str) -> bool:
     return bool(pin) and len(pin) == 6 and pin.isdigit()
 
 
-async def find_staff_by_username(
+async def find_user_by_username(
     db: AsyncSession,
-    shop_id: UUID,
     username: str,
-) -> Optional[StaffMember]:
-    """Look up a non-revoked staff at this shop by username. Used by
-    /staff/pin-login. Returns None for unknown / revoked / username
-    NULL — caller's PIN check then short-circuits to a generic error."""
+) -> Optional[User]:
+    """Look up a User by username. Returns None for unknown / NULL.
+    Caller's PIN check then short-circuits to a generic auth error.
+    Username is globally unique on User (the credential authenticates
+    a person, not a shop role)."""
     if not username:
         return None
     result = await db.exec(
-        select(StaffMember).where(
-            StaffMember.shop_id == shop_id,
-            StaffMember.username == username,
-            StaffMember.revoked_at.is_(None),
-        )
+        select(User).where(User.username == username)
     )
     return result.first()
+
+
+async def find_active_staff_for_user(
+    db: AsyncSession, user_id: UUID,
+) -> Optional[StaffMember]:
+    """Pick the staff record to sign the user into after a PIN login.
+    Mirrors _find_active_staff_for_user used inside resolve_shop_signin
+    (accepted-first ordering) — exposed for the PIN login route which
+    has a User but needs to land on a Shop+Staff session."""
+    return await _find_active_staff_for_user(db, user_id)
 
 # Staff identity field set — no recovery_code (staff don't use the
 # anonymous-claim flow), so the four social/phone columns are it.

@@ -19,26 +19,18 @@
           <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
         </svg>
       </div>
-      <div class="s1-name">เข้าสู่ระบบพนักงาน</div>
+      <div class="s1-name">เข้าสู่ระบบ</div>
       <div class="s1-tag">
-        {% if shop %}
-          {{ shop.name }}<br>
-          ใส่ Username · PIN ที่เจ้าของร้านให้มา
-        {% else %}
-          เปิดลิงก์/สแกน QR จากเจ้าของร้านเพื่อเข้าสู่ระบบ
-        {% endif %}
+        ใส่ Username · PIN ที่เจ้าของร้านให้มา
       </div>
     </div>
 
-    {% if shop %}
     <form class="s1-otp-form" method="POST" action="/staff/pin-login"
           style="margin-top: 18px;">
-      <input type="hidden" name="shop_id" value="{{ shop.id }}">
-
       <label for="staff-username">Username</label>
       <input id="staff-username" type="text" name="username"
              autocapitalize="none" autocorrect="off" autocomplete="username"
-             placeholder="เช่น 001" required>
+             placeholder="เช่น 001 หรือ bee" required>
 
       <label for="staff-pin" style="margin-top: 12px;">PIN (6 หลัก)</label>
       <input id="staff-pin" type="password" name="pin"
@@ -50,7 +42,6 @@
         เข้าสู่ระบบ
       </button>
     </form>
-    {% endif %}
 
     <div class="s1-foot">
       ถือว่ายอมรับ <a href="/privacy">นโยบายความเป็นส่วนตัว</a>

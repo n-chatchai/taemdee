@@ -39,6 +39,14 @@ class User(SQLModel, table=True):
     # ── Recovery (for anonymous → claimed soft-wall flow) ──────────────────
     recovery_code: Optional[str] = Field(default=None, unique=True, index=True)
 
+    # ── Username + 6-digit PIN (shop-side login channel) ───────────────────
+    # Globally unique username + bcrypt-hashed PIN. Login UI is gated
+    # to /staff/pin-login (shop side); customer side is connect-only.
+    # Optional — users without an OAuth provider can still sign in
+    # with these credentials, useful for shop staff on shared kiosks.
+    username: Optional[str] = Field(default=None, unique=True, index=True)
+    pin_hash: Optional[str] = Field(default=None)
+
     # ── LINE Messaging state ───────────────────────────────────────────────
     # NULL = unknown (haven't asked LINE yet); 'friended' = the OA's
     # webhook reported a follow; 'unfollowed' = unfollow event OR a

@@ -25,8 +25,9 @@ from app.models import Shop
 from app.services.auth import issue_session_token
 from app.services.team import (
     accept_invite,
+    find_active_staff_for_user,
     find_pending_by_token,
-    find_staff_by_username,
+    find_user_by_username,
     verify_pin,
 )
 
@@ -68,42 +69,16 @@ async def staff_join_page(
     )
 
 
-async def _resolve_shop_from_host(request: Request, db: AsyncSession) -> Optional[Shop]:
-    """PIN login is keyed per-shop. On the shop subdomain we'd resolve
-    via host; on the main domain owners can pass ?shop=<id> for QR
-    flows. Returns None if neither pins down a shop."""
-    host = request.headers.get("host", "").split(":")[0]
-    if host.startswith("shop."):
-        # shop.taemdee.com → look up via single-shop config (early dev)
-        # or by future per-shop subdomain. For now we only support
-        # main-domain ?shop= flow until per-shop subdomains land.
-        pass
-    shop_id = request.query_params.get("shop")
-    if shop_id:
-        from uuid import UUID
-        try:
-            return await db.get(Shop, UUID(shop_id))
-        except (ValueError, TypeError):
-            return None
-    return None
-
-
 @router.get("/staff/pin-login", response_class=HTMLResponse)
-async def staff_pin_login_page(
-    request: Request,
-    shop: Optional[str] = None,
-    db: AsyncSession = Depends(get_session),
-):
-    """Username + 6-digit PIN sign-in. Owner sets credentials at staff
-    creation; staff opens this page (typically via a QR the owner
-    posts at the shop) and enters them. Shop is resolved via ?shop=
-    when on the main domain — future per-shop subdomains can resolve
-    via host."""
-    resolved_shop = await _resolve_shop_from_host(request, db)
+async def staff_pin_login_page(request: Request):
+    """Username + 6-digit PIN sign-in. Username is globally unique on
+    User; the login resolves to whichever active staff record the
+    user has (accepted-first, earliest invite). Shop-side only —
+    customer surfaces are connect-only and don't expose this UI."""
     return templates.TemplateResponse(
         request=request,
         name="staff_pin_login.html",
-        context={"shop": resolved_shop},
+        context={},
     )
 
 
@@ -113,33 +88,25 @@ async def staff_pin_login_post(
     response: Response,
     username: str = Form(...),
     pin: str = Form(...),
-    shop_id: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_session),
 ):
     """Validate username + PIN, issue a shop session JWT, redirect to
     the dashboard. Generic auth error on any miss (no enumeration of
-    valid usernames)."""
-    from uuid import UUID
-
-    resolved_shop: Optional[Shop] = None
-    if shop_id:
-        try:
-            resolved_shop = await db.get(Shop, UUID(shop_id))
-        except (ValueError, TypeError):
-            resolved_shop = None
-    if resolved_shop is None:
-        resolved_shop = await _resolve_shop_from_host(request, db)
-    if resolved_shop is None:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            "ไม่พบร้าน · เปิดจากลิงก์/QR ของร้านอีกครั้ง",
-        )
-
-    staff = await find_staff_by_username(db, resolved_shop.id, (username or "").strip())
-    if staff is None or not verify_pin(pin, staff.pin_hash):
+    valid usernames). Refuses if the User has no active staff record
+    — credentials only authenticate a person, they don't grant shop
+    access on their own."""
+    user = await find_user_by_username(db, (username or "").strip())
+    if user is None or not verify_pin(pin, user.pin_hash):
         raise HTTPException(
             status.HTTP_401_UNAUTHORIZED,
             "Username หรือ PIN ไม่ถูกต้อง",
+        )
+
+    staff = await find_active_staff_for_user(db, user.id)
+    if staff is None:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "บัญชีนี้ยังไม่ได้ผูกกับร้าน · ติดต่อเจ้าของร้านเพื่อรับ invite",
         )
 
     # First successful login flips accepted_at if it was a pending
@@ -153,7 +120,7 @@ async def staff_pin_login_post(
     _set_session_cookie(
         redirect,
         issue_session_token(
-            resolved_shop.id, staff_id=staff.id, is_owner=staff.is_owner,
+            staff.shop_id, staff_id=staff.id, is_owner=staff.is_owner,
         ),
     )
     return redirect
