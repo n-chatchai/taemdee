@@ -4634,7 +4634,49 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   cursor: pointer;
 }
 
-/* iOS variant — 2 step rows above the dark CTA */
+/* Combined install instructions — both Android and iOS sets shown
+   side by side because UA detection is unreliable (Chrome on iOS,
+   Firefox on Android, etc). Each platform block has a small heading
+   and the steps. Spacing is tighter than a standalone variant since
+   they have to fit together in the sheet. */
+.install-sheet .install-platforms {
+  display: flex;
+  flex-direction: column;
+  gap: 12px;
+  margin: 12px 0 6px;
+}
+.install-sheet .install-plat {
+  background: rgba(17, 17, 17, 0.04);
+  padding: 11px 12px;
+  border-radius: 12px;
+}
+.install-sheet .install-plat .ip-h {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 11.5px;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  color: var(--ink-soft);
+  margin-bottom: 6px;
+}
+.install-sheet .install-plat .ip-step {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-xs);
+  color: var(--ink);
+  line-height: 1.4;
+}
+.install-sheet .install-plat .ip-step strong { font-weight: 700; }
+/* Inside the iOS block the existing .ios-steps rules already
+   format the numbered rows; trim the wrapping margin and drop
+   the inner row background so it doesn't double up against the
+   .install-plat surface. */
+.install-sheet .install-plat .ios-steps { margin-bottom: 0; }
+.install-sheet .install-plat .ios-step {
+  background: transparent;
+  padding: 6px 0;
+}
+
+/* iOS step rows — used inside the .install-plat container above. */
 .install-sheet .ios-steps {
   display: flex;
   flex-direction: column;

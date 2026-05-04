@@ -1,9 +1,12 @@
 {# Install sheet — auto-pops in regular browser tabs (not the installed
-    PWA). Two variants share the same template:
-      · Android Chrome → "เพิ่มลงหน้าจอ" CTA fires beforeinstallprompt
-      · iOS Safari    → step-by-step "Share → Add to Home Screen" + dark
-                         "เข้าใจแล้ว" CTA (no native install API)
-    JS at the bottom flips data-variant visibility via UA sniff. #}
+   PWA). One sheet, both instruction sets shown side by side. We don't
+   try to UA-detect the platform anymore: Chrome on iOS, Firefox on
+   Android, less common Edge/Brave/etc all blur the lines, and getting
+   one user the "wrong" instructions is worse than showing both
+   neutrally. The Android-style native install CTA only appears when
+   `beforeinstallprompt` actually fires (Chromium-based browsers on
+   Android), so platforms that can't trigger it skip the button and
+   read the instructions instead. #}
 <div class="install-sheet-overlay" id="install-sheet" onclick="if(this.snoozeAndClose) this.snoozeAndClose();">
   <div class="install-sheet" onclick="event.stopPropagation();">
     <div class="sheet-handle"></div>
@@ -44,44 +47,56 @@
     </div>
 
     <div class="pitch-h">เพิ่ม<em>ผม</em>ลงหน้าจอพี่</div>
-    <div class="pitch-s" data-variant="android">ตามนี้นะครับ ↑ บนหน้าจอพี่ — ไม่ต้องสแกน QR ทุกครั้ง</div>
-    <div class="pitch-s" data-variant="ios" style="display:none;">ทำตาม 2 ขั้นนะครับ ↓</div>
+    <div class="pitch-s">ไม่ต้องสแกน QR ทุกครั้ง · เปิดเร็วเหมือนแอป</div>
 
-    {# iOS-only step rows (hidden by default; UA detection unhides). #}
-    <div class="ios-steps" data-variant="ios" style="display:none;">
-      <div class="ios-step">
-        <div class="ios-num">1</div>
-        <div class="ios-step-text">กดปุ่ม <strong>Share</strong> ด้านล่าง</div>
-        <div class="ios-step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-            <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
-            <polyline points="16 6 12 2 8 6"/>
-            <line x1="12" y1="2" x2="12" y2="15"/>
-          </svg>
+    {# Native install CTA — only Chromium-based browsers on Android fire
+       `beforeinstallprompt`. Stays hidden until the event arrives so
+       it never shows on iOS (where tapping it would do nothing). #}
+    <button type="button" class="sheet-cta" id="install-cta-native" style="display:none;">
+      เพิ่มลงหน้าจอ
+      <span class="arr">→</span>
+    </button>
+
+    {# Dual-platform instructions — always shown, both sets. We don't
+       know reliably which browser/OS the user is on so we let them
+       pick the one that matches. #}
+    <div class="install-platforms">
+      <div class="install-plat">
+        <div class="ip-h">Android · Chrome / Edge</div>
+        <div class="ip-step">
+          กดปุ่มเมนู <strong>⋮</strong> ที่มุมขวาบน · เลือก
+          <strong>เพิ่มลงหน้าจอ</strong> หรือ <strong>Install app</strong>
         </div>
       </div>
-      <div class="ios-step">
-        <div class="ios-num">2</div>
-        <div class="ios-step-text">เลือก <strong>"Add to Home Screen"</strong></div>
-        <div class="ios-step-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
-            <line x1="12" y1="5" x2="12" y2="19"/>
-            <line x1="5" y1="12" x2="19" y2="12"/>
-          </svg>
+      <div class="install-plat">
+        <div class="ip-h">iOS · Safari</div>
+        <div class="ios-steps">
+          <div class="ios-step">
+            <div class="ios-num">1</div>
+            <div class="ios-step-text">กดปุ่ม <strong>Share</strong> ด้านล่าง</div>
+            <div class="ios-step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M4 12v8a2 2 0 002 2h12a2 2 0 002-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+            </div>
+          </div>
+          <div class="ios-step">
+            <div class="ios-num">2</div>
+            <div class="ios-step-text">เลือก <strong>"Add to Home Screen"</strong></div>
+            <div class="ios-step-icon">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round">
+                <line x1="12" y1="5" x2="12" y2="19"/>
+                <line x1="5" y1="12" x2="19" y2="12"/>
+              </svg>
+            </div>
+          </div>
         </div>
       </div>
     </div>
 
-    <button type="button" class="sheet-cta" data-variant="android" id="install-cta-android">
-      เพิ่มลงหน้าจอ
-      <span class="arr">→</span>
-    </button>
-    <button type="button" class="sheet-cta cta-dark" data-variant="ios" id="install-cta-ios" style="display:none;"
-            onclick="const s = document.getElementById('install-sheet'); if(s && s.snoozeAndClose) s.snoozeAndClose();">
-      เข้าใจแล้ว
-    </button>
-
-    <button type="button" class="sheet-close" data-variant="android" onclick="const s = document.getElementById('install-sheet'); if(s && s.snoozeAndClose) s.snoozeAndClose();">ไว้ก่อน</button>
+    <button type="button" class="sheet-close" onclick="const s = document.getElementById('install-sheet'); if(s && s.snoozeAndClose) s.snoozeAndClose();">ไว้ก่อน</button>
   </div>
 </div>
 <script>
@@ -92,11 +107,8 @@
     const SNOOZE_KEY = 'td_install_snoozed';
     const SNOOZE_DAYS = 30;
 
-    // Add central snooze function to the sheet element
     sheet.snoozeAndClose = function() {
-      try {
-        localStorage.setItem(SNOOZE_KEY, String(Date.now()));
-      } catch (_) {}
+      try { localStorage.setItem(SNOOZE_KEY, String(Date.now())); } catch (_) {}
       this.classList.remove('open');
     };
 
@@ -104,7 +116,7 @@
                 || window.navigator.standalone === true;
     if (isPWA) return;
 
-    // Check snooze logic: don't even finish the script if snoozed
+    // Snooze gate
     try {
       const snoozed = localStorage.getItem(SNOOZE_KEY);
       if (snoozed) {
@@ -116,24 +128,18 @@
       }
     } catch (_) {}
 
-    // Variant pick: iOS Safari vs others
-    const ua = navigator.userAgent || '';
-    const isIOS = /iPhone|iPad|iPod/.test(ua) && !/CriOS|FxiOS|EdgiOS/.test(ua);
-    const wantedVariant = isIOS ? 'ios' : 'android';
-    sheet.querySelectorAll('[data-variant]').forEach((el) => {
-      el.style.display = (el.dataset.variant === wantedVariant) ? '' : 'none';
-    });
-
-    // Capture beforeinstallprompt (Android/Chrome only)
+    // Capture beforeinstallprompt — fires on Chromium-based browsers on
+    // Android (and desktop Chrome). When it does, reveal the native CTA.
     let deferredPrompt = null;
+    const nativeCta = document.getElementById('install-cta-native');
     window.addEventListener('beforeinstallprompt', (e) => {
       e.preventDefault();
       deferredPrompt = e;
+      if (nativeCta) nativeCta.style.display = '';
     });
 
-    const androidCta = document.getElementById('install-cta-android');
-    if (androidCta) {
-      androidCta.addEventListener('click', async () => {
+    if (nativeCta) {
+      nativeCta.addEventListener('click', async () => {
         if (deferredPrompt) {
           deferredPrompt.prompt();
           try { await deferredPrompt.userChoice; } catch (_) {}
@@ -143,10 +149,9 @@
       });
     }
 
-    // Auto-open logic: only on main entry pages
+    // Auto-open on the main entry pages.
     const path = window.location.pathname;
     const isHomePage = path === '/' || path === '/my-cards' || path === '/shop/dashboard';
-    
     if (isHomePage) {
       setTimeout(() => sheet.classList.add('open'), 1500);
     }
