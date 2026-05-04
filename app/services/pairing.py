@@ -68,8 +68,14 @@ async def claim_pairing(
     Idempotent: a second claim with the same customer is a no-op; a
     different customer trying to hijack returns None.
     """
+    from loguru import logger
+
     row = await find_active_pairing(db, code)
     if row is None:
+        logger.warning(
+            "claim_pairing code={} rejected: row missing or expired",
+            code[:8],
+        )
         return None
     if row.customer_id is None:
         row.customer_id = customer_id
@@ -77,8 +83,21 @@ async def claim_pairing(
         db.add(row)
         await db.commit()
         await db.refresh(row)
+        logger.info(
+            "claim_pairing code={} OK provider={} customer={}",
+            code[:8], provider, customer_id,
+        )
     elif row.customer_id != customer_id:
+        logger.warning(
+            "claim_pairing code={} rejected: hijack attempt (existing={} vs new={})",
+            code[:8], row.customer_id, customer_id,
+        )
         return None  # claim conflict; refuse
+    else:
+        logger.info(
+            "claim_pairing code={} no-op (already claimed by same customer)",
+            code[:8],
+        )
     # Notify any SSE listeners. Use the events module's NOTIFY pool when
     # available so multi-worker setups fan out; otherwise the local
     # asyncio.Event below covers the same-process polling fallback.
@@ -94,21 +113,38 @@ async def redeem_pairing(
     """Verify the pwa_token cookie matches the row, the row is claimed, and
     redeemed_at is null. Marks redeemed_at on success and returns the row
     (caller sets the customer cookie on the response)."""
+    from loguru import logger
+
     if not pwa_token:
+        logger.warning("redeem code={} rejected: pwa_token cookie missing", code[:8])
         return None
     row = await find_active_pairing(db, code)
     if row is None:
+        logger.warning("redeem code={} rejected: row missing or expired", code[:8])
         return None
     if row.pwa_token != pwa_token:
+        logger.warning(
+            "redeem code={} rejected: pwa_token mismatch (sent={} vs row={})",
+            code[:8], pwa_token[:6], row.pwa_token[:6],
+        )
         return None
     if row.customer_id is None:
+        logger.warning(
+            "redeem code={} rejected: not claimed yet (callback hasn't run?)",
+            code[:8],
+        )
         return None
     if row.redeemed_at is not None:
+        logger.warning(
+            "redeem code={} rejected: already redeemed at {}",
+            code[:8], row.redeemed_at,
+        )
         return None
     row.redeemed_at = utcnow()
     db.add(row)
     await db.commit()
     await db.refresh(row)
+    logger.info("redeem code={} OK customer={}", code[:8], row.customer_id)
     return row
 
 
