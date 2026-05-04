@@ -46,6 +46,28 @@ def _set_session_cookie(response: Response, token: str) -> None:
     )
 
 
+def _bounce_to_shop_host_if_needed(request: Request) -> Optional[RedirectResponse]:
+    """If we're on the main domain, redirect to the shop subdomain so
+    the session cookie lands on the right host. /shop/dashboard is
+    served only on the shop subdomain — a cookie set on main would be
+    invisible to the dashboard request after the SubdomainRouting
+    middleware bounces it across hosts."""
+    host = request.headers.get("host", "").split(":")[0]
+    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    if is_shop_host:
+        return None
+    shop_host = (
+        settings.shop_domain
+        if settings.environment == "production"
+        else f"shop.{host}"
+    )
+    proto = request.url.scheme
+    return RedirectResponse(
+        url=f"{proto}://{shop_host}{request.url.path}",
+        status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
 @router.get("/staff/join", response_class=HTMLResponse)
 async def staff_join_page(
     request: Request,
@@ -75,6 +97,9 @@ async def staff_pin_login_page(request: Request):
     User; the login resolves to whichever active staff record the
     user has (accepted-first, earliest invite). Shop-side only —
     customer surfaces are connect-only and don't expose this UI."""
+    bounce = _bounce_to_shop_host_if_needed(request)
+    if bounce is not None:
+        return bounce
     return templates.TemplateResponse(
         request=request,
         name="staff_pin_login.html",
@@ -94,7 +119,20 @@ async def staff_pin_login_post(
     the dashboard. Generic auth error on any miss (no enumeration of
     valid usernames). Refuses if the User has no active staff record
     — credentials only authenticate a person, they don't grant shop
-    access on their own."""
+    access on their own.
+
+    Refuses POST on the main host: the form is rendered after the
+    GET handler bounces to shop subdomain, so any POST that lands on
+    main is either a misrouted client or a curl test. Honoring it
+    would set the session cookie on the wrong host."""
+    host = request.headers.get("host", "").split(":")[0]
+    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    if not is_shop_host:
+        raise HTTPException(
+            status.HTTP_400_BAD_REQUEST,
+            "เปิดหน้านี้บนโดเมนร้านค้าเท่านั้น",
+        )
+
     user = await find_user_by_username(db, (username or "").strip())
     if user is None or not verify_pin(pin, user.pin_hash):
         raise HTTPException(
