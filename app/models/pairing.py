@@ -13,6 +13,8 @@ from datetime import datetime
 from typing import Optional
 from uuid import UUID, uuid4
 
+from sqlalchemy import Column, ForeignKey
+from sqlalchemy.dialects.postgresql import UUID as PgUUID
 from sqlmodel import Field, SQLModel
 
 from app.models.util import utcnow
@@ -36,8 +38,15 @@ class Pairing(SQLModel, table=True):
     # The OAuth callback uses this to bind the new provider to the *same*
     # customer (and User) instead of a cookie-less anonymous row that
     # would otherwise spawn a parallel User with only the new identity.
+    # ON DELETE SET NULL: merge_users deletes source-side customers; we
+    # don't want that to fail when an in-flight pair points at one.
     originator_customer_id: Optional[UUID] = Field(
-        default=None, foreign_key="customers.id"
+        default=None,
+        sa_column=Column(
+            PgUUID(as_uuid=True),
+            ForeignKey("customers.id", ondelete="SET NULL"),
+            nullable=True,
+        ),
     )
     customer_id: Optional[UUID] = Field(default=None, foreign_key="customers.id")
     provider: Optional[str] = Field(default=None, max_length=32)
