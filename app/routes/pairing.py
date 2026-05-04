@@ -10,7 +10,11 @@ from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import CUSTOMER_COOKIE_NAME, set_customer_cookie
+from app.core.auth import (
+    CUSTOMER_COOKIE_NAME,
+    find_or_create_customer,
+    set_customer_cookie,
+)
 from app.core.database import get_session
 from app.services.auth import decode_customer_token
 from app.services.pairing import (
@@ -36,28 +40,24 @@ async def pair_start(
     the code in the body. Client uses the code in the OAuth `?pair=`
     URL and again when calling /redeem.
 
-    The PWA's customer cookie (if present) is decoded into
-    `originator_customer_id` on the row — the OAuth callback uses that
-    to bind the new provider to the SAME customer/user, instead of
-    spawning a fresh anonymous row in the cookie-less system browser
-    that would otherwise overwrite the PWA's session at /redeem."""
+    Rule: PWA is always authenticated — if there's no customer cookie
+    yet, mint an anonymous one inline. Connect always starts from a
+    known customer; we never let the OAuth callback fork a new user
+    because the PWA forgot to bootstrap a cookie first."""
     import logging
     log = logging.getLogger(__name__)
     originator_id = decode_customer_token(customer_cookie) if customer_cookie else None
+    cookie_customer_id = None
     if originator_id is None:
-        # Hard rule: a connect flow can only START from a known customer.
-        # Without an originator, the OAuth callback in the system browser
-        # would have to mint a fresh User — exactly what we never want
-        # to happen on a connect. Refuse here so the PWA can surface a
-        # "log in first" prompt instead of silently forking the account.
-        log.error(
-            "pair/start: rejected — customer cookie missing or invalid"
+        customer, was_created = await find_or_create_customer(None, db)
+        originator_id = customer.id
+        cookie_customer_id = customer.id
+        log.info(
+            "pair/start: bootstrapped anon customer=%s (no prior cookie)",
+            originator_id,
         )
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            "ยังไม่ได้เข้าสู่ระบบในแอป · ลองออกแล้วเข้าใหม่",
-        )
-    log.info("pair/start: originator_customer_id=%s", originator_id)
+    else:
+        log.info("pair/start: originator_customer_id=%s", originator_id)
     row = await create_pairing(db, originator_customer_id=originator_id)
     body = JSONResponse({
         "code": row.code,
@@ -72,6 +72,11 @@ async def pair_start(
         max_age=PAIRING_TTL_MINUTES * 60,
         path="/auth/pair",
     )
+    if cookie_customer_id is not None:
+        # PWA didn't have a customer cookie — set one now so subsequent
+        # PWA requests use the same anonymous customer the OAuth
+        # callback will bind onto.
+        set_customer_cookie(body, cookie_customer_id)
     return body
 
 

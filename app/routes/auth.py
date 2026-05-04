@@ -120,23 +120,48 @@ async def logout(response: Response):
     return {"ok": True}
 
 
+async def _resolve_connect_customer_id(
+    db: AsyncSession, pair: Optional[str]
+) -> Optional[str]:
+    """For a customer-side OAuth /start with `?pair=<code>`, look up the
+    PWA's originator customer (recorded at /auth/pair/start) so the
+    OAuth state JWT can carry it through the round-trip. The customer_id
+    in the state means the callback never has to fall back to creating
+    a new user — even if the Pairing row goes missing between /start
+    and /callback, the state JWT still tells us who's connecting.
+    """
+    if not pair:
+        return None
+    from app.services.pairing import find_active_pairing
+    row = await find_active_pairing(db, pair)
+    if row is None or row.originator_customer_id is None:
+        return None
+    return str(row.originator_customer_id)
+
+
 def _start_line_oauth(
     role: str,
     next_redeem: Optional[str] = None,
     pair: Optional[str] = None,
+    connect_customer_id: Optional[str] = None,
 ) -> RedirectResponse:
     """Common OAuth kickoff. State is a self-contained signed JWT in the
     URL — no companion cookie — so PWAs that hop into the system
     browser for OAuth can come back without a cross-context cookie
     miss. `pair` carries the PWA pairing code for the handoff flow
-    (docs/pwa-oauth-pairing.md)."""
+    (docs/pwa-oauth-pairing.md). `connect_customer_id` carries the
+    PWA's originator customer so the callback can bind onto the
+    SAME user instead of forking a new one."""
     if not line_is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "LINE Login not configured (set LINE_CHANNEL_ID + LINE_CHANNEL_SECRET in .env)",
         )
 
-    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem, pair=pair)
+    state_jwt = make_oauth_state(
+        role=role, next_redeem=next_redeem, pair=pair,
+        connect_customer_id=connect_customer_id,
+    )
     return RedirectResponse(
         url=build_authorize_url(state_jwt), status_code=status.HTTP_302_FOUND
     )
@@ -154,10 +179,15 @@ async def line_start():
 async def line_customer_start(
     next_redeem: Optional[str] = None,
     pair: Optional[str] = None,
+    db: AsyncSession = Depends(get_session),
 ):
     if not settings.is_login_enabled("customer", "line"):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for customers")
-    return _start_line_oauth(role="customer", next_redeem=next_redeem, pair=pair)
+    connect_customer_id = await _resolve_connect_customer_id(db, pair)
+    return _start_line_oauth(
+        role="customer", next_redeem=next_redeem, pair=pair,
+        connect_customer_id=connect_customer_id,
+    )
 
 
 @router.get("/line/customer/confirm")
@@ -284,6 +314,7 @@ async def line_callback(
             # Transfer flow doesn't carry a PWA pairing code (transfer is a
             # shop-domain bounce; PWA pair is customer-only).
             pair_code = None
+            connect_customer_id = None
             # Skip to the final login part
             goto_login = True
         except Exception as e:
@@ -299,6 +330,7 @@ async def line_callback(
         role = payload["role"]
         next_redeem = payload.get("next_redeem")
         pair_code = payload.get("pair")
+        connect_customer_id = payload.get("connect_customer_id")
         goto_login = False
 
     # 2. Dispatcher Logic: If we are on the main domain but this is a shop login,
@@ -351,7 +383,9 @@ async def line_callback(
         picture_url = profile.get("pictureUrl") or None
 
     if role == "customer":
-        anon = await _pair_originator_or_cookie(db, pair_code, customer_cookie)
+        anon = await _connect_originator_or_cookie(
+            db, connect_customer_id, customer_cookie,
+        )
         onboard_name = (
             anon.display_name
         )  # Name from onboard.greet (before LINE overwrites)
@@ -450,13 +484,17 @@ def _start_google_oauth(
     role: str,
     next_redeem: Optional[str] = None,
     pair: Optional[str] = None,
+    connect_customer_id: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "google") or not google_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Google Login disabled or not configured",
         )
-    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem, pair=pair)
+    state_jwt = make_oauth_state(
+        role=role, next_redeem=next_redeem, pair=pair,
+        connect_customer_id=connect_customer_id,
+    )
     return RedirectResponse(
         url=google_login.build_authorize_url(state_jwt),
         status_code=status.HTTP_302_FOUND,
@@ -467,13 +505,17 @@ def _start_facebook_oauth(
     role: str,
     next_redeem: Optional[str] = None,
     pair: Optional[str] = None,
+    connect_customer_id: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "facebook") or not facebook_login.is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "Facebook Login disabled or not configured",
         )
-    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem, pair=pair)
+    state_jwt = make_oauth_state(
+        role=role, next_redeem=next_redeem, pair=pair,
+        connect_customer_id=connect_customer_id,
+    )
     return RedirectResponse(
         url=facebook_login.build_authorize_url(state_jwt),
         status_code=status.HTTP_302_FOUND,
@@ -507,9 +549,9 @@ async def _render_pair_complete(
     )
 
 
-async def _pair_originator_or_cookie(
+async def _connect_originator_or_cookie(
     db: AsyncSession,
-    pair_code: Optional[str],
+    connect_customer_id: Optional[str],
     customer_cookie: Optional[str],
 ) -> Customer:
     """Resolve the customer for an OAuth callback.
@@ -517,56 +559,46 @@ async def _pair_originator_or_cookie(
     Rule: a "social connect" never spawns a new User. We bind onto the
     one we already know about, or we refuse.
 
-      - pair_code set → MUST resolve to the originator the PWA recorded
-        at /auth/pair/start. No fallback (a missing originator means
-        the PWA's cookie didn't make it; silently creating a new user
-        is exactly the bug we're trying to fix).
+      - connect_customer_id (from OAuth state JWT, baked in at /start)
+        → MUST resolve to that customer. The state JWT is signed and
+        survives the entire round-trip, so this is the bulletproof
+        carrier of "who's connecting."
       - cookie present → that customer.
       - neither → legitimate first-time sign-in via this provider;
         find_or_create_customer creates the (only) user the OAuth flow
         ever creates on the customer side.
     """
-    if pair_code:
-        from app.services.pairing import find_active_pairing
-        pair_row = await find_active_pairing(db, pair_code)
-        if pair_row is None:
+    if connect_customer_id:
+        from uuid import UUID
+        try:
+            cid = UUID(connect_customer_id)
+        except (ValueError, TypeError):
             logger.error(
-                "pair_originator: pair_code=%s has no active pair row",
-                pair_code[:8],
+                "connect_originator: connect_customer_id=%s not a UUID",
+                connect_customer_id,
             )
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
-                "ลิงก์เชื่อมต่อหมดอายุ · กลับไปที่แอปแล้วลองใหม่",
+                "บัญชีต้นทางไม่ถูกต้อง · ลองออกแล้วเข้าใหม่",
             )
-        if pair_row.originator_customer_id is None:
-            logger.error(
-                "pair_originator: pair_code=%s has no originator — "
-                "/auth/pair/start did not see a customer cookie",
-                pair_code[:8],
-            )
-            raise HTTPException(
-                status.HTTP_400_BAD_REQUEST,
-                "เริ่มต้นเชื่อมต่อจาก PWA ไม่สำเร็จ · ลองเปิดแอปแล้วเชื่อมอีกครั้ง",
-            )
-        existing = await db.get(Customer, pair_row.originator_customer_id)
+        existing = await db.get(Customer, cid)
         if existing is None:
             logger.error(
-                "pair_originator: originator_customer_id=%s not in DB",
-                pair_row.originator_customer_id,
+                "connect_originator: customer_id=%s not in DB", cid,
             )
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST,
                 "ไม่พบบัญชีต้นทาง · ลองออกแล้วเข้าใหม่",
             )
         logger.info(
-            "pair_originator: resolved via originator customer=%s user=%s",
+            "connect_originator: resolved from state customer=%s user=%s",
             existing.id, existing.user_id,
         )
         return existing
 
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     logger.info(
-        "pair_originator: cookie path → customer=%s user=%s was_created=%s",
+        "connect_originator: cookie path → customer=%s user=%s was_created=%s",
         customer.id, customer.user_id, was_created,
     )
     return customer
@@ -583,6 +615,7 @@ async def _resolve_customer_oauth(
     display_name: Optional[str] = None,
     picture_url: Optional[str] = None,
     pair_code: Optional[str] = None,
+    connect_customer_id: Optional[str] = None,
     state_cookie_name: Optional[str] = None,
     state_cookie_path: str = "/",
 ):
@@ -603,7 +636,9 @@ async def _resolve_customer_oauth(
         link_to_claimed,
     )
 
-    anon = await _pair_originator_or_cookie(db, pair_code, customer_cookie)
+    anon = await _connect_originator_or_cookie(
+        db, connect_customer_id, customer_cookie,
+    )
     if anon.is_anonymous:
         claimed = await claim_by_provider(
             db, anon, provider, ext_id,
@@ -647,12 +682,17 @@ async def google_start():
 async def google_customer_start(
     next_redeem: Optional[str] = None,
     pair: Optional[str] = None,
+    db: AsyncSession = Depends(get_session),
 ):
     """Customer-side Google Sign-In. Mirrors the LINE flow — stateless
     JWT carries role + optional next_redeem + optional pair (PWA
     handoff). `?next_redeem=<shop_id>` auto-resumes a C4 redemption
     after the callback completes."""
-    return _start_google_oauth(role="customer", next_redeem=next_redeem, pair=pair)
+    connect_customer_id = await _resolve_connect_customer_id(db, pair)
+    return _start_google_oauth(
+        role="customer", next_redeem=next_redeem, pair=pair,
+        connect_customer_id=connect_customer_id,
+    )
 
 
 @router.get("/facebook/start")
@@ -665,9 +705,14 @@ async def facebook_start():
 async def facebook_customer_start(
     next_redeem: Optional[str] = None,
     pair: Optional[str] = None,
+    db: AsyncSession = Depends(get_session),
 ):
     """Customer-side Facebook Login."""
-    return _start_facebook_oauth(role="customer", next_redeem=next_redeem, pair=pair)
+    connect_customer_id = await _resolve_connect_customer_id(db, pair)
+    return _start_facebook_oauth(
+        role="customer", next_redeem=next_redeem, pair=pair,
+        connect_customer_id=connect_customer_id,
+    )
 
 
 @router.get("/google/callback")
@@ -691,6 +736,7 @@ async def google_callback(
     role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
     pair_code = payload.get("pair")
+    connect_customer_id = payload.get("connect_customer_id")
 
     try:
         tokens = await google_login.exchange_code_for_token(code)
@@ -731,6 +777,7 @@ async def google_callback(
         "google", "Google", google_id,
         display_name=display_name, picture_url=picture_url,
         pair_code=pair_code,
+        connect_customer_id=connect_customer_id,
         state_cookie_name=GOOGLE_STATE_COOKIE, state_cookie_path="/auth/google",
     )
     if isinstance(result, Response):
@@ -765,6 +812,7 @@ async def facebook_callback(
     role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
     pair_code = payload.get("pair")
+    connect_customer_id = payload.get("connect_customer_id")
 
     try:
         tokens = await facebook_login.exchange_code_for_token(code)
@@ -809,6 +857,7 @@ async def facebook_callback(
         "facebook", "Facebook", facebook_id,
         display_name=display_name, picture_url=picture_url,
         pair_code=pair_code,
+        connect_customer_id=connect_customer_id,
         state_cookie_name=FACEBOOK_STATE_COOKIE, state_cookie_path="/auth/facebook",
     )
     if isinstance(result, Response):

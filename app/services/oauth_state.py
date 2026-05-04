@@ -33,13 +33,16 @@ def make_oauth_state(
     role: str = "shop",
     next_redeem: Optional[str] = None,
     pair: Optional[str] = None,
+    connect_customer_id: Optional[str] = None,
 ) -> str:
     """Returns the signed JWT to pass as the OAuth `state` URL parameter.
 
     Callers no longer need to set a state cookie — the JWT itself carries
-    role + optional next_redeem + optional pair (PWA pairing code, for the
-    handoff flow in docs/pwa-oauth-pairing.md), and verify_oauth_state
-    below recovers them on callback.
+    role + optional next_redeem + optional pair (PWA pairing code) +
+    optional connect_customer_id (the originating PWA's customer, baked
+    into the round-trip so a connect can never silently spawn a new
+    user even if the Pairing row goes missing between /start and the
+    callback).
     """
     payload = {
         "role": role,
@@ -49,6 +52,8 @@ def make_oauth_state(
         payload["next_redeem"] = next_redeem
     if pair:
         payload["pair"] = pair
+    if connect_customer_id:
+        payload["connect_customer_id"] = connect_customer_id
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
