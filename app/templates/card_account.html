@@ -63,9 +63,10 @@ when you're already here). #}
     {# Three states for a connect row:
        - Connected → tap = revoke (two-tap arm pattern, soft_wall enforces
          last-identity guard so customer can't lock themselves out).
-       - Not connected, OAuth provider → tap = link/claim. data-pair-start
-         carries the OAuth start URL; the PWA-side script in body_end
-         intercepts standalone-mode clicks for the pairing handoff.
+       - Not connected, OAuth provider → tap = link/claim via same-window
+         navigation. /auth/{provider}/customer/start reads the customer
+         cookie that travels with the navigation, bakes the customer id
+         into the OAuth state, and the callback binds onto the SAME user.
        - Not connected, phone → tap → /card/save (existing OTP flow). #}
     {% if row.connected %}
       <form method="POST" action="/card/account/disconnect/{{ row.id }}"
@@ -88,7 +89,6 @@ when you're already here). #}
     {% else %}
       {% set tap_url = row.start_url %}
       <a href="{{ tap_url }}"
-         data-pair-start="{{ tap_url }}"
          data-provider="{{ row.id }}"
          class="s10-row connect-row">
         <div class="row-icon connect-icon-{{ row.id }}">{% include "_partials/_provider_icon.html" %}</div>
@@ -187,164 +187,6 @@ per memory). First tap flips Alpine state, second tap submits. #}
 {% endblock %}
 
 {% block body_end %}
-<div id="pair-overlay" class="pair-overlay" hidden>
-  <div class="pair-overlay-card">
-    <div class="pair-overlay-spin"></div>
-    <div class="pair-overlay-h">กำลังเชื่อมต่อ…</div>
-    <div class="pair-overlay-s" id="pair-overlay-msg">
-      เข้าสู่ระบบในเบราว์เซอร์ที่เปิดขึ้น<br>
-      จากนั้นกลับมาที่นี่อัตโนมัติ
-    </div>
-    <button type="button" class="pair-overlay-primary" id="pair-overlay-redeem">
-      ฉันเข้าสู่ระบบแล้ว · ลองอีกครั้ง
-    </button>
-    <button type="button" class="pair-overlay-cancel" id="pair-overlay-cancel">ยกเลิก</button>
-  </div>
-</div>
-<script>
-  // PWA OAuth pairing handoff (docs/pwa-oauth-pairing.md). When the user
-  // taps a connect-row inside the PWA, we can't rely on cross-browser
-  // cookie sharing — open the OAuth flow in the system browser with a
-  // ?pair=<code> attached, then listen on SSE for the claim and redeem
-  // the cookie back into the PWA's own context. Outside PWA mode, the
-  // anchor's default href navigation runs unchanged.
-  (function () {
-    const overlay = document.getElementById('pair-overlay');
-    const msg = document.getElementById('pair-overlay-msg');
-    const redeemBtn = document.getElementById('pair-overlay-redeem');
-    let activeCode = null;
-    let activeToken = null;
-    let activeEs = null;
-
-    function isStandalone() {
-      return document.documentElement.classList.contains('pwa-standalone');
-    }
-
-    let pollTimer = null;
-
-    function stopPolling() {
-      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
-    }
-
-    async function tryRedeem(silent) {
-      if (!activeCode || !activeToken) return false;
-      const fd = new FormData();
-      fd.append('pwa_token', activeToken);
-      try {
-        const r = await fetch(`/auth/pair/${encodeURIComponent(activeCode)}/redeem`, {
-          method: 'POST',
-          credentials: 'same-origin',
-          body: fd,
-        });
-        if (r.ok) {
-          stopPolling();
-          window.location.reload();
-          return true;
-        }
-        // 410 = no claim yet OR already redeemed. Polling will keep
-        // trying; only show the user message when they explicitly
-        // tapped the manual button (silent=false).
-        if (!silent) {
-          msg.innerHTML = 'ยังไม่พบการเข้าสู่ระบบ · ลองใหม่อีกครั้งหลังเข้าสู่ระบบเสร็จ';
-        }
-      } catch (_) {
-        if (!silent) {
-          msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
-        }
-      }
-      return false;
-    }
-
-    redeemBtn.addEventListener('click', () => tryRedeem(false));
-
-    document.getElementById('pair-overlay-cancel').addEventListener('click', () => {
-      overlay.hidden = true;
-      stopPolling();
-      if (activeEs) { try { activeEs.close(); } catch (_) {} activeEs = null; }
-      activeCode = null;
-      activeToken = null;
-    });
-
-    function startPolling() {
-      // Fallback for iOS killing the SSE while PWA is backgrounded.
-      // Poll /redeem every 1500ms while the overlay is open. /redeem
-      // is cheap and idempotent on the not-claimed-yet path (returns
-      // 410). First successful poll triggers the reload + cookie set.
-      stopPolling();
-      pollTimer = setInterval(() => {
-        if (overlay.hidden || !activeCode) {
-          stopPolling();
-          return;
-        }
-        tryRedeem(true);
-      }, 1500);
-    }
-
-    // Foreground re-check — when the PWA returns to foreground after the
-    // user authed in the external browser, the SSE may have been culled
-    // by iOS background tab policies. Try /redeem on visibility change
-    // and (re)start the polling timer.
-    document.addEventListener('visibilitychange', () => {
-      if (document.visibilityState === 'visible' && activeCode && !overlay.hidden) {
-        tryRedeem(true);
-        startPolling();
-      }
-    });
-
-    document.addEventListener('click', async (e) => {
-      const a = e.target.closest('a.s10-row.connect-row[data-pair-start]');
-      if (!a) return;
-      if (!isStandalone()) return;  // browser flow: let the anchor navigate
-
-      e.preventDefault();
-      overlay.hidden = false;
-      msg.innerHTML = 'เข้าสู่ระบบในเบราว์เซอร์ที่เปิดขึ้น<br>จากนั้นกลับมาที่นี่อัตโนมัติ';
-
-      try {
-        const startResp = await fetch('/auth/pair/start', { method: 'POST', credentials: 'same-origin' });
-        if (!startResp.ok) throw new Error('pair start failed');
-        const data = await startResp.json();
-        activeCode = data.code;
-        activeToken = data.pwa_token;
-      } catch (_) {
-        msg.textContent = 'เริ่มเชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
-        return;
-      }
-
-      // SSE for the claimed event. The PWA stays on this page; the
-      // overlay sits in front while OAuth happens in the system browser.
-      // SSE is best-effort — iOS suspends it when the PWA goes
-      // background. The polling timer below is the actual workhorse
-      // that gets the cookie back.
-      activeEs = new EventSource(`/auth/pair/${encodeURIComponent(activeCode)}/events`);
-      activeEs.addEventListener('claimed', () => {
-        activeEs.close();
-        tryRedeem(true);
-      });
-      activeEs.addEventListener('expired', () => {
-        activeEs.close();
-        stopPolling();
-        msg.textContent = 'หมดเวลา · ลองใหม่อีกครั้ง';
-      });
-      activeEs.onerror = () => {
-        // Auto-reconnects on transient network errors; polling carries
-        // the redeem flow if the EventSource gets stuck closed.
-      };
-
-      // Start polling /redeem in the background so the user doesn't
-      // have to manually tap "ฉันเข้าสู่ระบบแล้ว" when iOS killed the
-      // SSE. First successful poll reloads the page.
-      startPolling();
-
-      // Open the OAuth flow in the system browser. window.open with no
-      // target on iOS PWAs hands off to Safari/Chrome; on Android Chrome
-      // PWAs it opens a new tab in Chrome. Either way, OAuth lands in
-      // the user's default browser.
-      const sep = a.dataset.pairStart.includes('?') ? '&' : '?';
-      window.open(a.dataset.pairStart + sep + 'pair=' + encodeURIComponent(activeCode), '_blank');
-    });
-  })();
-</script>
 <script>
     // C6 ขนาดตัวอักษร — wire the picker. Server is source of truth, but we
     // also mirror to localStorage so the next page-load applies the zoom on

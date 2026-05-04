@@ -25,7 +25,6 @@ from app.routes import (
     customer,
     deereach,
     issuance,
-    pairing,
     shops,
     staff_join,
     team,
@@ -475,7 +474,6 @@ async def version():
 
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
-app.include_router(pairing.router, tags=["pairing"])
 app.include_router(customer.router, tags=["customer"])
 app.include_router(shops.router, prefix="/shop", tags=["shops"])
 app.include_router(issuance.router, prefix="/shop", tags=["issuance"])

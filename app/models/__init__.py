@@ -7,7 +7,6 @@ from app.models.deereach import DeeReachCampaign, DeeReachMessage
 from app.models.inbox import Inbox
 from app.models.offer import Offer, Referral
 from app.models.otp import OtpCode
-from app.models.pairing import Pairing
 from app.models.point import Point
 from app.models.redemption import Redemption
 from app.models.shop import Shop
@@ -28,7 +27,6 @@ __all__ = [
     "Inbox",
     "Offer",
     "OtpCode",
-    "Pairing",
     "Point",
     "Redemption",
     "Referral",

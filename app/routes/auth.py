@@ -30,7 +30,7 @@ from app.core.database import get_session
 from app.models.util import utcnow
 from app.core.templates import templates
 from app.models import Customer, CustomerShopMute, Shop
-from app.services.auth import generate_and_send_otp, issue_session_token, verify_otp
+from app.services.auth import decode_customer_token, generate_and_send_otp, issue_session_token, verify_otp
 from app.services.soft_wall import claim_by_facebook, claim_by_google, claim_by_line
 from app.services.referrals import consume_referral_on_signup, find_referral_by_code
 from app.services.line_login import (
@@ -120,54 +120,25 @@ async def logout(response: Response):
     return {"ok": True}
 
 
-async def _mark_pair_failed(db: AsyncSession, pair_code: str) -> None:
-    """Expire a Pairing row so the PWA's SSE fires `expired` immediately
-    instead of polling until the natural 10-minute TTL. Called when the
-    OAuth round-trip fails (e.g. invalid_grant on a re-submitted code)
-    so the user gets a fast "ลองใหม่อีกครั้ง" prompt rather than waiting
-    out the full timeout."""
-    from app.services.pairing import find_active_pairing, _local_signal
-    row = await find_active_pairing(db, pair_code)
-    if row is None:
-        return
-    row.expires_at = utcnow()
-    db.add(row)
-    await db.commit()
-    _local_signal(pair_code)
-
-
-async def _resolve_connect_customer_id(
-    db: AsyncSession, pair: Optional[str]
-) -> Optional[str]:
-    """For a customer-side OAuth /start with `?pair=<code>`, look up the
-    PWA's originator customer (recorded at /auth/pair/start) so the
-    OAuth state JWT can carry it through the round-trip. The customer_id
-    in the state means the callback never has to fall back to creating
-    a new user — even if the Pairing row goes missing between /start
-    and /callback, the state JWT still tells us who's connecting.
-    """
-    if not pair:
+def _connect_customer_id_from_cookie(customer_cookie: Optional[str]) -> Optional[str]:
+    """Decode customer_cookie → customer_id string for baking into the
+    OAuth state JWT. Same-window OAuth navigates within the PWA's own
+    cookie jar, so the cookie is right there at /start. The state JWT
+    still carries connect_customer_id explicitly so the callback can
+    bind onto the existing customer even if the cookie somehow doesn't
+    travel through the OAuth round-trip."""
+    if not customer_cookie:
         return None
-    from app.services.pairing import find_active_pairing
-    row = await find_active_pairing(db, pair)
-    if row is None or row.originator_customer_id is None:
-        return None
-    return str(row.originator_customer_id)
+    cid = decode_customer_token(customer_cookie)
+    return str(cid) if cid is not None else None
 
 
 def _start_line_oauth(
     role: str,
     next_redeem: Optional[str] = None,
-    pair: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
 ) -> RedirectResponse:
-    """Common OAuth kickoff. State is a self-contained signed JWT in the
-    URL — no companion cookie — so PWAs that hop into the system
-    browser for OAuth can come back without a cross-context cookie
-    miss. `pair` carries the PWA pairing code for the handoff flow
-    (docs/pwa-oauth-pairing.md). `connect_customer_id` carries the
-    PWA's originator customer so the callback can bind onto the
-    SAME user instead of forking a new one."""
+    """Build the LINE OAuth state JWT and redirect to LINE."""
     if not line_is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
@@ -175,7 +146,7 @@ def _start_line_oauth(
         )
 
     state_jwt = make_oauth_state(
-        role=role, next_redeem=next_redeem, pair=pair,
+        role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
     )
     return RedirectResponse(
@@ -194,15 +165,16 @@ async def line_start():
 @router.get("/line/customer/start")
 async def line_customer_start(
     next_redeem: Optional[str] = None,
-    pair: Optional[str] = None,
-    db: AsyncSession = Depends(get_session),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
 ):
+    """Customer-side LINE OAuth kickoff. Reads the customer cookie that
+    travels with the same-window navigation and bakes the customer id
+    into the OAuth state so the callback binds onto the SAME user."""
     if not settings.is_login_enabled("customer", "line"):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for customers")
-    connect_customer_id = await _resolve_connect_customer_id(db, pair)
     return _start_line_oauth(
-        role="customer", next_redeem=next_redeem, pair=pair,
-        connect_customer_id=connect_customer_id,
+        role="customer", next_redeem=next_redeem,
+        connect_customer_id=_connect_customer_id_from_cookie(customer_cookie),
     )
 
 
@@ -327,9 +299,6 @@ async def line_callback(
             picture_url = payload.get("picture_url")
             role = payload.get("role", "shop")
             logger.success(f"✅ Transfer Token Verified | role={role}")
-            # Transfer flow doesn't carry a PWA pairing code (transfer is a
-            # shop-domain bounce; PWA pair is customer-only).
-            pair_code = None
             connect_customer_id = None
             # Skip to the final login part
             goto_login = True
@@ -345,7 +314,6 @@ async def line_callback(
 
         role = payload["role"]
         next_redeem = payload.get("next_redeem")
-        pair_code = payload.get("pair")
         connect_customer_id = payload.get("connect_customer_id")
         goto_login = False
 
@@ -387,44 +355,11 @@ async def line_callback(
 
     # 3. Proceed with login if not already done via transfer.
     if not goto_login:
-        # Idempotency: if the pair flow already claimed this code on a
-        # previous hit (refresh / back button on the system browser),
-        # the auth code is now spent and LINE will return invalid_grant.
-        # Detect that here and render the success page instead of
-        # surfacing a 502 to the user.
-        if pair_code:
-            from app.services.pairing import find_active_pairing
-            pair_row = await find_active_pairing(db, pair_code)
-            if pair_row is not None and pair_row.customer_id is not None:
-                logger.info(
-                    "line_callback: pair %s already claimed — rendering "
-                    "complete page idempotently", pair_code[:8],
-                )
-                response = templates.TemplateResponse(
-                    request=request,
-                    name="auth/pair_complete.html",
-                    context={"ok": True, "provider_label": "LINE"},
-                )
-                response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
-                return response
-
         try:
             tokens = await exchange_code_for_token(code)
             profile = await fetch_profile(tokens["access_token"])
         except LineLoginError as e:
             logger.error(f"❌ Token Exchange Failed: {e}")
-            if pair_code:
-                # PWA flow — render the friendly pair_complete error so
-                # the system browser shows a real page (and the PWA's
-                # SSE expires immediately) instead of raw JSON 502.
-                await _mark_pair_failed(db, pair_code)
-                response = templates.TemplateResponse(
-                    request=request,
-                    name="auth/pair_complete.html",
-                    context={"ok": False, "provider_label": "LINE"},
-                )
-                response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
-                return response
             raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
         line_id = profile["userId"]
@@ -453,29 +388,7 @@ async def line_callback(
                     display_name=display_name, picture_url=picture_url,
                 )
             except IdentityConflict as e:
-                # Surface the conflict on the pair-complete page if this
-                # was a PWA-initiated link, otherwise as a 409 the
-                # caller can render. Both happen rarely; PWA path is
-                # the common one.
-                if pair_code:
-                    response = await _render_pair_complete(
-                        request, db, pair_code, anon.id, "line", "LINE",
-                    )
-                    response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
-                    return response
                 raise HTTPException(status.HTTP_409_CONFLICT, str(e))
-
-        # PWA OAuth pairing handoff (docs/pwa-oauth-pairing.md): if state
-        # carried `pair=<code>`, the user came in from a PWA's
-        # /auth/pair/start. Mark the Pairing row claimed (this NOTIFYs
-        # the PWA's SSE) and render a "completion" page — the PWA's
-        # redeem call will finish the cookie handoff in its own context.
-        if pair_code:
-            response = await _render_pair_complete(
-                request, db, pair_code, claimed.id, "line", "LINE",
-            )
-            response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
-            return response
 
         # Hand off to C3.line — design splits "LINE OAuth came back" from
         # "decide DeeReach consent". Carry next_redeem through as a query
@@ -532,7 +445,6 @@ async def line_callback(
 def _start_google_oauth(
     role: str,
     next_redeem: Optional[str] = None,
-    pair: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "google") or not google_login.is_configured():
@@ -541,7 +453,7 @@ def _start_google_oauth(
             "Google Login disabled or not configured",
         )
     state_jwt = make_oauth_state(
-        role=role, next_redeem=next_redeem, pair=pair,
+        role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
     )
     return RedirectResponse(
@@ -553,7 +465,6 @@ def _start_google_oauth(
 def _start_facebook_oauth(
     role: str,
     next_redeem: Optional[str] = None,
-    pair: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "facebook") or not facebook_login.is_configured():
@@ -562,39 +473,12 @@ def _start_facebook_oauth(
             "Facebook Login disabled or not configured",
         )
     state_jwt = make_oauth_state(
-        role=role, next_redeem=next_redeem, pair=pair,
+        role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
     )
     return RedirectResponse(
         url=facebook_login.build_authorize_url(state_jwt),
         status_code=status.HTTP_302_FOUND,
-    )
-
-
-# Shared pair-completion render. Each provider callback dips into this
-# branch when state.pair is set: claim the Pairing row (NOTIFYs the
-# PWA's SSE) and render auth/pair_complete.html telling the user to
-# return to the app. Don't issue the customer cookie redirect here —
-# the PWA finishes that via /auth/pair/<code>/redeem in its own context.
-async def _render_pair_complete(
-    request: Request,
-    db: AsyncSession,
-    pair_code: str,
-    customer_id,
-    provider: str,
-    provider_label: str,
-):
-    from app.services.pairing import claim_pairing
-    row = await claim_pairing(
-        db, code=pair_code, customer_id=customer_id, provider=provider,
-    )
-    return templates.TemplateResponse(
-        request=request,
-        name="auth/pair_complete.html",
-        context={
-            "ok": row is not None,
-            "provider_label": provider_label,
-        },
     )
 
 
@@ -675,31 +559,18 @@ async def _connect_originator_or_cookie(
 
 
 async def _resolve_customer_oauth(
-    request: Request,
     db: AsyncSession,
     customer_cookie: Optional[str],
     provider: str,
-    provider_label: str,
     ext_id: str,
     *,
     display_name: Optional[str] = None,
     picture_url: Optional[str] = None,
-    pair_code: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
-    state_cookie_name: Optional[str] = None,
-    state_cookie_path: str = "/",
 ):
     """Customer-side OAuth finalizer — shared by /auth/{line,google,
-    facebook}/callback. Handles the common claim/link/pair-complete
-    branch so the per-provider callbacks only differ in token
-    exchange + profile parsing + post-redirect.
-
-    Returns either:
-      - a Response (pair-complete page, for the PWA handoff branch),
-        with the OAuth state cookie cleared
-      - a Customer (the resolved claimed row) — caller picks the
-        redirect target and sets the customer cookie
-    """
+    facebook}/callback. Returns the claimed customer; caller sets the
+    cookie and picks the redirect target."""
     from app.services.soft_wall import (
         IdentityConflict,
         claim_by_provider,
@@ -710,36 +581,18 @@ async def _resolve_customer_oauth(
         db, connect_customer_id, customer_cookie,
     )
     if anon.is_anonymous:
-        claimed = await claim_by_provider(
+        return await claim_by_provider(
             db, anon, provider, ext_id,
             display_name=display_name, picture_url=picture_url,
         )
-    else:
-        try:
-            claimed = await link_to_claimed(
-                db, anon,
-                provider=provider, ext_id=ext_id,
-                display_name=display_name, picture_url=picture_url,
-            )
-        except IdentityConflict as e:
-            if pair_code:
-                response = await _render_pair_complete(
-                    request, db, pair_code, anon.id, provider, provider_label,
-                )
-                if state_cookie_name:
-                    response.delete_cookie(state_cookie_name, path=state_cookie_path)
-                return response
-            raise HTTPException(status.HTTP_409_CONFLICT, str(e))
-
-    if pair_code:
-        response = await _render_pair_complete(
-            request, db, pair_code, claimed.id, provider, provider_label,
+    try:
+        return await link_to_claimed(
+            db, anon,
+            provider=provider, ext_id=ext_id,
+            display_name=display_name, picture_url=picture_url,
         )
-        if state_cookie_name:
-            response.delete_cookie(state_cookie_name, path=state_cookie_path)
-        return response
-
-    return claimed
+    except IdentityConflict as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e))
 
 
 @router.get("/google/start")
@@ -751,17 +604,13 @@ async def google_start():
 @router.get("/google/customer/start")
 async def google_customer_start(
     next_redeem: Optional[str] = None,
-    pair: Optional[str] = None,
-    db: AsyncSession = Depends(get_session),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
 ):
-    """Customer-side Google Sign-In. Mirrors the LINE flow — stateless
-    JWT carries role + optional next_redeem + optional pair (PWA
-    handoff). `?next_redeem=<shop_id>` auto-resumes a C4 redemption
-    after the callback completes."""
-    connect_customer_id = await _resolve_connect_customer_id(db, pair)
+    """Customer-side Google Sign-In. Bakes the customer cookie's id
+    into the OAuth state so the callback binds onto the SAME user."""
     return _start_google_oauth(
-        role="customer", next_redeem=next_redeem, pair=pair,
-        connect_customer_id=connect_customer_id,
+        role="customer", next_redeem=next_redeem,
+        connect_customer_id=_connect_customer_id_from_cookie(customer_cookie),
     )
 
 
@@ -774,14 +623,13 @@ async def facebook_start():
 @router.get("/facebook/customer/start")
 async def facebook_customer_start(
     next_redeem: Optional[str] = None,
-    pair: Optional[str] = None,
-    db: AsyncSession = Depends(get_session),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
 ):
-    """Customer-side Facebook Login."""
-    connect_customer_id = await _resolve_connect_customer_id(db, pair)
+    """Customer-side Facebook Login. Bakes the customer cookie's id
+    into the OAuth state so the callback binds onto the SAME user."""
     return _start_facebook_oauth(
-        role="customer", next_redeem=next_redeem, pair=pair,
-        connect_customer_id=connect_customer_id,
+        role="customer", next_redeem=next_redeem,
+        connect_customer_id=_connect_customer_id_from_cookie(customer_cookie),
     )
 
 
@@ -805,38 +653,13 @@ async def google_callback(
 
     role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
-    pair_code = payload.get("pair")
     connect_customer_id = payload.get("connect_customer_id")
-
-    # Idempotency: re-fired callback (refresh / back) on an already-
-    # claimed pair would re-spend the OAuth code and fail. Render
-    # success early instead.
-    if pair_code:
-        from app.services.pairing import find_active_pairing
-        pair_row = await find_active_pairing(db, pair_code)
-        if pair_row is not None and pair_row.customer_id is not None:
-            response = templates.TemplateResponse(
-                request=request,
-                name="auth/pair_complete.html",
-                context={"ok": True, "provider_label": "Google"},
-            )
-            response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
-            return response
 
     try:
         tokens = await google_login.exchange_code_for_token(code)
         profile = await google_login.fetch_profile(tokens["access_token"])
     except google_login.GoogleLoginError as e:
         logger.error(f"❌ Google Token Exchange Failed: {e}")
-        if pair_code:
-            await _mark_pair_failed(db, pair_code)
-            response = templates.TemplateResponse(
-                request=request,
-                name="auth/pair_complete.html",
-                context={"ok": False, "provider_label": "Google"},
-            )
-            response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
-            return response
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
     google_id = profile.get("sub")
@@ -867,17 +690,12 @@ async def google_callback(
         return redirect
 
     # role == "customer"
-    result = await _resolve_customer_oauth(
-        request, db, customer_cookie,
-        "google", "Google", google_id,
+    claimed = await _resolve_customer_oauth(
+        db, customer_cookie,
+        "google", google_id,
         display_name=display_name, picture_url=picture_url,
-        pair_code=pair_code,
         connect_customer_id=connect_customer_id,
-        state_cookie_name=GOOGLE_STATE_COOKIE, state_cookie_path="/auth/google",
     )
-    if isinstance(result, Response):
-        return result
-    claimed = result
 
     target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
@@ -906,38 +724,13 @@ async def facebook_callback(
 
     role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
-    pair_code = payload.get("pair")
     connect_customer_id = payload.get("connect_customer_id")
-
-    # Idempotency: re-fired callback (refresh / back) on an already-
-    # claimed pair would re-spend the OAuth code and fail. Render
-    # success early instead.
-    if pair_code:
-        from app.services.pairing import find_active_pairing
-        pair_row = await find_active_pairing(db, pair_code)
-        if pair_row is not None and pair_row.customer_id is not None:
-            response = templates.TemplateResponse(
-                request=request,
-                name="auth/pair_complete.html",
-                context={"ok": True, "provider_label": "Facebook"},
-            )
-            response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
-            return response
 
     try:
         tokens = await facebook_login.exchange_code_for_token(code)
         profile = await facebook_login.fetch_profile(tokens["access_token"])
     except facebook_login.FacebookLoginError as e:
         logger.error(f"❌ Facebook Token Exchange Failed: {e}")
-        if pair_code:
-            await _mark_pair_failed(db, pair_code)
-            response = templates.TemplateResponse(
-                request=request,
-                name="auth/pair_complete.html",
-                context={"ok": False, "provider_label": "Facebook"},
-            )
-            response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
-            return response
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
     facebook_id = profile.get("id")
@@ -972,17 +765,12 @@ async def facebook_callback(
         return redirect
 
     # role == "customer"
-    result = await _resolve_customer_oauth(
-        request, db, customer_cookie,
-        "facebook", "Facebook", facebook_id,
+    claimed = await _resolve_customer_oauth(
+        db, customer_cookie,
+        "facebook", facebook_id,
         display_name=display_name, picture_url=picture_url,
-        pair_code=pair_code,
         connect_customer_id=connect_customer_id,
-        state_cookie_name=FACEBOOK_STATE_COOKIE, state_cookie_path="/auth/facebook",
     )
-    if isinstance(result, Response):
-        return result
-    claimed = result
 
     target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
