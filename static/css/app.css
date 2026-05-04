@@ -11495,10 +11495,17 @@ form.s10-row { margin: 0 0 4px; }
   font-weight: 800;
   font-size: 38px;
   cursor: pointer;
-  overflow: hidden;
   border: 0;
+  /* No overflow:hidden here — the .pe-edit-badge needs to extend
+     outside the avatar circle to look like a camera-corner stamp.
+     The image gets its own border-radius below to stay round. */
 }
-.pe-avatar img { width: 100%; height: 100%; object-fit: cover; }
+.pe-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
+}
 .pe-avatar .pe-edit-badge {
   position: absolute;
   bottom: -2px; right: -2px;
