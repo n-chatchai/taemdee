@@ -18,7 +18,7 @@ from app.core.auth import (
     require_permission,
 )
 from app.core.database import get_session
-from app.models import Customer, Redemption, Shop, Point, StaffMember
+from app.models import Customer, Redemption, Shop, Point, StaffMember, User
 from app.models.util import bkk_feed_time, bkk_hms, utcnow
 from app.services.branch import s3_top_context
 from app.services.events import feed_row_html, publish
@@ -411,9 +411,10 @@ async def search_customers(
     like = f"%{q}%"
     result = await db.exec(
         select(Customer)
+        .join(User, Customer.user_id == User.id)
         .where(
             Customer.is_anonymous == False,  # noqa: E712
-            ((Customer.display_name.ilike(like)) | (Customer.phone.ilike(like))),
+            ((User.display_name.ilike(like)) | (User.phone.ilike(like))),
         )
         .limit(8)
     )
@@ -596,10 +597,20 @@ async def staff_issue_point(
             raise HTTPException(
                 status.HTTP_400_BAD_REQUEST, "phone is required for phone_entry"
             )
-        result = await db.exec(select(Customer).where(Customer.phone == phone))
+        result = await db.exec(
+            select(Customer).join(User, Customer.user_id == User.id)
+            .where(User.phone == phone)
+        )
         customer = result.first()
         if not customer:
-            customer = Customer(is_anonymous=False, phone=phone)
+            user = (await db.exec(
+                select(User).where(User.phone == phone)
+            )).first()
+            if user is None:
+                user = User(phone=phone)
+                db.add(user)
+                await db.flush()
+            customer = Customer(is_anonymous=False, user_id=user.id)
             db.add(customer)
             await db.commit()
             await db.refresh(customer)
@@ -653,7 +664,10 @@ async def staff_issue_manual_point(
     is throwaway — no contact path back — so this is best-effort attribution.
     Same SSE pipe as the other issuance methods, so the live toast still fires.
     """
-    customer = Customer(is_anonymous=True)
+    user = User()
+    db.add(user)
+    await db.flush()
+    customer = Customer(is_anonymous=True, user_id=user.id)
     db.add(customer)
     await db.commit()
     await db.refresh(customer)

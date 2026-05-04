@@ -33,7 +33,7 @@ from sqlmodel import and_, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.redis_queue import task_queue
-from app.models import CreditLog, Customer, CustomerShopMute, DeeReachCampaign, Redemption, Shop, Point
+from app.models import CreditLog, Customer, CustomerShopMute, DeeReachCampaign, Redemption, Shop, Point, User
 from app.models.deereach import DeeReachMessage
 from app.models.util import utcnow
 
@@ -145,10 +145,11 @@ async def find_lapsed_customers(
     stmt = (
         select(Customer)
         .join(last_stamp, last_stamp.c.cid == Customer.id)
+        .join(User, Customer.user_id == User.id)
         .where(
             last_stamp.c.last_at >= earliest_last_stamp,
             last_stamp.c.last_at <= latest_last_stamp,
-            Customer.line_id.is_not(None),
+            User.line_id.is_not(None),
         )
     )
     result = await db.exec(stmt)
@@ -191,12 +192,13 @@ async def find_almost_there_customers(
     stmt = (
         select(Customer)
         .join(active, active.c.cid == Customer.id)
+        .join(User, Customer.user_id == User.id)
         .where(
             and_(
                 active.c.active_count >= min_active,
                 active.c.active_count < shop.reward_threshold,
                 active.c.last_at >= recent_cutoff,
-                Customer.line_id.is_not(None),
+                User.line_id.is_not(None),
             )
         )
     )
@@ -237,10 +239,11 @@ async def find_unredeemed_reward_customers(
     stmt = (
         select(Customer)
         .join(active, active.c.cid == Customer.id)
+        .join(User, Customer.user_id == User.id)
         .where(
             active.c.active_count >= shop.reward_threshold,
             active.c.last_at <= cutoff,
-            Customer.line_id.is_not(None),
+            User.line_id.is_not(None),
         )
     )
     result = await db.exec(stmt)
@@ -271,9 +274,10 @@ async def find_new_customers(
     stmt = (
         select(Customer)
         .join(first_stamp, first_stamp.c.cid == Customer.id)
+        .join(User, Customer.user_id == User.id)
         .where(
             first_stamp.c.first_at >= cutoff,
-            Customer.line_id.is_not(None),
+            User.line_id.is_not(None),
         )
     )
     result = await db.exec(stmt)

@@ -22,7 +22,7 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.database import get_session
-from app.models import Customer
+from app.models import User
 from app.models.util import utcnow
 from app.services.line_messaging import verify_signature
 
@@ -86,22 +86,22 @@ async def _set_friend_status(
     clear_blocked: bool = False,
     set_blocked: bool = False,
 ) -> None:
-    """Lookup the customer by LINE userId and update their friend gate.
+    """Lookup the User by LINE userId and update their friend gate.
 
-    Customers who've never logged in via LINE (so line_id never
-    captured) won't match — that's fine, the next time they log in
-    they'll be flagged via the OAuth callback's identity claim and
-    the next webhook hit will catch up.
+    Users who've never logged in via LINE (so line_id never captured)
+    won't match — that's fine, the next time they log in they'll be
+    flagged via the OAuth callback's identity claim and the next
+    webhook hit will catch up.
     """
-    result = await db.exec(select(Customer).where(Customer.line_id == line_id))
-    customer = result.first()
-    if customer is None:
-        log.debug("line webhook: no customer row for line_id=%s yet", line_id)
+    result = await db.exec(select(User).where(User.line_id == line_id))
+    user = result.first()
+    if user is None:
+        log.debug("line webhook: no user row for line_id=%s yet", line_id)
         return
-    customer.line_friend_status = status_value
+    user.line_friend_status = status_value
     if clear_blocked:
-        customer.line_messaging_blocked_at = None
+        user.line_messaging_blocked_at = None
     if set_blocked:
-        customer.line_messaging_blocked_at = utcnow()
-    db.add(customer)
+        user.line_messaging_blocked_at = utcnow()
+    db.add(user)
     await db.commit()

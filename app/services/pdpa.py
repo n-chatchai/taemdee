@@ -25,10 +25,17 @@ async def delete_customer_account(db: AsyncSession, customer: Customer) -> Custo
     Customer row + their Stamps so the shop's headline count stays accurate.
     The Customer becomes a permanent "anonymous" record.
     """
-    customer.line_id = None
-    customer.phone = None
-    customer.display_name = None
+    # Identity scrubs land on the User row; the Customer row keeps
+    # only role-specific fields (the anonymous flag we flip below).
+    user = customer.user
+    user.line_id = None
+    user.google_id = None
+    user.facebook_id = None
+    user.phone = None
+    user.display_name = None
+    user.recovery_code = None
     customer.is_anonymous = True
+    db.add(user)
     db.add(customer)
     await db.commit()
     await db.refresh(customer)

@@ -2,7 +2,8 @@
 
 When a customer skips signup (C2.3 → C2.4), we issue them a 12-digit
 recovery code so they can re-attach their points on a new device.
-Format: XXXX-XXXX-XXXX.
+Format: XXXX-XXXX-XXXX. Stored on the User row (recovery_code is part
+of identity, same as the four provider columns).
 """
 
 import secrets
@@ -11,7 +12,7 @@ from typing import Optional
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Customer
+from app.models import Customer, User
 
 ALPHABET = "0123456789"
 
@@ -28,19 +29,19 @@ async def ensure_recovery_code(db: AsyncSession, customer: Customer) -> str:
     Generation collision-retries against a unique index — in practice with a
     31^12 keyspace this almost never loops.
     """
-    if customer.recovery_code:
-        return customer.recovery_code
+    if customer.user.recovery_code:
+        return customer.user.recovery_code
 
     for _ in range(8):
         candidate = _generate()
         clash = (await db.exec(
-            select(Customer).where(Customer.recovery_code == candidate)
+            select(User).where(User.recovery_code == candidate)
         )).first()
         if clash is None:
-            customer.recovery_code = candidate
-            db.add(customer)
+            customer.user.recovery_code = candidate
+            db.add(customer.user)
             await db.commit()
-            await db.refresh(customer)
+            await db.refresh(customer.user)
             return candidate
     raise RuntimeError("could not allocate unique recovery code after 8 tries")
 
@@ -59,5 +60,6 @@ async def find_by_code(db: AsyncSession, raw: str) -> Optional[Customer]:
     if not code:
         return None
     return (await db.exec(
-        select(Customer).where(Customer.recovery_code == code)
+        select(Customer).join(User, Customer.user_id == User.id)
+        .where(User.recovery_code == code)
     )).first()

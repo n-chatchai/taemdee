@@ -1,16 +1,22 @@
-"""Shared identity helpers — used by both customer (Customer rows) and
-shop (StaffMember rows) for the four sign-in providers.
+"""Shared identity helpers — provider-id ops on the User table.
 
-Both tables carry the same four columns (line_id, google_id,
-facebook_id, phone) so the find/bind/unbind logic is identical except
-for the model class and a few callsite-specific concerns (extra
-filters, conflict copy, last-identity guard set). This module owns
-the generic mechanics; `services/soft_wall.py` (customer-side) and
-`services/team.py` (shop-side) wrap them with role-specific glue.
+Identity (line_id, google_id, facebook_id, phone, display_name, etc.)
+lives on User. Customer + StaffMember are role profiles that point at
+a User via user_id FK. find_user_by_provider / bind_provider /
+unbind_provider operate on User rows; soft_wall and team wrap them
+with role-specific glue (anonymous-merge for customers, accept-invite
++ owner-staff backfill for shop-side).
+
+When binding a provider id that's already on a *different* User row,
+bind_provider absorbs the other User into the active one via
+merge_users — same person signing in via a 2nd provider that
+historically created a separate User now gets folded into one
+identity, no IdentityConflict thrown.
 """
 
 from typing import Optional, Sequence, Type
 
+from sqlalchemy import update
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -70,33 +76,159 @@ async def find_user_by_provider(
 
 async def bind_provider(
     db: AsyncSession,
-    row,
+    user,
     provider: str,
     ext_id: str,
     *,
-    model: Type,
-    conflict_message: str,
     extra_filters: Sequence = (),
 ) -> object:
-    """Set `row.<provider_field> = ext_id`. Raises IdentityConflict if the
-    same provider id is already bound to a *different* row of the same
-    model. No-op if already on this row.
+    """Set `user.<provider_field> = ext_id` on a User row. If the same
+    provider id is already bound to a *different* User, that other
+    User is absorbed into `user` via merge_users — provider columns
+    + role profiles + relationships migrate over, then the source
+    User row is deleted. No IdentityConflict raised by default —
+    "same person, second provider" should Just Work, the merge is
+    the whole point of having a User table.
+
+    No-op if `user` already owns this ext_id.
     """
+    from app.models import User
+
     field = _provider_field(provider)
-    if getattr(row, field) == ext_id:
-        return row
+    if getattr(user, field) == ext_id:
+        return user
 
     other = await find_user_by_provider(
-        db, model, provider, ext_id, extra_filters=extra_filters
+        db, User, provider, ext_id, extra_filters=extra_filters
     )
-    if other is not None and getattr(other, "id", None) != getattr(row, "id", None):
-        raise IdentityConflict(conflict_message)
+    if other is not None and getattr(other, "id", None) != getattr(user, "id", None):
+        # Absorb the other User into this one. After merge, the
+        # provider id is on `user` and the source row is gone.
+        await merge_users(db, source=other, target=user)
+        # merge_users already commits and copies the provider field
+        # across (when target's slot was empty), so we're done.
+        await db.refresh(user)
+        if getattr(user, field) == ext_id:
+            return user
 
-    setattr(row, field, ext_id)
-    db.add(row)
+    setattr(user, field, ext_id)
+    db.add(user)
     await db.commit()
-    await db.refresh(row)
-    return row
+    await db.refresh(user)
+    return user
+
+
+async def merge_users(
+    db: AsyncSession,
+    *,
+    source,
+    target,
+) -> object:
+    """Fold `source` User into `target` User and delete the source row.
+
+    What moves:
+      - Identity fields: every provider column / display_name /
+        picture_url / recovery_code / etc. that's set on source AND
+        empty on target gets copied over. Target's existing values
+        win on conflict (active session is canonical).
+      - Customer profile: at most one per User. If both have one,
+        merge by reassigning Points / Redemptions / Inbox /
+        CustomerItem / CustomerShopMute from source's customer to
+        target's customer, then delete source's customer. If only
+        source has one, reassign its user_id to target.
+      - StaffMember rows: always reassign user_id (a person can be
+        staff at multiple shops, so duplicates by shop_id are fine —
+        the same shop can't have two owner-staff because that's
+        guarded elsewhere).
+
+    Then: delete source User. The caller's `target` is left with a
+    populated row that needs a refresh.
+    """
+    from app.models import (
+        Customer, CustomerItem, CustomerShopMute,
+        Inbox, Point, Redemption, StaffMember, User,
+    )
+
+    if getattr(source, "id", None) == getattr(target, "id", None):
+        return target
+
+    # ── Identity fields: copy source → target only where target is empty.
+    _IDENTITY_COLUMNS = (
+        "line_id", "google_id", "facebook_id", "phone",
+        "display_name", "picture_url", "recovery_code",
+        "line_friend_status", "line_messaging_blocked_at",
+        "text_size",
+        "web_push_endpoint", "web_push_p256dh", "web_push_auth",
+    )
+    for col in _IDENTITY_COLUMNS:
+        if getattr(target, col, None) in (None, "") and getattr(source, col, None) not in (None, ""):
+            setattr(target, col, getattr(source, col))
+            # Clear on source so the unique-column constraint doesn't
+            # block delete (e.g. line_id UNIQUE — can't have two rows
+            # both holding the same value mid-merge).
+            setattr(source, col, None)
+        elif getattr(source, col, None) is not None:
+            # Target already has a value here — clear source to free
+            # the unique slot before delete.
+            if col in ("line_id", "google_id", "facebook_id", "phone", "recovery_code"):
+                setattr(source, col, None)
+    # Booleans we OR rather than copy — if either side ever installed
+    # the PWA / accepted notifications, the merged identity should
+    # remember.
+    target.is_pwa = bool(target.is_pwa or source.is_pwa)
+    target.notifications_enabled = bool(
+        target.notifications_enabled and source.notifications_enabled
+    )
+    db.add(target)
+    db.add(source)
+    await db.flush()
+
+    # ── Customer profile reconciliation
+    src_cust = (await db.exec(
+        select(Customer).where(Customer.user_id == source.id)
+    )).first()
+    tgt_cust = (await db.exec(
+        select(Customer).where(Customer.user_id == target.id)
+    )).first()
+
+    if src_cust is not None and tgt_cust is not None:
+        # Both sides have a customer profile — fold src into tgt.
+        for child_model, fk in (
+            (Point, Point.customer_id),
+            (Redemption, Redemption.customer_id),
+            (Inbox, Inbox.customer_id),
+            (CustomerItem, CustomerItem.customer_id),
+            (CustomerShopMute, CustomerShopMute.customer_id),
+        ):
+            await db.exec(
+                update(child_model)
+                .where(fk == src_cust.id)
+                .values(customer_id=tgt_cust.id)
+            )
+        # Anonymous flag: if either side was claimed (is_anonymous=False),
+        # the merged customer is claimed.
+        if not src_cust.is_anonymous:
+            tgt_cust.is_anonymous = False
+        db.add(tgt_cust)
+        await db.delete(src_cust)
+    elif src_cust is not None:
+        # Only source has a customer — reassign FK to target.
+        src_cust.user_id = target.id
+        db.add(src_cust)
+    # If only target has one, nothing to do.
+
+    # ── StaffMember rows: always reassign to target. The same person
+    # can be staff at multiple shops, so duplicates by shop are fine.
+    await db.exec(
+        update(StaffMember)
+        .where(StaffMember.user_id == source.id)
+        .values(user_id=target.id)
+    )
+
+    await db.flush()
+    await db.delete(source)
+    await db.commit()
+    return target
 
 
 async def unbind_provider(

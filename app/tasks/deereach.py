@@ -142,8 +142,8 @@ def _send_line(customer: Customer, message: str) -> bool:
         # reachability filter skips this line_id entirely. Persisted
         # opportunistically — same async-session-from-sync pattern as
         # the rest of this task.
-        customer.line_friend_status = "unfollowed"
-        customer.line_messaging_blocked_at = utcnow()
+        customer.user.line_friend_status = "unfollowed"
+        customer.user.line_messaging_blocked_at = utcnow()
         log.info("line friend-gated → customer=%s, status flipped to unfollowed", customer.id)
 
     return False

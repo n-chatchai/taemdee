@@ -14,7 +14,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from loguru import logger
 
 from app.core.database import get_session
-from app.models import Customer, Shop, StaffMember
+from app.models import Customer, Shop, StaffMember, User
 from app.services.auth import (
     decode_customer_token,
     decode_session_token,
@@ -153,7 +153,13 @@ async def find_or_create_customer(
             # Token valid but customer deleted? Also invalid.
             raise CustomerAuthError("token_invalid")
 
-    new_customer = Customer(is_anonymous=True)
+    # Anonymous customers still need a User row — Customer.user_id is
+    # NOT NULL. The user starts blank (no provider id, no display_name);
+    # the soft-wall claim flow fills it in when this customer signs in.
+    new_user = User()
+    db.add(new_user)
+    await db.flush()
+    new_customer = Customer(is_anonymous=True, user_id=new_user.id)
     db.add(new_customer)
     await db.commit()
     await db.refresh(new_customer)

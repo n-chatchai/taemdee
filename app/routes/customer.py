@@ -71,13 +71,21 @@ async def customer_event_stream(
                 cid = existing.id
             else:
                 was_created = True
-                new_customer = Customer(is_anonymous=True)
+                from app.models import User
+                new_user = User()
+                db.add(new_user)
+                await db.flush()
+                new_customer = Customer(is_anonymous=True, user_id=new_user.id)
                 db.add(new_customer)
                 await db.commit()
                 cid = new_customer.id
         else:
             was_created = True
-            new_customer = Customer(is_anonymous=True)
+            from app.models import User
+            new_user = User()
+            db.add(new_user)
+            await db.flush()
+            new_customer = Customer(is_anonymous=True, user_id=new_user.id)
             db.add(new_customer)
             await db.commit()
             cid = new_customer.id
@@ -133,11 +141,18 @@ async def customer_dev_login(
     db: AsyncSession = Depends(get_session),
 ):
     """DEV shortcut for customer login (matches the shop's dev_login behavior)."""
-    # Find or create by phone
-    result = await db.exec(select(Customer).where(Customer.phone == phone))
+    # Find-or-create by phone via the User table.
+    from app.models import User
+    result = await db.exec(
+        select(Customer).join(User, Customer.user_id == User.id)
+        .where(User.phone == phone)
+    )
     customer = result.first()
     if not customer:
-        customer = Customer(phone=phone, display_name="คุณลูกค้า")
+        user = User(phone=phone, display_name="คุณลูกค้า")
+        db.add(user)
+        await db.flush()
+        customer = Customer(user_id=user.id, is_anonymous=False)
         db.add(customer)
         await db.commit()
         await db.refresh(customer)
@@ -368,8 +383,8 @@ async def card_account_notifications_master_toggle(
     shop CustomerShopMute. Single POST endpoint, server-driven flip
     (no client toggle state)."""
     customer, _ = await find_or_create_customer(customer_cookie, db)
-    customer.notifications_enabled = not customer.notifications_enabled
-    db.add(customer)
+    customer.user.notifications_enabled = not customer.user.notifications_enabled
+    db.add(customer.user)
     await db.commit()
     return RedirectResponse(
         url="/card/account/notifications",
@@ -440,8 +455,8 @@ async def card_account_text_size(
     if size not in ("sm", "md", "lg"):
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "ขนาดไม่ถูกต้อง")
     customer, _ = await find_or_create_customer(customer_cookie, db)
-    customer.text_size = None if size == "md" else size
-    db.add(customer)
+    customer.user.text_size = None if size == "md" else size
+    db.add(customer.user)
     await db.commit()
     return JSONResponse(status_code=204, content=None)
 
@@ -474,10 +489,10 @@ async def customer_update_profile(
     customer, _ = await find_or_create_customer(customer_cookie, db)
     new_name = display_name.strip()
     if new_name:
-        customer.display_name = new_name
+        customer.user.display_name = new_name
 
     if use_default == "1":
-        customer.picture_url = None
+        customer.user.picture_url = None
     elif picture is not None and picture.filename:
         image_bytes = await picture.read()
         if image_bytes:
@@ -488,9 +503,9 @@ async def customer_update_profile(
                 folder=f"avatars/{customer.id}",
             )
             if url:
-                customer.picture_url = url
+                customer.user.picture_url = url
 
-    db.add(customer)
+    db.add(customer.user)
     await db.commit()
 
     # Bounce back to where the sheet was opened from. Reject off-site
@@ -531,8 +546,8 @@ async def track_pwa(
     from app.core.auth import find_or_create_customer
     customer, _ = await find_or_create_customer(customer_cookie, db)
     if not customer.is_pwa:
-        customer.is_pwa = True
-        db.add(customer)
+        customer.user.is_pwa = True
+        db.add(customer.user)
         await db.commit()
     return JSONResponse(status_code=204, content=None)
 
@@ -1248,10 +1263,10 @@ async def save_collected_name(
         return RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
 
     cleaned = name.strip()
-    customer.display_name = cleaned if cleaned else SKIP_NICKNAME_DEFAULT
-    db.add(customer)
+    customer.user.display_name = cleaned if cleaned else SKIP_NICKNAME_DEFAULT
+    db.add(customer.user)
     await db.commit()
-    
+
     return RedirectResponse(url=next_url, status_code=status.HTTP_303_SEE_OTHER)
 
 
@@ -1269,8 +1284,8 @@ async def save_nickname(
     """
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     cleaned = (name or "").strip()
-    customer.display_name = cleaned if cleaned else SKIP_NICKNAME_DEFAULT
-    db.add(customer)
+    customer.user.display_name = cleaned if cleaned else SKIP_NICKNAME_DEFAULT
+    db.add(customer.user)
     await db.commit()
     await db.refresh(customer)
 
@@ -1856,10 +1871,10 @@ async def push_subscribe(
     existing subscription is fine — most browsers rotate endpoints when
     the user clears storage or reinstalls. Idempotent."""
     customer, was_created = await find_or_create_customer(customer_cookie, db)
-    customer.web_push_endpoint = endpoint
-    customer.web_push_p256dh = p256dh
-    customer.web_push_auth = auth
-    db.add(customer)
+    customer.user.web_push_endpoint = endpoint
+    customer.user.web_push_p256dh = p256dh
+    customer.user.web_push_auth = auth
+    db.add(customer.user)
     await db.commit()
     response = JSONResponse({"ok": True}, status_code=200)
     if was_created:
@@ -1876,10 +1891,10 @@ async def push_unsubscribe(
     permission in their browser. Without this, send_web_push will keep
     hitting an endpoint that returns 410 Gone."""
     customer, _ = await find_or_create_customer(customer_cookie, db)
-    customer.web_push_endpoint = None
-    customer.web_push_p256dh = None
-    customer.web_push_auth = None
-    db.add(customer)
+    customer.user.web_push_endpoint = None
+    customer.user.web_push_p256dh = None
+    customer.user.web_push_auth = None
+    db.add(customer.user)
     await db.commit()
     return JSONResponse({"ok": True}, status_code=200)
 

@@ -222,7 +222,8 @@ async def line_customer_confirm_save(
 
     # Allow customer to override the LINE display_name
     if display_name and display_name.strip():
-        customer.display_name = display_name.strip()
+        customer.user.display_name = display_name.strip()
+        db.add(customer.user)
         await db.commit()
 
     target_shop_id: Optional[_uuid.UUID] = None

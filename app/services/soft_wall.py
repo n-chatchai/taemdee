@@ -1,45 +1,43 @@
-"""Soft Wall — anonymous Customer → claimed Customer (linked to phone, LINE, Google, or Facebook).
+"""Soft Wall — anonymous Customer → claimed Customer.
 
-If a claimed customer already exists with the given identity, the anonymous customer's
-stamps and redemptions are merged into the existing record and the anonymous row is
-deleted. Otherwise the anonymous row is promoted in place.
+Identity (line_id / google_id / facebook_id / phone / display_name /
+picture_url / recovery_code) lives on User, not Customer. A claim or
+link goes through the customer's User row. When the provider id
+already belongs to a different User, services/identity.merge_users
+folds the two into one — same person across roles.
 
-For an already-claimed customer adding a *second* identity (e.g. claimed
-via LINE, now also wants Google), `link_to_claimed` is the dedicated
-path — it refuses to silently merge into another existing customer
-because that would be destructive without confirmation.
-
-Provider-keyed helpers (claim_by_provider, link_to_claimed,
-disconnect_provider) live in services/identity.py — this module wraps
-them with customer-side glue (anonymous-merge, recovery_code in the
-last-identity guard, on-claim picture/display name copy).
+Public surface:
+  - claim_by_provider(db, anon, provider, ext_id, ...) — anonymous
+    customer claims via a provider. Returns the resulting Customer
+    (either the same row promoted, or a different existing customer
+    that absorbed this one).
+  - link_to_claimed(db, customer, *, provider, ext_id, ...) — claimed
+    customer adds a second identity. Same behaviour as claim but
+    starts from a non-anonymous row.
+  - disconnect_provider(db, customer, provider) — unlink one identity.
+    Last-identity guard ensures the customer can still log back in.
 """
 
 from typing import Optional
 
-from sqlalchemy import update
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import Customer, Redemption, Point
+from app.models import Customer, User
 from app.services.identity import (
     PROVIDER_FIELDS,
     IdentityConflict,
     bind_provider,
     find_user_by_provider,
+    merge_users,
     unbind_provider,
 )
 
 
-# Customer identity field set — recovery_code counts as an identity for
-# the unlink-last-id guard (the customer can still reach their account
-# via /recover with it).
+# Customer identity field set — recovery_code counts as an identity
+# for the unlink-last-id guard. All five live on User now.
 _CUSTOMER_IDENTITY_FIELDS = (
     "line_id", "google_id", "facebook_id", "phone", "recovery_code",
-)
-_LINK_CONFLICT = (
-    "บัญชีนี้ผูกกับลูกค้ารายอื่นอยู่แล้ว · "
-    "ใช้บัญชีอื่นถ้าต้องการสลับเข้าระบบ"
 )
 _LAST_IDENTITY = (
     "ปลดเชื่อมไม่ได้ · ต้องเหลืออย่างน้อย 1 ช่องทางเพื่อเข้าสู่ระบบครั้งหน้า"
@@ -58,73 +56,99 @@ async def claim_by_provider(
     display_name: Optional[str] = None,
     picture_url: Optional[str] = None,
 ) -> Customer:
-    """Anonymous customer claims via any of the four providers. Merges
-    into an existing claimed row when one already owns this identity;
-    otherwise promotes the anonymous row in place.
+    """Anonymous customer claims via any of the four providers.
+
+    If another User already owns this provider id, the anonymous
+    customer's User is merged INTO that existing User (the merge
+    direction matters: existing has history, anonymous is empty;
+    points and the customer profile move into existing's customer).
+    Returns the existing customer in that case.
+
+    Otherwise the anonymous user is promoted in place — the provider
+    field is set on its User and is_anonymous flipped to False.
     """
     if not anonymous_customer.is_anonymous:
         return anonymous_customer
 
-    existing = await find_user_by_provider(db, Customer, provider, ext_id)
     field = PROVIDER_FIELDS[provider]
+    user = anonymous_customer.user
 
-    if existing and existing.id != anonymous_customer.id:
-        # Merge — move stamps + redemptions to the existing customer; delete anonymous
-        await db.exec(
-            update(Point)
-            .where(Point.customer_id == anonymous_customer.id)
-            .values(customer_id=existing.id)
-        )
-        await db.exec(
-            update(Redemption)
-            .where(Redemption.customer_id == anonymous_customer.id)
-            .values(customer_id=existing.id)
-        )
-        if picture_url:
-            existing.picture_url = picture_url
-        if display_name and not existing.display_name:
-            existing.display_name = display_name
-        db.add(existing)
-        await db.delete(anonymous_customer)
+    existing_user = await find_user_by_provider(db, User, provider, ext_id)
+    if existing_user is not None and existing_user.id != user.id:
+        # Merge our anonymous user INTO the existing one. After this
+        # call:
+        #   - the anonymous user is gone
+        #   - existing_user holds the merged identity
+        #   - the points + redemptions etc. that lived on the
+        #     anonymous customer have moved to existing's customer (if
+        #     it had one) — or the anonymous customer was reassigned
+        #     to existing's user_id.
+        await merge_users(db, source=user, target=existing_user)
+        await db.refresh(existing_user)
+
+        # Pick up display_name / picture_url if the existing identity
+        # didn't have them (LINE profile vs first-time existing row).
+        changed = False
+        if display_name and not existing_user.display_name:
+            existing_user.display_name = display_name
+            changed = True
+        if picture_url and not existing_user.picture_url:
+            existing_user.picture_url = picture_url
+            changed = True
+        if changed:
+            db.add(existing_user)
+            await db.commit()
+
+        # Find the customer profile for the merged user (could be the
+        # original existing's customer with anonymous's data folded
+        # in, or the promoted anonymous customer reassigned to
+        # existing.user_id when existing had no customer).
+        merged_cust = (await db.exec(
+            select(Customer).where(Customer.user_id == existing_user.id)
+        )).first()
+        if merged_cust is not None:
+            if merged_cust.is_anonymous:
+                merged_cust.is_anonymous = False
+                db.add(merged_cust)
+                await db.commit()
+                await db.refresh(merged_cust)
+            return merged_cust
+        # No customer at all on existing user (only StaffMember). The
+        # anonymous customer was reassigned to existing.user_id; find
+        # it and flip is_anonymous.
+        # (anonymous_customer's user_id changed inside merge_users)
+        await db.refresh(anonymous_customer)
+        anonymous_customer.is_anonymous = False
+        db.add(anonymous_customer)
         await db.commit()
-        await db.refresh(existing)
-        return existing
+        return anonymous_customer
 
-    # Promote in place
-    anonymous_customer.is_anonymous = False
-    setattr(anonymous_customer, field, ext_id)
-    if display_name and not anonymous_customer.display_name:
-        anonymous_customer.display_name = display_name
+    # No conflict — promote the anonymous user in place.
+    setattr(user, field, ext_id)
+    if display_name and not user.display_name:
+        user.display_name = display_name
     if picture_url:
-        anonymous_customer.picture_url = picture_url
+        user.picture_url = picture_url
+    anonymous_customer.is_anonymous = False
+    db.add(user)
     db.add(anonymous_customer)
     await db.commit()
     await db.refresh(anonymous_customer)
     return anonymous_customer
 
 
-# Back-compat wrappers for the four claim_by_<provider>() callsites in
-# routes/auth.py + routes/customer.py. New callers should hit
-# claim_by_provider directly.
-
+# Back-compat wrappers (existing routes still call these).
 async def claim_by_phone(
-    db: AsyncSession,
-    anonymous_customer: Customer,
-    phone: str,
-    display_name: Optional[str] = None,
-) -> Customer:
+    db, anonymous_customer, phone, display_name=None,
+):
     return await claim_by_provider(
         db, anonymous_customer, "phone", phone, display_name=display_name,
     )
 
 
 async def claim_by_line(
-    db: AsyncSession,
-    anonymous_customer: Customer,
-    line_id: str,
-    display_name: Optional[str] = None,
-    picture_url: Optional[str] = None,
-) -> Customer:
+    db, anonymous_customer, line_id, display_name=None, picture_url=None,
+):
     return await claim_by_provider(
         db, anonymous_customer, "line", line_id,
         display_name=display_name, picture_url=picture_url,
@@ -132,28 +156,22 @@ async def claim_by_line(
 
 
 async def claim_by_google(
-    db: AsyncSession,
-    anonymous_customer: Customer,
-    google_id: str,
-    display_name: Optional[str] = None,
-) -> Customer:
+    db, anonymous_customer, google_id, display_name=None,
+):
     return await claim_by_provider(
         db, anonymous_customer, "google", google_id, display_name=display_name,
     )
 
 
 async def claim_by_facebook(
-    db: AsyncSession,
-    anonymous_customer: Customer,
-    facebook_id: str,
-    display_name: Optional[str] = None,
-) -> Customer:
+    db, anonymous_customer, facebook_id, display_name=None,
+):
     return await claim_by_provider(
         db, anonymous_customer, "facebook", facebook_id, display_name=display_name,
     )
 
 
-# ── link 2nd provider (claimed → still claimed, now also bound to X) ────────
+# ── link 2nd provider (already claimed) ────────────────────────────────────
 
 
 async def link_to_claimed(
@@ -162,7 +180,7 @@ async def link_to_claimed(
     *,
     provider: Optional[str] = None,
     ext_id: Optional[str] = None,
-    # Legacy keyword form — kept so existing callsites don't break.
+    # Legacy kwargs — kept for callsites that haven't migrated.
     line_id: Optional[str] = None,
     google_id: Optional[str] = None,
     facebook_id: Optional[str] = None,
@@ -170,20 +188,15 @@ async def link_to_claimed(
     display_name: Optional[str] = None,
     picture_url: Optional[str] = None,
 ) -> Customer:
-    """Add a 2nd identity to a claimed customer. Refuses to merge into a
-    different customer — IdentityConflict surfaces and the route renders
-    a "ใช้บัญชีอื่น" message.
-
-    Accepts either the new (provider, ext_id) form or the legacy
-    line_id/google_id/facebook_id/phone keyword form. Phone was missing
-    from the legacy keyword form — adding it here closes the audit gap
-    where /card/claim/phone for an already-claimed customer fell back to
-    the anonymous-claim path and could merge them into a different row.
+    """Add a 2nd provider to a claimed customer's User. If the
+    provider id is already on a different User, that User is merged
+    into customer.user (bind_provider's default behaviour now —
+    no IdentityConflict). Returns the customer (id unchanged when
+    no merge fires; reassigned to the surviving user when one does).
     """
     if customer.is_anonymous:
         return customer
 
-    # Resolve (provider, ext_id) from legacy kwargs if needed.
     if provider is None or ext_id is None:
         legacy = {
             "line": line_id, "google": google_id,
@@ -196,16 +209,14 @@ async def link_to_claimed(
     if provider is None or not ext_id:
         return customer
 
-    customer = await bind_provider(
-        db, customer, provider, ext_id,
-        model=Customer, conflict_message=_LINK_CONFLICT,
-    )
+    await bind_provider(db, customer.user, provider, ext_id)
+    user = customer.user
 
-    if display_name and not customer.display_name:
-        customer.display_name = display_name
-    if picture_url and not customer.picture_url:
-        customer.picture_url = picture_url
-    db.add(customer)
+    if display_name and not user.display_name:
+        user.display_name = display_name
+    if picture_url and not user.picture_url:
+        user.picture_url = picture_url
+    db.add(user)
     await db.commit()
     await db.refresh(customer)
     return customer
@@ -219,11 +230,13 @@ async def disconnect_provider(
     customer: Customer,
     provider: str,
 ) -> Customer:
-    """Unlink one identity. Refuses to remove the last reachable one —
-    recovery_code counts as a fallback identity for the guard.
+    """Unlink one identity from the customer's User. Refuses to remove
+    the last reachable identity — recovery_code counts.
     """
-    return await unbind_provider(
-        db, customer, provider,
+    await unbind_provider(
+        db, customer.user, provider,
         identity_fields=_CUSTOMER_IDENTITY_FIELDS,
         last_identity_message=_LAST_IDENTITY,
     )
+    await db.refresh(customer)
+    return customer

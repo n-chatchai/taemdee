@@ -12,7 +12,7 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import SessionContext, get_current_shop, get_current_staff, require_owner
 from app.core.database import get_session
-from app.models import Shop, StaffMember
+from app.models import Shop, StaffMember, User
 from app.services.team import (
     list_staff,
     mint_invite_token,
@@ -68,9 +68,14 @@ async def team_add_post(
     name = (display_name or "").strip()
     if not name:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "ใส่ชื่อเล่นพนักงานก่อนนะครับ")
+    # Pending invite needs a User row even with no provider id yet — the
+    # invitee will fold this row in when they sign in via OAuth.
+    user = User(display_name=name)
+    db.add(user)
+    await db.flush()
     staff = StaffMember(
         shop_id=shop.id,
-        display_name=name,
+        user_id=user.id,
         can_void=bool(can_void),
         can_deereach=bool(can_deereach),
         can_topup=bool(can_topup),
@@ -229,10 +234,10 @@ async def staff_update_profile(
 
     new_name = display_name.strip()
     if new_name:
-        staff.display_name = new_name
+        staff.user.display_name = new_name
 
     if use_default == "1":
-        staff.picture_url = None
+        staff.user.picture_url = None
     elif picture is not None and picture.filename:
         image_bytes = await picture.read()
         if image_bytes:
@@ -243,9 +248,9 @@ async def staff_update_profile(
                 folder=f"staff-avatars/{staff.id}",
             )
             if url:
-                staff.picture_url = url
+                staff.user.picture_url = url
 
-    db.add(staff)
+    db.add(staff.user)
     await db.commit()
 
     safe_next = next_url if next_url.startswith("/") else "/shop/dashboard"
