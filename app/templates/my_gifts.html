@@ -657,7 +657,10 @@
       const card = e.target.closest('.gl-hero[data-voucher-id], .gl-mini[data-voucher-id]');
       if (!card) return;
       e.preventDefault();
-      form.action = `/voucher/${card.dataset.voucherId}/use?next=/my-gifts`;
+      // No ?next= — fall through to /voucher/<id> fullscreen page
+      // (the "show this screen to staff" QR view). Returning to
+      // /my-gifts here would skip the actual usage UI.
+      form.action = `/voucher/${card.dataset.voucherId}/use`;
       // Mirror the card's logo into the sheet so user sees what they're spending.
       const logoSrc = card.querySelector('.gh-logo, .gl-mini-img');
       if (logoSrc) logoEl.innerHTML = card.querySelector('.gh-logo')?.innerHTML || '';

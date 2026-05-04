@@ -51,8 +51,13 @@
 .cl-voucher-section.single .cl-voucher-carousel {
   overflow: visible;
   scroll-snap-type: none;
+  padding: 0 16px 6px;
 }
+/* flex: 0 0 70% on the base card pins it at 70% width even with
+   max-width 100%. Override the flex-basis so the single card
+   actually fills the row. */
 .cl-voucher-section.single .cl-voucher-card {
+  flex: 1 1 100%;
   width: 100%;
   max-width: 100%;
 }
@@ -650,7 +655,9 @@
         if (!card) return;
         e.preventDefault();
         const id = card.dataset.voucherId;
-        form.action = `/voucher/${id}/use?next=/my-cards`;
+        // No ?next= — fall through to /voucher/<id> fullscreen page
+        // (the "show this screen to staff" QR view).
+        form.action = `/voucher/${id}/use`;
         // Mirror the card's logo + shop name + reward into the sheet
         // so the user sees what they're about to spend.
         const logoSrc = card.querySelector('.cl-voucher-shop .logo');
