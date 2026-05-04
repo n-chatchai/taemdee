@@ -110,13 +110,18 @@ async def redeem_pairing(
     code: str,
     pwa_token: Optional[str],
 ) -> Optional[Pairing]:
-    """Verify the pwa_token cookie matches the row, the row is claimed, and
-    redeemed_at is null. Marks redeemed_at on success and returns the row
-    (caller sets the customer cookie on the response)."""
+    """Verify the pwa_token matches the row, the row is claimed, and
+    return the row so the caller can set the customer cookie.
+
+    Idempotent: if the row was already redeemed AND the pwa_token still
+    matches, return success again. A network blip on the first redeem
+    response would otherwise leave the PWA polling forever even though
+    the server-side state was committed.
+    """
     from loguru import logger
 
     if not pwa_token:
-        logger.warning("redeem code={} rejected: pwa_token cookie missing", code[:8])
+        logger.warning("redeem code={} rejected: pwa_token missing", code[:8])
         return None
     row = await find_active_pairing(db, code)
     if row is None:
@@ -135,11 +140,14 @@ async def redeem_pairing(
         )
         return None
     if row.redeemed_at is not None:
-        logger.warning(
-            "redeem code={} rejected: already redeemed at {}",
+        # Idempotent re-redeem: the first call's response probably got
+        # dropped before reaching the PWA. Return the row again so the
+        # PWA gets a fresh customer cookie on this attempt and reloads.
+        logger.info(
+            "redeem code={} idempotent re-redeem (first call was at {})",
             code[:8], row.redeemed_at,
         )
-        return None
+        return row
     row.redeemed_at = utcnow()
     db.add(row)
     await db.commit()
