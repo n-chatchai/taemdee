@@ -30,14 +30,20 @@
         </div>
         <h1>เข้าสู่ระบบสำเร็จ</h1>
         <p class="pair-sub">ผูกบัญชี {{ provider_label }} เรียบร้อย</p>
+        <p class="pair-sub" style="margin-top: 8px;">
+          กลับไปที่แอปแต้มดีเพื่อดำเนินการต่อ
+        </p>
 
-        <a href="/my-cards" class="pair-cta-primary">
-          ไปที่บัตรของฉัน
-          <span class="arr">→</span>
-        </a>
-        <button type="button" class="pair-cta-secondary" id="pair-close-btn">
+        <button type="button" class="pair-cta-primary" id="pair-close-btn">
           ปิดหน้านี้
         </button>
+
+        {# Deliberately no "ไปที่บัตรของฉัน" link — this page renders in
+           the system browser, which has a SEPARATE cookie jar from the
+           PWA. Navigating there would mint a fresh anonymous customer
+           in Safari instead of reaching the PWA's just-claimed
+           customer. The user must return to the PWA itself; the PWA's
+           SSE/redeem flow then picks up the cookie hand-off. #}
 
         <div class="pair-icon-hint">
           <svg class="smile-stamp" viewBox="0 0 100 100" width="56" height="56">
@@ -46,7 +52,7 @@
             <circle cx="64" cy="42" r="9" fill="#FFD952"/>
             <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
           </svg>
-          <div class="pair-icon-caption">หรือกลับไปเปิดแอปแต้มดีบนหน้าจอ</div>
+          <div class="pair-icon-caption">เปิดแอปแต้มดีบนหน้าจอเพื่อดูบัตรของพี่</div>
         </div>
       {% else %}
         <div class="pair-icon err">
@@ -62,22 +68,18 @@
     </div>
   </div>
   <script>
-    // "ปิดหน้านี้" — window.close() only works for windows that were
-    // opened via window.open() (which is exactly how the PWA's pair
-    // flow opens the OAuth tab). Fall back to a navigate-away if the
-    // close call gets blocked (e.g. user opened this URL directly).
+    // "ปิดหน้านี้" — window.close() works only for windows opened via
+    // window.open() (which is how the PWA's pair flow opens this tab).
+    // If close is blocked, leave the page where it is — we deliberately
+    // do NOT navigate to /my-cards because this page is in the SYSTEM
+    // BROWSER's cookie jar, not the PWA's, and /my-cards would mint a
+    // fresh anonymous customer here that has no relationship to the
+    // PWA's just-bound identity.
     (function () {
       const btn = document.getElementById('pair-close-btn');
       if (!btn) return;
       btn.addEventListener('click', () => {
-        try {
-          window.close();
-          // If close was blocked, the page is still here — fall
-          // through to /my-cards as a graceful default.
-          setTimeout(() => { window.location.href = '/my-cards'; }, 200);
-        } catch (_) {
-          window.location.href = '/my-cards';
-        }
+        try { window.close(); } catch (_) { /* swallow */ }
       });
     })();
   </script>

@@ -198,7 +198,7 @@ per memory). First tap flips Alpine state, second tap submits. #}
     <button type="button" class="pair-overlay-primary" id="pair-overlay-redeem">
       ฉันเข้าสู่ระบบแล้ว · ลองอีกครั้ง
     </button>
-    <button type="button" class="pair-overlay-cancel" onclick="document.getElementById('pair-overlay').hidden = true;">ยกเลิก</button>
+    <button type="button" class="pair-overlay-cancel" id="pair-overlay-cancel">ยกเลิก</button>
   </div>
 </div>
 <script>
@@ -219,7 +219,13 @@ per memory). First tap flips Alpine state, second tap submits. #}
       return document.documentElement.classList.contains('pwa-standalone');
     }
 
-    async function tryRedeem() {
+    let pollTimer = null;
+
+    function stopPolling() {
+      if (pollTimer) { clearInterval(pollTimer); pollTimer = null; }
+    }
+
+    async function tryRedeem(silent) {
       if (!activeCode) return false;
       try {
         const r = await fetch(`/auth/pair/${encodeURIComponent(activeCode)}/redeem`, {
@@ -227,26 +233,56 @@ per memory). First tap flips Alpine state, second tap submits. #}
           credentials: 'same-origin',
         });
         if (r.ok) {
+          stopPolling();
           window.location.reload();
           return true;
         }
-        // 410 = no claim yet OR already redeemed. Treat as "still waiting".
-        msg.innerHTML = 'ยังไม่พบการเข้าสู่ระบบ · ลองใหม่อีกครั้งหลังเข้าสู่ระบบเสร็จ';
+        // 410 = no claim yet OR already redeemed. Polling will keep
+        // trying; only show the user message when they explicitly
+        // tapped the manual button (silent=false).
+        if (!silent) {
+          msg.innerHTML = 'ยังไม่พบการเข้าสู่ระบบ · ลองใหม่อีกครั้งหลังเข้าสู่ระบบเสร็จ';
+        }
       } catch (_) {
-        msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
+        if (!silent) {
+          msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
+        }
       }
       return false;
     }
 
-    redeemBtn.addEventListener('click', tryRedeem);
+    redeemBtn.addEventListener('click', () => tryRedeem(false));
+
+    document.getElementById('pair-overlay-cancel').addEventListener('click', () => {
+      overlay.hidden = true;
+      stopPolling();
+      if (activeEs) { try { activeEs.close(); } catch (_) {} activeEs = null; }
+      activeCode = null;
+    });
+
+    function startPolling() {
+      // Fallback for iOS killing the SSE while PWA is backgrounded.
+      // Poll /redeem every 1500ms while the overlay is open. /redeem
+      // is cheap and idempotent on the not-claimed-yet path (returns
+      // 410). First successful poll triggers the reload + cookie set.
+      stopPolling();
+      pollTimer = setInterval(() => {
+        if (overlay.hidden || !activeCode) {
+          stopPolling();
+          return;
+        }
+        tryRedeem(true);
+      }, 1500);
+    }
 
     // Foreground re-check — when the PWA returns to foreground after the
     // user authed in the external browser, the SSE may have been culled
-    // by iOS background tab policies. Try /redeem once on visibility
-    // change as a belt-and-braces poke.
+    // by iOS background tab policies. Try /redeem on visibility change
+    // and (re)start the polling timer.
     document.addEventListener('visibilitychange', () => {
       if (document.visibilityState === 'visible' && activeCode && !overlay.hidden) {
-        tryRedeem();
+        tryRedeem(true);
+        startPolling();
       }
     });
 
@@ -271,22 +307,28 @@ per memory). First tap flips Alpine state, second tap submits. #}
 
       // SSE for the claimed event. The PWA stays on this page; the
       // overlay sits in front while OAuth happens in the system browser.
-      // SSE is best-effort — iOS may suspend it when the PWA goes
-      // background, which is why the explicit redeem button + the
-      // visibilitychange handler above exist as fallbacks.
+      // SSE is best-effort — iOS suspends it when the PWA goes
+      // background. The polling timer below is the actual workhorse
+      // that gets the cookie back.
       activeEs = new EventSource(`/auth/pair/${encodeURIComponent(activeCode)}/events`);
       activeEs.addEventListener('claimed', () => {
         activeEs.close();
-        tryRedeem();
+        tryRedeem(true);
       });
       activeEs.addEventListener('expired', () => {
         activeEs.close();
+        stopPolling();
         msg.textContent = 'หมดเวลา · ลองใหม่อีกครั้ง';
       });
       activeEs.onerror = () => {
-        // Auto-reconnects on transient network errors; only surface a
-        // message if the stream stays closed for a while.
+        // Auto-reconnects on transient network errors; polling carries
+        // the redeem flow if the EventSource gets stuck closed.
       };
+
+      // Start polling /redeem in the background so the user doesn't
+      // have to manually tap "ฉันเข้าสู่ระบบแล้ว" when iOS killed the
+      // SSE. First successful poll reloads the page.
+      startPolling();
 
       // Open the OAuth flow in the system browser. window.open with no
       // target on iOS PWAs hands off to Safari/Chrome; on Android Chrome
