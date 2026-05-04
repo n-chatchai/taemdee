@@ -666,17 +666,49 @@ async def facebook_customer_start(
 @router.get("/google/callback")
 async def google_callback(
     request: Request,
-    code: str,
-    state: str,
+    code: Optional[str] = None,
+    state: Optional[str] = None,
+    transfer: Optional[str] = None,
     google_oauth_state: Optional[str] = Cookie(None, alias=GOOGLE_STATE_COOKIE),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
     """Google OAuth came back. Customer flow claims-or-links the
-    Customer; shop flow runs the StaffMember-first resolver so the
-    owner can sign in via Google (and any pending invite gets
-    accepted on first match).
+    Customer; shop flow exchanges code on main, bounces to shop
+    subdomain via a transfer JWT (cross-subdomain cookie isolation),
+    then signs in there.
     """
+    # Transfer-token branch: shop subdomain receiving the bounce from
+    # main-domain Google OAuth. Skip state check; the JWT signature
+    # is the integrity guarantee.
+    if transfer:
+        try:
+            t = jwt.decode(transfer, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+            if t.get("sub") != "auth_transfer" or t.get("provider") != "google":
+                raise ValueError("bad transfer")
+            google_id = t["ext_id"]
+            display_name = t.get("display_name")
+            picture_url = t.get("picture_url")
+        except Exception as e:
+            logger.error(f"❌ Google Transfer Token Failed: {e}")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
+
+        from app.services.team import resolve_shop_signin
+        shop, staff_match = await resolve_shop_signin(
+            db, "google", google_id,
+            display_name=display_name, picture_url=picture_url,
+        )
+        redirect = RedirectResponse(
+            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+        )
+        _set_session_cookie(
+            redirect,
+            issue_session_token(
+                shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner
+            ),
+        )
+        return redirect
+
     payload = verify_oauth_state(state, google_oauth_state)
     if not payload:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
@@ -701,21 +733,29 @@ async def google_callback(
     picture_url = profile.get("picture") or None
 
     if role == "shop":
-        from app.services.team import resolve_shop_signin
-
-        shop, staff_match = await resolve_shop_signin(
-            db, "google", google_id,
-            display_name=display_name, picture_url=picture_url,
+        # Callback runs on main domain (Google OAuth redirect URI is
+        # main); session cookie set here would be invisible to the
+        # shop subdomain after the SubdomainRouting middleware bounces
+        # /shop/dashboard. Mint a short-lived transfer JWT and bounce
+        # to the shop-side callback to set the cookie there.
+        host = request.headers.get("host", "").split(":")[0]
+        transfer_payload = {
+            "sub": "auth_transfer",
+            "provider": "google",
+            "ext_id": google_id,
+            "display_name": display_name,
+            "picture_url": picture_url,
+            "role": "shop",
+            "exp": utcnow() + timedelta(minutes=2),
+        }
+        token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+        shop_host = (
+            settings.shop_domain
+            if settings.environment == "production"
+            else f"shop.{host}"
         )
-        redirect = RedirectResponse(
-            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
-        )
-        _set_session_cookie(
-            redirect,
-            issue_session_token(
-                shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner
-            ),
-        )
+        target_url = f"https://{shop_host}/auth/google/callback?transfer={token}"
+        redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
         redirect.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
         return redirect
 
@@ -743,17 +783,45 @@ async def google_callback(
 @router.get("/facebook/callback")
 async def facebook_callback(
     request: Request,
-    code: str,
-    state: str,
+    code: Optional[str] = None,
+    state: Optional[str] = None,
+    transfer: Optional[str] = None,
     facebook_oauth_state: Optional[str] = Cookie(None, alias=FACEBOOK_STATE_COOKIE),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Facebook OAuth came back. Customer flow claims-or-links the
-    Customer; shop flow runs the StaffMember-first resolver. The
-    `email` field may be missing if the user denied that permission —
-    we don't rely on it, only display_name + the `id` claim.
+    """Facebook OAuth came back. Shop flow uses the same
+    main→subdomain transfer-token bounce as LINE/Google so the
+    session cookie lands on the shop subdomain.
     """
+    if transfer:
+        try:
+            t = jwt.decode(transfer, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
+            if t.get("sub") != "auth_transfer" or t.get("provider") != "facebook":
+                raise ValueError("bad transfer")
+            facebook_id = t["ext_id"]
+            display_name = t.get("display_name")
+            picture_url = t.get("picture_url")
+        except Exception as e:
+            logger.error(f"❌ Facebook Transfer Token Failed: {e}")
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
+
+        from app.services.team import resolve_shop_signin
+        shop, staff_match = await resolve_shop_signin(
+            db, "facebook", facebook_id,
+            display_name=display_name, picture_url=picture_url,
+        )
+        redirect = RedirectResponse(
+            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+        )
+        _set_session_cookie(
+            redirect,
+            issue_session_token(
+                shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner
+            ),
+        )
+        return redirect
+
     payload = verify_oauth_state(state, facebook_oauth_state)
     if not payload:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid OAuth state")
@@ -782,21 +850,24 @@ async def facebook_callback(
     )
 
     if role == "shop":
-        from app.services.team import resolve_shop_signin
-
-        shop, staff_match = await resolve_shop_signin(
-            db, "facebook", facebook_id,
-            display_name=display_name, picture_url=picture_url,
+        host = request.headers.get("host", "").split(":")[0]
+        transfer_payload = {
+            "sub": "auth_transfer",
+            "provider": "facebook",
+            "ext_id": facebook_id,
+            "display_name": display_name,
+            "picture_url": picture_url,
+            "role": "shop",
+            "exp": utcnow() + timedelta(minutes=2),
+        }
+        token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+        shop_host = (
+            settings.shop_domain
+            if settings.environment == "production"
+            else f"shop.{host}"
         )
-        redirect = RedirectResponse(
-            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
-        )
-        _set_session_cookie(
-            redirect,
-            issue_session_token(
-                shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner
-            ),
-        )
+        target_url = f"https://{shop_host}/auth/facebook/callback?transfer={token}"
+        redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
         redirect.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
         return redirect
 
