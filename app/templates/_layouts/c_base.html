@@ -54,6 +54,57 @@ Child templates fill these blocks:
       {% endif %}
     </div>
     {% block body_end %}{% endblock %}
+
+    {# OAuth-return refresh. iOS PWA standalone pushes cross-origin
+       OAuth to Safari, so when the user finishes connecting and
+       returns to the PWA, the original page still shows the pre-bind
+       state. We set a flag in localStorage when the user taps a
+       connect anchor, then reload the page on the next foreground
+       transition so the new state shows up. Cleared on the next
+       fresh page load so it doesn't fire on unrelated visibility
+       changes. #}
+    <script>
+      (function () {
+        var KEY = 'td_oauth_pending';
+        // Flag any anchor click that points at /auth/{provider}/customer/start
+        // or /card/save (phone OTP lands user back at /my-cards too).
+        document.addEventListener('click', function (e) {
+          var a = e.target.closest('a');
+          if (!a || !a.href) return;
+          var href = a.getAttribute('href') || '';
+          if (/^\/auth\/(line|google|facebook)\/customer\/start/.test(href)
+              || href.startsWith('/card/save')) {
+            try { localStorage.setItem(KEY, String(Date.now())); } catch (_) {}
+          }
+        });
+        document.addEventListener('visibilitychange', function () {
+          if (document.visibilityState !== 'visible') return;
+          var t;
+          try { t = parseInt(localStorage.getItem(KEY) || '0', 10); } catch (_) { t = 0; }
+          if (!t) return;
+          // Only honor flags set in the last 10 minutes.
+          if (Date.now() - t > 10 * 60 * 1000) {
+            try { localStorage.removeItem(KEY); } catch (_) {}
+            return;
+          }
+          try { localStorage.removeItem(KEY); } catch (_) {}
+          window.location.reload();
+        });
+        // Fresh navigation clears the flag so a stale value can't fire
+        // on a much-later visibility change.
+        window.addEventListener('pageshow', function (e) {
+          if (e.persisted) return;  // bfcache restore — keep flag
+          // Keep the flag if we just SET it on this page (click before
+          // navigation might pageshow the destination). Easiest check:
+          // if the flag's timestamp is older than 1 second, clear it.
+          var t;
+          try { t = parseInt(localStorage.getItem(KEY) || '0', 10); } catch (_) { t = 0; }
+          if (t && Date.now() - t > 1000) {
+            try { localStorage.removeItem(KEY); } catch (_) {}
+          }
+        });
+      })();
+    </script>
   </body>
 
   </html>
