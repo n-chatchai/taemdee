@@ -463,8 +463,16 @@ async def card_account_text_size(
 
 @router.post("/card/account/logout")
 async def customer_logout():
-    """Clear the customer cookie and bounce to home."""
-    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    """Clear the customer cookie and bounce to /my-cards.
+
+    /my-cards' find_or_create_customer mints a fresh anon + sets the
+    cookie, so the user lands as a clean anonymous customer inside
+    the PWA. We don't bounce to / — that's the marketing page (with a
+    login modal), which would look like a login wall in the PWA's
+    standalone view."""
+    response = RedirectResponse(
+        url="/my-cards", status_code=status.HTTP_303_SEE_OTHER,
+    )
     response.delete_cookie(CUSTOMER_COOKIE_NAME, path="/")
     return response
 
