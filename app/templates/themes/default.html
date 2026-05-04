@@ -53,7 +53,7 @@
 
     {% if customer.display_name and customer.display_name != 'คุณลูกค้า' and not is_full %}
       <div class="c1-greet-bubble">
-        <span class="cgb-text">สวัสดีครับ<strong>พี่{{ customer.display_name }}</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ</span>
+        <span class="cgb-text">สวัสดีครับ<strong>พี่{{ customer.display_name }}</strong> เพิ่มแต้มให้แล้วนะครับ<br>ขอให้มีวันที่ดีครับ</span>
       </div>
     {% endif %}
 
@@ -137,6 +137,14 @@
     {# Per the latest customer design, the C1.guest bottom upgrade banner is
        removed (Option A — respect customer choice). Guests can still convert
        via the C4 redeem gate (signup_picker still mounted below). #}
+
+    {# Explicit "ไปที่ร้าน" — the shop-head wordmark already links to the
+       story page, but it doesn't read as tappable. This text link makes
+       the route obvious from the bottom of the card. #}
+    <a href="/story/{{ shop.id }}" class="c1-shop-link">
+      <span>ไปที่ร้าน</span>
+      <span aria-hidden="true">→</span>
+    </a>
 
     {% include "_partials/footer_mark.html" %}
 

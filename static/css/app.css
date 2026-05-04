@@ -1252,15 +1252,19 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 /* Default sizing for the wordmark + sub-line, used outside of the .hero
    variant. Block-level on both so the sub-line always wraps below the
    wordmark — earlier inline-block/inline-flex on these two siblings let
-   them collapse onto the same row on wider phones. */
+   them collapse onto the same row on wider phones. text-align center
+   stays explicit so an <img> logo (inline replaced element) and a
+   <span class="lt-*"> wordmark both end up centered horizontally. */
 .shop-head .shop-logo-mark {
   display: block;
+  text-align: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
   font-size: 30px;
   letter-spacing: -0.04em;
   margin-bottom: 4px;
 }
+.shop-head .shop-logo-img { display: block; margin: 0 auto; }
 .shop-head .shop-logo-mark .dot { color: var(--accent); }
 /* Thai wordmark — same trick as .qr-card .shop-logo-mark.is-thai. The
    latin Host Grotesk that lt-* styles inherit has no Thai glyphs and
@@ -2130,7 +2134,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin: 24px 20px 0;
   background: var(--surface);
   border-radius: 20px;
-  padding: 10px 14px;
+  padding: 18px;
   display: flex;
   align-items: center;
   gap: 14px;
@@ -2152,17 +2156,17 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
 .reward-pill .gift {
-  width: 72px;
-  height: 72px;
+  width: 88px;
+  height: 88px;
   background: var(--accent);
   color: #fff;
-  border-radius: 16px;
+  border-radius: 18px;
   display: flex;
   align-items: center;
   justify-content: center;
   flex-shrink: 0;
 }
-.reward-pill .gift svg { width: 34px; height: 34px; }
+.reward-pill .gift svg { width: 42px; height: 42px; }
 /* Built-in SVG illustrations are decorative line art that read fine in
    the 34px chip. Uploaded photos in the same chip just look like tiny
    blobs, so when the gift contains an <img> we bump the chip to 64px
@@ -2194,6 +2198,26 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   font-weight: 600;
   letter-spacing: -0.01em;
 }
+
+/* "ไปที่ร้าน" — explicit secondary link beneath the reward pill that
+   sends the customer to the shop story page. The shop-head wordmark
+   already links there, but doesn't read as tappable; this text link
+   removes the guesswork. */
+.c1-shop-link {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 6px;
+  margin: 18px 20px 0;
+  padding: 10px 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--accent);
+  text-decoration: none;
+  border-radius: 12px;
+}
+.c1-shop-link:active { transform: scale(0.98); opacity: 0.7; }
 
 /* Role picker — shown on / when both shop + customer cookies validate
    (one device shared by an owner who also collects points elsewhere).
