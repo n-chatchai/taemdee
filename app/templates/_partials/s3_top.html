@@ -1,16 +1,21 @@
-{# Shared S3.* page header — "สวัสดี <ชื่อร้าน>" greeting + bell action,
-   plus an optional day-caption row underneath.
+{# Shared S3.* page header — "สวัสดี <ชื่อร้าน>" greeting + bell + shop
+   logo avatar, plus an optional day-caption row underneath.
 
    The settings cog used to live up here too; lifted out on 2026-05-04
-   when shop settings became a primary dock tab (mirrors the customer
-   side, where /card/account is reached from the dock — not a top-bar
-   gear). The bell stays — notifications aren't a navigation target.
+   when shop settings became a primary dock tab. The bell stays —
+   notifications aren't a navigation target. The avatar (added with
+   the customer-side avatar work) is the shop-side mirror of the
+   customer's .ph-avatar, but instead of a sheet it links to
+   /shop/settings/identity where the full logo + name editor already
+   lives (logo picker, image upload, text-style variants — too rich to
+   shoehorn into a bottom sheet).
 
    Caller sets vars before include:
      weekday_th   — string like 'วันศุกร์'; omit to hide the day row
      branch_label — string; only renders when multi-branch
      bell_unread  — truthy to show the pulsing badge on the bell icon
 #}
+{% set _s3_logo = shop_logo(shop) %}
 <div class="s3-top">
   <div class="hi">
     <span class="td-greet">สวัสดี <span class="td-brand">{{ shop.name }}<span class="dot">.</span></span></span>
@@ -22,6 +27,13 @@
         <path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
       {% if bell_unread %}<span class="bell-badge"></span>{% endif %}
+    </a>
+    <a class="s3-avatar" href="/shop/settings/identity" title="แก้ไขข้อมูลร้าน" aria-label="แก้ไขข้อมูลร้าน">
+      {% if _s3_logo and _s3_logo.is_image %}
+        <img src="{{ _s3_logo.url }}" alt="">
+      {% else %}
+        <span>{{ (shop.name[0]|upper) if shop.name else 'ร' }}</span>
+      {% endif %}
     </a>
   </div>
 </div>

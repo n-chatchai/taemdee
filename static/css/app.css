@@ -8016,6 +8016,35 @@ form.s10-row { margin: 0 0 4px; }
   background: var(--accent);
   box-shadow: 0 0 0 2px var(--bg);
 }
+/* Shop-side avatar in the s3-top action row — mirrors .page-head
+   .ph-avatar from the customer side. Image variant of the shop logo
+   if uploaded, otherwise the shop's first character on accent. Tap
+   navigates to the full identity editor at /shop/settings/identity. */
+.s3-top .s3-avatar {
+  width: 38px;
+  height: 38px;
+  border-radius: 50%;
+  border: 1.5px solid rgba(17, 17, 17, 0.12);
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 15px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  text-decoration: none;
+  overflow: hidden;
+  flex-shrink: 0;
+}
+.s3-top .s3-avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.s3-top .s3-avatar:active { transform: scale(0.94); }
 
 /* Day-caption row — moved out of .s3-top so the header line stays clean
    (greeting + actions only). The "วันศุกร์ · เริ่มต้นวันได้ดี" text plus
