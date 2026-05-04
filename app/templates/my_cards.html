@@ -130,6 +130,11 @@
   display: flex;
   flex-direction: column;
   gap: 8px;
+  /* Body grows to fill remaining card height so CTAs align at the
+     bottom across cards with different reward-text lengths in the
+     carousel (.cl-voucher-carousel is flex → align-items: stretch
+     by default, so all cards share the tallest card's height). */
+  flex: 1;
 }
 .cl-voucher-shop {
   display: flex;
@@ -189,7 +194,9 @@
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
   font-size: 14.5px;
-  margin-top: 2px;
+  /* Pin to the bottom of .cl-voucher-body so CTAs line up
+     horizontally across cards in the carousel. */
+  margin-top: auto;
 }
 .cl-voucher-cta svg {
   width: 14px; height: 14px;
