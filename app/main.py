@@ -183,6 +183,26 @@ class ShopContextMiddleware:
                             shop = await db.get(Shop, shop_id)
                             if staff_id:
                                 staff = await db.get(StaffMember, staff_id)
+                            elif shop is not None:
+                                # Legacy JWT issued before staff_id became
+                                # part of the session payload — fall back
+                                # to the owner StaffMember for this shop
+                                # so the avatar UX (which gates on
+                                # request.state.staff) still works without
+                                # forcing a re-login. The owner-staff row
+                                # was either created at signup or lazy-
+                                # backfilled on the most recent login;
+                                # the next sign-in re-issues a JWT that
+                                # carries staff_id explicitly.
+                                from sqlmodel import select
+                                result = await db.exec(
+                                    select(StaffMember).where(
+                                        StaffMember.shop_id == shop_id,
+                                        StaffMember.is_owner == True,  # noqa: E712
+                                        StaffMember.revoked_at.is_(None),
+                                    )
+                                )
+                                staff = result.first()
 
         state = scope.setdefault("state", {})
         state["shop"] = shop
