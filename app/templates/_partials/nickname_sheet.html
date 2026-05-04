@@ -21,7 +21,11 @@ Ported from the design 2564-2776 slide-up variant. #}
         <input type="hidden" name="next_url" :value="window.location.pathname + window.location.search">
 
         <div class="input-group">
-          <input type="text" name="name" placeholder="ให้ผมเรียกพี่ว่าอะไรดีครับ?..." required autofocus
+          {# `autofocus` removed — overlay starts at opacity 0, an
+             invisible focused input pops the iOS keyboard before the
+             user can even see the sheet. The inline script below
+             calls .focus() after the slide-up settles. #}
+          <input type="text" name="name" placeholder="ให้ผมเรียกพี่ว่าอะไรดีครับ?..." required
             style="width: 100%; padding: 15px; border: 1.5px solid var(--ink); border-radius: 14px; font-size: 17px; background: var(--surface); outline: none; font-family: 'Prompt', sans-serif;">
         </div>
 
@@ -38,12 +42,14 @@ Ported from the design 2564-2776 slide-up variant. #}
     const overlay = document.getElementById('nickname-sheet-overlay');
     if (!overlay) return;
 
-    // Auto-open with a slight delay
+    // Auto-open with a slight delay, then focus the input only after
+    // the slide-up settles so iOS doesn't yank focus mid-animation.
     setTimeout(() => {
       overlay.classList.add('open');
-      // Focus the input
       const input = overlay.querySelector('input[name="name"]');
-      if (input) input.focus();
+      if (input) {
+        setTimeout(() => input.focus(), 350);  // matches sheet transition + a beat
+      }
     }, 1000);
   })();
 </script>

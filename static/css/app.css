@@ -4475,17 +4475,31 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 /* Install bottom sheet — hidden by default; .open shows it. Ported from
    design 2564-2776 (Apr 29 home-mock variant + iOS step-by-step). */
+/* Bottom-sheet overlay — used by both the install sheet and the
+   nickname-collect sheet. Default state stays in the DOM at
+   opacity 0 with pointer-events disabled so the inner sheet's
+   translateY transition actually fires when .open is toggled.
+   (Earlier `display:none → display:flex` toggle killed the
+   transition because CSS can't animate through a display change.) */
 .install-sheet-overlay {
   position: fixed;
   inset: 0;
   background: rgba(17, 17, 17, 0.45);
+  backdrop-filter: blur(4px);
+  -webkit-backdrop-filter: blur(4px);
   z-index: 100;
-  display: none;
+  display: flex;
   align-items: flex-end;
   justify-content: center;
   padding-bottom: 0;
+  opacity: 0;
+  pointer-events: none;
+  transition: opacity 0.25s ease-out;
 }
-.install-sheet-overlay.open { display: flex; }
+.install-sheet-overlay.open {
+  opacity: 1;
+  pointer-events: auto;
+}
 .install-sheet {
   background: var(--bg);
   border-top: 1px solid rgba(17, 17, 17, 0.18);
@@ -4497,7 +4511,10 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   box-shadow: 0 -8px 24px -8px rgba(0, 0, 0, 0.25);
   position: relative;
   transform: translateY(100%);
-  transition: transform 0.3s ease-out;
+  /* Slightly bouncy ease-out so the sheet feels like it's settling
+     in, not just sliding to a stop. Same curve the design's
+     signup-sheet uses. */
+  transition: transform 0.32s cubic-bezier(0.32, 0.72, 0.18, 1);
 }
 .install-sheet-overlay.open .install-sheet {
   transform: translateY(0);
