@@ -1609,7 +1609,6 @@ async def my_gifts(
             Redemption.is_voided == False,  # noqa: E712
             Redemption.served_at.is_(None),
         )
-        .order_by(Redemption.created_at.desc())
     )).all()
 
     used_rows = (await db.exec(
@@ -1623,23 +1622,50 @@ async def my_gifts(
         .limit(30)
     )).all()
 
-    active_gifts = [
-        {
+    # Voucher expiry: compute from created_at + 90 days. Sort active
+    # asc by expires_at so the soonest-expiring is the hero. Days <= 7
+    # → urgent treatment in the template (red pulse, "หมดใน N วัน").
+    from datetime import timedelta
+    VOUCHER_EXPIRY_DAYS = 90
+    URGENT_THRESHOLD_DAYS = 7
+    now = utcnow()
+
+    def _gift_dict(r: Redemption, s: Shop) -> dict:
+        expires_at = r.created_at + timedelta(days=VOUCHER_EXPIRY_DAYS)
+        days_left = (expires_at - now).days
+        return {
             "id": r.id,
             "name": s.reward_description,
+            "shop": s,
             "shop_name": s.name,
             "emoji": _gift_emoji(s.reward_image),
-            "icon_color": _GIFT_ICON_PALETTE[i % len(_GIFT_ICON_PALETTE)],
+            "reward_image": s.reward_image,
+            "shop_color": _shop_swatch(s.id),
+            "expires_at_short": _bkk_short_date(expires_at),
+            "days_left": days_left,
+            "is_urgent": 0 <= days_left <= URGENT_THRESHOLD_DAYS,
+            "is_expired": days_left < 0,
             "use_url": f"/card/{s.id}/claimed?r={r.id}",
         }
-        for i, (r, s) in enumerate(active_rows)
-    ]
+
+    active_all = [_gift_dict(r, s) for r, s in active_rows]
+    # Skip expired ones (server-side guard — voucher.use refuses anyway).
+    active_all = [g for g in active_all if not g["is_expired"]]
+    # Sort: soonest-expiring first.
+    active_all.sort(key=lambda g: g["days_left"])
+
+    hero_gift = active_all[0] if active_all else None
+    grid_gifts = active_all[1:] if len(active_all) > 1 else []
+
     used_gifts = [
         {
             "id": r.id,
             "name": s.reward_description,
+            "shop": s,
             "shop_name": s.name,
             "emoji": _gift_emoji(s.reward_image),
+            "reward_image": s.reward_image,
+            "shop_color": _shop_swatch(s.id),
             "used_at": _bkk_short_date(r.served_at) if r.served_at else None,
         }
         for r, s in used_rows
@@ -1650,10 +1676,12 @@ async def my_gifts(
         name="my_gifts.html",
         context={
             "customer": customer,
-            "active_gifts": active_gifts,
+            "active_count": len(active_all),
+            "hero_gift": hero_gift,
+            "grid_gifts": grid_gifts,
             "used_gifts": used_gifts,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
-            "nav_gifts_badge": len(active_gifts),
+            "nav_gifts_badge": len(active_all),
         },
     )
     if was_created:

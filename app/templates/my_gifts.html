@@ -2,52 +2,601 @@
 {% set nav_active = 'gifts' %}
 {% block title %}ของขวัญของพี่ · TaemDee แต้มดี{% endblock %}
 
+{% block head_extra %}
+<style>
+/* gifts.list — mirror design/taemdee-customer.html .gl-* spec.
+   Summary banner → hero voucher (urgent / normal pulse) → 2-col
+   grid of secondary vouchers → "ใช้แล้ว" accordion. Card colour
+   tints from each shop's swatch via --shop-color. */
+
+.gl-summary {
+  margin: 0 16px 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 14px 16px;
+  background: #FFF7DA;
+  border: 1px solid rgba(255, 217, 82, 0.45);
+  border-radius: 16px;
+}
+.gls-num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 32px;
+  color: var(--accent);
+  letter-spacing: -0.03em;
+  line-height: 1;
+}
+.gls-text { flex: 1; min-width: 0; }
+.gls-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.gls-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+/* Hero voucher card — soonest expiring */
+.gl-hero {
+  margin: 0 16px 18px;
+  border-radius: 22px;
+  overflow: hidden;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--shop-color, #FF5E3A) 75%, #fff) 0%,
+    var(--shop-color, #FF5E3A) 55%,
+    color-mix(in srgb, var(--shop-color, #FF5E3A) 70%, #000) 100%
+  );
+  color: #fff;
+  box-shadow: 0 14px 32px -10px color-mix(in srgb, var(--shop-color, #FF5E3A) 60%, transparent);
+  position: relative;
+  cursor: pointer;
+  display: block;
+  border: none;
+  text-align: left;
+  font: inherit;
+  padding: 0;
+  width: calc(100% - 32px);
+}
+.gl-hero::before {
+  content: ''; position: absolute; inset: 0;
+  background-image:
+    radial-gradient(circle at 18% 30%, rgba(255,255,255,0.22) 0, transparent 8%),
+    radial-gradient(circle at 82% 18%, rgba(255,255,255,0.18) 0, transparent 12%),
+    radial-gradient(circle at 60% 85%, rgba(255,255,255,0.20) 0, transparent 9%),
+    radial-gradient(circle at 30% 75%, rgba(255,255,255,0.15) 0, transparent 8%),
+    radial-gradient(circle at 90% 60%, rgba(255,217,82,0.30) 0, transparent 14%);
+  pointer-events: none; z-index: 0;
+}
+.gl-hero > * { position: relative; z-index: 1; }
+.gl-hero:active { transform: scale(0.99); }
+
+.gh-image {
+  height: 140px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(0,0,0,0.18);
+}
+.gh-image .reward-svg {
+  width: 100%; height: 100%; display: block;
+  opacity: 0.9;
+}
+.gh-image::after {
+  content: ''; position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.18) 100%);
+  pointer-events: none;
+}
+.gh-pulse-tag {
+  position: absolute; top: 14px; left: 14px;
+  display: inline-flex; align-items: center; gap: 6px;
+  padding: 5px 11px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(8px);
+  -webkit-backdrop-filter: blur(8px);
+  border-radius: 99px;
+  color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  z-index: 2;
+}
+.gh-pulse-tag .pulse {
+  width: 6px; height: 6px; border-radius: 50%;
+  background: var(--butter);
+  animation: gh-pulse 1.5s infinite;
+}
+.gh-pulse-tag.urgent {
+  background: #FFE3DA;
+  color: #B0341A;
+}
+.gh-pulse-tag.urgent .pulse {
+  background: #B0341A;
+  animation: gh-urgent-pulse 1s infinite;
+}
+@keyframes gh-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(255,217,82,0.6); }
+  70%  { box-shadow: 0 0 0 8px rgba(255,217,82,0); }
+  100% { box-shadow: 0 0 0 0 rgba(255,217,82,0); }
+}
+@keyframes gh-urgent-pulse {
+  0%   { box-shadow: 0 0 0 0 rgba(176,52,26,0.65); }
+  70%  { box-shadow: 0 0 0 6px rgba(176,52,26,0); }
+  100% { box-shadow: 0 0 0 0 rgba(176,52,26,0); }
+}
+
+.gh-body { padding: 16px 18px 18px; }
+.gh-shop-row {
+  display: flex; align-items: center; gap: 8px;
+  margin-bottom: 8px;
+}
+.gh-logo {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: rgba(255,255,255,0.95);
+  color: var(--ink);
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800; font-size: 11px;
+  letter-spacing: -0.04em;
+}
+.gh-logo .shop-avatar-img { width: 100%; height: 100%; object-fit: cover; display: block; }
+.gh-logo > span,
+.gh-logo > span > span:not(.dot) { color: inherit; }
+.gh-logo .dot { color: var(--accent); margin-left: 1px; }
+.gh-shop {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: rgba(255,255,255,0.92);
+  flex: 1; min-width: 0;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gh-expiry {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: rgba(255,255,255,0.85);
+  background: rgba(0,0,0,0.18);
+  padding: 3px 8px;
+  border-radius: 99px;
+  flex-shrink: 0;
+}
+.gh-reward {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1.2;
+  letter-spacing: -0.02em;
+  margin-bottom: 14px;
+}
+.gh-cta {
+  display: flex; align-items: center; justify-content: center;
+  gap: 8px; padding: 13px 16px;
+  background: rgba(255,255,255,0.96);
+  color: var(--shop-color, var(--accent));
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+}
+.gh-cta svg {
+  width: 14px; height: 14px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2.4;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* Section header for "ของขวัญอื่น" */
+.gl-section-h {
+  margin: 0 22px 10px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.gl-section-h .lab {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  display: inline-flex; align-items: center; gap: 6px;
+}
+.gl-section-h .lab .star {
+  width: 14px; height: 14px;
+  color: var(--accent);
+}
+.gl-section-h .count {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+
+/* 2-col grid of secondary vouchers */
+.gl-grid {
+  margin: 0 16px 18px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.gl-mini {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.10);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  text-align: left;
+  font: inherit;
+  padding: 0;
+}
+.gl-mini:active { transform: scale(0.99); }
+.gl-mini-img {
+  height: 78px;
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--shop-color, #FF5E3A) 70%, #fff) 0%,
+    var(--shop-color, #FF5E3A) 100%
+  );
+  position: relative;
+  overflow: hidden;
+}
+.gl-mini-img .reward-svg {
+  width: 100%; height: 100%;
+  position: absolute;
+  inset: 0;
+  opacity: 0.65;
+  display: block;
+}
+.gl-mini-body {
+  padding: 10px 12px 12px;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.gl-mini-shop {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gl-mini-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 13px;
+  color: var(--ink);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gl-mini-foot {
+  margin-top: 6px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.gl-mini-expiry {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  color: var(--ink-softer);
+}
+.gl-mini-expiry.urgent {
+  color: #B0341A;
+  font-weight: 700;
+}
+.gl-mini-action {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 11px;
+  color: var(--accent);
+}
+
+/* Used accordion */
+.gl-used-toggle {
+  margin: 4px 16px 12px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.08);
+  border-radius: 14px;
+  display: flex; align-items: center; gap: 10px;
+  cursor: pointer;
+  color: var(--ink);
+  font: inherit;
+  text-align: left;
+  width: calc(100% - 32px);
+}
+.gl-used-toggle .lab {
+  flex: 1;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600; font-size: 13.5px;
+  color: var(--ink-soft);
+}
+.gl-used-toggle .lab strong { color: var(--ink); font-weight: 700; }
+.gl-used-toggle .arrow {
+  color: var(--ink-soft);
+  font-size: 16px;
+  transition: transform 0.2s ease;
+}
+.gl-used-toggle[aria-expanded="true"] .arrow {
+  transform: rotate(90deg);
+}
+
+.gl-used-list { margin: 0 16px 12px; display: none; }
+.gl-used-list[data-open="1"] { display: block; }
+.gl-used-row {
+  display: flex; align-items: center; gap: 12px;
+  padding: 10px 12px;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.06);
+  border-radius: 12px;
+  margin-bottom: 6px;
+  opacity: 0.78;
+}
+.gl-used-row .icon {
+  width: 36px; height: 36px;
+  border-radius: 10px;
+  background: rgba(17,17,17,0.05);
+  display: flex; align-items: center; justify-content: center;
+  font-size: 18px;
+  flex-shrink: 0;
+}
+.gl-used-row .info { flex: 1; min-width: 0; }
+.gl-used-row .name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600; font-size: 13px;
+  color: var(--ink);
+  text-decoration: line-through;
+}
+.gl-used-row .meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-softer);
+  margin-top: 2px;
+}
+.gl-used-row .check {
+  color: var(--mint-ink, #1B7C3E);
+}
+.gl-used-row .check svg {
+  width: 18px; height: 18px;
+  stroke: currentColor; fill: none;
+  stroke-width: 3;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* voucher.confirm bottom sheet (same shape as cards.list) */
+.rc-overlay {
+  position: fixed; inset: 0;
+  background: rgba(17,17,17,0.5);
+  z-index: 9000;
+  display: flex; align-items: flex-end; justify-content: center;
+}
+.rc-overlay[hidden] { display: none; }
+.rc-sheet {
+  background: var(--bg);
+  border-top: 1px solid rgba(17,17,17,0.18);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 14px 20px 20px;
+  width: 100%; max-width: 480px;
+  box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.25);
+  position: relative;
+}
+.rc-sheet .sheet-handle {
+  width: 36px; height: 4px;
+  border-radius: 999px;
+  background: var(--ink-softer);
+  margin: 0 auto 16px;
+  opacity: 0.4;
+}
+.vc-icon {
+  width: 56px; height: 56px;
+  margin: 4px auto 14px;
+  border-radius: 50%;
+  background: rgba(255,94,58,0.12);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.vc-icon svg {
+  width: 28px; height: 28px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.vc-h {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800; font-size: 20px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.vc-sub {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 18px;
+  padding: 0 6px;
+}
+.vc-card {
+  background: #FFF7DA;
+  border: 1px solid rgba(255,217,82,0.45);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 18px;
+  display: flex; align-items: center; gap: 12px;
+}
+.vc-card .vc-logo {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: var(--ink); color: #fff;
+  display: inline-flex; align-items: center; justify-content: center;
+  flex-shrink: 0; overflow: hidden;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800; font-size: 14px;
+}
+.vc-card .vc-logo .shop-avatar-img {
+  width: 100%; height: 100%; object-fit: cover; display: block;
+}
+.vc-card .vc-info { flex: 1; min-width: 0; }
+.vc-card .vc-shop {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.vc-card .vc-reward {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.rc-actions { display: flex; gap: 8px; }
+.rc-actions button {
+  flex: 1; padding: 14px;
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+  cursor: pointer;
+}
+.rc-actions .cancel {
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.18);
+  color: var(--ink-soft);
+}
+.rc-actions .send {
+  background: var(--accent);
+  border: none; color: #fff;
+  flex: 1.4;
+  box-shadow: 0 4px 12px -4px rgba(255,94,58,0.5);
+}
+
+.gl-empty {
+  text-align: center;
+  padding: 60px 24px;
+}
+.gl-empty .ie-avatar {
+  margin: 0 auto 16px; width: 72px; height: 72px;
+}
+.gl-empty .ie-msg {
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.6;
+}
+.gl-empty .ie-msg strong { color: var(--ink); }
+</style>
+{% endblock %}
+
 {% block content %}
   {% include "_partials/page_head.html" %}
 
-  {% if active_gifts or used_gifts %}
-    {% if active_gifts %}
-      <div class="c-gifts-section">
-        <div class="c-gifts-label">
-          <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-          พร้อมใช้
-        </div>
-        {% for g in active_gifts %}
-          {# voucher.use is trust-based per the May 1 design: tapping
-             "ใช้" stamps served_at on the redemption immediately and
-             redirects to the fullscreen voucher screen the customer
-             shows to staff. POST form, not a link, so the action is
-             explicitly user-initiated. #}
-          <form class="gift-card" method="post" action="/voucher/{{ g.id }}/use" style="margin: 0 0 8px;">
-            <div class="gc-icon {{ g.icon_color or 'butter' }}">{{ g.emoji or '🎁' }}</div>
-            <div class="gc-info">
-              <div class="gc-name">{{ g.name }}</div>
-              <div class="gc-meta">{{ g.shop_name }}{% if g.expires_at %} · หมด {{ g.expires_at }}{% endif %}</div>
-            </div>
-            <button type="submit" class="gc-cta">ใช้</button>
-          </form>
-        {% endfor %}
+  {% if hero_gift or grid_gifts or used_gifts %}
+    {# Summary banner — count + tagline. Shows 0 only if all
+       active vouchers have been used and the section is just
+       used_gifts; in that case skip. #}
+    {% if active_count > 0 %}
+    <div class="gl-summary">
+      <div class="gls-num">{{ active_count }}</div>
+      <div class="gls-text">
+        <div class="gls-title">ของขวัญพร้อมใช้</div>
+        <div class="gls-sub">เก็บไว้ใช้เมื่อกลับมาร้านครั้งหน้านะครับ</div>
       </div>
+    </div>
     {% endif %}
-    {% if used_gifts %}
-      <div class="c-gifts-section last">
-        <div class="c-gifts-label muted">ใช้แล้ว</div>
-        {% for g in used_gifts %}
-          <div class="gift-card used">
-            <div class="gc-icon">{{ g.emoji or '🎁' }}</div>
-            <div class="gc-info">
-              <div class="gc-name">{{ g.name }}</div>
-              <div class="gc-meta">{{ g.shop_name }}{% if g.used_at %} · ใช้เมื่อ {{ g.used_at }}{% endif %}</div>
-            </div>
-            <span class="gc-used-tag" aria-label="ใช้แล้ว">
-              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            </span>
-          </div>
-        {% endfor %}
+
+    {# Hero — soonest-expiring voucher, urgent treatment if ≤ 7 days. #}
+    {% if hero_gift %}
+    <button type="button" class="gl-hero"
+            style="--shop-color: {{ hero_gift.shop_color }};"
+            data-voucher-id="{{ hero_gift.id }}"
+            data-shop-name="{{ hero_gift.shop_name }}"
+            data-reward="{{ hero_gift.name }}">
+      <div class="gh-image">
+        {% set img_id = hero_gift.reward_image %}
+        {% include "_partials/reward_svg.html" %}
+        {% if hero_gift.is_urgent %}
+          <span class="gh-pulse-tag urgent">
+            <span class="pulse"></span>
+            หมดใน {{ hero_gift.days_left }} วัน
+          </span>
+        {% else %}
+          <span class="gh-pulse-tag">
+            <span class="pulse"></span>
+            พร้อมใช้
+          </span>
+        {% endif %}
       </div>
+      <div class="gh-body">
+        <div class="gh-shop-row">
+          <span class="gh-logo">{% with shop = hero_gift.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}</span>
+          <span class="gh-shop">{{ hero_gift.shop_name }}</span>
+          <span class="gh-expiry">หมด {{ hero_gift.expires_at_short }}</span>
+        </div>
+        <div class="gh-reward">{{ hero_gift.name }}</div>
+        <div class="gh-cta">
+          <span>แลกของขวัญ</span>
+          <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+        </div>
+      </div>
+    </button>
+    {% endif %}
+
+    {# Secondary vouchers — 2-col grid. #}
+    {% if grid_gifts %}
+    <div class="gl-section-h">
+      <span class="lab">
+        <svg class="star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
+        ของขวัญอื่น
+      </span>
+      <span class="count">{{ grid_gifts|length }} ชิ้น</span>
+    </div>
+    <div class="gl-grid">
+      {% for g in grid_gifts %}
+        <button type="button" class="gl-mini"
+                style="--shop-color: {{ g.shop_color }};"
+                data-voucher-id="{{ g.id }}"
+                data-shop-name="{{ g.shop_name }}"
+                data-reward="{{ g.name }}">
+          <div class="gl-mini-img">
+            {% set img_id = g.reward_image %}
+            {% include "_partials/reward_svg.html" %}
+          </div>
+          <div class="gl-mini-body">
+            <div class="gl-mini-shop">{{ g.shop_name }}</div>
+            <div class="gl-mini-name">{{ g.name }}</div>
+            <div class="gl-mini-foot">
+              <span class="gl-mini-expiry{% if g.is_urgent %} urgent{% endif %}">
+                {% if g.is_urgent %}หมดใน {{ g.days_left }} วัน{% else %}หมด {{ g.expires_at_short }}{% endif %}
+              </span>
+              <span class="gl-mini-action">แลก →</span>
+            </div>
+          </div>
+        </button>
+      {% endfor %}
+    </div>
+    {% endif %}
+
+    {# "ใช้แล้ว" accordion. Closed by default; tap to expand. #}
+    {% if used_gifts %}
+    <button type="button" class="gl-used-toggle" id="gl-used-toggle" aria-expanded="false">
+      <span class="lab"><strong>ใช้แล้ว</strong> · {{ used_gifts|length }} ชิ้น</span>
+      <span class="arrow">›</span>
+    </button>
+    <div class="gl-used-list" id="gl-used-list" data-open="0">
+      {% for g in used_gifts %}
+      <div class="gl-used-row">
+        <div class="icon">{{ g.emoji }}</div>
+        <div class="info">
+          <div class="name">{{ g.name }}</div>
+          <div class="meta">{{ g.shop_name }}{% if g.used_at %} · ใช้เมื่อ {{ g.used_at }}{% endif %}</div>
+        </div>
+        <span class="check" aria-label="ใช้แล้ว">
+          <svg viewBox="0 0 24 24"><polyline points="20 6 9 17 4 12"/></svg>
+        </span>
+      </div>
+      {% endfor %}
+    </div>
     {% endif %}
   {% else %}
-    <div class="inbox-empty">
+    <div class="gl-empty">
       <div class="ie-avatar">
         <svg viewBox="0 0 100 100">
           <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
@@ -62,4 +611,80 @@
       </div>
     </div>
   {% endif %}
+
+  {# voucher.confirm bottom sheet — opened on hero or grid card tap. #}
+  <div class="rc-overlay" id="vc-overlay" hidden>
+    <form class="rc-sheet vc-sheet" method="post" id="vc-form" style="margin:0;">
+      <div class="sheet-handle"></div>
+      <div class="vc-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="vc-h">แลกของขวัญตอนนี้?</div>
+      <div class="vc-sub">แลกแล้วจะคืนไม่ได้ · พี่ต้องอยู่ที่ร้านเพื่อโชว์หน้าจอให้พนักงาน</div>
+      <div class="vc-card">
+        <div class="vc-logo" id="vc-logo"></div>
+        <div class="vc-info">
+          <div class="vc-shop" id="vc-shop"></div>
+          <div class="vc-reward" id="vc-reward"></div>
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button type="button" class="cancel" id="vc-cancel">ยังไม่แลก</button>
+        <button type="submit" class="send">แลกเลย</button>
+      </div>
+    </form>
+  </div>
+{% endblock %}
+
+{% block body_end %}
+<script>
+  // Confirm sheet — opens on hero or grid card tap; cancel/backdrop
+  // closes; submit POSTs /voucher/<id>/use to mark served + redirect.
+  (function () {
+    const overlay = document.getElementById('vc-overlay');
+    const form = document.getElementById('vc-form');
+    const logoEl = document.getElementById('vc-logo');
+    const shopEl = document.getElementById('vc-shop');
+    const rewardEl = document.getElementById('vc-reward');
+    const cancelBtn = document.getElementById('vc-cancel');
+    if (!overlay || !form) return;
+
+    document.addEventListener('click', (e) => {
+      const card = e.target.closest('.gl-hero[data-voucher-id], .gl-mini[data-voucher-id]');
+      if (!card) return;
+      e.preventDefault();
+      form.action = `/voucher/${card.dataset.voucherId}/use?next=/my-gifts`;
+      // Mirror the card's logo into the sheet so user sees what they're spending.
+      const logoSrc = card.querySelector('.gh-logo, .gl-mini-img');
+      if (logoSrc) logoEl.innerHTML = card.querySelector('.gh-logo')?.innerHTML || '';
+      shopEl.textContent = card.dataset.shopName || '';
+      rewardEl.textContent = card.dataset.reward || '';
+      overlay.hidden = false;
+      document.body.style.overflow = 'hidden';
+    });
+
+    function close() {
+      overlay.hidden = true;
+      document.body.style.overflow = '';
+    }
+    cancelBtn.addEventListener('click', close);
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
+  })();
+
+  // "ใช้แล้ว" accordion
+  (function () {
+    const btn = document.getElementById('gl-used-toggle');
+    const list = document.getElementById('gl-used-list');
+    if (!btn || !list) return;
+    btn.addEventListener('click', () => {
+      const open = list.dataset.open === '1';
+      list.dataset.open = open ? '0' : '1';
+      btn.setAttribute('aria-expanded', open ? 'false' : 'true');
+    });
+  })();
+</script>
 {% endblock %}
