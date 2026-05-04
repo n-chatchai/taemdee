@@ -55,52 +55,144 @@ Child templates fill these blocks:
     </div>
     {% block body_end %}{% endblock %}
 
-    {# OAuth-return refresh. iOS PWA standalone pushes cross-origin
-       OAuth to Safari, so when the user finishes connecting and
-       returns to the PWA, the original page still shows the pre-bind
-       state. We set a flag in localStorage when the user taps a
-       connect anchor, then reload the page on the next foreground
-       transition so the new state shows up. Cleared on the next
-       fresh page load so it doesn't fire on unrelated visibility
-       changes. #}
+    {# OAuth-return refresh + slide-up "เชื่อมต่อสำเร็จ" toast.
+
+       iOS PWA standalone pushes cross-origin OAuth to Safari, so
+       when the user finishes and returns to the PWA, the original
+       page still shows the pre-bind state. We:
+
+         1. On connect-anchor click → save provider + timestamp in
+            localStorage as `td_oauth_pending`.
+         2. On foreground (visibilitychange visible) with a fresh
+            pending flag → move to `td_oauth_just_completed` and
+            reload the page so the new state renders.
+         3. On every page load → if `td_oauth_just_completed` is set,
+            slide up the success toast and clear the flag.
+
+       Same flag works in the in-PWA OAuth case too: if iOS doesn't
+       pop Safari, the OAuth completes within the PWA, lands on
+       /auth/connect-complete, user taps "Continue" → /my-cards →
+       page-load handler shows the toast based on the just-completed
+       flag (transferred at click time). #}
+    <div id="td-toast" class="td-toast" hidden>
+      <div class="td-toast-card">
+        <div class="td-toast-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.6" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <div class="td-toast-msg" id="td-toast-msg">เชื่อมต่อสำเร็จ</div>
+      </div>
+    </div>
+    <style>
+      .td-toast {
+        position: fixed; left: 0; right: 0; bottom: 0;
+        z-index: 9000; padding: 0 16px 16px;
+        display: flex; justify-content: center;
+        pointer-events: none;
+      }
+      .td-toast[hidden] { display: none; }
+      .td-toast.td-toast-show .td-toast-card {
+        transform: translateY(0); opacity: 1;
+      }
+      .td-toast-card {
+        max-width: 420px; width: 100%;
+        background: #1B7C3E; color: #fff;
+        border-radius: 14px;
+        padding: 12px 16px;
+        display: flex; align-items: center; gap: 12px;
+        box-shadow: 0 10px 30px rgba(0,0,0,0.18);
+        transform: translateY(140%); opacity: 0;
+        transition: transform 280ms ease, opacity 200ms ease;
+        pointer-events: auto;
+      }
+      .td-toast-icon {
+        width: 28px; height: 28px;
+        background: rgba(255,255,255,0.2); border-radius: 50%;
+        display: flex; align-items: center; justify-content: center;
+        flex-shrink: 0;
+      }
+      .td-toast-icon svg { width: 16px; height: 16px; }
+      .td-toast-msg { font-weight: 600; font-size: 15px; }
+    </style>
     <script>
       (function () {
-        var KEY = 'td_oauth_pending';
-        // Flag any anchor click that points at /auth/{provider}/customer/start
-        // or /card/save (phone OTP lands user back at /my-cards too).
+        var PENDING = 'td_oauth_pending';
+        var DONE = 'td_oauth_just_completed';
+        var LABELS = { line: 'LINE', google: 'Google', facebook: 'Facebook', phone: 'เบอร์โทร' };
+
+        function readJSON(key) {
+          try {
+            var v = localStorage.getItem(key);
+            return v ? JSON.parse(v) : null;
+          } catch (_) { return null; }
+        }
+        function writeJSON(key, v) {
+          try { localStorage.setItem(key, JSON.stringify(v)); } catch (_) {}
+        }
+        function clear(key) {
+          try { localStorage.removeItem(key); } catch (_) {}
+        }
+
+        // 1. Click on a connect anchor → flag pending.
         document.addEventListener('click', function (e) {
           var a = e.target.closest('a');
-          if (!a || !a.href) return;
+          if (!a) return;
           var href = a.getAttribute('href') || '';
-          if (/^\/auth\/(line|google|facebook)\/customer\/start/.test(href)
-              || href.startsWith('/card/save')) {
-            try { localStorage.setItem(KEY, String(Date.now())); } catch (_) {}
-          }
+          var m = href.match(/^\/auth\/(line|google|facebook)\/customer\/start/);
+          var provider = m ? m[1] : (href.startsWith('/card/save') ? 'phone' : null);
+          if (!provider) return;
+          writeJSON(PENDING, { provider: provider, t: Date.now() });
         });
+
+        // 2. On foreground with fresh pending → move to done + reload.
         document.addEventListener('visibilitychange', function () {
           if (document.visibilityState !== 'visible') return;
-          var t;
-          try { t = parseInt(localStorage.getItem(KEY) || '0', 10); } catch (_) { t = 0; }
-          if (!t) return;
-          // Only honor flags set in the last 10 minutes.
-          if (Date.now() - t > 10 * 60 * 1000) {
-            try { localStorage.removeItem(KEY); } catch (_) {}
+          var p = readJSON(PENDING);
+          if (!p || !p.t) return;
+          if (Date.now() - p.t > 10 * 60 * 1000) {  // 10 min cap
+            clear(PENDING);
             return;
           }
-          try { localStorage.removeItem(KEY); } catch (_) {}
+          clear(PENDING);
+          writeJSON(DONE, p);
           window.location.reload();
         });
-        // Fresh navigation clears the flag so a stale value can't fire
-        // on a much-later visibility change.
+
+        // 3. On page load → if just-completed flag, show toast.
+        function showToast(provider) {
+          var el = document.getElementById('td-toast');
+          var msg = document.getElementById('td-toast-msg');
+          if (!el || !msg) return;
+          msg.textContent = 'เชื่อม' + (LABELS[provider] || 'บัญชี') + 'สำเร็จ';
+          el.hidden = false;
+          // Force reflow for the transform to animate.
+          void el.offsetHeight;
+          el.classList.add('td-toast-show');
+          setTimeout(function () {
+            el.classList.remove('td-toast-show');
+            setTimeout(function () { el.hidden = true; }, 320);
+          }, 2800);
+        }
+        function checkDone() {
+          var d = readJSON(DONE);
+          if (!d) return;
+          clear(DONE);
+          showToast(d.provider);
+        }
+        if (document.readyState === 'loading') {
+          document.addEventListener('DOMContentLoaded', checkDone);
+        } else {
+          checkDone();
+        }
+
+        // Stale-pending hygiene: clear pending older than 10 min on
+        // any fresh page load so a forgotten click doesn't fire later.
         window.addEventListener('pageshow', function (e) {
-          if (e.persisted) return;  // bfcache restore — keep flag
-          // Keep the flag if we just SET it on this page (click before
-          // navigation might pageshow the destination). Easiest check:
-          // if the flag's timestamp is older than 1 second, clear it.
-          var t;
-          try { t = parseInt(localStorage.getItem(KEY) || '0', 10); } catch (_) { t = 0; }
-          if (t && Date.now() - t > 1000) {
-            try { localStorage.removeItem(KEY); } catch (_) {}
+          if (e.persisted) return;
+          var p = readJSON(PENDING);
+          if (p && p.t && Date.now() - p.t > 10 * 60 * 1000) {
+            clear(PENDING);
           }
         });
       })();

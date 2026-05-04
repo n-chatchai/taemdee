@@ -1,0 +1,117 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เชื่อมต่อสำเร็จ · TaemDee</title>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  {# Rendered after a successful customer-side OAuth bind. iOS PWA
+     pops to Safari for cross-origin OAuth, so this page often shows
+     in Safari (not the PWA). The copy here tells the user to switch
+     back to the PWA — the PWA's foreground reload + toast will
+     surface the connection result there. Browser users (non-PWA)
+     just tap the continue button. #}
+  <div class="td td-connect-complete">
+    <div class="connect-complete-card">
+      <div class="cc-icon ok">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <polyline points="20 6 9 17 4 12"/>
+        </svg>
+      </div>
+      <h1>เชื่อม{{ provider_label }}สำเร็จ</h1>
+      <p class="cc-sub">กลับไปที่แอปแต้มดีบนหน้าจอ<br>เพื่อดำเนินการต่อ</p>
+
+      <a href="/my-cards" class="cc-cta-primary">
+        ไปที่บัตรของฉัน
+        <span class="arr">→</span>
+      </a>
+      <button type="button" class="cc-cta-secondary" id="cc-close-btn">
+        ปิดหน้านี้
+      </button>
+
+      <div class="cc-icon-hint">
+        <svg class="smile-stamp" viewBox="0 0 100 100" width="56" height="56">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+          <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+          <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <script>
+    (function () {
+      // Mark just-completed in localStorage so the PWA's c_base toast
+      // fires on the next /my-cards (or wherever) load. In the iOS
+      // Safari-pop case this writes to Safari's localStorage (harmless,
+      // PWA never reads it — its own pending → done handoff covers
+      // that path via visibilitychange). In the in-PWA OAuth case
+      // this is the actual signal: PWA's localStorage gets DONE here,
+      // then "ไปที่บัตรของฉัน" navigates and the toast renders.
+      try {
+        var p = new URLSearchParams(location.search).get('provider');
+        if (p) {
+          localStorage.setItem(
+            'td_oauth_just_completed',
+            JSON.stringify({ provider: p, t: Date.now() }),
+          );
+          // Clear any stale pending now that we have a confirmed done.
+          localStorage.removeItem('td_oauth_pending');
+        }
+      } catch (_) {}
+
+      var btn = document.getElementById('cc-close-btn');
+      if (!btn) return;
+      btn.addEventListener('click', function () {
+        try { window.close(); } catch (_) { /* swallow */ }
+      });
+    })();
+  </script>
+  <style>
+    .td-connect-complete {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 32px 24px;
+    }
+    .connect-complete-card {
+      max-width: 360px; width: 100%;
+      text-align: center;
+    }
+    .cc-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .cc-icon.ok {
+      background: #E6F7EE; color: #1B7C3E;
+    }
+    .cc-icon svg { width: 36px; height: 36px; }
+    .td-connect-complete h1 {
+      font-size: 24px; font-weight: 700; margin: 0 0 12px;
+    }
+    .cc-sub {
+      font-size: 15px; color: var(--ink-soft); margin: 0 0 28px; line-height: 1.55;
+    }
+    .cc-cta-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 28px; border-radius: 999px;
+      background: var(--accent); color: #fff; font-weight: 600;
+      text-decoration: none; min-width: 220px;
+      margin-bottom: 12px;
+    }
+    .cc-cta-primary .arr { font-size: 18px; }
+    .cc-cta-secondary {
+      display: inline-block; padding: 10px 18px;
+      background: transparent; color: var(--ink-soft);
+      border: none; font-size: 14px; cursor: pointer;
+    }
+    .cc-icon-hint {
+      margin-top: 36px; opacity: 0.6;
+    }
+  </style>
+</body>
+</html>

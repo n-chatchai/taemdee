@@ -120,6 +120,33 @@ async def logout(response: Response):
     return {"ok": True}
 
 
+_PROVIDER_LABELS = {
+    "line": "LINE",
+    "google": "Google",
+    "facebook": "Facebook",
+    "phone": "เบอร์",
+}
+
+
+@router.get("/connect-complete")
+async def connect_complete(
+    request: Request,
+    provider: Optional[str] = None,
+):
+    """Success page rendered after a customer-side OAuth bind. iOS PWA
+    pops cross-origin OAuth to Safari, so this page typically renders
+    in Safari (not the PWA). Tells the user to return to the PWA;
+    the PWA's foreground-reload handler in c_base.html surfaces the
+    new state + a toast there. Browser-only users tap "Continue"."""
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/connect_complete.html",
+        context={
+            "provider_label": _PROVIDER_LABELS.get(provider or "", "บัญชี"),
+        },
+    )
+
+
 def _connect_customer_id_from_cookie(customer_cookie: Optional[str]) -> Optional[str]:
     """Decode customer_cookie → customer_id string for baking into the
     OAuth state JWT. Same-window OAuth navigates within the PWA's own
@@ -264,7 +291,10 @@ async def line_customer_confirm_save(
             db.add(CustomerShopMute(customer_id=customer.id, shop_id=target_shop_id))
             await db.commit()
 
-    target_url = await _redeem_after_claim(db, customer, next_redeem) or "/my-cards"
+    target_url = (
+        await _redeem_after_claim(db, customer, next_redeem)
+        or "/auth/connect-complete?provider=line"
+    )
     response = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie("c3_line_ctx", path="/")
     return response
@@ -697,7 +727,13 @@ async def google_callback(
         connect_customer_id=connect_customer_id,
     )
 
-    target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
+    # next_redeem (auto-resume a C4 redemption) → land directly on the
+    # claimed page. Otherwise show the success page so PWA users get a
+    # clear "go back to the app" prompt; browser users click "Continue".
+    target_url = (
+        await _redeem_after_claim(db, claimed, next_redeem)
+        or "/auth/connect-complete?provider=google"
+    )
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     set_customer_cookie(redirect, claimed.id)
     redirect.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
@@ -772,7 +808,10 @@ async def facebook_callback(
         connect_customer_id=connect_customer_id,
     )
 
-    target_url = await _redeem_after_claim(db, claimed, next_redeem) or "/my-cards"
+    target_url = (
+        await _redeem_after_claim(db, claimed, next_redeem)
+        or "/auth/connect-complete?provider=facebook"
+    )
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     set_customer_cookie(redirect, claimed.id)
     redirect.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
