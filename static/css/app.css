@@ -5092,7 +5092,30 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 .s10-cooldown-presets button:hover { color: var(--ink); border-color: var(--ink); }
 
-.s10-row.connect-row.connected { cursor: default; }
+/* Revoke button on a connected row — looks like the .connect-check
+   pill at rest, flips to an accent × when armed. The whole row is
+   the form element, so click anywhere triggers the same arm/submit
+   sequence. */
+.s10-row.connect-row.connected { cursor: pointer; }
+.connect-revoke {
+  width: 22px;
+  height: 22px;
+  border: none;
+  background: var(--mint);
+  color: var(--mint-ink);
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 800;
+  font-size: 13px;
+  cursor: pointer;
+  padding: 0;
+  transition: background 0.15s, color 0.15s;
+}
+/* Form is the row container in the revoke flow — strip browser
+   default margin so it lays out the same as the <a>/div siblings. */
+form.s10-row { margin: 0 0 4px; }
 
 /* PWA OAuth pairing overlay — shown on the PWA while OAuth is in
    progress in the system browser. The PWA's SSE picks up the claim

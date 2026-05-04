@@ -3,6 +3,11 @@
 If a claimed customer already exists with the given identity, the anonymous customer's
 stamps and redemptions are merged into the existing record and the anonymous row is
 deleted. Otherwise the anonymous row is promoted in place.
+
+For an already-claimed customer adding a *second* identity (e.g. claimed
+via LINE, now also wants Google), `link_to_claimed` is the dedicated
+path — it refuses to silently merge into another existing customer
+because that would be destructive without confirmation.
 """
 
 from typing import Optional
@@ -12,6 +17,17 @@ from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.models import Customer, Redemption, Point
+
+
+class IdentityConflict(Exception):
+    """Raised when a link/disconnect can't proceed safely."""
+
+
+# Identity fields we can link/unlink. Order isn't significant; this is
+# the canonical list for "is the customer reachable by anything?" checks
+# below. recovery_code counts as an identity for the unlink-last-id guard
+# because the customer can still recover via /recover with it.
+_IDENTITY_FIELDS = ("line_id", "google_id", "facebook_id", "phone", "recovery_code")
 
 
 async def claim_by_phone(
@@ -132,3 +148,113 @@ async def _claim(
     await db.commit()
     await db.refresh(anonymous_customer)
     return anonymous_customer
+
+
+async def link_to_claimed(
+    db: AsyncSession,
+    customer: Customer,
+    *,
+    line_id: Optional[str] = None,
+    google_id: Optional[str] = None,
+    facebook_id: Optional[str] = None,
+    display_name: Optional[str] = None,
+    picture_url: Optional[str] = None,
+) -> Customer:
+    """Add a second identity to an already-claimed customer (e.g. they
+    claimed via LINE, now want Google too). Refuses to merge into a
+    different existing customer — that's destructive without explicit
+    consent and surfaces as IdentityConflict so the route can render
+    a clear "ใช้บัญชีอื่นถ้าต้องการสลับ" message.
+
+    Exactly one identity field should be supplied per call (matches the
+    OAuth callback shape). Other identities on `customer` are left
+    alone.
+    """
+    if customer.is_anonymous:
+        # Defensive — claim() should be called first for anonymous rows.
+        # Treat this like a no-op rather than silently switching paths.
+        return customer
+
+    # Bail out if the identity already lives on someone else's account.
+    other: Optional[Customer] = None
+    if line_id:
+        other = (await db.exec(
+            select(Customer).where(Customer.line_id == line_id)
+        )).first()
+    elif google_id:
+        other = (await db.exec(
+            select(Customer).where(Customer.google_id == google_id)
+        )).first()
+    elif facebook_id:
+        other = (await db.exec(
+            select(Customer).where(Customer.facebook_id == facebook_id)
+        )).first()
+    if other is not None and other.id != customer.id:
+        raise IdentityConflict(
+            "บัญชีนี้ผูกกับลูกค้ารายอื่นอยู่แล้ว · "
+            "ใช้บัญชีอื่นถ้าต้องการสลับเข้าระบบ"
+        )
+
+    # Same identity already on this customer — re-link is a no-op.
+    if (
+        (line_id and customer.line_id == line_id)
+        or (google_id and customer.google_id == google_id)
+        or (facebook_id and customer.facebook_id == facebook_id)
+    ):
+        return customer
+
+    if line_id:
+        customer.line_id = line_id
+    if google_id:
+        customer.google_id = google_id
+    if facebook_id:
+        customer.facebook_id = facebook_id
+    if picture_url and not customer.picture_url:
+        customer.picture_url = picture_url
+    if display_name and not customer.display_name:
+        customer.display_name = display_name
+    db.add(customer)
+    await db.commit()
+    await db.refresh(customer)
+    return customer
+
+
+async def disconnect_provider(
+    db: AsyncSession,
+    customer: Customer,
+    provider: str,
+) -> Customer:
+    """Unlink one identity from a claimed customer. Refuses to remove
+    the last reachable identity — IdentityConflict is raised so the
+    customer doesn't end up with a row no one can log into.
+
+    `provider` is one of "line", "google", "facebook", "phone".
+    """
+    field = {
+        "line": "line_id",
+        "google": "google_id",
+        "facebook": "facebook_id",
+        "phone": "phone",
+    }.get(provider)
+    if field is None:
+        raise IdentityConflict("ผู้ให้บริการไม่ถูกต้อง")
+    if getattr(customer, field) is None:
+        # Already unlinked — nothing to do.
+        return customer
+
+    # Last-identity guard: count what survives if we drop this field.
+    remaining = sum(
+        1
+        for f in _IDENTITY_FIELDS
+        if f != field and getattr(customer, f, None)
+    )
+    if remaining == 0:
+        raise IdentityConflict(
+            "ปลดเชื่อมไม่ได้ · ต้องเหลืออย่างน้อย 1 ช่องทางเพื่อเข้าสู่ระบบครั้งหน้า"
+        )
+
+    setattr(customer, field, None)
+    db.add(customer)
+    await db.commit()
+    await db.refresh(customer)
+    return customer

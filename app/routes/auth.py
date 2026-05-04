@@ -346,9 +346,32 @@ async def line_callback(
         onboard_name = (
             anon.display_name
         )  # Name from onboard.greet (before LINE overwrites)
-        claimed = await claim_by_line(
-            db, anon, line_id, display_name=display_name, picture_url=picture_url
-        )
+        # Already-claimed customer linking a 2nd provider goes through
+        # link_to_claimed (refuses on identity conflict). Anonymous
+        # rows still go through the original claim path.
+        if anon.is_anonymous:
+            claimed = await claim_by_line(
+                db, anon, line_id, display_name=display_name, picture_url=picture_url
+            )
+        else:
+            from app.services.soft_wall import IdentityConflict, link_to_claimed
+            try:
+                claimed = await link_to_claimed(
+                    db, anon, line_id=line_id,
+                    display_name=display_name, picture_url=picture_url,
+                )
+            except IdentityConflict as e:
+                # Surface the conflict on the pair-complete page if this
+                # was a PWA-initiated link, otherwise as a 409 the
+                # caller can render. Both happen rarely; PWA path is
+                # the common one.
+                if pair_code:
+                    response = await _render_pair_complete(
+                        request, db, pair_code, anon.id, "line", "LINE",
+                    )
+                    response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
+                    return response
+                raise HTTPException(status.HTTP_409_CONFLICT, str(e))
 
         # PWA OAuth pairing handoff (docs/pwa-oauth-pairing.md): if state
         # carried `pair=<code>`, the user came in from a PWA's
@@ -541,7 +564,22 @@ async def google_callback(
     display_name = profile.get("name") or None
 
     anon, _ = await find_or_create_customer(customer_cookie, db)
-    claimed = await claim_by_google(db, anon, google_id, display_name=display_name)
+    if anon.is_anonymous:
+        claimed = await claim_by_google(db, anon, google_id, display_name=display_name)
+    else:
+        from app.services.soft_wall import IdentityConflict, link_to_claimed
+        try:
+            claimed = await link_to_claimed(
+                db, anon, google_id=google_id, display_name=display_name,
+            )
+        except IdentityConflict as e:
+            if pair_code:
+                response = await _render_pair_complete(
+                    request, db, pair_code, anon.id, "google", "Google",
+                )
+                response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
+                return response
+            raise HTTPException(status.HTTP_409_CONFLICT, str(e))
 
     # PWA pairing handoff — see LINE callback for the full comment.
     if pair_code:
@@ -598,7 +636,22 @@ async def facebook_callback(
     display_name = profile.get("name") or None
 
     anon, _ = await find_or_create_customer(customer_cookie, db)
-    claimed = await claim_by_facebook(db, anon, facebook_id, display_name=display_name)
+    if anon.is_anonymous:
+        claimed = await claim_by_facebook(db, anon, facebook_id, display_name=display_name)
+    else:
+        from app.services.soft_wall import IdentityConflict, link_to_claimed
+        try:
+            claimed = await link_to_claimed(
+                db, anon, facebook_id=facebook_id, display_name=display_name,
+            )
+        except IdentityConflict as e:
+            if pair_code:
+                response = await _render_pair_complete(
+                    request, db, pair_code, anon.id, "facebook", "Facebook",
+                )
+                response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
+                return response
+            raise HTTPException(status.HTTP_409_CONFLICT, str(e))
 
     # PWA pairing handoff — see LINE callback for the full comment.
     if pair_code:

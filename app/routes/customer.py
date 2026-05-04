@@ -454,6 +454,29 @@ async def customer_logout():
     return response
 
 
+@router.post("/card/account/disconnect/{provider}")
+async def customer_disconnect(
+    provider: str,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Unlink one identity (line / google / facebook / phone) from the
+    current customer. soft_wall.disconnect_provider enforces the
+    last-identity guard so the customer can't end up with a row no
+    one can log into."""
+    from app.services.soft_wall import IdentityConflict, disconnect_provider
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    if customer.is_anonymous:
+        raise HTTPException(status.HTTP_403_FORBIDDEN, "ยังไม่ได้เข้าสู่ระบบ")
+    try:
+        await disconnect_provider(db, customer, provider)
+    except IdentityConflict as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+    return RedirectResponse(
+        url="/card/account", status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
 @router.post("/track/pwa")
 async def track_pwa(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
