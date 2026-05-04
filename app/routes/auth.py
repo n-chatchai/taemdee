@@ -87,23 +87,50 @@ async def verify_and_login(
         if not await verify_otp(db, phone, code):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired code")
 
-    result = await db.exec(select(Shop).where(Shop.phone == phone))
-    shop = result.first()
-    is_new = shop is None
+    # Same StaffMember-first resolution as the LINE callback. Owners are
+    # StaffMember rows with is_owner=True; pending invites get accepted on
+    # first OTP login that matches their phone; pre-unification Shops get
+    # a lazy owner-staff backfill.
+    from app.services.team import (
+        accept_invite,
+        create_owner_staff,
+        find_staff_by_phone,
+    )
 
-    if is_new:
-        shop = Shop(name=name, phone=phone)
-        db.add(shop)
-        await db.commit()
-        await db.refresh(shop)
+    staff_match = await find_staff_by_phone(db, phone)
+    is_new = False
+    if staff_match is not None:
+        if staff_match.accepted_at is None:
+            await accept_invite(db, staff_match)
+            if not staff_match.phone:
+                staff_match.phone = phone
+            if not staff_match.display_name and name and name != "New Shop":
+                staff_match.display_name = name
+            db.add(staff_match)
+            await db.commit()
+            await db.refresh(staff_match)
+        shop = await db.get(Shop, staff_match.shop_id)
+    else:
+        result = await db.exec(select(Shop).where(Shop.phone == phone))
+        shop = result.first()
+        is_new = shop is None
+        if is_new:
+            shop = Shop(name=name, phone=phone)
+            db.add(shop)
+            await db.commit()
+            await db.refresh(shop)
+            if ref:
+                referral = await find_referral_by_code(db, ref)
+                if referral and referral.referee_shop_id is None:
+                    await consume_referral_on_signup(db, referral, shop)
+        staff_match = await create_owner_staff(
+            db, shop, phone=phone, display_name=name if name and name != "New Shop" else None,
+        )
 
-        # Bind referral on first signup if a valid open code was passed.
-        if ref:
-            referral = await find_referral_by_code(db, ref)
-            if referral and referral.referee_shop_id is None:
-                await consume_referral_on_signup(db, referral, shop)
-
-    _set_session_cookie(response, issue_session_token(shop.id))
+    _set_session_cookie(
+        response,
+        issue_session_token(shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner),
+    )
     return {"ok": True, "shop_id": str(shop.id)}
 
 
@@ -416,19 +443,57 @@ async def line_callback(
         redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
         return redirect
 
-    # role == "shop" (default — backwards compatible with existing flow)
-    result = await db.exec(select(Shop).where(Shop.line_id == line_id))
-    shop = result.first()
-    if not shop:
-        shop = Shop(line_id=line_id, name=display_name or "Shop")
-        db.add(shop)
-        await db.commit()
-        await db.refresh(shop)
+    # role == "shop". Owners are now StaffMember rows with is_owner=True,
+    # so the resolution order is:
+    #   1. Match StaffMember by line_id (owner OR pending invite)
+    #      - Pending → accept it (writes accepted_at) and proceed.
+    #   2. No StaffMember match → look up Shop by line_id (pre-unification
+    #      shops still exist as Shop rows but no owner-staff). Lazy-create
+    #      the owner StaffMember; subsequent logins hit step 1.
+    #   3. Neither → fully new owner: create Shop + owner StaffMember.
+    from app.services.team import (
+        accept_invite,
+        create_owner_staff,
+        find_staff_by_line,
+    )
+
+    staff_match = await find_staff_by_line(db, line_id)
+    if staff_match is not None:
+        if staff_match.accepted_at is None:
+            await accept_invite(db, staff_match)
+            # Bind the LINE id and any profile bits the invite was missing.
+            if not staff_match.line_id:
+                staff_match.line_id = line_id
+            if not staff_match.display_name and display_name:
+                staff_match.display_name = display_name
+            if not staff_match.picture_url and picture_url:
+                staff_match.picture_url = picture_url
+            db.add(staff_match)
+            await db.commit()
+            await db.refresh(staff_match)
+        shop = await db.get(Shop, staff_match.shop_id)
+    else:
+        result = await db.exec(select(Shop).where(Shop.line_id == line_id))
+        shop = result.first()
+        if shop is None:
+            shop = Shop(line_id=line_id, name=display_name or "Shop")
+            db.add(shop)
+            await db.commit()
+            await db.refresh(shop)
+        staff_match = await create_owner_staff(
+            db, shop,
+            line_id=line_id,
+            display_name=display_name,
+            picture_url=picture_url,
+        )
 
     redirect = RedirectResponse(
         url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
     )
-    _set_session_cookie(redirect, issue_session_token(shop.id))
+    _set_session_cookie(
+        redirect,
+        issue_session_token(shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner),
+    )
     redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
     return redirect
 

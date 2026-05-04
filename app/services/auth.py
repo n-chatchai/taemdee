@@ -63,13 +63,25 @@ async def verify_otp(db: AsyncSession, phone: str, code: str) -> bool:
     return True
 
 
-def issue_session_token(shop_id: UUID, staff_id: Optional[UUID] = None) -> str:
-    """Sign a JWT for the session cookie."""
+def issue_session_token(
+    shop_id: UUID,
+    staff_id: Optional[UUID] = None,
+    is_owner: bool = False,
+) -> str:
+    """Sign a JWT for the session cookie.
+
+    Every shop session now carries staff_id (owner is modelled as a
+    StaffMember with is_owner=True). The is_owner flag is duplicated
+    into the JWT so permission gates can short-circuit without a DB
+    round-trip on every request. `role` stays in the payload for
+    backwards-compat with any sessions issued before the unification.
+    """
     expire = utcnow() + timedelta(days=settings.session_expire_days)
     payload = {
         "shop_id": str(shop_id),
         "staff_id": str(staff_id) if staff_id else None,
-        "role": "staff" if staff_id else "owner",
+        "is_owner": bool(is_owner),
+        "role": "owner" if is_owner else ("staff" if staff_id else "owner"),
         "exp": expire,
     }
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)

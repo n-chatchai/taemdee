@@ -142,3 +142,75 @@ async def find_pending_invite_by_phone(
         .order_by(StaffMember.invited_at.desc())
     )
     return result.first()
+
+
+async def find_staff_by_line(
+    db: AsyncSession, line_id: str
+) -> Optional[StaffMember]:
+    """Look up any (non-revoked) StaffMember by their LINE id — owner or
+    invited. Used by the LINE callback to decide whether the visitor is
+    an existing shop user vs. a fresh signup.
+    """
+    if not line_id:
+        return None
+    result = await db.exec(
+        select(StaffMember)
+        .where(
+            StaffMember.line_id == line_id,
+            StaffMember.revoked_at.is_(None),
+        )
+        .order_by(StaffMember.invited_at.desc())
+    )
+    return result.first()
+
+
+async def find_staff_by_phone(
+    db: AsyncSession, phone: str
+) -> Optional[StaffMember]:
+    """Same as find_staff_by_line but keyed on the phone number used for
+    OTP login. Either an owner (is_owner=True, accepted_at set) or a
+    pending/accepted invite.
+    """
+    if not phone:
+        return None
+    result = await db.exec(
+        select(StaffMember)
+        .where(
+            StaffMember.phone == phone,
+            StaffMember.revoked_at.is_(None),
+        )
+        .order_by(StaffMember.invited_at.desc())
+    )
+    return result.first()
+
+
+async def create_owner_staff(
+    db: AsyncSession,
+    shop: Shop,
+    *,
+    line_id: Optional[str] = None,
+    phone: Optional[str] = None,
+    display_name: Optional[str] = None,
+    picture_url: Optional[str] = None,
+) -> StaffMember:
+    """Create the owner StaffMember row for a Shop. Owners have every
+    permission set, accepted_at is stamped immediately (no invite-token
+    dance), and is_owner=True so permission gates short-circuit.
+    """
+    staff = StaffMember(
+        shop_id=shop.id,
+        line_id=line_id,
+        phone=phone,
+        display_name=display_name,
+        picture_url=picture_url,
+        is_owner=True,
+        accepted_at=utcnow(),
+        can_void=True,
+        can_deereach=True,
+        can_topup=True,
+        can_settings=True,
+    )
+    db.add(staff)
+    await db.commit()
+    await db.refresh(staff)
+    return staff

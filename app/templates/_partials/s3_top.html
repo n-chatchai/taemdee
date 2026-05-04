@@ -15,7 +15,6 @@
      branch_label — string; only renders when multi-branch
      bell_unread  — truthy to show the pulsing badge on the bell icon
 #}
-{% set _s3_logo = shop_logo(shop) %}
 {% set _s3_staff = request.state.staff %}
 <div class="s3-top">
   <div class="hi">
@@ -48,31 +47,18 @@
       </svg>
       {% if bell_unread %}<span class="bell-badge"></span>{% endif %}
     </a>
+    {# Owner is now a StaffMember with is_owner=True, so every shop
+       session has request.state.staff populated and the avatar always
+       opens the staff profile sheet (edits the *person*, not the shop
+       brand). The shop's brand identity has its own dedicated editor
+       at /shop/settings/identity. #}
     {% if _s3_staff %}
-      {# Staff session — avatar shows their personal picture/initial and
-         opens the staff profile sheet. Tapping a "shop logo" link here
-         would let staff edit shop identity, which is an owner-only flow. #}
       <button type="button" class="s3-avatar" data-open="staff-profile-edit"
               title="แก้ไขโปรไฟล์" aria-label="แก้ไขโปรไฟล์">
         {% if _s3_staff.picture_url %}
           <img src="{{ _s3_staff.picture_url }}" alt="">
         {% else %}
           <span>{{ (_s3_staff.display_name[0]|upper) if _s3_staff.display_name else 'พ' }}</span>
-        {% endif %}
-      </button>
-    {% else %}
-      {# Owner session — opens the shop profile sheet (quick rename +
-         logo image). The full identity editor with the lt-* style
-         picker still lives at /shop/settings/identity, linked from
-         the bottom of the sheet. Earlier this was a plain anchor that
-         navigated away, which felt jarring next to the customer side
-         where the avatar always slides up a sheet. #}
-      <button type="button" class="s3-avatar" data-open="shop-profile-edit"
-              title="แก้ไขข้อมูลร้าน" aria-label="แก้ไขข้อมูลร้าน">
-        {% if _s3_logo and _s3_logo.is_image %}
-          <img src="{{ _s3_logo.url }}" alt="">
-        {% else %}
-          <span>{{ (shop.name[0]|upper) if shop.name else 'ร' }}</span>
         {% endif %}
       </button>
     {% endif %}

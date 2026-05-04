@@ -68,11 +68,15 @@ class CustomerAuthError(HTTPException):
 class SessionContext:
     shop_id: UUID
     staff_id: Optional[UUID]
-    role: str  # "owner" or "staff"
+    role: str  # "owner" or "staff" (kept for legacy payloads / templates)
+    _is_owner: bool = False
 
     @property
     def is_owner(self) -> bool:
-        return self.role == "owner"
+        # New JWTs carry is_owner explicitly (owner is now a StaffMember
+        # row with is_owner=True). Legacy JWTs that pre-date the
+        # unification fall back to the role field.
+        return self._is_owner or self.role == "owner"
 
 
 async def get_session_context(
@@ -89,7 +93,8 @@ async def get_session_context(
         return SessionContext(
             shop_id=UUID(payload["shop_id"]),
             staff_id=UUID(payload["staff_id"]) if payload.get("staff_id") else None,
-            role=payload["role"],
+            role=payload.get("role", "owner"),
+            _is_owner=bool(payload.get("is_owner", False)),
         )
     except (KeyError, ValueError, TypeError):
         raise SessionAuthError("session_invalid")

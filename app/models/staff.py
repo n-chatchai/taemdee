@@ -19,7 +19,16 @@ class StaffMember(SQLModel, table=True):
     display_name: Optional[str] = Field(default=None)
     picture_url: Optional[str] = Field(default=None)
 
+    # Owner is modelled as a StaffMember with is_owner=True. One owner row
+    # per Shop, created at signup (or lazy-backfilled on first login for
+    # pre-existing shops). Owners have all permissions implicit, hold the
+    # OAuth identity for the shop, and are NEVER revoked through the team
+    # UI. is_owner=False is the regular invited-staff case.
+    is_owner: bool = Field(default=False)
+
     # Permissions — "Issue stamps" is implicit (being invited means you can issue).
+    # Owners short-circuit every permission check via is_owner; these flags
+    # only meaningfully gate non-owner staff.
     can_void: bool = Field(default=True)
     can_deereach: bool = Field(default=False)
     can_topup: bool = Field(default=False)

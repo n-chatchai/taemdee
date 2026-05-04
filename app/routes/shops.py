@@ -70,17 +70,32 @@ async def dev_login_or_register(
     dashboard. Real OTP verification happens at `/auth/otp/verify` — this endpoint
     exists so the current demo UI keeps working until the proper OTP form replaces it.
     """
-    result = await db.exec(select(Shop).where(Shop.phone == phone))
-    shop = result.first()
+    # Same StaffMember-first resolution as /auth/otp/verify so the dev
+    # shortcut produces the same JWT shape (staff_id always set, is_owner
+    # carried explicitly) — otherwise the dev session would be missing the
+    # request.state.staff template signal.
+    from app.services.team import accept_invite, create_owner_staff, find_staff_by_phone
 
-    if not shop:
-        shop = Shop(name=name, phone=phone)
-        db.add(shop)
-        await db.commit()
-        await db.refresh(shop)
+    staff_match = await find_staff_by_phone(db, phone)
+    if staff_match is not None:
+        if staff_match.accepted_at is None:
+            await accept_invite(db, staff_match)
+        shop = await db.get(Shop, staff_match.shop_id)
+    else:
+        result = await db.exec(select(Shop).where(Shop.phone == phone))
+        shop = result.first()
+        if shop is None:
+            shop = Shop(name=name, phone=phone)
+            db.add(shop)
+            await db.commit()
+            await db.refresh(shop)
+        staff_match = await create_owner_staff(db, shop, phone=phone, display_name=name)
 
     redirect = RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
-    _set_session_cookie(redirect, issue_session_token(shop.id))
+    _set_session_cookie(
+        redirect,
+        issue_session_token(shop.id, staff_id=staff_match.id, is_owner=staff_match.is_owner),
+    )
     return redirect
 
 
@@ -800,49 +815,6 @@ async def topup_page(
             "error": error,
         },
     )
-
-
-@router.post("/profile")
-async def shop_update_profile(
-    display_name: str = Form(...),
-    use_default: Optional[str] = Form(None),
-    next_url: str = Form("/shop/dashboard"),
-    picture: Optional[UploadFile] = File(None),
-    shop: Shop = Depends(get_current_shop),
-    db: AsyncSession = Depends(get_session),
-):
-    """Owner updates shop.name + shop.logo_url from the s3_top avatar
-    sheet — quick rename + reupload. Style-picker variants stay at
-    /shop/settings/identity for richer edits.
-
-    `use_default=1` clears the logo_url so the avatar falls back to the
-    shop's first character. An uploaded picture is stored in R2 and
-    saved as 'url:<r2-url>' (matches the existing url:* convention used
-    by shop_logo()).
-    """
-    new_name = display_name.strip()
-    if new_name:
-        shop.name = new_name
-
-    if use_default == "1":
-        shop.logo_url = None
-    elif picture is not None and picture.filename:
-        image_bytes = await picture.read()
-        if image_bytes:
-            url = await upload_to_r2(
-                image_bytes,
-                file_name=picture.filename,
-                content_type=picture.content_type or "image/jpeg",
-                folder=f"shop-logos/{shop.id}",
-            )
-            if url:
-                shop.logo_url = f"url:{url}"
-
-    db.add(shop)
-    await db.commit()
-
-    safe_next = next_url if next_url.startswith("/") else "/shop/dashboard"
-    return RedirectResponse(url=safe_next, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/topup/upload")

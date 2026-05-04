@@ -63,15 +63,13 @@
     {% include "_partials/footer_mark.html" %}
     {% block nav %}{% endblock %}
 
-    {# Profile-edit sheets — tapped open from the s3_top avatar.
-       Staff session → staff sheet (edits StaffMember). Owner session
-       → shop sheet (edits Shop.name + Shop.logo_url). Each is gated
-       internally by the matching request.state.* check, so only the
-       right one is in the DOM. #}
+    {# Profile-edit sheet — tapped open from the s3_top avatar. Owner is
+       now a StaffMember with is_owner=True, so request.state.staff is
+       set for every shop session and a single sheet covers everyone.
+       Editing the shop brand (name + logo style) still lives at
+       /shop/settings/identity. #}
     {% if request.state.staff %}
       {% include "_partials/staff_profile_edit_sheet.html" %}
-    {% elif request.state.shop %}
-      {% include "_partials/shop_profile_edit_sheet.html" %}
     {% endif %}
   </div>
   {% include "_partials/sse_listener.html" %}
