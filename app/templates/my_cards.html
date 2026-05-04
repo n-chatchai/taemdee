@@ -90,7 +90,10 @@
 {% block content %}
   {% set is_guest = customer and customer.is_anonymous %}
   {% include "_partials/page_head.html" %}
-  {% include "_partials/line_friend_prompt.html" %}
+  {# line_friend_prompt was the green banner asking the customer to add
+     @taemdee on LINE; the customer todo block below now carries the
+     same prompt with claim/skip/auto-fulfill semantics, so the banner
+     was duplicating it. Removed. #}
 
   {# Customer todos — install PWA, link a provider, friend the OA, etc.
      services/customer_items.list_available already filters out items
@@ -101,7 +104,7 @@
       <span class="icon" style="color: var(--accent);">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
       </span>
-      รายการที่ต้องทำ
+      รายการแนะนำ
       <span class="count">{{ customer_items|length }} รายการ</span>
     </div>
     {% for it in customer_items %}
@@ -153,7 +156,21 @@
             <span class="td-cta">{{ it.cta }}</span>
           </button>
         {% elif it.kind == 'line_friend' %}
-          <a href="{{ settings.line_oa_friend_url }}" target="_blank" rel="noopener" class="s3-todo">
+          {# Tap → POST claim in background, then open the LINE
+             friend-add URL in a new tab. Claim hides the todo on the
+             next render even if the LINE webhook never fires (e.g.
+             customer's Login-channel userId differs from the OA's
+             Messaging-channel userId). The webhook still wins when
+             it does fire — it sets line_friend_status='friended'
+             which the auto-fulfill predicate also catches. #}
+          <a href="{{ settings.line_oa_friend_url }}" target="_blank" rel="noopener"
+             class="s3-todo"
+             onclick="
+               try {
+                 navigator.sendBeacon
+                   ? navigator.sendBeacon('/card/items/line_friend/claim', new FormData())
+                   : fetch('/card/items/line_friend/claim', {method:'POST', credentials:'same-origin', keepalive:true}).catch(() => {});
+               } catch(_) {}">
             <div class="td-info">
               <div class="td-h">{{ it.label|safe }}</div>
               <div class="td-s">{{ it.sub }}</div>

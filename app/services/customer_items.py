@@ -111,7 +111,10 @@ ITEMS: list[CustomerDashboardItem] = [
         # link injected at render time from settings.line_oa_friend_url
         is_eligible=lambda c: bool(c.line_id) and _line_messaging_enabled(),
         is_fulfilled=lambda c: c.line_friend_status == "friended",
-        skip_explain="ไม่ใช้ LINE · จะส่งทางช่องอื่นแทน",
+        # Skip = "I already added it" OR "I don't use LINE". Either
+        # way the row hides; the auto-fulfill predicate catches the
+        # actual follow event when the webhook later confirms.
+        skip_explain="เพิ่มแล้ว · หรือไม่ใช้ LINE",
     ),
     CustomerDashboardItem(
         kind="enable_push",
