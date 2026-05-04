@@ -554,22 +554,20 @@ async def _connect_originator_or_cookie(
     connect_customer_id: Optional[str],
     customer_cookie: Optional[str],
 ) -> Customer:
-    """Resolve the customer for an OAuth callback.
+    """Resolve the customer for a customer-side OAuth callback.
 
-    Rule: a "social connect" never spawns a new User. We bind onto the
-    one we already know about, or we refuse.
+    Hard rule: NEVER spawn a new User during a connect. Bind onto the
+    customer we already know about, or refuse loudly.
 
-      - connect_customer_id (from OAuth state JWT, baked in at /start)
-        → MUST resolve to that customer. The state JWT is signed and
-        survives the entire round-trip, so this is the bulletproof
-        carrier of "who's connecting."
-      - cookie present → that customer.
-      - neither → legitimate first-time sign-in via this provider;
-        find_or_create_customer creates the (only) user the OAuth flow
-        ever creates on the customer side.
+      - connect_customer_id (signed into OAuth state at /start) → use it.
+      - else customer_cookie (browser-mode flow, cookie travels with
+        the OAuth round-trip) → use it.
+      - else: refuse. We will not call find_or_create_customer here —
+        that would forge a fresh User exactly when we promised not to.
     """
+    from uuid import UUID
+
     if connect_customer_id:
-        from uuid import UUID
         try:
             cid = UUID(connect_customer_id)
         except (ValueError, TypeError):
@@ -591,17 +589,40 @@ async def _connect_originator_or_cookie(
                 "ไม่พบบัญชีต้นทาง · ลองออกแล้วเข้าใหม่",
             )
         logger.info(
-            "connect_originator: resolved from state customer=%s user=%s",
+            "connect_originator: from state customer=%s user=%s",
             existing.id, existing.user_id,
         )
         return existing
 
-    customer, was_created = await find_or_create_customer(customer_cookie, db)
-    logger.info(
-        "connect_originator: cookie path → customer=%s user=%s was_created=%s",
-        customer.id, customer.user_id, was_created,
+    if customer_cookie:
+        from app.services.auth import decode_customer_token
+        cid = decode_customer_token(customer_cookie)
+        if cid is None:
+            logger.error("connect_originator: cookie present but undecodable")
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "บัญชีต้นทางไม่ถูกต้อง · ลองออกแล้วเข้าใหม่",
+            )
+        existing = await db.get(Customer, cid)
+        if existing is None:
+            logger.error("connect_originator: cookie customer_id=%s not in DB", cid)
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "ไม่พบบัญชีต้นทาง · ลองออกแล้วเข้าใหม่",
+            )
+        logger.info(
+            "connect_originator: from cookie customer=%s user=%s",
+            existing.id, existing.user_id,
+        )
+        return existing
+
+    logger.error(
+        "connect_originator: refused — no connect_customer_id and no cookie"
     )
-    return customer
+    raise HTTPException(
+        status.HTTP_400_BAD_REQUEST,
+        "ไม่พบบัญชีที่จะเชื่อม · เปิดหน้าหลักก่อนแล้วลองใหม่",
+    )
 
 
 async def _resolve_customer_oauth(
