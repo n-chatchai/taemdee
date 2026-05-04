@@ -28,6 +28,8 @@ from app.services.team import (
     find_active_staff_for_user,
     find_pending_by_token,
     find_user_by_username,
+    is_valid_pin,
+    register_shop_with_pin,
     verify_pin,
 )
 
@@ -107,8 +109,13 @@ async def staff_pin_login_page(request: Request):
     )
 
 
-def _render_pin_form(request: Request, error: Optional[str] = None,
-                      username_value: str = ""):
+def _render_pin_form(
+    request: Request,
+    error: Optional[str] = None,
+    username_value: str = "",
+    shop_name_value: str = "",
+    initial_step: str = "login",
+):
     """Re-render the PIN login form with an inline error. We don't
     raise 401/403 directly because the global auth-error handler
     catches plain 401s and redirects to /shop/login?reason=invalid —
@@ -120,6 +127,8 @@ def _render_pin_form(request: Request, error: Optional[str] = None,
         context={
             "error": error,
             "username_value": username_value,
+            "shop_name_value": shop_name_value,
+            "initial_step": initial_step,
         },
         status_code=status.HTTP_400_BAD_REQUEST if error else status.HTTP_200_OK,
     )
@@ -170,6 +179,74 @@ async def staff_pin_login_post(
     # invite — same semantics as OAuth-via-invite.
     if staff.accepted_at is None:
         await accept_invite(db, staff)
+
+    redirect = RedirectResponse(
+        url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER,
+    )
+    _set_session_cookie(
+        redirect,
+        issue_session_token(
+            staff.shop_id, staff_id=staff.id, is_owner=staff.is_owner,
+        ),
+    )
+    return redirect
+
+
+@router.post("/staff/pin-register")
+async def staff_pin_register_post(
+    request: Request,
+    response: Response,
+    username: str = Form(...),
+    pin: str = Form(...),
+    shop_name: str = Form(...),
+    db: AsyncSession = Depends(get_session),
+):
+    """Brand-new owner sign-up via username + PIN. Creates a fresh
+    User + Shop + owner-staff and issues the session JWT. Independent
+    of OAuth and invites — this is how someone with no LINE/Google/
+    phone bootstraps a shop."""
+    host = request.headers.get("host", "").split(":")[0]
+    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    if not is_shop_host:
+        return _render_pin_form(
+            request,
+            error="เปิดหน้านี้บนโดเมนร้านค้าเท่านั้น",
+            username_value=username or "",
+            shop_name_value=shop_name or "",
+            initial_step="register",
+        )
+
+    uname = (username or "").strip()
+    pin_value = (pin or "").strip()
+    name = (shop_name or "").strip()
+
+    if not uname:
+        return _render_pin_form(
+            request, error="ใส่ Username", initial_step="register",
+            shop_name_value=name,
+        )
+    if not is_valid_pin(pin_value):
+        return _render_pin_form(
+            request, error="PIN ต้องเป็นตัวเลข 6 หลัก",
+            username_value=uname, shop_name_value=name, initial_step="register",
+        )
+    if not name:
+        return _render_pin_form(
+            request, error="ใส่ชื่อร้าน",
+            username_value=uname, initial_step="register",
+        )
+
+    existing = await find_user_by_username(db, uname)
+    if existing is not None:
+        return _render_pin_form(
+            request,
+            error=f"Username '{uname}' มีคนใช้แล้ว · ลองชื่ออื่น",
+            username_value=uname, shop_name_value=name, initial_step="register",
+        )
+
+    shop, staff = await register_shop_with_pin(
+        db, username=uname, pin=pin_value, shop_name=name,
+    )
 
     redirect = RedirectResponse(
         url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER,

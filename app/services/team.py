@@ -83,6 +83,34 @@ async def find_active_staff_for_user(
     has a User but needs to land on a Shop+Staff session."""
     return await _find_active_staff_for_user(db, user_id)
 
+
+async def register_shop_with_pin(
+    db: AsyncSession,
+    *,
+    username: str,
+    pin: str,
+    shop_name: str,
+    display_name: Optional[str] = None,
+) -> tuple[Shop, StaffMember]:
+    """Bootstrap a brand-new shop + owner User + owner-staff in one
+    shot. Used by the username/PIN signup path so a new owner can
+    register without ever touching OAuth or phone OTP. Caller validated
+    shape (PIN 6 digits) + uniqueness; this just commits."""
+    user = User(
+        username=username,
+        pin_hash=hash_pin(pin),
+        display_name=display_name or shop_name,
+    )
+    db.add(user)
+    await db.flush()
+
+    shop = Shop(name=shop_name)
+    db.add(shop)
+    await db.flush()
+
+    staff = await create_owner_staff(db, shop, user=user)
+    return shop, staff
+
 # Staff identity field set — no recovery_code (staff don't use the
 # anonymous-claim flow), so the four social/phone columns are it.
 _STAFF_IDENTITY_FIELDS = ("line_id", "google_id", "facebook_id", "phone")
