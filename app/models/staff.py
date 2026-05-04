@@ -16,6 +16,8 @@ class StaffMember(SQLModel, table=True):
 
     phone: Optional[str] = Field(default=None, index=True)
     line_id: Optional[str] = Field(default=None, index=True)
+    google_id: Optional[str] = Field(default=None, index=True)
+    facebook_id: Optional[str] = Field(default=None, index=True)
     display_name: Optional[str] = Field(default=None)
     picture_url: Optional[str] = Field(default=None)
 
