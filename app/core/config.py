@@ -78,7 +78,11 @@ class Settings(BaseSettings):
     # even for basic public_profile + email. Re-enable by adding
     # "facebook" once FACEBOOK_APP_ID / FACEBOOK_APP_SECRET are set.
     customer_logins: str = "line,google"
-    shop_logins: str = "line,google"
+    # Shop-side methods. "username" enables the user-level
+    # username + 6-digit PIN login (no OAuth round-trip) at
+    # /staff/pin-login. Customer side intentionally never includes it
+    # — PWA is connect-only, no login wall.
+    shop_logins: str = "line,google,username"
 
     # Google OAuth 2.0 (optional — if unset, the Google button returns 503).
     google_client_id: Optional[str] = None
