@@ -213,6 +213,7 @@ per memory). First tap flips Alpine state, second tap submits. #}
     const msg = document.getElementById('pair-overlay-msg');
     const redeemBtn = document.getElementById('pair-overlay-redeem');
     let activeCode = null;
+    let activeToken = null;
     let activeEs = null;
 
     function isStandalone() {
@@ -226,11 +227,14 @@ per memory). First tap flips Alpine state, second tap submits. #}
     }
 
     async function tryRedeem(silent) {
-      if (!activeCode) return false;
+      if (!activeCode || !activeToken) return false;
+      const fd = new FormData();
+      fd.append('pwa_token', activeToken);
       try {
         const r = await fetch(`/auth/pair/${encodeURIComponent(activeCode)}/redeem`, {
           method: 'POST',
           credentials: 'same-origin',
+          body: fd,
         });
         if (r.ok) {
           stopPolling();
@@ -258,6 +262,7 @@ per memory). First tap flips Alpine state, second tap submits. #}
       stopPolling();
       if (activeEs) { try { activeEs.close(); } catch (_) {} activeEs = null; }
       activeCode = null;
+      activeToken = null;
     });
 
     function startPolling() {
@@ -300,6 +305,7 @@ per memory). First tap flips Alpine state, second tap submits. #}
         if (!startResp.ok) throw new Error('pair start failed');
         const data = await startResp.json();
         activeCode = data.code;
+        activeToken = data.pwa_token;
       } catch (_) {
         msg.textContent = 'เริ่มเชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
         return;

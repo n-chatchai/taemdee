@@ -6,7 +6,7 @@ import asyncio
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
+from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -51,20 +51,18 @@ async def pair_start(
         )
     log.info("pair/start: originator_customer_id=%s", originator_id)
     row = await create_pairing(db, originator_customer_id=originator_id)
-    body = JSONResponse({
+    # Return pwa_token in the body. We used to set it as an HttpOnly
+    # cookie scoped to /auth/pair, but iOS PWA standalone mode
+    # sometimes drops that cookie across the window.open → Safari →
+    # PWA-resume hand-off, breaking /redeem with "pwa_token cookie
+    # missing". Returning it in the body lets the PWA stash it in
+    # memory and pass it back explicitly on redeem — no cookie scope
+    # to fight with.
+    return JSONResponse({
         "code": row.code,
+        "pwa_token": row.pwa_token,
         "expires_at": row.expires_at.isoformat() + "Z",
     })
-    body.set_cookie(
-        key=PWA_TOKEN_COOKIE,
-        value=row.pwa_token,
-        httponly=True,
-        secure=True,  # always Secure — local dev uses HTTPS via mkcert
-        samesite="lax",
-        max_age=PAIRING_TTL_MINUTES * 60,
-        path="/auth/pair",
-    )
-    return body
 
 
 @router.get("/auth/pair/{code}/events")
@@ -123,16 +121,17 @@ async def pair_events(
 async def pair_redeem(
     code: str,
     response: Response,
-    pwa_token: Optional[str] = Cookie(None, alias=PWA_TOKEN_COOKIE),
+    pwa_token_form: Optional[str] = Form(None, alias="pwa_token"),
+    pwa_token_cookie: Optional[str] = Cookie(None, alias=PWA_TOKEN_COOKIE),
     db: AsyncSession = Depends(get_session),
 ):
-    """Verify the pwa_token cookie matches the Pairing row, mark it
-    redeemed, and set the customer cookie on the response (lands in
-    the PWA's cookie store since this request was issued from the PWA)."""
+    """Verify the pwa_token from the body (preferred — survives iOS
+    PWA cookie isolation) or the legacy cookie, mark the row redeemed,
+    and set the customer cookie on the response."""
+    pwa_token = pwa_token_form or pwa_token_cookie
     row = await redeem_pairing(db, code, pwa_token)
     if row is None or row.customer_id is None:
         return Response(status_code=status.HTTP_410_GONE)
     body = JSONResponse({"ok": True})
     set_customer_cookie(body, row.customer_id)
-    body.delete_cookie(PWA_TOKEN_COOKIE, path="/auth/pair")
     return body
