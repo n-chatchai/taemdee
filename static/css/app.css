@@ -5141,6 +5141,20 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   line-height: 1.5;
   margin-bottom: 16px;
 }
+.pair-overlay-primary {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 999px;
+  padding: 11px 22px;
+  margin-bottom: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  cursor: pointer;
+  box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.45);
+}
+.pair-overlay-primary:active { transform: scale(0.97); }
 .pair-overlay-cancel {
   background: transparent;
   border: 1px solid rgba(17, 17, 17, 0.18);

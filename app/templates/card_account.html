@@ -203,6 +203,9 @@ per memory). First tap flips Alpine state, second tap submits. #}
       เข้าสู่ระบบในเบราว์เซอร์ที่เปิดขึ้น<br>
       จากนั้นกลับมาที่นี่อัตโนมัติ
     </div>
+    <button type="button" class="pair-overlay-primary" id="pair-overlay-redeem">
+      ฉันเข้าสู่ระบบแล้ว · ลองอีกครั้ง
+    </button>
     <button type="button" class="pair-overlay-cancel" onclick="document.getElementById('pair-overlay').hidden = true;">ยกเลิก</button>
   </div>
 </div>
@@ -214,26 +217,61 @@ per memory). First tap flips Alpine state, second tap submits. #}
   // the cookie back into the PWA's own context. Outside PWA mode, the
   // anchor's default href navigation runs unchanged.
   (function () {
+    const overlay = document.getElementById('pair-overlay');
+    const msg = document.getElementById('pair-overlay-msg');
+    const redeemBtn = document.getElementById('pair-overlay-redeem');
+    let activeCode = null;
+    let activeEs = null;
+
     function isStandalone() {
       return document.documentElement.classList.contains('pwa-standalone');
     }
+
+    async function tryRedeem() {
+      if (!activeCode) return false;
+      try {
+        const r = await fetch(`/auth/pair/${encodeURIComponent(activeCode)}/redeem`, {
+          method: 'POST',
+          credentials: 'same-origin',
+        });
+        if (r.ok) {
+          window.location.reload();
+          return true;
+        }
+        // 410 = no claim yet OR already redeemed. Treat as "still waiting".
+        msg.innerHTML = 'ยังไม่พบการเข้าสู่ระบบ · ลองใหม่อีกครั้งหลังเข้าสู่ระบบเสร็จ';
+      } catch (_) {
+        msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
+      }
+      return false;
+    }
+
+    redeemBtn.addEventListener('click', tryRedeem);
+
+    // Foreground re-check — when the PWA returns to foreground after the
+    // user authed in the external browser, the SSE may have been culled
+    // by iOS background tab policies. Try /redeem once on visibility
+    // change as a belt-and-braces poke.
+    document.addEventListener('visibilitychange', () => {
+      if (document.visibilityState === 'visible' && activeCode && !overlay.hidden) {
+        tryRedeem();
+      }
+    });
+
     document.addEventListener('click', async (e) => {
       const a = e.target.closest('a.s10-row.connect-row[data-pair-start]');
       if (!a) return;
       if (!isStandalone()) return;  // browser flow: let the anchor navigate
 
       e.preventDefault();
-      const overlay = document.getElementById('pair-overlay');
-      const msg = document.getElementById('pair-overlay-msg');
       overlay.hidden = false;
+      msg.innerHTML = 'เข้าสู่ระบบในเบราว์เซอร์ที่เปิดขึ้น<br>จากนั้นกลับมาที่นี่อัตโนมัติ';
 
-      let code = null;
-      let es = null;
       try {
         const startResp = await fetch('/auth/pair/start', { method: 'POST', credentials: 'same-origin' });
         if (!startResp.ok) throw new Error('pair start failed');
         const data = await startResp.json();
-        code = data.code;
+        activeCode = data.code;
       } catch (_) {
         msg.textContent = 'เริ่มเชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
         return;
@@ -241,28 +279,19 @@ per memory). First tap flips Alpine state, second tap submits. #}
 
       // SSE for the claimed event. The PWA stays on this page; the
       // overlay sits in front while OAuth happens in the system browser.
-      es = new EventSource(`/auth/pair/${encodeURIComponent(code)}/events`);
-      es.addEventListener('claimed', async () => {
-        es.close();
-        try {
-          const r = await fetch(`/auth/pair/${encodeURIComponent(code)}/redeem`, {
-            method: 'POST',
-            credentials: 'same-origin',
-          });
-          if (r.ok) {
-            window.location.reload();
-          } else {
-            msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
-          }
-        } catch (_) {
-          msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
-        }
+      // SSE is best-effort — iOS may suspend it when the PWA goes
+      // background, which is why the explicit redeem button + the
+      // visibilitychange handler above exist as fallbacks.
+      activeEs = new EventSource(`/auth/pair/${encodeURIComponent(activeCode)}/events`);
+      activeEs.addEventListener('claimed', () => {
+        activeEs.close();
+        tryRedeem();
       });
-      es.addEventListener('expired', () => {
-        es.close();
+      activeEs.addEventListener('expired', () => {
+        activeEs.close();
         msg.textContent = 'หมดเวลา · ลองใหม่อีกครั้ง';
       });
-      es.onerror = () => {
+      activeEs.onerror = () => {
         // Auto-reconnects on transient network errors; only surface a
         // message if the stream stays closed for a while.
       };
@@ -272,7 +301,7 @@ per memory). First tap flips Alpine state, second tap submits. #}
       // PWAs it opens a new tab in Chrome. Either way, OAuth lands in
       // the user's default browser.
       const sep = a.dataset.pairStart.includes('?') ? '&' : '?';
-      window.open(a.dataset.pairStart + sep + 'pair=' + encodeURIComponent(code), '_blank');
+      window.open(a.dataset.pairStart + sep + 'pair=' + encodeURIComponent(activeCode), '_blank');
     });
   })();
 </script>

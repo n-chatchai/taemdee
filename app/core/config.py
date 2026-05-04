@@ -52,7 +52,7 @@ class Settings(BaseSettings):
     login_otp_simulate: bool = False
 
     # Login methods enabled for each role (comma-separated: line,phone,google,facebook)
-    customer_logins: str = "line,google"
+    customer_logins: str = "line,google,facebook"
     shop_logins: str = "line,google"
 
     # Google OAuth 2.0 (optional — if unset, the Google button returns 503).
