@@ -6,7 +6,7 @@ import asyncio
 import json
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, Request, Response, status
+from fastapi import APIRouter, Cookie, Depends, HTTPException, Request, Response, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -41,9 +41,23 @@ async def pair_start(
     to bind the new provider to the SAME customer/user, instead of
     spawning a fresh anonymous row in the cookie-less system browser
     that would otherwise overwrite the PWA's session at /redeem."""
-    originator_id = None
-    if customer_cookie:
-        originator_id = decode_customer_token(customer_cookie)
+    import logging
+    log = logging.getLogger(__name__)
+    originator_id = decode_customer_token(customer_cookie) if customer_cookie else None
+    if originator_id is None:
+        # Hard rule: a connect flow can only START from a known customer.
+        # Without an originator, the OAuth callback in the system browser
+        # would have to mint a fresh User — exactly what we never want
+        # to happen on a connect. Refuse here so the PWA can surface a
+        # "log in first" prompt instead of silently forking the account.
+        log.error(
+            "pair/start: rejected — customer cookie missing or invalid"
+        )
+        raise HTTPException(
+            status.HTTP_401_UNAUTHORIZED,
+            "ยังไม่ได้เข้าสู่ระบบในแอป · ลองออกแล้วเข้าใหม่",
+        )
+    log.info("pair/start: originator_customer_id=%s", originator_id)
     row = await create_pairing(db, originator_customer_id=originator_id)
     body = JSONResponse({
         "code": row.code,

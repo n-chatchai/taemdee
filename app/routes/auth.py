@@ -512,23 +512,63 @@ async def _pair_originator_or_cookie(
     pair_code: Optional[str],
     customer_cookie: Optional[str],
 ) -> Customer:
-    """When the OAuth flow carries a pair code, look up the originating
-    PWA's customer (recorded by /auth/pair/start). Falls back to the
-    cookie-based path when there's no pair code or the originator is
-    missing/expired.
+    """Resolve the customer for an OAuth callback.
 
-    Without this, the system browser running OAuth has no customer
-    cookie and `find_or_create_customer` would mint a fresh User —
-    parallel to the PWA's existing identity instead of binding onto it.
+    Rule: a "social connect" never spawns a new User. We bind onto the
+    one we already know about, or we refuse.
+
+      - pair_code set → MUST resolve to the originator the PWA recorded
+        at /auth/pair/start. No fallback (a missing originator means
+        the PWA's cookie didn't make it; silently creating a new user
+        is exactly the bug we're trying to fix).
+      - cookie present → that customer.
+      - neither → legitimate first-time sign-in via this provider;
+        find_or_create_customer creates the (only) user the OAuth flow
+        ever creates on the customer side.
     """
     if pair_code:
         from app.services.pairing import find_active_pairing
         pair_row = await find_active_pairing(db, pair_code)
-        if pair_row and pair_row.originator_customer_id:
-            existing = await db.get(Customer, pair_row.originator_customer_id)
-            if existing is not None:
-                return existing
-    customer, _ = await find_or_create_customer(customer_cookie, db)
+        if pair_row is None:
+            logger.error(
+                "pair_originator: pair_code=%s has no active pair row",
+                pair_code[:8],
+            )
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "ลิงก์เชื่อมต่อหมดอายุ · กลับไปที่แอปแล้วลองใหม่",
+            )
+        if pair_row.originator_customer_id is None:
+            logger.error(
+                "pair_originator: pair_code=%s has no originator — "
+                "/auth/pair/start did not see a customer cookie",
+                pair_code[:8],
+            )
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "เริ่มต้นเชื่อมต่อจาก PWA ไม่สำเร็จ · ลองเปิดแอปแล้วเชื่อมอีกครั้ง",
+            )
+        existing = await db.get(Customer, pair_row.originator_customer_id)
+        if existing is None:
+            logger.error(
+                "pair_originator: originator_customer_id=%s not in DB",
+                pair_row.originator_customer_id,
+            )
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST,
+                "ไม่พบบัญชีต้นทาง · ลองออกแล้วเข้าใหม่",
+            )
+        logger.info(
+            "pair_originator: resolved via originator customer=%s user=%s",
+            existing.id, existing.user_id,
+        )
+        return existing
+
+    customer, was_created = await find_or_create_customer(customer_cookie, db)
+    logger.info(
+        "pair_originator: cookie path → customer=%s user=%s was_created=%s",
+        customer.id, customer.user_id, was_created,
+    )
     return customer
 
 
