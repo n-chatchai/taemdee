@@ -6404,6 +6404,16 @@ form.s10-row { margin: 0 0 4px; }
   font-size: 13px;
 }
 
+/* "ไม่จำกัด" toggle on /shop/settings/cooldown dims the value+unit
+   block while the override is on — visually communicates "this row
+   is overridden" without removing the controls (so flipping unlimited
+   off restores the previously chosen value). */
+.s10-section.is-dim {
+  opacity: 0.45;
+  pointer-events: none;
+}
+.s10-section.is-dim button { cursor: not-allowed; }
+
 .s5-tip {
   margin: 22px 20px 0;
   padding: 12px 14px;

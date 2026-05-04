@@ -10,6 +10,7 @@
    change debounce-fetches a POST so there's no save button to hunt
    for; a small bottom-right pill confirms each save. #}
 <div x-data="{
+        unlimited: {{ 'true' if unlimited else 'false' }},
         value: {{ cooldown.value }},
         unit: '{{ cooldown.unit }}',
         saving: false,
@@ -22,6 +23,7 @@
         async save() {
           this.saving = true;
           const fd = new FormData();
+          fd.append('unlimited', this.unlimited ? '1' : '0');
           fd.append('value', String(this.value));
           fd.append('unit', this.unit);
           try {
@@ -36,17 +38,38 @@
           this.saving = false;
         }
       }"
-      x-init="['value','unit'].forEach(k => $watch(k, () => scheduleSave()));">
+      x-init="['unlimited','value','unit'].forEach(k => $watch(k, () => scheduleSave()));">
 
   <div class="s5-q">
     <div class="ask">ระยะเวลา<em>ห่างแต้ม.</em></div>
     <div class="ask-th">กันลูกค้าสแกนรัวๆ · เลือก 1 คะแนนต่อ X วัน/สัปดาห์/เดือน</div>
   </div>
 
+  {# "ไม่จำกัด" toggle — when on, scan_cooldown_minutes is saved as 0
+     (the scan handler treats 0 as no throttle) and the value/unit
+     row dims out. #}
+  <div class="s10-section">
+    <label class="s5-toggle-row" @click.prevent="unlimited = !unlimited">
+      <div class="t-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M18.178 8c5.096 0 5.096 8 0 8-5.095 0-7.133-8-12.739-8-4.585 0-4.585 8 0 8 5.606 0 7.644-8 12.739-8z"/>
+        </svg>
+      </div>
+      <div class="t-info">
+        <div class="t-name-row"><span class="t-name">ไม่จำกัด</span></div>
+        <div class="t-sub">สแกนกี่ครั้งก็ได้ · ไม่ต้องรอ</div>
+      </div>
+      <div class="s5-toggle" :class="{ on: unlimited }">
+        <div class="dot"></div>
+      </div>
+    </label>
+  </div>
+
   {# Single inline sentence: "1 คะแนนต่อ [N] [unit]". Default N=1
      unit=day so a fresh shop sees "1 คะแนนต่อ 1 วัน". Quick presets
-     below jump to common shop intervals. #}
-  <div class="s10-section">
+     below jump to common shop intervals. The whole block dims out
+     when ไม่จำกัด is on. #}
+  <div class="s10-section" :class="{ 'is-dim': unlimited }">
     <div class="label">1 คะแนนต่อ</div>
     <div class="s10-cooldown-row">
       <input
@@ -56,18 +79,19 @@
         min="1"
         max="365"
         x-model.number="value"
+        :disabled="unlimited"
       />
-      <select name="unit" class="s10-cooldown-unit" x-model="unit">
+      <select name="unit" class="s10-cooldown-unit" x-model="unit" :disabled="unlimited">
         <option value="day">วัน</option>
         <option value="week">สัปดาห์</option>
         <option value="month">เดือน</option>
       </select>
     </div>
     <div class="s10-cooldown-presets">
-      <button type="button" @click="value = 1; unit = 'day'">1 วัน</button>
-      <button type="button" @click="value = 1; unit = 'week'">1 สัปดาห์</button>
-      <button type="button" @click="value = 2; unit = 'week'">2 สัปดาห์</button>
-      <button type="button" @click="value = 1; unit = 'month'">1 เดือน</button>
+      <button type="button" @click="unlimited = false; value = 1; unit = 'day'">1 วัน</button>
+      <button type="button" @click="unlimited = false; value = 1; unit = 'week'">1 สัปดาห์</button>
+      <button type="button" @click="unlimited = false; value = 2; unit = 'week'">2 สัปดาห์</button>
+      <button type="button" @click="unlimited = false; value = 1; unit = 'month'">1 เดือน</button>
     </div>
   </div>
 

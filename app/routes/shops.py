@@ -1757,6 +1757,10 @@ async def settings_cooldown_get(
         context={
             "shop": shop,
             "cooldown": _cooldown_form_state(shop.scan_cooldown_minutes or 0),
+            # 0 = unlimited (no throttle). Template renders the
+            # "ไม่จำกัด" toggle in the on state and disables the
+            # value/unit row when this is True.
+            "unlimited": (shop.scan_cooldown_minutes or 0) == 0,
         },
     )
 
@@ -1768,18 +1772,25 @@ async def settings_cooldown_get(
 async def settings_cooldown_post(
     value: int = Form(1),
     unit: str = Form("day"),
+    unlimited: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
     """Save the cooldown as N units (วัน/สัปดาห์/เดือน) → minutes.
-    Form always submits at least 1 / day; min=1 in the input enforces
-    that on the client. Server clamps just in case the form was
-    bypassed."""
-    if unit not in _COOLDOWN_UNITS:
-        raise HTTPException(status.HTTP_400_BAD_REQUEST, "หน่วยเวลาไม่ถูกต้อง")
-    if value < 1:
-        value = 1
-    shop.scan_cooldown_minutes = value * _COOLDOWN_UNIT_MINUTES[unit]
+
+    `unlimited="1"` (the "ไม่จำกัด" toggle) overrides value/unit and
+    saves scan_cooldown_minutes = 0, which the scan handler reads as
+    "no throttle". Default form submits at least 1 / day; server
+    clamps in case the form was bypassed.
+    """
+    if unlimited == "1":
+        shop.scan_cooldown_minutes = 0
+    else:
+        if unit not in _COOLDOWN_UNITS:
+            raise HTTPException(status.HTTP_400_BAD_REQUEST, "หน่วยเวลาไม่ถูกต้อง")
+        if value < 1:
+            value = 1
+        shop.scan_cooldown_minutes = value * _COOLDOWN_UNIT_MINUTES[unit]
     db.add(shop)
     await db.commit()
     # Tick the dashboard todo on save (silently no-op if already claimed).

@@ -528,11 +528,11 @@ async def issue_grant_action(
 
 @router.post("/issue/methods")
 async def save_issuance_methods(
-    static_qr: str = Form("0"),
-    live_qr: str = Form("0"),
-    shop_scan: str = Form("0"),
-    phone_entry: str = Form("0"),
-    grant: str = Form("0"),
+    static_qr: Optional[str] = Form(None),
+    live_qr: Optional[str] = Form(None),
+    shop_scan: Optional[str] = Form(None),
+    phone_entry: Optional[str] = Form(None),
+    grant: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
@@ -540,12 +540,22 @@ async def save_issuance_methods(
     split into static_qr (printed counter sticker) and live_qr (S3.qr
     rotating on-screen QR) so each can be turned off independently.
     Visiting this page also auto-claims the 'issue_methods_review'
-    dashboard todo on save."""
-    shop.issue_method_static_qr = static_qr == "1"
-    shop.issue_method_live_qr = live_qr == "1"
-    shop.issue_method_shop_scan = shop_scan == "1"
-    shop.issue_method_phone_entry = phone_entry == "1"
-    shop.issue_method_grant = grant == "1"
+    dashboard todo on save.
+
+    All five fields default to None (not "0") so an incomplete payload
+    leaves the omitted toggles untouched — closes the latent bug where
+    POSTing one field flipped every other toggle to disabled.
+    """
+    if static_qr is not None:
+        shop.issue_method_static_qr = static_qr == "1"
+    if live_qr is not None:
+        shop.issue_method_live_qr = live_qr == "1"
+    if shop_scan is not None:
+        shop.issue_method_shop_scan = shop_scan == "1"
+    if phone_entry is not None:
+        shop.issue_method_phone_entry = phone_entry == "1"
+    if grant is not None:
+        shop.issue_method_grant = grant == "1"
     db.add(shop)
     # Commit shop changes first — claim_item rolls the session back on a
     # duplicate-claim IntegrityError, which would otherwise drop the
