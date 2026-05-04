@@ -16,6 +16,7 @@
      bell_unread  — truthy to show the pulsing badge on the bell icon
 #}
 {% set _s3_logo = shop_logo(shop) %}
+{% set _s3_staff = request.state.staff %}
 <div class="s3-top">
   <div class="hi">
     <span class="td-greet">สวัสดี <span class="td-brand">{{ shop.name }}<span class="dot">.</span></span></span>
@@ -28,13 +29,27 @@
       </svg>
       {% if bell_unread %}<span class="bell-badge"></span>{% endif %}
     </a>
-    <a class="s3-avatar" href="/shop/settings/identity" title="แก้ไขข้อมูลร้าน" aria-label="แก้ไขข้อมูลร้าน">
-      {% if _s3_logo and _s3_logo.is_image %}
-        <img src="{{ _s3_logo.url }}" alt="">
-      {% else %}
-        <span>{{ (shop.name[0]|upper) if shop.name else 'ร' }}</span>
-      {% endif %}
-    </a>
+    {% if _s3_staff %}
+      {# Staff session — avatar shows their personal picture/initial and
+         opens the staff profile sheet. Tapping a "shop logo" link here
+         would let staff edit shop identity, which is an owner-only flow. #}
+      <button type="button" class="s3-avatar" data-open="staff-profile-edit"
+              title="แก้ไขโปรไฟล์" aria-label="แก้ไขโปรไฟล์">
+        {% if _s3_staff.picture_url %}
+          <img src="{{ _s3_staff.picture_url }}" alt="">
+        {% else %}
+          <span>{{ (_s3_staff.display_name[0]|upper) if _s3_staff.display_name else 'พ' }}</span>
+        {% endif %}
+      </button>
+    {% else %}
+      <a class="s3-avatar" href="/shop/settings/identity" title="แก้ไขข้อมูลร้าน" aria-label="แก้ไขข้อมูลร้าน">
+        {% if _s3_logo and _s3_logo.is_image %}
+          <img src="{{ _s3_logo.url }}" alt="">
+        {% else %}
+          <span>{{ (shop.name[0]|upper) if shop.name else 'ร' }}</span>
+        {% endif %}
+      </a>
+    {% endif %}
   </div>
 </div>
 

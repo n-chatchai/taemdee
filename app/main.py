@@ -131,6 +131,64 @@ class CustomerContextMiddleware:
         await self.app(scope, receive, send)
 
 
+class ShopContextMiddleware:
+    """Resolve the shop session cookie once per request and stash both the
+    Shop and (optionally) the StaffMember on scope["state"]. Templates read
+    these via request.state.shop / request.state.staff to render owner-vs-
+    staff variants of shared chrome (e.g. the s3_top avatar shows the
+    staff's profile picture instead of the shop logo when logged in as
+    staff).
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        from app.core.database import SessionFactory
+        from app.models import StaffMember
+
+        shop = None
+        staff = None
+        cookie_header = ""
+        for k, v in scope.get("headers", []):
+            if k == b"cookie":
+                cookie_header = v.decode("latin-1")
+                break
+        if cookie_header:
+            jar = SimpleCookie()
+            jar.load(cookie_header)
+            morsel = jar.get(SESSION_COOKIE_NAME)
+            if morsel:
+                payload = decode_session_token(morsel.value)
+                if payload and payload.get("shop_id"):
+                    from uuid import UUID
+                    try:
+                        shop_id = UUID(payload["shop_id"])
+                    except (ValueError, TypeError):
+                        shop_id = None
+                    staff_id_raw = payload.get("staff_id")
+                    staff_id = None
+                    if staff_id_raw:
+                        try:
+                            staff_id = UUID(staff_id_raw)
+                        except (ValueError, TypeError):
+                            pass
+                    if shop_id:
+                        async with SessionFactory() as db:
+                            shop = await db.get(Shop, shop_id)
+                            if staff_id:
+                                staff = await db.get(StaffMember, staff_id)
+
+        state = scope.setdefault("state", {})
+        state["shop"] = shop
+        state["staff"] = staff
+        await self.app(scope, receive, send)
+
+
 class SubdomainRoutingMiddleware:
     """Separate shop.taemdee.com from taemdee.com.
 
@@ -216,11 +274,13 @@ class SubdomainRoutingMiddleware:
 
 
 # Order: add_middleware adds to the OUTSIDE, so the last-added wraps everything.
-# Resulting execution order on inbound: SubdomainRouting → CustomerContext →
-# RevalidateHTML → app. Outbound: app → RevalidateHTML (stamps headers) →
-# CustomerContext → SubdomainRouting → client.
+# Resulting execution order on inbound: SubdomainRouting → ShopContext →
+# CustomerContext → RevalidateHTML → app. Outbound reverses. Both context
+# middlewares are no-ops when the matching cookie is missing, so the order
+# between them doesn't matter functionally.
 app.add_middleware(RevalidateHTMLMiddleware)
 app.add_middleware(CustomerContextMiddleware)
+app.add_middleware(ShopContextMiddleware)
 app.add_middleware(SubdomainRoutingMiddleware)
 
 

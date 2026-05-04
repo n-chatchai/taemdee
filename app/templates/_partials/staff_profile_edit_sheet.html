@@ -1,0 +1,114 @@
+{# Staff profile edit bottom sheet — opened by tapping the .s3-avatar
+   button in s3_top.html when the active session is a staff session.
+   Mirrors _partials/profile_edit_sheet.html (the customer-side version)
+   and POSTs to /shop/staff/profile. Owner sessions never render this
+   partial — see s_base.html. #}
+{% set _staff = request.state.staff %}
+{% if _staff %}
+<div class="install-sheet-overlay" id="staff-profile-edit-overlay" aria-hidden="true">
+  <div class="install-sheet" role="dialog" aria-label="แก้ไขโปรไฟล์">
+    <div class="sheet-handle"></div>
+
+    <form action="/shop/team/profile" method="POST" enctype="multipart/form-data"
+          class="profile-edit-form" id="staff-profile-edit-form">
+      <input type="hidden" name="next_url" id="staff-profile-edit-next" value="/shop/dashboard">
+
+      <div class="pe-avatar-wrap">
+        <label for="staff-profile-edit-file" class="pe-avatar" id="staff-profile-edit-avatar">
+          {% if _staff.picture_url %}
+            <img id="staff-pe-preview" src="{{ _staff.picture_url }}" alt="">
+          {% else %}
+            <span id="staff-pe-preview-fallback">{{ (_staff.display_name[0]|upper) if _staff.display_name else 'พ' }}</span>
+          {% endif %}
+          <span class="pe-edit-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </span>
+        </label>
+        <input type="file" id="staff-profile-edit-file" name="picture" accept="image/*" hidden>
+        <button type="button" id="staff-profile-edit-default" class="pe-default-btn">ใช้ค่าเริ่มต้น</button>
+      </div>
+
+      <label for="staff-profile-edit-name" class="pe-label">ชื่อที่อยากให้เรียก</label>
+      <input type="text" id="staff-profile-edit-name" name="display_name" required
+             value="{{ _staff.display_name or '' }}" maxlength="40"
+             placeholder="เช่น พี่นุ่น">
+
+      <input type="hidden" name="use_default" id="staff-profile-edit-use-default" value="">
+
+      <div class="pe-actions">
+        <button type="button" class="pe-cancel" data-close="staff-profile-edit">ยกเลิก</button>
+        <button type="submit" class="pe-save">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const overlay = document.getElementById('staff-profile-edit-overlay');
+    if (!overlay) return;
+    const fileInput = document.getElementById('staff-profile-edit-file');
+    const preview = document.getElementById('staff-pe-preview');
+    const fallback = document.getElementById('staff-pe-preview-fallback');
+    const avatarBox = document.getElementById('staff-profile-edit-avatar');
+    const useDefaultFlag = document.getElementById('staff-profile-edit-use-default');
+    const defaultBtn = document.getElementById('staff-profile-edit-default');
+    const nextField = document.getElementById('staff-profile-edit-next');
+
+    function show() {
+      nextField.value = window.location.pathname + window.location.search;
+      overlay.setAttribute('aria-hidden', 'false');
+      overlay.classList.add('open');
+    }
+    function hide() {
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.classList.remove('open');
+    }
+
+    document.querySelectorAll('[data-open="staff-profile-edit"]').forEach((btn) => {
+      btn.addEventListener('click', show);
+    });
+    document.querySelectorAll('[data-close="staff-profile-edit"]').forEach((btn) => {
+      btn.addEventListener('click', hide);
+    });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) hide(); });
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      const r = new FileReader();
+      r.onload = () => {
+        useDefaultFlag.value = '';
+        const cur = avatarBox.querySelector('img');
+        if (cur) {
+          cur.src = r.result;
+        } else {
+          const span = avatarBox.querySelector('#staff-pe-preview-fallback');
+          const img = document.createElement('img');
+          img.id = 'staff-pe-preview';
+          img.alt = '';
+          img.src = r.result;
+          if (span) span.replaceWith(img);
+        }
+      };
+      r.readAsDataURL(file);
+    });
+
+    defaultBtn.addEventListener('click', () => {
+      useDefaultFlag.value = '1';
+      fileInput.value = '';
+      const img = avatarBox.querySelector('img');
+      if (img) {
+        const span = document.createElement('span');
+        span.id = 'staff-pe-preview-fallback';
+        const name = (document.getElementById('staff-profile-edit-name').value || 'พ').trim();
+        span.textContent = (name[0] || 'พ').toUpperCase();
+        img.replaceWith(span);
+      }
+    });
+  })();
+</script>
+{% endif %}

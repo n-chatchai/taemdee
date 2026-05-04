@@ -17,6 +17,7 @@ class StaffMember(SQLModel, table=True):
     phone: Optional[str] = Field(default=None, index=True)
     line_id: Optional[str] = Field(default=None, index=True)
     display_name: Optional[str] = Field(default=None)
+    picture_url: Optional[str] = Field(default=None)
 
     # Permissions — "Issue stamps" is implicit (being invited means you can issue).
     can_void: bool = Field(default=True)

@@ -5,12 +5,12 @@ new visitor at that point)."""
 from typing import Optional
 from uuid import UUID
 
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
+from fastapi import APIRouter, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import HTMLResponse, RedirectResponse
 from app.core.templates import templates
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import SessionContext, get_current_shop, require_owner
+from app.core.auth import SessionContext, get_current_shop, get_current_staff, require_owner
 from app.core.database import get_session
 from app.models import Shop, StaffMember
 from app.services.team import (
@@ -176,3 +176,51 @@ async def revoke(
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Staff member not found")
     await revoke_staff(db, staff)
     return RedirectResponse(url="/shop/team", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/profile")
+async def staff_update_profile(
+    display_name: str = Form(...),
+    use_default: Optional[str] = Form(None),
+    next_url: str = Form("/shop/dashboard"),
+    picture: Optional[UploadFile] = File(None),
+    staff: Optional[StaffMember] = Depends(get_current_staff),
+    db: AsyncSession = Depends(get_session),
+):
+    """A staff member updates their own display_name + picture_url.
+
+    Owners hit a 403 — they edit shop identity at /shop/settings/identity
+    instead. `use_default=1` clears picture_url so the avatar falls back
+    to the initial circle. Otherwise an uploaded picture is stored in R2.
+    """
+    if staff is None:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "Owner sessions edit shop identity, not staff profile.",
+        )
+
+    from app.services.storage import upload_to_r2
+
+    new_name = display_name.strip()
+    if new_name:
+        staff.display_name = new_name
+
+    if use_default == "1":
+        staff.picture_url = None
+    elif picture is not None and picture.filename:
+        image_bytes = await picture.read()
+        if image_bytes:
+            url = await upload_to_r2(
+                image_bytes,
+                file_name=picture.filename,
+                content_type=picture.content_type or "image/jpeg",
+                folder=f"staff-avatars/{staff.id}",
+            )
+            if url:
+                staff.picture_url = url
+
+    db.add(staff)
+    await db.commit()
+
+    safe_next = next_url if next_url.startswith("/") else "/shop/dashboard"
+    return RedirectResponse(url=safe_next, status_code=status.HTTP_303_SEE_OTHER)
