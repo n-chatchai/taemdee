@@ -216,6 +216,13 @@ def _lower_full(name: str) -> str:
 # out readable across the picker. Keep variety: first-word + last-word +
 # full-name styles all in rotation so a 3-pick covers different framings.
 STYLES: List[LogoStyle] = [
+    # lt-1 was missing from the registry but its CSS class exists and
+    # the shop_settings flow lets owners save it as the chosen style.
+    # That left some pre-existing rows with logo_url='text:lt-1' that
+    # shop_logo() rejected (returned None), so customer pages fell
+    # through to a bare-initial fallback. Restored with _all_words so
+    # the full shop name renders as the wordmark.
+    LogoStyle("lt-1", "lt-1", _all_words, show_dot=True),
     LogoStyle("lt-2", "lt-2", _first_word),
     LogoStyle("lt-3", "lt-3", _first_two_words),
     LogoStyle("lt-4", "lt-4", _all_caps_full),
