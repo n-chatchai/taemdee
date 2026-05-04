@@ -305,10 +305,12 @@ app.add_middleware(SubdomainRoutingMiddleware)
 @app.exception_handler(CustomerAuthError)
 @app.exception_handler(status.HTTP_401_UNAUTHORIZED)
 async def auth_error_handler(request: Request, exc: HTTPException):
-    """When a session is missing/invalid, redirect to the appropriate login page.
+    """Redirect on stale auth state.
 
     - SessionAuthError -> /shop/login
-    - CustomerAuthError -> /customer/login
+    - CustomerAuthError -> /my-cards (PWA never shows a login wall;
+      bouncing to /my-cards clears the stale cookie + mints a fresh
+      anonymous customer in one round-trip)
     - Plain 401 -> host/path sniffing fallback
     """
     # 1. Determine if this is a Shop or Customer error
@@ -330,7 +332,7 @@ async def auth_error_handler(request: Request, exc: HTTPException):
         login_url = f"/shop/login?reason={reason}"
         cookie_to_clear = SESSION_COOKIE_NAME
     else:
-        login_url = f"/customer/login?reason={reason}"
+        login_url = "/my-cards"
         cookie_to_clear = CUSTOMER_COOKIE_NAME
 
     # 3. Handle HTML vs JSON/API responses

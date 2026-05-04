@@ -137,7 +137,8 @@ async def find_or_create_customer(
 ) -> tuple[Customer, bool]:
     """Resolve the customer for this request.
     - If valid cookie: return existing customer.
-    - If invalid cookie: raise CustomerAuthError (triggers login redirect).
+    - If invalid cookie: raise CustomerAuthError (handler clears the
+      stale cookie and redirects to /my-cards, which mints fresh).
     - If no cookie: create new anonymous customer.
     """
 
@@ -150,7 +151,6 @@ async def find_or_create_customer(
         if existing:
             return existing, False
         else:
-            # Token valid but customer deleted? Also invalid.
             raise CustomerAuthError("token_invalid")
 
     # Anonymous customers still need a User row — Customer.user_id is
