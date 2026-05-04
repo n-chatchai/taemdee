@@ -5035,24 +5035,118 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 .s10-row.connect-row.connected { cursor: default; }
 
-/* PWA connect-flow handling — iOS Safari home-screen apps can't
-   complete OAuth round-trips (the cookie set in system Safari isn't
-   visible to the PWA web view), so we surface the connect rows as
-   read-only and tell the user to use a browser. The two prompt
-   spans both render; CSS swaps which is visible based on whether
-   the html element has the pwa-standalone class (set by the
-   bootstrap script in pwa_head.html). */
-.connect-prompt-pwa { display: none; }
-html.pwa-standalone .connect-prompt-browser { display: none; }
-html.pwa-standalone .connect-prompt-pwa { display: inline; }
-/* Block the tap on the anchor row in PWA mode and dim it so the
-   inline "เปิดในเบราว์เซอร์" hint doesn't compete with a clickable
-   chrome that would 404 the user back into Safari anyway. */
-html.pwa-standalone a.s10-row.connect-row {
-  pointer-events: none;
-  opacity: 0.7;
+/* PWA OAuth pairing overlay — shown on the PWA while OAuth is in
+   progress in the system browser. The PWA's SSE picks up the claim
+   and redeems behind the scenes; the overlay just keeps the user
+   informed and gives them a manual "ยกเลิก" out. */
+.pair-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17, 17, 17, 0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  z-index: 1500;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
 }
-html.pwa-standalone a.s10-row.connect-row .arrow-r { display: none; }
+.pair-overlay[hidden] { display: none; }
+.pair-overlay-card {
+  background: var(--bg);
+  border-radius: 18px;
+  padding: 24px 22px 18px;
+  max-width: 320px;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  box-shadow: 0 20px 50px -10px rgba(17, 17, 17, 0.4);
+}
+.pair-overlay-spin {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  border: 3px solid rgba(17, 17, 17, 0.12);
+  border-top-color: var(--accent);
+  margin: 0 auto 14px;
+  animation: pair-spin 0.9s linear infinite;
+}
+@keyframes pair-spin { to { transform: rotate(360deg); } }
+.pair-overlay-h {
+  font-size: 16px;
+  font-weight: 700;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.pair-overlay-s {
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 16px;
+}
+.pair-overlay-cancel {
+  background: transparent;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 999px;
+  padding: 8px 18px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+  cursor: pointer;
+}
+
+/* OAuth pair-complete landing page (rendered to the external browser
+   after a PWA-initiated OAuth flow). Centered card + green/red icon,
+   nothing fancy — the user's job is to flip back to the PWA. */
+.td-pair-complete {
+  min-height: 100vh;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  padding: 24px;
+}
+.pair-complete {
+  max-width: 360px;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+}
+.pair-complete .pair-icon {
+  width: 64px; height: 64px;
+  border-radius: 50%;
+  margin: 0 auto 18px;
+  display: flex; align-items: center; justify-content: center;
+}
+.pair-complete .pair-icon.ok { background: var(--mint, #C8E8D0); color: var(--mint-ink, #1A6B3A); }
+.pair-complete .pair-icon.err { background: var(--accent-soft); color: var(--accent); }
+.pair-complete .pair-icon svg { width: 30px; height: 30px; }
+.pair-complete h1 {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  margin: 0 0 6px;
+}
+.pair-complete .pair-sub {
+  font-size: 14px;
+  color: var(--ink-soft);
+  margin: 0 0 20px;
+}
+.pair-complete .pair-instruction {
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.6;
+  background: var(--surface);
+  border-radius: 14px;
+  padding: 14px 16px;
+  margin: 0 0 20px;
+}
+.pair-complete .pair-icon-hint {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  color: var(--ink-soft);
+  font-size: 12px;
+  font-style: italic;
+}
 .s10-row .row-icon.connect-icon-line { background: #06C755; color: #fff; border-color: #06C755; }
 .s10-row .row-icon.connect-icon-google { background: #fff; color: var(--ink); }
 .s10-row .row-icon.connect-icon-facebook { background: #fff; color: #1877F2; }

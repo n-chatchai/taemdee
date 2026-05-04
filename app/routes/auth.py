@@ -112,18 +112,23 @@ async def logout(response: Response):
     return {"ok": True}
 
 
-def _start_line_oauth(role: str, next_redeem: Optional[str] = None) -> RedirectResponse:
+def _start_line_oauth(
+    role: str,
+    next_redeem: Optional[str] = None,
+    pair: Optional[str] = None,
+) -> RedirectResponse:
     """Common OAuth kickoff. State is a self-contained signed JWT in the
     URL — no companion cookie — so PWAs that hop into the system
     browser for OAuth can come back without a cross-context cookie
-    miss."""
+    miss. `pair` carries the PWA pairing code for the handoff flow
+    (docs/pwa-oauth-pairing.md)."""
     if not line_is_configured():
         raise HTTPException(
             status.HTTP_503_SERVICE_UNAVAILABLE,
             "LINE Login not configured (set LINE_CHANNEL_ID + LINE_CHANNEL_SECRET in .env)",
         )
 
-    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem)
+    state_jwt = make_oauth_state(role=role, next_redeem=next_redeem, pair=pair)
     return RedirectResponse(
         url=build_authorize_url(state_jwt), status_code=status.HTTP_302_FOUND
     )
@@ -138,10 +143,13 @@ async def line_start():
 
 
 @router.get("/line/customer/start")
-async def line_customer_start(next_redeem: Optional[str] = None):
+async def line_customer_start(
+    next_redeem: Optional[str] = None,
+    pair: Optional[str] = None,
+):
     if not settings.is_login_enabled("customer", "line"):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for customers")
-    return _start_line_oauth(role="customer", next_redeem=next_redeem)
+    return _start_line_oauth(role="customer", next_redeem=next_redeem, pair=pair)
 
 
 @router.get("/line/customer/confirm")
@@ -264,6 +272,9 @@ async def line_callback(
             picture_url = payload.get("picture_url")
             role = payload.get("role", "shop")
             logger.success(f"✅ Transfer Token Verified | role={role}")
+            # Transfer flow doesn't carry a PWA pairing code (transfer is a
+            # shop-domain bounce; PWA pair is customer-only).
+            pair_code = None
             # Skip to the final login part
             goto_login = True
         except Exception as e:
@@ -278,6 +289,7 @@ async def line_callback(
 
         role = payload["role"]
         next_redeem = payload.get("next_redeem")
+        pair_code = payload.get("pair")
         goto_login = False
 
     # 2. Dispatcher Logic: If we are on the main domain but this is a shop login,
@@ -337,6 +349,28 @@ async def line_callback(
         claimed = await claim_by_line(
             db, anon, line_id, display_name=display_name, picture_url=picture_url
         )
+
+        # PWA OAuth pairing handoff (docs/pwa-oauth-pairing.md): if state
+        # carried `pair=<code>`, the user came in from a PWA's
+        # /auth/pair/start. Mark the Pairing row claimed (this NOTIFYs the
+        # PWA's SSE) and render a "completion" page telling the user to
+        # return to the app — the PWA's redeem call will finish the
+        # cookie handoff in its own context.
+        if pair_code:
+            from app.services.pairing import claim_pairing
+            row = await claim_pairing(
+                db, code=pair_code, customer_id=claimed.id, provider="line",
+            )
+            template_response = templates.TemplateResponse(
+                request=request,
+                name="auth/pair_complete.html",
+                context={
+                    "ok": row is not None,
+                    "provider_label": "LINE",
+                },
+            )
+            template_response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
+            return template_response
 
         # Hand off to C3.line — design splits "LINE OAuth came back" from
         # "decide DeeReach consent". Carry next_redeem through as a query

@@ -65,7 +65,11 @@ when you're already here). #}
 
   {% for row in connect_rows if row.enabled or row.connected %}
     {% set is_link = is_anonymous and not row.connected %}
-    <{% if is_link %}a href="{{ row.start_url }}"{% else %}div{% endif %} class="s10-row connect-row{% if row.connected %} connected{% endif %}">
+    {# data-pair-start carries the OAuth start URL so the PWA-side
+       script (in body_end) can intercept the click, open the URL in
+       the system browser, and run the pairing handoff. In a regular
+       browser the same <a> just navigates normally. #}
+    <{% if is_link %}a href="{{ row.start_url }}" data-pair-start="{{ row.start_url }}" data-provider="{{ row.id }}"{% else %}div{% endif %} class="s10-row connect-row{% if row.connected %} connected{% endif %}">
       <div class="row-icon connect-icon-{{ row.id }}">
         {% if row.id == 'line' %}
           <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
@@ -91,14 +95,7 @@ when you're already here). #}
           {% if row.connected %}
             {% if row.id == 'phone' and masked_phone %}{{ masked_phone }} · ผูกแล้ว{% else %}ผูกแล้ว{% endif %}
           {% elif is_anonymous %}
-            {# Browser path: "ผูกที่นี่" tap-to-link prompt.
-               PWA path: same row but "ต้องเปิดในเบราว์เซอร์" — iOS PWAs
-               can't complete OAuth in-context (cookie store is isolated
-               from system Safari), so the prompt has to point users
-               outside. Both spans render; CSS swaps them based on the
-               .pwa-standalone class set by pwa_head.html. #}
-            <span class="connect-prompt-browser">ยังไม่ได้ผูก · ผูกที่นี่</span>
-            <span class="connect-prompt-pwa">ยังไม่ได้ผูก · เปิดในเบราว์เซอร์เพื่อผูก</span>
+            ยังไม่ได้ผูก · ผูกที่นี่
           {% else %}
             ยังไม่ได้ผูก
           {% endif %}
@@ -198,6 +195,87 @@ per memory). First tap flips Alpine state, second tap submits. #}
 {% endblock %}
 
 {% block body_end %}
+<div id="pair-overlay" class="pair-overlay" hidden>
+  <div class="pair-overlay-card">
+    <div class="pair-overlay-spin"></div>
+    <div class="pair-overlay-h">กำลังเชื่อมต่อ…</div>
+    <div class="pair-overlay-s" id="pair-overlay-msg">
+      เข้าสู่ระบบในเบราว์เซอร์ที่เปิดขึ้น<br>
+      จากนั้นกลับมาที่นี่อัตโนมัติ
+    </div>
+    <button type="button" class="pair-overlay-cancel" onclick="document.getElementById('pair-overlay').hidden = true;">ยกเลิก</button>
+  </div>
+</div>
+<script>
+  // PWA OAuth pairing handoff (docs/pwa-oauth-pairing.md). When the user
+  // taps a connect-row inside the PWA, we can't rely on cross-browser
+  // cookie sharing — open the OAuth flow in the system browser with a
+  // ?pair=<code> attached, then listen on SSE for the claim and redeem
+  // the cookie back into the PWA's own context. Outside PWA mode, the
+  // anchor's default href navigation runs unchanged.
+  (function () {
+    function isStandalone() {
+      return document.documentElement.classList.contains('pwa-standalone');
+    }
+    document.addEventListener('click', async (e) => {
+      const a = e.target.closest('a.s10-row.connect-row[data-pair-start]');
+      if (!a) return;
+      if (!isStandalone()) return;  // browser flow: let the anchor navigate
+
+      e.preventDefault();
+      const overlay = document.getElementById('pair-overlay');
+      const msg = document.getElementById('pair-overlay-msg');
+      overlay.hidden = false;
+
+      let code = null;
+      let es = null;
+      try {
+        const startResp = await fetch('/auth/pair/start', { method: 'POST', credentials: 'same-origin' });
+        if (!startResp.ok) throw new Error('pair start failed');
+        const data = await startResp.json();
+        code = data.code;
+      } catch (_) {
+        msg.textContent = 'เริ่มเชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
+        return;
+      }
+
+      // SSE for the claimed event. The PWA stays on this page; the
+      // overlay sits in front while OAuth happens in the system browser.
+      es = new EventSource(`/auth/pair/${encodeURIComponent(code)}/events`);
+      es.addEventListener('claimed', async () => {
+        es.close();
+        try {
+          const r = await fetch(`/auth/pair/${encodeURIComponent(code)}/redeem`, {
+            method: 'POST',
+            credentials: 'same-origin',
+          });
+          if (r.ok) {
+            window.location.reload();
+          } else {
+            msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
+          }
+        } catch (_) {
+          msg.textContent = 'เชื่อมต่อไม่สำเร็จ · ลองใหม่อีกครั้ง';
+        }
+      });
+      es.addEventListener('expired', () => {
+        es.close();
+        msg.textContent = 'หมดเวลา · ลองใหม่อีกครั้ง';
+      });
+      es.onerror = () => {
+        // Auto-reconnects on transient network errors; only surface a
+        // message if the stream stays closed for a while.
+      };
+
+      // Open the OAuth flow in the system browser. window.open with no
+      // target on iOS PWAs hands off to Safari/Chrome; on Android Chrome
+      // PWAs it opens a new tab in Chrome. Either way, OAuth lands in
+      // the user's default browser.
+      const sep = a.dataset.pairStart.includes('?') ? '&' : '?';
+      window.open(a.dataset.pairStart + sep + 'pair=' + encodeURIComponent(code), '_blank');
+    });
+  })();
+</script>
 <script>
     // C6 ขนาดตัวอักษร — wire the picker. Server is source of truth, but we
     // also mirror to localStorage so the next page-load applies the zoom on

@@ -1,0 +1,53 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบสำเร็จ · TaemDee</title>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  {# OAuth pairing completion page — shown to the system browser
+     (Safari / Chrome / etc) after a PWA-initiated OAuth flow finishes.
+     The PWA's SSE has already been notified; the customer just needs
+     to switch back to the home-screen app. Android can deep-link via
+     the PWA protocol handler if registered; iOS users return manually. #}
+  <div class="td td-pair-complete">
+    <div class="pair-complete">
+      {% if ok %}
+        <div class="pair-icon ok">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <polyline points="20 6 9 17 4 12"/>
+          </svg>
+        </div>
+        <h1>เข้าสู่ระบบสำเร็จ</h1>
+        <p class="pair-sub">ผูกบัญชี {{ provider_label }} เรียบร้อย</p>
+        <p class="pair-instruction">
+          <strong>ปิดหน้านี้</strong> แล้วกลับไปเปิดแอป<strong>แต้มดี</strong>
+          บนหน้าจอโทรศัพท์ของคุณ
+        </p>
+        <div class="pair-icon-hint">
+          <svg class="smile-stamp" viewBox="0 0 100 100" width="64" height="64">
+            <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+            <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+            <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+            <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+          </svg>
+          <div class="pair-icon-caption">มองหาไอคอนนี้</div>
+        </div>
+      {% else %}
+        <div class="pair-icon err">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="12" cy="12" r="10"/>
+            <line x1="15" y1="9" x2="9" y2="15"/>
+            <line x1="9" y1="9" x2="15" y2="15"/>
+          </svg>
+        </div>
+        <h1>ลิงก์หมดอายุ</h1>
+        <p class="pair-sub">เริ่มขั้นตอนผูกบัญชีในแอปอีกครั้งนะครับ</p>
+      {% endif %}
+    </div>
+  </div>
+</body>
+</html>
