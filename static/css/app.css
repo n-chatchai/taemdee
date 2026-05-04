@@ -7921,10 +7921,9 @@ form.s10-row { margin: 0 0 4px; }
   flex-shrink: 0;
 }
 
-/* Settings cog + notification bell (top-right) — bare-icon chrome,
-   no surface. Bumped from 32→36 footprint and 18→22 SVG so the
-   tap target feels right-sized next to the bigger glass dock. */
-.s3-top .settings-btn,
+/* Notification bell (top-right) — bare-icon chrome, no surface. The
+   settings cog used to share these styles; gone with the dock-only
+   settings rework on 2026-05-04. */
 .s3-top .bell-btn {
   width: 36px;
   height: 36px;
@@ -7939,9 +7938,7 @@ form.s10-row { margin: 0 0 4px; }
   flex-shrink: 0;
   position: relative;
 }
-.s3-top .settings-btn svg,
 .s3-top .bell-btn svg { width: 22px; height: 22px; }
-.s3-top .settings-btn:active,
 .s3-top .bell-btn:active { transform: scale(0.92); }
 .s3-top .actions { gap: 4px; }
 .s3-top .bell-btn .bell-badge {
