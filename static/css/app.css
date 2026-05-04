@@ -4159,6 +4159,13 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   object-fit: cover;
   display: block;
 }
+/* The inner <span class="lt-X"> can carry an explicit color (lt-5/7/8
+   set --accent / --ink-soft); force inherit so the character shows
+   white on the bubble's shop-color background instead of vanishing
+   into orange-on-orange. .dot keeps the accent color so the trailing
+   period still pops. */
+.cl-mini-logo > span,
+.cl-mini-logo > span > span:not(.dot) { color: inherit; }
 .cl-mini-logo .dot { color: var(--accent); }
 .cl-mini-name {
   font-family: 'Prompt', sans-serif;
@@ -4292,6 +4299,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   object-fit: cover;
   display: block;
 }
+.cl-other-logo > span,
+.cl-other-logo > span > span:not(.dot) { color: inherit; }
 .cl-other-logo .dot { color: var(--accent); }
 .cl-other-info {
   flex: 1;
@@ -5562,6 +5571,8 @@ form.s10-row { margin: 0 0 4px; }
   object-fit: cover;
   display: block;
 }
+.notif-mute-row .nm-logo > span,
+.notif-mute-row .nm-logo > span > span:not(.dot) { color: inherit; }
 .notif-mute-row .nm-logo .dot { color: var(--accent); }
 .notif-mute-row .nm-name {
   flex: 1;
@@ -11818,6 +11829,8 @@ form.s10-row { margin: 0 0 4px; }
   background: var(--ink);
   overflow: hidden;
 }
+.inbox-card .ic-logo > span,
+.inbox-card .ic-logo > span > span:not(.dot) { color: inherit; }
 .inbox-card .ic-logo .dot { color: var(--accent); }
 .inbox-card .ic-logo img {
   width: 100%;
