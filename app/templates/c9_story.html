@@ -124,9 +124,8 @@
   {# ติดต่อร้าน — render only the rows that have data so an empty
      contact section doesn't appear on every shop. #}
   {% set has_phone = shop.shop_phone %}
-  {% set has_line = shop.line_id %}
   {% set has_address = shop_address %}
-  {% if has_phone or has_line or has_address or open_status %}
+  {% if has_phone or has_address or open_status %}
     <div class="ss-section-h">ติดต่อร้าน</div>
     <div class="ss-info">
       {% if open_status %}
@@ -153,16 +152,6 @@
           <span class="ss-info-val">{{ has_phone }}</span>
         </div>
       {% endif %}
-      {% if has_line %}
-        <div class="ss-info-row">
-          <span class="ss-info-key">LINE</span>
-          <span class="ss-info-val">{{ has_line }}</span>
-        </div>
-      {% endif %}
     </div>
   {% endif %}
-
-  <div class="ss-footer">
-    <span>powered by </span><span class="accent">taemdee.</span>
-  </div>
 {% endblock %}

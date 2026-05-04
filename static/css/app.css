@@ -11295,19 +11295,6 @@ form.s10-row { margin: 0 0 4px; }
   font-weight: 600;
 }
 
-/* Footer — subtle "powered by taemdee." watermark */
-.ss-footer {
-  text-align: center;
-  padding: 8px 0 80px;
-  font-family: 'Host Grotesk', sans-serif;
-  font-size: 10px;
-  font-weight: 600;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-softer);
-}
-.ss-footer .accent { color: var(--accent); }
-
 /* Customer dock · liquid glass nav. Pinned to bottom on every C1/C5/C7/
    Inbox/C6/C9/C8 — mirrors shop-side .s3-glass-nav. Position FIXED, not
    sticky (design says sticky but .td overflow-x:hidden breaks sticky-
