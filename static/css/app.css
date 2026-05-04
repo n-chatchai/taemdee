@@ -1262,6 +1262,21 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-bottom: 4px;
 }
 .shop-head .shop-logo-mark .dot { color: var(--accent); }
+/* Thai wordmark — same trick as .qr-card .shop-logo-mark.is-thai. The
+   latin Host Grotesk that lt-* styles inherit has no Thai glyphs and
+   falls back to the OS default; force Prompt at a slightly smaller size
+   so it reads as the same visual weight as the latin variant. */
+.shop-head .shop-logo-mark.is-thai,
+.shop-head .shop-logo-mark.is-thai span {
+  font-family: 'Prompt', sans-serif !important;
+  font-weight: 800 !important;
+  font-style: normal !important;
+  letter-spacing: 0 !important;
+  text-transform: none !important;
+  color: var(--ink) !important;
+}
+.shop-head .shop-logo-mark.is-thai { font-size: 28px; }
+.shop-head.hero .shop-logo-mark.is-thai { font-size: 38px; }
 .shop-head .shop-sub {
   font-family: 'Prompt', sans-serif;
   font-weight: 400;

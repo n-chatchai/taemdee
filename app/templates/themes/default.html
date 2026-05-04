@@ -22,8 +22,13 @@
        jobs without crowding shop.daily's hero. Reach /my-cards via
        the dock instead. #}
 
+    {# Thai shop names need the Prompt font — the Host Grotesk display
+       font we use for latin wordmarks has no Thai glyphs and falls back
+       to the system default. Same logic as qr_card.html. #}
+    {% set _logo_text = (logo.text if logo and not logo.is_image else shop.name) %}
+    {% set _is_thai_logo = has_thai(_logo_text) %}
     <a class="shop-head hero" href="/story/{{ shop.id }}" style="display:block; text-decoration:none; color:inherit;">
-      <div class="shop-logo-mark">
+      <div class="shop-logo-mark{% if _is_thai_logo %} is-thai{% endif %}">
         {% if logo %}
           {% if logo.is_image %}
             <img src="{{ logo.url }}" class="shop-logo-img">

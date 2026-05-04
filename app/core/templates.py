@@ -77,10 +77,21 @@ def slugify(text: str) -> str:
     text = re.sub(r'[^\u0E00-\u0E7F\w\s-]', '', text).strip().lower()
     return re.sub(r'[-\s]+', '-', text)
 
+def has_thai(text: str) -> bool:
+    """True if any character is in the Thai unicode block (U+0E00-U+0E7F).
+
+    Used by .shop-logo-mark to swap the latin-display font (Host Grotesk)
+    for a Thai-friendly one (Prompt) — the latin font has no Thai glyphs
+    and falls back to the OS default, which looks unintended.
+    """
+    return any("฀" <= c <= "๿" for c in (text or ""))
+
+
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["asset_version"] = ASSET_VERSION
 templates.env.globals["settings"] = settings
 templates.env.globals["shop_logo"] = shop_logo
+templates.env.globals["has_thai"] = has_thai
 templates.env.filters.update({
     "bkk_hms": bkk_hms,
     "bkk_feed_time": bkk_feed_time,

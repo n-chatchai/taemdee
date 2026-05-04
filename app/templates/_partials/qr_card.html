@@ -11,6 +11,13 @@
 {% set logo = shop_logo(shop) %}
 {% set center_initial = (shop.name or 'm')[0]|lower %}
 {% set is_print = (mode == 'print') %}
+{# Thai detection lifted to the partial so any caller (S2.4 preview /
+   S8 print / future) gets it for free. Routes can still pass an explicit
+   `is_thai` to override (e.g. forcing latin for a hybrid wordmark). #}
+{% if is_thai is not defined %}
+  {% set _logo_text = (logo.text if logo and not logo.is_image else shop.name) %}
+  {% set is_thai = has_thai(_logo_text) %}
+{% endif %}
 
 <div class="qr-card" id="qr-card-unified">
   <div class="cut-mark tl"></div>
