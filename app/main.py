@@ -1,9 +1,11 @@
 from contextlib import asynccontextmanager
+from http.cookies import SimpleCookie
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
 from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel.ext.asyncio.session import AsyncSession
+from starlette.datastructures import MutableHeaders
 
 from loguru import logger
 
@@ -50,101 +52,176 @@ async def lifespan(app: FastAPI):
 app = FastAPI(title="TaemDee — Digital Point Cards", lifespan=lifespan)
 
 
-@app.middleware("http")
-async def revalidate_html_responses(request, call_next):
-    """Force fresh HTML on every request — covers iOS Safari PWA tap-to-open
-    where the standalone webview otherwise serves a stale cached page after
-    a deploy.
+# ---------------------------------------------------------------------------
+# Pure ASGI middleware
+#
+# Starlette's @app.middleware("http") wraps every response in BaseHTTPMiddleware,
+# which buffers and re-streams the body. That re-streaming has a long-standing
+# bug with FileResponse + Range/disconnect: chunks can exceed the original
+# Content-Length and uvicorn raises "Response content longer than
+# Content-Length". We hit this in prod once /sw.js (a FileResponse fetched on
+# every page load by the eager SW registration) was wrapped by three of these.
+#
+# Pure ASGI middleware doesn't buffer — it only inspects scope/messages and
+# wraps send() when it specifically needs to mutate response.start headers.
+# That sidesteps the bug entirely.
+# ---------------------------------------------------------------------------
+
+
+class RevalidateHTMLMiddleware:
+    """Stamp Cache-Control: no-cache on text/html responses so iOS Safari PWA
+    tap-to-open doesn't serve a stale cached page after a deploy. Wraps send()
+    only — never touches the body — so it's safe for FileResponse / Range.
     """
-    response = await call_next(request)
-    if response.headers.get("content-type", "").startswith("text/html"):
-        response.headers["Cache-Control"] = "no-cache, must-revalidate"
-    return response
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        async def send_wrapper(message):
+            if message["type"] == "http.response.start":
+                headers = MutableHeaders(raw=message["headers"])
+                if headers.get("content-type", "").startswith("text/html"):
+                    headers["cache-control"] = "no-cache, must-revalidate"
+            await send(message)
+
+        await self.app(scope, receive, send_wrapper)
 
 
-@app.middleware("http")
-async def inject_customer_context(request: Request, call_next):
-    """Make the current Customer object available in all Jinja templates via request.state.customer."""
-    customer = None
-    customer_cookie = request.cookies.get(CUSTOMER_COOKIE_NAME)
-    if customer_cookie:
+class CustomerContextMiddleware:
+    """Resolve the customer cookie once per request and stash the Customer on
+    scope["state"] so Jinja templates can reach it via request.state.customer.
+    """
+
+    def __init__(self, app):
+        self.app = app
+
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        # Lazy import: avoids a top-of-module DB engine import that would
+        # fire during test collection before settings are patched.
         from app.core.database import SessionFactory
-        from app.services.auth import decode_customer_token
 
-        customer_id = decode_customer_token(customer_cookie)
-        if customer_id:
-            async with SessionFactory() as db:
-                customer = await db.get(Customer, customer_id)
+        customer = None
+        cookie_header = ""
+        for k, v in scope.get("headers", []):
+            if k == b"cookie":
+                cookie_header = v.decode("latin-1")
+                break
+        if cookie_header:
+            jar = SimpleCookie()
+            jar.load(cookie_header)
+            morsel = jar.get(CUSTOMER_COOKIE_NAME)
+            if morsel:
+                customer_id = decode_customer_token(morsel.value)
+                if customer_id:
+                    async with SessionFactory() as db:
+                        customer = await db.get(Customer, customer_id)
 
-    request.state.customer = customer
-    return await call_next(request)
+        # State is the canonical request-scoped dict — c_base.html reads
+        # request.state.customer which proxies to scope["state"]["customer"].
+        scope.setdefault("state", {})["customer"] = customer
+        await self.app(scope, receive, send)
 
 
-@app.middleware("http")
-async def subdomain_routing(request: Request, call_next):
+class SubdomainRoutingMiddleware:
     """Separate shop.taemdee.com from taemdee.com.
 
-    - shop.* domain → only /shop, /auth, /static allowed. Root / redirects to /shop/dashboard.
-    - main domain → marketing + customer routes. /shop/* redirects to shop.* domain.
+    - shop.* domain → only /shop, /auth, /staff allowed. Root / redirects to
+      /shop/dashboard. Other paths bounce to the main domain.
+    - main domain → marketing + customer routes. /shop/* redirects to shop.*.
     """
-    host = request.headers.get("host", "").split(":")[0]
-    path = request.url.path
-    query = request.url.query
-    suffix = f"?{query}" if query else ""
 
-    # System/static routes always allowed on both
-    if path.startswith("/static") or path in (
-        "/manifest.json",
-        "/favicon.ico",
-        "/version",
-        "/privacy",
-        "/data-deletion",
-    ):
-        return await call_next(request)
+    # System/static routes always allowed on both hosts. /sw.js needs to be
+    # available on every host (PWA scope is per-origin) and we can't redirect
+    # static files because they may be requested with cookies/credentials and
+    # the PWA caches the URL.
+    _SYSTEM_PATHS = frozenset(
+        {
+            "/manifest.json",
+            "/favicon.ico",
+            "/version",
+            "/privacy",
+            "/data-deletion",
+            "/sw.js",
+        }
+    )
 
-    # In local dev, taemdee.local is the main domain, shop.taemdee.local is the shop domain.
-    # We detect "shop." prefix or match settings exactly.
-    is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+    def __init__(self, app):
+        self.app = app
 
-    if is_shop_host:
-        if path == "/":
-            return RedirectResponse(
-                url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
-            )
-        # Auth routes (like /auth/otp/verify) are shared but usually hit from the shop side
-        if not (
-            path.startswith("/shop")
-            or path.startswith("/auth")
-            or path.startswith("/staff")
-        ):
-            # Customer trying to access /my-cards on shop domain? Bounce to main.
-            # Preserve query string — old printed scan QRs encode shop.* and rely
-            # on ?branch=... / ?t=... carrying through this redirect.
-            main_host = (
-                settings.main_domain
-                if settings.environment == "production"
-                else host.replace("shop.", "")
-            )
-            proto = request.url.scheme
-            return RedirectResponse(
-                url=f"{proto}://{main_host}{path}{suffix}",
-                status_code=status.HTTP_303_SEE_OTHER,
-            )
-    else:
-        # On main domain, bounce any /shop/* requests to the shop subdomain
-        if path.startswith("/shop"):
+    async def __call__(self, scope, receive, send):
+        if scope["type"] != "http":
+            await self.app(scope, receive, send)
+            return
+
+        path = scope["path"]
+        if path.startswith("/static") or path in self._SYSTEM_PATHS:
+            await self.app(scope, receive, send)
+            return
+
+        host = ""
+        for k, v in scope.get("headers", []):
+            if k == b"host":
+                host = v.decode("latin-1").split(":")[0]
+                break
+        query = scope.get("query_string", b"").decode("latin-1")
+        suffix = f"?{query}" if query else ""
+        # In local dev, taemdee.local is main, shop.taemdee.local is shop.
+        is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+
+        redirect_url = None
+        if is_shop_host:
+            if path == "/":
+                redirect_url = "/shop/dashboard"
+            elif not (
+                path.startswith("/shop")
+                or path.startswith("/auth")
+                or path.startswith("/staff")
+            ):
+                # Customer URL on shop host → bounce to main. Preserve query
+                # string — old printed scan QRs encode shop.* and rely on
+                # ?branch=... / ?t=... surviving the redirect.
+                main_host = (
+                    settings.main_domain
+                    if settings.environment == "production"
+                    else host.replace("shop.", "")
+                )
+                proto = scope.get("scheme", "http")
+                redirect_url = f"{proto}://{main_host}{path}{suffix}"
+        elif path.startswith("/shop"):
             shop_host = (
                 settings.shop_domain
                 if settings.environment == "production"
                 else f"shop.{host}"
             )
-            proto = request.url.scheme
-            return RedirectResponse(
-                url=f"{proto}://{shop_host}{path}{suffix}",
-                status_code=status.HTTP_303_SEE_OTHER,
-            )
+            proto = scope.get("scheme", "http")
+            redirect_url = f"{proto}://{shop_host}{path}{suffix}"
 
-    return await call_next(request)
+        if redirect_url is not None:
+            response = RedirectResponse(
+                url=redirect_url, status_code=status.HTTP_303_SEE_OTHER
+            )
+            await response(scope, receive, send)
+            return
+
+        await self.app(scope, receive, send)
+
+
+# Order: add_middleware adds to the OUTSIDE, so the last-added wraps everything.
+# Resulting execution order on inbound: SubdomainRouting → CustomerContext →
+# RevalidateHTML → app. Outbound: app → RevalidateHTML (stamps headers) →
+# CustomerContext → SubdomainRouting → client.
+app.add_middleware(RevalidateHTMLMiddleware)
+app.add_middleware(CustomerContextMiddleware)
+app.add_middleware(SubdomainRoutingMiddleware)
 
 
 @app.exception_handler(SessionAuthError)
