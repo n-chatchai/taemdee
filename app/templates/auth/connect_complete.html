@@ -24,11 +24,7 @@
       <h1>เชื่อม{{ provider_label }}สำเร็จ</h1>
       <p class="cc-sub">กลับไปที่แอปแต้มดีบนหน้าจอ<br>เพื่อดำเนินการต่อ</p>
 
-      <a href="/my-cards" class="cc-cta-primary">
-        ไปที่บัตรของฉัน
-        <span class="arr">→</span>
-      </a>
-      <button type="button" class="cc-cta-secondary" id="cc-close-btn">
+      <button type="button" class="cc-cta-primary" id="cc-close-btn">
         ปิดหน้านี้
       </button>
 
@@ -45,12 +41,12 @@
   <script>
     (function () {
       // Mark just-completed in localStorage so the PWA's c_base toast
-      // fires on the next /my-cards (or wherever) load. In the iOS
-      // Safari-pop case this writes to Safari's localStorage (harmless,
-      // PWA never reads it — its own pending → done handoff covers
-      // that path via visibilitychange). In the in-PWA OAuth case
-      // this is the actual signal: PWA's localStorage gets DONE here,
-      // then "ไปที่บัตรของฉัน" navigates and the toast renders.
+      // fires on the next page load. In the iOS Safari-pop case this
+      // writes to Safari's localStorage (harmless, PWA never reads
+      // it — its own pending → done handoff covers that path via
+      // visibilitychange). In the in-PWA OAuth case this is the
+      // actual signal: PWA's localStorage gets DONE here, then the
+      // auto-redirect below lands on /my-cards and the toast renders.
       try {
         var p = new URLSearchParams(location.search).get('provider');
         if (p) {
@@ -58,10 +54,25 @@
             'td_oauth_just_completed',
             JSON.stringify({ provider: p, t: Date.now() }),
           );
-          // Clear any stale pending now that we have a confirmed done.
           localStorage.removeItem('td_oauth_pending');
         }
       } catch (_) {}
+
+      // Auto-navigate when running inside a standalone PWA (no Safari
+      // pop happened — OAuth completed in the PWA's own webview).
+      // The toast on /my-cards is the success surface; this page is
+      // a transient ack only meaningful when we're stuck in Safari.
+      var isStandalone = false;
+      try {
+        isStandalone = window.matchMedia('(display-mode: standalone)').matches
+          || window.navigator.standalone === true;
+      } catch (_) {}
+      if (isStandalone) {
+        setTimeout(function () {
+          window.location.replace('/my-cards');
+        }, 600);
+        return;
+      }
 
       var btn = document.getElementById('cc-close-btn');
       if (!btn) return;
