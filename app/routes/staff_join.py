@@ -107,6 +107,24 @@ async def staff_pin_login_page(request: Request):
     )
 
 
+def _render_pin_form(request: Request, error: Optional[str] = None,
+                      username_value: str = ""):
+    """Re-render the PIN login form with an inline error. We don't
+    raise 401/403 directly because the global auth-error handler
+    catches plain 401s and redirects to /shop/login?reason=invalid —
+    confusingly making a wrong-PIN look like a session error. Inline
+    error keeps the user on the form."""
+    return templates.TemplateResponse(
+        request=request,
+        name="staff_pin_login.html",
+        context={
+            "error": error,
+            "username_value": username_value,
+        },
+        status_code=status.HTTP_400_BAD_REQUEST if error else status.HTTP_200_OK,
+    )
+
+
 @router.post("/staff/pin-login")
 async def staff_pin_login_post(
     request: Request,
@@ -116,35 +134,36 @@ async def staff_pin_login_post(
     db: AsyncSession = Depends(get_session),
 ):
     """Validate username + PIN, issue a shop session JWT, redirect to
-    the dashboard. Generic auth error on any miss (no enumeration of
-    valid usernames). Refuses if the User has no active staff record
-    — credentials only authenticate a person, they don't grant shop
-    access on their own.
-
-    Refuses POST on the main host: the form is rendered after the
-    GET handler bounces to shop subdomain, so any POST that lands on
-    main is either a misrouted client or a curl test. Honoring it
-    would set the session cookie on the wrong host."""
+    the dashboard. Wrong username/PIN re-renders the form with an
+    inline error (not 401 — that gets caught by the global auth
+    handler and redirected to /shop/login?reason=invalid which
+    misleads the user)."""
     host = request.headers.get("host", "").split(":")[0]
     is_shop_host = host.startswith("shop.") or host == settings.shop_domain
     if not is_shop_host:
-        raise HTTPException(
-            status.HTTP_400_BAD_REQUEST,
-            "เปิดหน้านี้บนโดเมนร้านค้าเท่านั้น",
+        # POST on main means the GET-time bounce didn't run. Re-bounce
+        # using the form's submitted credentials would leak them via
+        # query string, so just render an instructional error.
+        return _render_pin_form(
+            request,
+            error="เปิดหน้านี้บนโดเมนร้านค้าเท่านั้น",
+            username_value=username or "",
         )
 
     user = await find_user_by_username(db, (username or "").strip())
     if user is None or not verify_pin(pin, user.pin_hash):
-        raise HTTPException(
-            status.HTTP_401_UNAUTHORIZED,
-            "Username หรือ PIN ไม่ถูกต้อง",
+        return _render_pin_form(
+            request,
+            error="Username หรือ PIN ไม่ถูกต้อง",
+            username_value=username or "",
         )
 
     staff = await find_active_staff_for_user(db, user.id)
     if staff is None:
-        raise HTTPException(
-            status.HTTP_403_FORBIDDEN,
-            "บัญชีนี้ยังไม่ได้ผูกกับร้าน · ติดต่อเจ้าของร้านเพื่อรับ invite",
+        return _render_pin_form(
+            request,
+            error="บัญชีนี้ยังไม่ได้ผูกกับร้าน · ติดต่อเจ้าของร้านเพื่อรับ invite",
+            username_value=username or "",
         )
 
     # First successful login flips accepted_at if it was a pending

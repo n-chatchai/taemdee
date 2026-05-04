@@ -27,9 +27,14 @@
 
     <form class="s1-otp-form" method="POST" action="/staff/pin-login"
           style="margin-top: 18px;">
+      {% if error %}
+      <div class="err" style="margin-bottom: 12px;">{{ error }}</div>
+      {% endif %}
+
       <label for="staff-username">Username</label>
       <input id="staff-username" type="text" name="username"
              autocapitalize="none" autocorrect="off" autocomplete="username"
+             value="{{ username_value|default('') }}"
              placeholder="เช่น 001 หรือ bee" required>
 
       <label for="staff-pin" style="margin-top: 12px;">PIN (6 หลัก)</label>
