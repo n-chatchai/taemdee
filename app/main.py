@@ -185,24 +185,16 @@ class ShopContextMiddleware:
                                 staff = await db.get(StaffMember, staff_id)
                             elif shop is not None:
                                 # Legacy JWT issued before staff_id became
-                                # part of the session payload — fall back
-                                # to the owner StaffMember for this shop
-                                # so the avatar UX (which gates on
-                                # request.state.staff) still works without
-                                # forcing a re-login. The owner-staff row
-                                # was either created at signup or lazy-
-                                # backfilled on the most recent login;
-                                # the next sign-in re-issues a JWT that
-                                # carries staff_id explicitly.
-                                from sqlmodel import select
-                                result = await db.exec(
-                                    select(StaffMember).where(
-                                        StaffMember.shop_id == shop_id,
-                                        StaffMember.is_owner == True,  # noqa: E712
-                                        StaffMember.revoked_at.is_(None),
-                                    )
-                                )
-                                staff = result.first()
+                                # part of the session payload — get-or-
+                                # create the owner StaffMember for this
+                                # shop so the avatar / settings tab
+                                # (which gate on request.state.staff and
+                                # has_perm) work without forcing a
+                                # re-login. ensure_owner_staff is
+                                # idempotent: repeated calls are a
+                                # cheap SELECT once the row exists.
+                                from app.services.team import ensure_owner_staff
+                                staff = await ensure_owner_staff(db, shop)
 
         state = scope.setdefault("state", {})
         state["shop"] = shop

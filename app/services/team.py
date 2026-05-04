@@ -214,3 +214,36 @@ async def create_owner_staff(
     await db.commit()
     await db.refresh(staff)
     return staff
+
+
+async def ensure_owner_staff(db: AsyncSession, shop: Shop) -> StaffMember:
+    """Idempotent get-or-create for the owner StaffMember row.
+
+    The auth callbacks lazy-create the owner row on first post-deploy
+    sign-in, but customers/owners holding a legacy JWT that pre-dates
+    the staff_id session field don't trigger that path until they
+    re-login. ShopContextMiddleware calls this on every shop request so
+    the row exists for *any* legacy session — once it's there, the
+    middleware's normal SELECT finds it and skips the create.
+
+    Backfills line_id and phone from the Shop row so subsequent logins
+    via either provider match the existing owner-staff via
+    find_staff_by_*.
+    """
+    result = await db.exec(
+        select(StaffMember).where(
+            StaffMember.shop_id == shop.id,
+            StaffMember.is_owner == True,  # noqa: E712
+            StaffMember.revoked_at.is_(None),
+        )
+    )
+    existing = result.first()
+    if existing is not None:
+        return existing
+    return await create_owner_staff(
+        db,
+        shop,
+        line_id=shop.line_id,
+        phone=shop.phone,
+        display_name=shop.name,
+    )
