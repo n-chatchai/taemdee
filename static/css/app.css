@@ -11538,7 +11538,10 @@ form.s10-row { margin: 0 0 4px; }
   margin-bottom: 6px;
   letter-spacing: 0.02em;
 }
-#profile-edit-name {
+/* Single selector so customer + staff sheets both pick this up — was
+   keyed on #profile-edit-name only, leaving the staff input with the
+   browser-default border. */
+.profile-edit-form input[type="text"] {
   width: 100%;
   padding: 13px 14px;
   border: 1.5px solid var(--ink);
