@@ -270,49 +270,6 @@
   </div>
   {% endif %}
 
-  {# Username + 6-digit PIN — alternative login channel for the
-     current user. Sets users.username + users.pin_hash. Login at
-     /staff/pin-login uses these. Username globally unique; PIN is
-     bcrypt-hashed, never displayed back. Empty fields keep the
-     current value (only changes what you fill in). #}
-  {% if settings.is_login_enabled('shop', 'username') %}
-  <div class="s10-section">
-    <div class="label">เข้าสู่ระบบด้วยชื่อผู้ใช้</div>
-
-    {% if credentials_flash %}
-    <div role="alert" style="margin: 0 0 10px; padding: 10px 12px;
-                              border-radius: 12px;
-                              background: {% if credentials_flash_ok %}#E6F7EE{% else %}#FFE9E2{% endif %};
-                              color: {% if credentials_flash_ok %}#1B7C3E{% else %}#B0331C{% endif %};
-                              font-family: 'Prompt', sans-serif; font-size: 13px;">
-      {{ credentials_flash }}
-    </div>
-    {% endif %}
-
-    <form method="POST" action="/shop/settings/credentials" class="s-staff-form">
-      <div class="ssf-field">
-        <div class="ssf-label">Username</div>
-        <input class="ssf-input" type="text" name="username"
-               value="{{ current_username|default('') }}"
-               placeholder="เช่น 001 หรือ shopname"
-               autocapitalize="none" autocorrect="off">
-        <div class="ssf-helper">ตัวพิมพ์เล็ก-ใหญ่ก็ได้ · ใช้ได้ทั่วระบบ ห้ามซ้ำ</div>
-      </div>
-      <div class="ssf-field">
-        <div class="ssf-label">PIN ใหม่ (6 หลัก)</div>
-        <input class="ssf-input" type="text" name="pin"
-               inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
-               placeholder="{% if has_pin %}••••••  (มี PIN เดิมอยู่){% else %}••••••{% endif %}"
-               autocomplete="off">
-        <div class="ssf-helper">ปล่อยว่างถ้าไม่ต้องการเปลี่ยน · 6 หลักเท่านั้น</div>
-      </div>
-      <button type="submit" class="s2-cta-final" style="width:100%; margin-top:10px;">
-        <span>บันทึก</span>
-      </button>
-    </form>
-  </div>
-  {% endif %}
-
   <form action="/auth/logout" method="POST" style="margin:0;"
         onsubmit="event.preventDefault(); fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/shop/login');">
     <button type="submit" class="s10-logout">ออกจากระบบ</button>
