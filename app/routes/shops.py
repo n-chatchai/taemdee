@@ -315,7 +315,12 @@ async def dashboard(
     from app.core.config import settings as app_settings
 
     # Generic claim cards (welcome credit, future onboarding nudges, etc.)
-    items = await list_available_items(db, shop)
+    # Pass is_owner so owner-only todos (e.g. invite_staff → /shop/team)
+    # don't surface to staff sessions that would 403 on the link.
+    _ds_staff = request.state.staff
+    items = await list_available_items(
+        db, shop, is_owner=bool(_ds_staff and _ds_staff.is_owner),
+    )
 
     return templates.TemplateResponse(
         request=request,

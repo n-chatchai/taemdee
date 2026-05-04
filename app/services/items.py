@@ -44,6 +44,11 @@ class DashboardItem:
     # Brief one-liner shown beside the 'ข้าม' (skip) button so the owner
     # knows what they're giving up by dismissing the todo.
     skip_explain: str = "ปิดได้ตอนนี้ · ดูได้ในตั้งค่าภายหลัง"
+    # When True, list_available filters this item out for non-owner staff
+    # — used for items whose linked destination is itself owner-only
+    # (e.g. /shop/team requires_owner=True), so the staff doesn't see a
+    # CTA they'd 403 on.
+    requires_owner: bool = False
 
 
 # Registry of all dashboard item kinds. Order = display order.
@@ -74,11 +79,29 @@ ITEMS: list[DashboardItem] = [
         link="/shop/settings/cooldown",
         skip_explain="ค่าเริ่มต้น = ไม่จำกัด · ปรับได้ที่ตั้งค่าภายหลัง",
     ),
+    DashboardItem(
+        kind="invite_staff",
+        label="<strong>เชิญทีม</strong>มาช่วยออกแต้ม",
+        sub="พนักงานหน้าร้านสแกนแทนเจ้าของได้ · จำกัดสิทธิ์ได้",
+        cta="เชิญทีม →",
+        link="/shop/team",
+        skip_explain="เปิดทีหลังได้ที่ ตั้งค่า → ทีม",
+        requires_owner=True,
+    ),
 ]
 
 
-async def list_available(db: AsyncSession, shop: Shop) -> list[DashboardItem]:
-    """Items this shop hasn't claimed yet, formatted with shop-specific copy."""
+async def list_available(
+    db: AsyncSession,
+    shop: Shop,
+    *,
+    is_owner: bool = True,
+) -> list[DashboardItem]:
+    """Items this shop hasn't claimed yet, formatted with shop-specific
+    copy. Pass `is_owner=False` for staff sessions so owner-only todos
+    (e.g. invite_staff → /shop/team) don't surface to staff who can't
+    act on them.
+    """
     claimed = (await db.exec(
         select(ShopItem.kind).where(ShopItem.shop_id == shop.id)
     )).all()
@@ -87,6 +110,8 @@ async def list_available(db: AsyncSession, shop: Shop) -> list[DashboardItem]:
     out: list[DashboardItem] = []
     for it in ITEMS:
         if it.kind in claimed_set:
+            continue
+        if it.requires_owner and not is_owner:
             continue
         if it.kind == "welcome_credit" and settings.credit_welcome_amount <= 0:
             continue  # disabled by ops
@@ -99,6 +124,7 @@ async def list_available(db: AsyncSession, shop: Shop) -> list[DashboardItem]:
             cta=it.cta,
             link=it.link,
             skip_explain=it.skip_explain,
+            requires_owner=it.requires_owner,
         ))
     return out
 
@@ -190,4 +216,5 @@ _CLAIM_HANDLERS: dict[str, Callable[[AsyncSession, Shop], Awaitable[None]]] = {
     "welcome_credit": _claim_welcome_credit,
     "issue_methods_review": _claim_no_op,
     "cooldown_review": _claim_no_op,
+    "invite_staff": _claim_no_op,
 }
