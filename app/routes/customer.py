@@ -1470,6 +1470,10 @@ async def my_cards(
                 "shop": shop,
                 "emoji": _gift_emoji(shop.reward_image),
                 "icon_color": _GIFT_ICON_PALETTE[i % len(_GIFT_ICON_PALETTE)],
+                # Same swatch logic as .cl-mini / .cl-other so the voucher
+                # card tints with each shop's stable colour instead of the
+                # generic accent orange.
+                "shop_color": _shop_swatch(shop.id),
             })
 
     # near + other zones still come from the points view since they're about

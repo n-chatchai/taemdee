@@ -58,15 +58,23 @@
 }
 
 .cl-voucher-card {
-  flex: 0 0 78%;
-  max-width: 280px;
+  flex: 0 0 70%;
+  max-width: 240px;
   scroll-snap-align: start;
-  border-radius: 20px;
+  border-radius: 18px;
   overflow: hidden;
-  background: linear-gradient(135deg, #FF8A5C 0%, #FF5E3A 55%, #E04020 100%);
+  /* Per-shop tint via --shop-color (set inline). Lighter at 0%,
+     base at 55%, darker at 100% — same shape as the design's
+     hand-picked gradients but driven by the shop's swatch. */
+  background: linear-gradient(
+    135deg,
+    color-mix(in srgb, var(--shop-color, #FF5E3A) 75%, #fff) 0%,
+    var(--shop-color, #FF5E3A) 55%,
+    color-mix(in srgb, var(--shop-color, #FF5E3A) 70%, #000) 100%
+  );
   color: #fff;
   position: relative;
-  box-shadow: 0 12px 28px -10px rgba(255, 94, 58, 0.45);
+  box-shadow: 0 10px 22px -10px color-mix(in srgb, var(--shop-color, #FF5E3A) 60%, transparent);
   cursor: pointer;
   display: flex;
   flex-direction: column;
@@ -91,7 +99,7 @@
 .cl-voucher-card:active { transform: scale(0.99); }
 
 .cl-voucher-image {
-  height: 130px;
+  height: 110px;
   position: relative;
   overflow: hidden;
   background: rgba(0, 0, 0, 0.18);
@@ -138,10 +146,10 @@
 }
 
 .cl-voucher-body {
-  padding: 14px 16px 16px;
+  padding: 12px 14px 14px;
   display: flex;
   flex-direction: column;
-  gap: 10px;
+  gap: 8px;
 }
 .cl-voucher-shop {
   display: flex;
@@ -184,7 +192,7 @@
 .cl-voucher-reward {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 16px;
+  font-size: 15px;
   line-height: 1.3;
   color: #fff;
   letter-spacing: -0.01em;
@@ -193,15 +201,15 @@
   display: flex;
   align-items: center;
   justify-content: center;
-  gap: 8px;
-  padding: 11px 14px;
+  gap: 6px;
+  padding: 9px 12px;
   background: rgba(255,255,255,0.96);
-  color: var(--accent);
-  border-radius: 12px;
+  color: var(--shop-color, var(--accent));
+  border-radius: 10px;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 13.5px;
-  margin-top: 4px;
+  font-size: 13px;
+  margin-top: 2px;
 }
 .cl-voucher-cta svg {
   width: 14px; height: 14px;
@@ -471,6 +479,7 @@
       <div class="cl-voucher-carousel">
         {% for voucher in hero_vouchers %}
           <button type="button" class="cl-voucher-card"
+                  style="--shop-color: {{ voucher.shop_color }};"
                   data-voucher-id="{{ voucher.redemption.id }}"
                   data-shop-name="{{ voucher.shop.name }}"
                   data-reward="{{ voucher.shop.reward_description }}">
