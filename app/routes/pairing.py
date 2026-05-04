@@ -10,8 +10,9 @@ from fastapi import APIRouter, Cookie, Depends, Request, Response, status
 from fastapi.responses import JSONResponse, StreamingResponse
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import set_customer_cookie
+from app.core.auth import CUSTOMER_COOKIE_NAME, set_customer_cookie
 from app.core.database import get_session
+from app.services.auth import decode_customer_token
 from app.services.pairing import (
     PAIRING_TTL_MINUTES,
     PWA_TOKEN_COOKIE,
@@ -28,12 +29,22 @@ router = APIRouter()
 @router.post("/auth/pair/start")
 async def pair_start(
     response: Response,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
     """Mint a Pairing code, set the pwa_token cookie on the PWA, return
     the code in the body. Client uses the code in the OAuth `?pair=`
-    URL and again when calling /redeem."""
-    row = await create_pairing(db)
+    URL and again when calling /redeem.
+
+    The PWA's customer cookie (if present) is decoded into
+    `originator_customer_id` on the row — the OAuth callback uses that
+    to bind the new provider to the SAME customer/user, instead of
+    spawning a fresh anonymous row in the cookie-less system browser
+    that would otherwise overwrite the PWA's session at /redeem."""
+    originator_id = None
+    if customer_cookie:
+        originator_id = decode_customer_token(customer_cookie)
+    row = await create_pairing(db, originator_customer_id=originator_id)
     body = JSONResponse({
         "code": row.code,
         "expires_at": row.expires_at.isoformat() + "Z",

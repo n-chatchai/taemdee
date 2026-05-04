@@ -351,7 +351,7 @@ async def line_callback(
         picture_url = profile.get("pictureUrl") or None
 
     if role == "customer":
-        anon, _ = await find_or_create_customer(customer_cookie, db)
+        anon = await _pair_originator_or_cookie(db, pair_code, customer_cookie)
         onboard_name = (
             anon.display_name
         )  # Name from onboard.greet (before LINE overwrites)
@@ -507,6 +507,31 @@ async def _render_pair_complete(
     )
 
 
+async def _pair_originator_or_cookie(
+    db: AsyncSession,
+    pair_code: Optional[str],
+    customer_cookie: Optional[str],
+) -> Customer:
+    """When the OAuth flow carries a pair code, look up the originating
+    PWA's customer (recorded by /auth/pair/start). Falls back to the
+    cookie-based path when there's no pair code or the originator is
+    missing/expired.
+
+    Without this, the system browser running OAuth has no customer
+    cookie and `find_or_create_customer` would mint a fresh User —
+    parallel to the PWA's existing identity instead of binding onto it.
+    """
+    if pair_code:
+        from app.services.pairing import find_active_pairing
+        pair_row = await find_active_pairing(db, pair_code)
+        if pair_row and pair_row.originator_customer_id:
+            existing = await db.get(Customer, pair_row.originator_customer_id)
+            if existing is not None:
+                return existing
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    return customer
+
+
 async def _resolve_customer_oauth(
     request: Request,
     db: AsyncSession,
@@ -538,7 +563,7 @@ async def _resolve_customer_oauth(
         link_to_claimed,
     )
 
-    anon, _ = await find_or_create_customer(customer_cookie, db)
+    anon = await _pair_originator_or_cookie(db, pair_code, customer_cookie)
     if anon.is_anonymous:
         claimed = await claim_by_provider(
             db, anon, provider, ext_id,

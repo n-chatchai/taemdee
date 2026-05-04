@@ -32,6 +32,13 @@ class Pairing(SQLModel, table=True):
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     code: str = Field(unique=True, index=True, max_length=64)
     pwa_token: str = Field(max_length=64)
+    # Set by /auth/pair/start when the PWA already has a customer cookie.
+    # The OAuth callback uses this to bind the new provider to the *same*
+    # customer (and User) instead of a cookie-less anonymous row that
+    # would otherwise spawn a parallel User with only the new identity.
+    originator_customer_id: Optional[UUID] = Field(
+        default=None, foreign_key="customers.id"
+    )
     customer_id: Optional[UUID] = Field(default=None, foreign_key="customers.id")
     provider: Optional[str] = Field(default=None, max_length=32)
     created_at: datetime = Field(default_factory=utcnow)

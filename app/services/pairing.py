@@ -19,15 +19,23 @@ PAIRING_TTL_MINUTES = 10
 PWA_TOKEN_COOKIE = "td_pair_pwa"
 
 
-async def create_pairing(db: AsyncSession) -> Pairing:
+async def create_pairing(
+    db: AsyncSession,
+    *,
+    originator_customer_id: Optional[UUID] = None,
+) -> Pairing:
     """Mint a fresh Pairing row. The route is responsible for setting the
     `pwa_token` cookie on the response (cookies need a Response, which the
-    service shouldn't know about)."""
+    service shouldn't know about). `originator_customer_id` carries the
+    PWA caller's identity through to the OAuth callback so the new
+    provider binds to the same customer/user instead of a cookie-less
+    fresh row."""
     code = secrets.token_urlsafe(32)
     pwa_token = secrets.token_urlsafe(32)
     row = Pairing(
         code=code,
         pwa_token=pwa_token,
+        originator_customer_id=originator_customer_id,
         expires_at=utcnow() + timedelta(minutes=PAIRING_TTL_MINUTES),
     )
     db.add(row)
