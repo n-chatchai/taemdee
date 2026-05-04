@@ -5,7 +5,7 @@ from datetime import timedelta, timezone
 from typing import Optional
 
 import segno
-from fastapi import APIRouter, Depends, Form, HTTPException, Request, Response, status, UploadFile, File
+from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, Response, status, UploadFile, File
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from app.core.templates import templates
 from sqlmodel import func, select
@@ -985,6 +985,9 @@ async def shop_events(request: Request):
     )
 
 
+_CREDENTIALS_FLASH_COOKIE = "td_settings_flash"
+
+
 @router.get(
     "/settings",
     response_class=HTMLResponse,
@@ -993,6 +996,7 @@ async def shop_events(request: Request):
 async def settings_page(
     request: Request,
     shop: Shop = Depends(get_current_shop),
+    flash_cookie: Optional[str] = Cookie(None, alias=_CREDENTIALS_FLASH_COOKIE),
     db: AsyncSession = Depends(get_session),
 ):
     from app.models import ShopMenuItem
@@ -1053,15 +1057,109 @@ async def settings_page(
         },
     ]
 
-    return templates.TemplateResponse(
+    flash_message: Optional[str] = None
+    flash_ok = False
+    if flash_cookie:
+        from urllib.parse import unquote
+        try:
+            raw = unquote(flash_cookie)
+            if raw.startswith("ok:"):
+                flash_message = raw[3:]
+                flash_ok = True
+            elif raw.startswith("err:"):
+                flash_message = raw[4:]
+                flash_ok = False
+        except Exception:
+            flash_message = None
+
+    response = templates.TemplateResponse(
         request=request,
         name="shop/settings.html",
         context={
             "shop": shop,
             "menu_count": menu_count,
             "connect_rows": connect_rows,
+            "current_username": staff.user.username if staff and staff.user else None,
+            "has_pin": bool(staff and staff.user and staff.user.pin_hash),
+            "credentials_flash": flash_message,
+            "credentials_flash_ok": flash_ok,
         },
     )
+    if flash_cookie:
+        response.delete_cookie(_CREDENTIALS_FLASH_COOKIE, path="/")
+    return response
+
+
+@router.post(
+    "/settings/credentials",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
+async def settings_credentials_post(
+    request: Request,
+    username: str = Form(""),
+    pin: str = Form(""),
+    db: AsyncSession = Depends(get_session),
+):
+    """Update the current user's username + PIN. Login channel for
+    /staff/pin-login. Empty PIN keeps the existing hash; empty
+    username clears the field (and the PIN by extension since PIN
+    without username is unusable)."""
+    from urllib.parse import quote
+    from app.services.team import (
+        find_user_by_username, hash_pin, is_valid_pin,
+    )
+
+    staff = request.state.staff
+    if staff is None or staff.user is None:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "ต้องเข้าสู่ระบบก่อน",
+        )
+    user = staff.user
+
+    uname = (username or "").strip() or None
+    pin_value = (pin or "").strip() or None
+
+    def _redirect(flash: str, ok: bool) -> RedirectResponse:
+        prefix = "ok:" if ok else "err:"
+        resp = RedirectResponse(
+            url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER,
+        )
+        resp.set_cookie(
+            key=_CREDENTIALS_FLASH_COOKIE,
+            value=quote(prefix + flash, safe=""),
+            path="/",
+            max_age=30,
+            httponly=True,
+            secure=True,
+            samesite="lax",
+        )
+        return resp
+
+    if pin_value and not is_valid_pin(pin_value):
+        return _redirect("PIN ต้องเป็นตัวเลข 6 หลัก", ok=False)
+
+    if uname:
+        clash = await find_user_by_username(db, uname)
+        if clash is not None and clash.id != user.id:
+            return _redirect(
+                f"Username '{uname}' มีคนใช้แล้ว · ลองชื่ออื่น", ok=False,
+            )
+
+    user.username = uname
+    if pin_value:
+        user.pin_hash = hash_pin(pin_value)
+    elif uname is None:
+        # Username cleared → clear PIN too (orphaned hash is dead).
+        user.pin_hash = None
+    db.add(user)
+    await db.commit()
+
+    if uname:
+        msg = "บันทึกแล้ว · เข้าสู่ระบบที่ /staff/pin-login ได้เลย"
+    else:
+        msg = "ลบ Username + PIN แล้ว"
+    return _redirect(msg, ok=True)
 
 
 # ── S3.insights ─────────────────────────────────────────────────────────────
