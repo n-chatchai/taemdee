@@ -1421,6 +1421,14 @@ async def my_cards(
         .where(Inbox.customer_id == customer.id, Inbox.read_at.is_(None))
     )).one()
 
+    # Customer-side dashboard todos — install PWA, link a provider,
+    # friend the OA on LINE, etc. Auto-skips items that are already
+    # fulfilled (e.g. customer.is_pwa is True for installed PWAs);
+    # only renders rows the customer can actually act on right now.
+    from app.services.customer_items import list_available as list_customer_items
+
+    customer_items = await list_customer_items(db, customer)
+
     response = templates.TemplateResponse(
         request=request,
         name="my_cards.html",
@@ -1434,11 +1442,48 @@ async def my_cards(
             "weekday_th": weekday_th,
             "inbox_unread": inbox_unread,
             "nav_gifts_badge": await _active_gifts_count(db, customer.id),
+            "customer_items": customer_items,
         },
     )
     if was_created:
         set_customer_cookie(response, customer.id)
     return response
+
+
+@router.post("/card/items/{kind}/claim")
+async def customer_item_claim(
+    kind: str,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Mark a /my-cards todo claimed. Most kinds are no-op handlers —
+    the act of visiting the linked page is the completion criterion."""
+    from app.services.customer_items import ItemError, claim as claim_item
+
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    try:
+        await claim_item(db, customer, kind)
+    except ItemError as e:
+        raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+    return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post("/card/items/{kind}/skip")
+async def customer_item_skip(
+    kind: str,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Dismiss a /my-cards todo without side effect. Idempotent at the
+    service layer — second skip raises ItemError → 400."""
+    from app.services.customer_items import ItemError, skip as skip_item
+
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    try:
+        await skip_item(db, customer, kind)
+    except ItemError as e:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))
+    return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
 
 
 # ── Customer inbox (DeeReach channel "inbox" lands here) ─────────────────────

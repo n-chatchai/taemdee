@@ -92,6 +92,101 @@
   {% include "_partials/page_head.html" %}
   {% include "_partials/line_friend_prompt.html" %}
 
+  {# Customer todos — install PWA, link a provider, friend the OA, etc.
+     services/customer_items.list_available already filters out items
+     that are auto-fulfilled (e.g. customer.is_pwa is True) so this
+     block silently disappears as the customer completes them. #}
+  {% if customer_items %}
+    <div class="cl-section-h" style="margin-top: 4px;">
+      <span class="icon" style="color: var(--accent);">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 11 12 14 22 4"/><path d="M21 12v7a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2V5a2 2 0 0 1 2-2h11"/></svg>
+      </span>
+      รายการที่ต้องทำ
+      <span class="count">{{ customer_items|length }} รายการ</span>
+    </div>
+    {% for it in customer_items %}
+      <div class="s3-todo-wrap">
+        {% if it.kind == 'pwa_install' %}
+          {# Tap → opens the install_sheet overlay so the customer sees
+             the per-platform "Add to Home Screen" instructions. The
+             todo auto-fulfills once /track/pwa flips customer.is_pwa
+             on first standalone-mode open. #}
+          <button type="button" class="s3-todo" onclick="
+            const s = document.getElementById('install-sheet');
+            if (s) s.classList.add('open');">
+            <div class="td-info">
+              <div class="td-h">{{ it.label|safe }}</div>
+              <div class="td-s">{{ it.sub }}</div>
+            </div>
+            <span class="td-cta">{{ it.cta }}</span>
+          </button>
+        {% elif it.kind == 'enable_push' %}
+          {# Tap → fires the same subscribePush() the toggle in
+             /card/account/notifications uses. Auto-fulfills once
+             web_push_endpoint is saved. #}
+          <button type="button" class="s3-todo" onclick="
+            (async () => {
+              try {
+                if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
+                let reg = await navigator.serviceWorker.getRegistration();
+                if (!reg) reg = await navigator.serviceWorker.register('/sw.js');
+                const r = await fetch('/push/vapid-public');
+                if (!r.ok) return;
+                const j = await r.json();
+                const raw = atob(j.public_key.replace(/-/g,'+').replace(/_/g,'/') + '='.repeat((4 - j.public_key.length % 4) % 4));
+                const key = new Uint8Array(raw.length);
+                for (let i = 0; i < raw.length; i++) key[i] = raw.charCodeAt(i);
+                const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
+                const fd = new FormData();
+                fd.set('endpoint', sub.endpoint);
+                const p = sub.getKey('p256dh'); const a = sub.getKey('auth');
+                const b64 = (buf) => { const b = new Uint8Array(buf); let s=''; for (let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
+                fd.set('p256dh', b64(p)); fd.set('auth', b64(a));
+                await fetch('/push/subscribe', { method: 'POST', body: fd });
+                location.reload();
+              } catch(_) {}
+            })();">
+            <div class="td-info">
+              <div class="td-h">{{ it.label|safe }}</div>
+              <div class="td-s">{{ it.sub }}</div>
+            </div>
+            <span class="td-cta">{{ it.cta }}</span>
+          </button>
+        {% elif it.kind == 'line_friend' %}
+          <a href="{{ settings.line_oa_friend_url }}" target="_blank" rel="noopener" class="s3-todo">
+            <div class="td-info">
+              <div class="td-h">{{ it.label|safe }}</div>
+              <div class="td-s">{{ it.sub }}</div>
+            </div>
+            <span class="td-cta">{{ it.cta }}</span>
+          </a>
+        {% elif it.link %}
+          <a href="{{ it.link }}" class="s3-todo">
+            <div class="td-info">
+              <div class="td-h">{{ it.label|safe }}</div>
+              <div class="td-s">{{ it.sub }}</div>
+            </div>
+            <span class="td-cta">{{ it.cta }}</span>
+          </a>
+        {% else %}
+          <form method="POST" action="/card/items/{{ it.kind }}/claim" class="s3-item-form">
+            <button type="submit" class="s3-todo">
+              <div class="td-info">
+                <div class="td-h">{{ it.label|safe }}</div>
+                <div class="td-s">{{ it.sub }}</div>
+              </div>
+              <span class="td-cta">{{ it.cta }}</span>
+            </button>
+          </form>
+        {% endif %}
+        <form method="POST" action="/card/items/{{ it.kind }}/skip" class="s3-todo-skip">
+          <button type="submit" class="s3-skip-btn">ข้าม</button>
+          <span class="s3-skip-explain">{{ it.skip_explain }}</span>
+        </form>
+      </div>
+    {% endfor %}
+  {% endif %}
+
   {# Hero carousel — all unused vouchers (Redemption served_at IS NULL).
      Auto-redeem on /scan creates the Redemption inline, so by the time
      the customer lands here the voucher is already in /my-gifts; this
