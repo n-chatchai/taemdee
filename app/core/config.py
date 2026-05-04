@@ -51,8 +51,12 @@ class Settings(BaseSettings):
     line_channel_secret: Optional[str] = None
     login_otp_simulate: bool = False
 
-    # Login methods enabled for each role (comma-separated: line,phone,google,facebook)
-    customer_logins: str = "line,google,facebook"
+    # Login methods enabled for each role (comma-separated: line,phone,google,facebook).
+    # Facebook is disabled until we push the FB app through Meta's
+    # business verification — going Live for real users now requires it
+    # even for basic public_profile + email. Re-enable by adding
+    # "facebook" once FACEBOOK_APP_ID / FACEBOOK_APP_SECRET are set.
+    customer_logins: str = "line,google"
     shop_logins: str = "line,google"
 
     # Google OAuth 2.0 (optional — if unset, the Google button returns 503).
