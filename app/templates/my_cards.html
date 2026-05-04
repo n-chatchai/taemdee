@@ -12,31 +12,6 @@
    CTA). Carousel snaps at 78% width per card; .single state expands
    to 100% width and disables horizontal scroll. */
 .cl-voucher-section { margin-bottom: 14px; }
-.cl-voucher-h {
-  margin: 0 20px 10px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.cl-voucher-h .lab {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-}
-.cl-voucher-h .count {
-  font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
-  color: var(--ink-soft);
-}
-.cl-voucher-h .count strong {
-  color: var(--accent);
-  font-weight: 700;
-}
 .cl-voucher-carousel {
   display: flex;
   gap: 10px;
@@ -477,9 +452,12 @@
      "ใช้" on the row. #}
   {% if hero_vouchers %}
     <div class="cl-voucher-section{% if hero_vouchers|length == 1 %} single{% endif %}" style="margin-top: 4px;">
-      <div class="cl-voucher-h">
-        <span class="lab">🎁 ของขวัญพร้อมใช้</span>
-        <span class="count"><strong>{{ hero_vouchers|length }}</strong> ใบ</span>
+      <div class="cl-section-h">
+        <span class="icon" style="color: var(--accent);">
+          <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="6"/></svg>
+        </span>
+        ของขวัญพร้อมใช้
+        <span class="count">{{ hero_vouchers|length }} ใบ</span>
       </div>
       <div class="cl-voucher-carousel">
         {% for voucher in hero_vouchers %}
