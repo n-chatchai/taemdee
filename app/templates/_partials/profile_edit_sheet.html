@@ -1,0 +1,116 @@
+{# Profile edit bottom sheet — opened by tapping the .ph-avatar button
+   in any page_head. Customer can update display_name + picture_url.
+   "ใช้ค่าเริ่มต้น" clears picture_url so the avatar falls back to the
+   initial circle. Built on the same overlay/slide-up shell as
+   nickname_sheet / install_sheet so the open/close transitions match. #}
+{% if customer %}
+<div class="install-sheet-overlay" id="profile-edit-overlay" aria-hidden="true">
+  <div class="install-sheet" role="dialog" aria-label="แก้ไขโปรไฟล์">
+    <div class="sheet-handle"></div>
+
+    <form action="/card/account/profile" method="POST" enctype="multipart/form-data"
+          class="profile-edit-form" id="profile-edit-form">
+      <input type="hidden" name="next_url" id="profile-edit-next" value="/my-cards">
+
+      <div class="pe-avatar-wrap">
+        <label for="profile-edit-file" class="pe-avatar" id="profile-edit-avatar">
+          {% if customer.picture_url %}
+            <img id="pe-preview" src="{{ customer.picture_url }}" alt="">
+          {% else %}
+            <span id="pe-preview-fallback">{{ (customer.display_name[0]|upper) if customer.display_name else 'ต' }}</span>
+          {% endif %}
+          <span class="pe-edit-badge" aria-hidden="true">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+              <circle cx="12" cy="13" r="4"/>
+            </svg>
+          </span>
+        </label>
+        <input type="file" id="profile-edit-file" name="picture" accept="image/*" hidden>
+        <button type="button" id="profile-edit-default" class="pe-default-btn">ใช้ค่าเริ่มต้น</button>
+      </div>
+
+      <label for="profile-edit-name" class="pe-label">ชื่อที่อยากให้เรียก</label>
+      <input type="text" id="profile-edit-name" name="display_name" required
+             value="{{ customer.display_name or '' }}" maxlength="40"
+             placeholder="เช่น พี่หมี">
+
+      <input type="hidden" name="use_default" id="profile-edit-use-default" value="">
+
+      <div class="pe-actions">
+        <button type="button" class="pe-cancel" data-close="profile-edit">ยกเลิก</button>
+        <button type="submit" class="pe-save">บันทึก</button>
+      </div>
+    </form>
+  </div>
+</div>
+
+<script>
+  (function () {
+    const overlay = document.getElementById('profile-edit-overlay');
+    if (!overlay) return;
+    const fileInput = document.getElementById('profile-edit-file');
+    const preview = document.getElementById('pe-preview');
+    const fallback = document.getElementById('pe-preview-fallback');
+    const avatarBox = document.getElementById('profile-edit-avatar');
+    const useDefaultFlag = document.getElementById('profile-edit-use-default');
+    const defaultBtn = document.getElementById('profile-edit-default');
+    const nextField = document.getElementById('profile-edit-next');
+
+    function show() {
+      nextField.value = window.location.pathname + window.location.search;
+      overlay.setAttribute('aria-hidden', 'false');
+      overlay.classList.add('is-open');
+    }
+    function hide() {
+      overlay.setAttribute('aria-hidden', 'true');
+      overlay.classList.remove('is-open');
+    }
+
+    document.querySelectorAll('[data-open="profile-edit"]').forEach((btn) => {
+      btn.addEventListener('click', show);
+    });
+    document.querySelectorAll('[data-close="profile-edit"]').forEach((btn) => {
+      btn.addEventListener('click', hide);
+    });
+    overlay.addEventListener('click', (e) => { if (e.target === overlay) hide(); });
+
+    // Live preview when user picks a file. Read as data URL — server
+    // upload happens on form submit, this is just visual feedback.
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      const r = new FileReader();
+      r.onload = () => {
+        useDefaultFlag.value = '';
+        if (preview) {
+          preview.src = r.result;
+        } else if (fallback) {
+          // Replace the initial-fallback span with an <img> so the
+          // preview shows the chosen file.
+          const img = document.createElement('img');
+          img.id = 'pe-preview';
+          img.alt = '';
+          img.src = r.result;
+          fallback.replaceWith(img);
+        }
+      };
+      r.readAsDataURL(file);
+    });
+
+    defaultBtn.addEventListener('click', () => {
+      useDefaultFlag.value = '1';
+      fileInput.value = '';
+      // Swap the <img> back to the initial-fallback span if needed.
+      const img = avatarBox.querySelector('img#pe-preview');
+      if (img) {
+        const span = document.createElement('span');
+        span.id = 'pe-preview-fallback';
+        const name = (document.getElementById('profile-edit-name').value || 'ต').trim();
+        span.textContent = (name[0] || 'ต').toUpperCase();
+        img.replaceWith(span);
+      }
+    });
+  })();
+</script>
+{% endif %}

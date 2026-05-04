@@ -45,6 +45,13 @@ Child templates fill these blocks:
       {% if customer and not customer.display_name %}
       {% include "_partials/nickname_sheet.html" %}
       {% endif %}
+
+      {# Profile edit sheet — opened by the page-head avatar. Mounted
+      once at layout level so any page that includes page_head gets the
+      working trigger without re-mounting. #}
+      {% if customer %}
+      {% include "_partials/profile_edit_sheet.html" %}
+      {% endif %}
     </div>
     {% block body_end %}{% endblock %}
   </body>

@@ -3,7 +3,7 @@
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, status
+from fastapi import APIRouter, Cookie, Depends, File, Form, HTTPException, Request, UploadFile, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from app.core.templates import templates
 from sqlmodel import func, select
@@ -452,6 +452,51 @@ async def customer_logout():
     response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie(CUSTOMER_COOKIE_NAME, path="/")
     return response
+
+
+@router.post("/card/account/profile")
+async def customer_update_profile(
+    display_name: str = Form(...),
+    use_default: Optional[str] = Form(None),
+    next_url: str = Form("/my-cards"),
+    picture: Optional[UploadFile] = File(None),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Update display_name + picture_url for the current customer.
+
+    `use_default=1` clears picture_url so the avatar renders the
+    initial-circle fallback. Otherwise an uploaded `picture` file is
+    stored in R2 and its URL saved on the customer.
+    """
+    from app.services.storage import upload_to_r2
+
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    new_name = display_name.strip()
+    if new_name:
+        customer.display_name = new_name
+
+    if use_default == "1":
+        customer.picture_url = None
+    elif picture is not None and picture.filename:
+        image_bytes = await picture.read()
+        if image_bytes:
+            url = await upload_to_r2(
+                image_bytes,
+                file_name=picture.filename,
+                content_type=picture.content_type or "image/jpeg",
+                folder=f"avatars/{customer.id}",
+            )
+            if url:
+                customer.picture_url = url
+
+    db.add(customer)
+    await db.commit()
+
+    # Bounce back to where the sheet was opened from. Reject off-site
+    # next_urls so an attacker can't use this redirect as a parking spot.
+    safe_next = next_url if next_url.startswith("/") else "/my-cards"
+    return RedirectResponse(url=safe_next, status_code=status.HTTP_303_SEE_OTHER)
 
 
 @router.post("/card/account/disconnect/{provider}")

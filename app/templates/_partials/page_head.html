@@ -10,7 +10,9 @@
      'qr' / 'qr_gear' (default) → QR-of-me button → /my-id
    The 'gear' option is gone — settings now lives in the dock as a
    primary tab (commit 4dff748). Keeping qr_gear as the default keeps
-   the existing call sites working without per-page edits.
+   the existing call sites working without per-page edits. The profile
+   avatar is appended unconditionally when a customer is in scope —
+   tap opens the profile edit sheet (mounted in c_base).
 
    Pages with an .app-bar back-arrow (story / my-id / inbox detail /
    notifications) intentionally skip this partial — the back nav owns
@@ -36,6 +38,21 @@
             <rect x="14" y="14" width="7" height="7" rx="1"/>
           </svg>
         </a>
+      {% endif %}
+      {# Profile avatar — tap opens the bottom sheet to edit display
+         name + picture. Default state when picture_url is empty is the
+         customer's initial on accent background. The sheet itself is
+         mounted in c_base.html so any page that includes page_head
+         gets the trigger for free. #}
+      {% if customer %}
+        <button type="button" class="ph-avatar" data-open="profile-edit"
+                aria-label="แก้ไขโปรไฟล์">
+          {% if customer.picture_url %}
+            <img src="{{ customer.picture_url }}" alt="">
+          {% else %}
+            <span>{{ (customer.display_name[0]|upper) if customer.display_name else 'ต' }}</span>
+          {% endif %}
+        </button>
       {% endif %}
     </div>
   {% endif %}
