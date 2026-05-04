@@ -5,16 +5,16 @@ Ported from the design 2564-2776 slide-up variant. #}
     <div class="sheet-handle"></div>
 
     <div class="center stack" style="padding: 10px 0 20px;">
-      {# Nong Taem character icon #}
-      <div class="hg-avatar"
-        style="width: 60px; height: 60px; background: var(--ink); border-radius: 18px; margin: 0 auto 20px; display: flex; align-items: center; justify-content: center;">
-        <svg class="smile-stamp" viewBox="0 0 100 100">
-          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A" />
-          <circle cx="36" cy="42" r="6" fill="#FFD952" />
-          <circle cx="64" cy="42" r="6" fill="#FFD952" />
-          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round" />
-        </svg>
-      </div>
+      {# Nong Taem character icon — drop the dark wrapper; the SVG's
+         own rounded orange rect is the logo. The previous wrapper
+         was painting an extra dark frame around it. #}
+      <svg class="smile-stamp" viewBox="0 0 100 100"
+           style="width: 60px; height: 60px; display: block; margin: 0 auto 20px;">
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A" />
+        <circle cx="36" cy="42" r="6" fill="#FFD952" />
+        <circle cx="64" cy="42" r="6" fill="#FFD952" />
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round" />
+      </svg>
 
       <form action="/collect-name" method="POST" class="stack" style="width: 100%; margin: 0 auto;">
         {# Pass the current URL so we can return here after submission #}
