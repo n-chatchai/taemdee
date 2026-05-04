@@ -87,45 +87,25 @@ async def verify_and_login(
         if not await verify_otp(db, phone, code):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired code")
 
-    # Same StaffMember-first resolution as the LINE callback. Owners are
-    # StaffMember rows with is_owner=True; pending invites get accepted on
-    # first OTP login that matches their phone; pre-unification Shops get
-    # a lazy owner-staff backfill.
-    from app.services.team import (
-        accept_invite,
-        create_owner_staff,
-        find_staff_by_phone,
+    # Detect "fresh signup" before the resolver runs — referral
+    # binding fires only on first new shop. resolve_shop_signin is
+    # idempotent for existing rows but also creates the Shop on first
+    # signup, so we record the pre-state to know which side ran.
+    from app.services.team import resolve_shop_signin
+
+    pre_existing = (
+        await db.exec(select(Shop).where(Shop.phone == phone))
+    ).first()
+
+    display_name = name if name and name != "New Shop" else None
+    shop, staff_match = await resolve_shop_signin(
+        db, "phone", phone, display_name=display_name,
     )
 
-    staff_match = await find_staff_by_phone(db, phone)
-    is_new = False
-    if staff_match is not None:
-        if staff_match.accepted_at is None:
-            await accept_invite(db, staff_match)
-            if not staff_match.phone:
-                staff_match.phone = phone
-            if not staff_match.display_name and name and name != "New Shop":
-                staff_match.display_name = name
-            db.add(staff_match)
-            await db.commit()
-            await db.refresh(staff_match)
-        shop = await db.get(Shop, staff_match.shop_id)
-    else:
-        result = await db.exec(select(Shop).where(Shop.phone == phone))
-        shop = result.first()
-        is_new = shop is None
-        if is_new:
-            shop = Shop(name=name, phone=phone)
-            db.add(shop)
-            await db.commit()
-            await db.refresh(shop)
-            if ref:
-                referral = await find_referral_by_code(db, ref)
-                if referral and referral.referee_shop_id is None:
-                    await consume_referral_on_signup(db, referral, shop)
-        staff_match = await create_owner_staff(
-            db, shop, phone=phone, display_name=name if name and name != "New Shop" else None,
-        )
+    if pre_existing is None and ref:
+        referral = await find_referral_by_code(db, ref)
+        if referral and referral.referee_shop_id is None:
+            await consume_referral_on_signup(db, referral, shop)
 
     _set_session_cookie(
         response,

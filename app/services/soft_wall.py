@@ -26,7 +26,7 @@ from app.services.identity import (
     PROVIDER_FIELDS,
     IdentityConflict,
     bind_provider,
-    find_row_by_provider,
+    find_user_by_provider,
     unbind_provider,
 )
 
@@ -65,7 +65,7 @@ async def claim_by_provider(
     if not anonymous_customer.is_anonymous:
         return anonymous_customer
 
-    existing = await find_row_by_provider(db, Customer, provider, ext_id)
+    existing = await find_user_by_provider(db, Customer, provider, ext_id)
     field = PROVIDER_FIELDS[provider]
 
     if existing and existing.id != anonymous_customer.id:

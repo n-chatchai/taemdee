@@ -44,7 +44,7 @@ def _provider_field(provider: str) -> str:
     return field
 
 
-async def find_row_by_provider(
+async def find_user_by_provider(
     db: AsyncSession,
     model: Type,
     provider: str,
@@ -52,8 +52,11 @@ async def find_row_by_provider(
     *,
     extra_filters: Sequence = (),
 ):
-    """SELECT 1 row WHERE <model>.<provider_field> = ext_id. `extra_filters`
-    lets staff lookups scope to non-revoked rows.
+    """SELECT 1 row WHERE <model>.<provider_field> = ext_id. The single
+    "find by provider id" primitive — Customer and StaffMember both
+    carry the four identity columns (line_id / google_id / facebook_id
+    / phone), so one function works for both. `extra_filters` lets
+    callers scope (e.g. StaffMember.revoked_at IS NULL).
     """
     if not ext_id:
         return None
@@ -83,7 +86,7 @@ async def bind_provider(
     if getattr(row, field) == ext_id:
         return row
 
-    other = await find_row_by_provider(
+    other = await find_user_by_provider(
         db, model, provider, ext_id, extra_filters=extra_filters
     )
     if other is not None and getattr(other, "id", None) != getattr(row, "id", None):

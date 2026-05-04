@@ -19,7 +19,7 @@ from app.models.util import utcnow
 from app.services.identity import (
     IdentityConflict,
     bind_provider,
-    find_row_by_provider,
+    find_user_by_provider,
     unbind_provider,
 )
 
@@ -166,30 +166,6 @@ async def find_pending_invite_by_phone(
     return result.first()
 
 
-async def find_staff_by_provider(
-    db: AsyncSession, provider: str, ext_id: str,
-) -> Optional[StaffMember]:
-    """Look up any (non-revoked) StaffMember by their bound provider id.
-    Used by the OAuth + OTP callbacks to decide whether the visitor is
-    an existing shop user (owner OR pending invite) vs. a fresh signup.
-    Provider names match services/identity.PROVIDER_FIELDS.
-    """
-    return await find_row_by_provider(
-        db, StaffMember, provider, ext_id,
-        extra_filters=_STAFF_LOOKUP_FILTERS,
-    )
-
-
-# Back-compat aliases for the existing callsites in routes/auth.py +
-# routes/shops.py. Same behaviour, fewer call sites going forward.
-async def find_staff_by_line(db: AsyncSession, line_id: str) -> Optional[StaffMember]:
-    return await find_staff_by_provider(db, "line", line_id)
-
-
-async def find_staff_by_phone(db: AsyncSession, phone: str) -> Optional[StaffMember]:
-    return await find_staff_by_provider(db, "phone", phone)
-
-
 async def link_staff_provider(
     db: AsyncSession,
     staff: StaffMember,
@@ -241,12 +217,19 @@ async def resolve_shop_signin(
     *,
     display_name: Optional[str] = None,
     picture_url: Optional[str] = None,
+    existing_staff: Optional[StaffMember] = None,
 ) -> tuple[Shop, StaffMember]:
     """Generic OAuth/OTP shop-side resolver — shared by LINE, Google,
     Facebook, and phone callbacks. Returns the (Shop, StaffMember) pair
     the route should issue a session for.
 
     Order:
+      0. If `existing_staff` is supplied AND no other staff is already
+         bound to this provider id, treat the round-trip as "add this
+         provider to my current staff row" — link via bind_provider
+         (raises IdentityConflict on dup). Used when the connect-row
+         CTA on /shop/settings kicks off OAuth from a logged-in
+         session.
       1. Find StaffMember by provider id. If pending, accept_invite +
          backfill missing identity / display_name / picture_url.
       2. No staff match → look up Shop by the matching column for
@@ -255,14 +238,33 @@ async def resolve_shop_signin(
          so step 2 is skipped.
       3. Neither → brand-new shop signup. Create Shop + owner-staff.
     """
-    staff = await find_staff_by_provider(db, provider, ext_id)
-    if staff is not None:
+    matched = await find_user_by_provider(
+        db, StaffMember, provider, ext_id,
+        extra_filters=_STAFF_LOOKUP_FILTERS,
+    )
+
+    # Step 0 — linking path. The provider-by-id lookup can find:
+    #   - the same staff (already linked → no-op)
+    #   - a different staff (conflict → bubble up via link_staff_provider)
+    #   - nobody (clean link to existing_staff)
+    if existing_staff is not None and (
+        matched is None or matched.id == existing_staff.id
+    ):
+        staff = await link_staff_provider(
+            db, existing_staff, provider, ext_id,
+            display_name=display_name, picture_url=picture_url,
+        )
+        shop = await db.get(Shop, staff.shop_id)
+        return shop, staff
+
+    if matched is not None:
+        staff = matched
         if staff.accepted_at is None:
             await accept_invite(db, staff)
             # Backfill the OAuth identity column + profile bits the
             # invite row was missing. The matching `provider` column
             # was already set by the owner during the invite (or it
-            # would not have matched in find_staff_by_provider).
+            # would not have matched in find_user_by_provider).
             changed = False
             if display_name and not staff.display_name:
                 staff.display_name = display_name

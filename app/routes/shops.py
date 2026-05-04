@@ -72,24 +72,12 @@ async def dev_login_or_register(
     """
     # Same StaffMember-first resolution as /auth/otp/verify so the dev
     # shortcut produces the same JWT shape (staff_id always set, is_owner
-    # carried explicitly) — otherwise the dev session would be missing the
-    # request.state.staff template signal.
-    from app.services.team import accept_invite, create_owner_staff, find_staff_by_phone
+    # carried explicitly).
+    from app.services.team import resolve_shop_signin
 
-    staff_match = await find_staff_by_phone(db, phone)
-    if staff_match is not None:
-        if staff_match.accepted_at is None:
-            await accept_invite(db, staff_match)
-        shop = await db.get(Shop, staff_match.shop_id)
-    else:
-        result = await db.exec(select(Shop).where(Shop.phone == phone))
-        shop = result.first()
-        if shop is None:
-            shop = Shop(name=name, phone=phone)
-            db.add(shop)
-            await db.commit()
-            await db.refresh(shop)
-        staff_match = await create_owner_staff(db, shop, phone=phone, display_name=name)
+    shop, staff_match = await resolve_shop_signin(
+        db, "phone", phone, display_name=name,
+    )
 
     redirect = RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
     _set_session_cookie(
