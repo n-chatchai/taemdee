@@ -1355,19 +1355,18 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   text-decoration: none;
 }
 
-/* C1 greeting line — น้องแต้ม welcomes the returning customer by name. */
+/* C1 greeting line — น้องแต้ม welcomes the returning customer by name.
+   Block layout (not flex) so text-align:center centers each <br>-wrapped
+   line independently. With display:flex the span's content width matched
+   the longest line, leaving shorter lines visually left-aligned. */
 .c1-greet-bubble {
   margin: 12px 18px 4px;
   padding: 8px 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
   text-align: center;
-  gap: 8px;
   font-family: 'Prompt', sans-serif;
   font-size: var(--text-base);
   color: var(--ink-soft);
-  line-height: 1.35;
+  line-height: 1.45;
 }
 .c1-greet-bubble .cgb-text strong {
   color: var(--ink);
