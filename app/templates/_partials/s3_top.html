@@ -19,7 +19,26 @@
 {% set _s3_staff = request.state.staff %}
 <div class="s3-top">
   <div class="hi">
-    <span class="td-greet">สวัสดี <span class="td-brand">{{ shop.name }}<span class="dot">.</span></span></span>
+    <div class="hi-greet">
+      <span class="td-greet">สวัสดี <span class="td-brand">{{ shop.name }}<span class="dot">.</span></span></span>
+    </div>
+    {% if weekday_th or branch_label %}
+      <div class="hi-sub">
+        {% if weekday_th %}
+          <span class="dc-text">
+            สวัสดี{{ weekday_th }} · เริ่มต้นวันได้ดี
+            <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
+              <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+              <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+              <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </span>
+        {% endif %}
+        {% if branch_label %}
+          <a class="branch-pill" href="/shop/branches" title="เลือกสาขา">{{ branch_label }}</a>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
   <div class="actions">
     <a class="bell-btn" href="#" title="แจ้งเตือน" aria-label="แจ้งเตือน">
@@ -52,21 +71,3 @@
     {% endif %}
   </div>
 </div>
-
-{% if weekday_th or branch_label %}
-  <div class="s3-day-caption">
-    {% if weekday_th %}
-      <span class="dc-text">
-        สวัสดี{{ weekday_th }} · เริ่มต้นวันได้ดี
-        <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-      </span>
-    {% else %}<span></span>{% endif %}
-    {% if branch_label %}
-      <a class="branch-pill" href="/shop/branches" title="เลือกสาขา">{{ branch_label }}</a>
-    {% endif %}
-  </div>
-{% endif %}

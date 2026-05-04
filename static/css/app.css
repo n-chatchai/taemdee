@@ -605,20 +605,30 @@ body {
    S3 — shop dashboard (most-used shop screen)
    ========================================================== */
 
+/* Mirrors the customer .page-head shape: left text block (greeting on
+   top, sub-line below), right action row, both centered vertically.
+   Earlier the s3-top kept greeting + actions in row 1 and the day
+   caption was a separate sibling row, which left the greeting visually
+   floating above the actions on its own line. */
 .s3-top {
-  padding: 14px 20px 0;
+  padding: 14px 20px 14px;
   display: flex;
   justify-content: space-between;
   align-items: center;
+  gap: 12px;
 }
 .s3-top .hi {
+  flex: 1;
+  min-width: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 3px;
+}
+.s3-top .hi-greet {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
   font-size: 19px;
   letter-spacing: -0.02em;
-  display: flex;
-  align-items: baseline;
-  gap: 8px;
 }
 .s3-top .hi .td-greet {
   font-family: 'Prompt', sans-serif;
@@ -640,7 +650,32 @@ body {
   line-height: 1;
 }
 .s3-top .hi .td-brand .dot { color: var(--accent); }
-.s3-top .actions { display: flex; align-items: center; gap: 10px; }
+.s3-top .hi-sub {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+.s3-top .hi-sub .dc-text {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-style: italic;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.s3-top .hi-sub .dc-text .smile-inline {
+  width: 16px;
+  height: 9px;
+  color: var(--accent);
+  font-style: normal;
+}
+.s3-top .hi-sub .branch-pill {
+  padding: 6px 12px 6px 8px;
+  font-size: 11px;
+}
+.s3-top .actions { display: flex; align-items: center; gap: 8px; flex-shrink: 0; }
 .s3-top .branch-pill {
   display: flex;
   align-items: center;
@@ -7988,15 +8023,16 @@ form.s10-row { margin: 0 0 4px; }
   flex-shrink: 0;
 }
 
-/* Notification bell (top-right) — bare-icon chrome, no surface. The
-   settings cog used to share these styles; gone with the dock-only
-   settings rework on 2026-05-04. */
+/* Notification bell (top-right) — circular chrome that matches the
+   customer-side .ph-icon-btn, so the two sides feel like the same
+   product. Settings cog dropped in the 2026-05-04 dock rework. */
 .s3-top .bell-btn {
-  width: 36px;
-  height: 36px;
-  background: transparent;
+  width: 44px;
+  height: 44px;
+  background: rgba(17, 17, 17, 0.05);
   color: var(--ink);
   border: none;
+  border-radius: 50%;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -8007,7 +8043,6 @@ form.s10-row { margin: 0 0 4px; }
 }
 .s3-top .bell-btn svg { width: 22px; height: 22px; }
 .s3-top .bell-btn:active { transform: scale(0.92); }
-.s3-top .actions { gap: 4px; }
 .s3-top .bell-btn .bell-badge {
   position: absolute;
   top: 8px; right: 7px;
@@ -8021,15 +8056,15 @@ form.s10-row { margin: 0 0 4px; }
    if uploaded, otherwise the shop's first character on accent. Tap
    navigates to the full identity editor at /shop/settings/identity. */
 .s3-top .s3-avatar {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 0;
   background: var(--accent);
   color: #fff;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
@@ -11391,8 +11426,8 @@ form.s10-row { margin: 0 0 4px; }
   flex-shrink: 0;
 }
 .page-head .ph-icon-btn {
-  width: 38px;
-  height: 38px;
+  width: 44px;
+  height: 44px;
   background: rgba(17,17,17,0.05);
   border-radius: 50%;
   display: flex;
@@ -11402,20 +11437,20 @@ form.s10-row { margin: 0 0 4px; }
   color: var(--ink);
   text-decoration: none;
 }
-.page-head .ph-icon-btn svg { width: 18px; height: 18px; }
+.page-head .ph-icon-btn svg { width: 22px; height: 22px; }
 
 /* Profile avatar button in the page-head action row. Picture or
    initial-on-accent fallback. Tap opens the profile-edit sheet. */
 .page-head .ph-avatar {
-  width: 38px;
-  height: 38px;
+  width: 40px;
+  height: 40px;
   border-radius: 50%;
   border: 0;
   background: var(--accent);
   color: #fff;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 15px;
+  font-size: 16px;
   display: flex;
   align-items: center;
   justify-content: center;
