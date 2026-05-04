@@ -38,6 +38,37 @@
 
       <input type="hidden" name="use_default" id="staff-profile-edit-use-default" value="">
 
+      {# Social / phone status — read-only "what's bound to this staff
+         row" so the staff knows which providers they can sign in with.
+         StaffMember today only carries line_id + phone (the two flows
+         the auth callbacks bind), so we don't render google/facebook
+         rows. Linking a 2nd provider isn't wired yet — display only. #}
+      {% set _phone_masked = (_staff.phone[:3] ~ '•••' ~ _staff.phone[-3:]) if _staff.phone and _staff.phone|length >= 6 else _staff.phone %}
+      <div class="pe-conn-label">บัญชีที่ผูก</div>
+      <div class="pe-conn">
+        <div class="pe-conn-row">
+          <span class="pe-conn-icon line">
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+          </span>
+          <span class="pe-conn-name">LINE</span>
+          <span class="pe-conn-status{% if _staff.line_id %} on{% endif %}">
+            {% if _staff.line_id %}ผูกแล้ว{% else %}ยังไม่ได้ผูก{% endif %}
+          </span>
+        </div>
+        <div class="pe-conn-row">
+          <span class="pe-conn-icon phone">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+              <rect x="5" y="2" width="14" height="20" rx="2"/>
+              <line x1="12" y1="18" x2="12.01" y2="18"/>
+            </svg>
+          </span>
+          <span class="pe-conn-name">เบอร์โทร</span>
+          <span class="pe-conn-status{% if _staff.phone %} on{% endif %}">
+            {% if _staff.phone %}{{ _phone_masked }}{% else %}ยังไม่ได้ผูก{% endif %}
+          </span>
+        </div>
+      </div>
+
       <div class="pe-actions">
         <button type="button" class="pe-cancel" data-close="staff-profile-edit">ยกเลิก</button>
         <button type="submit" class="pe-save">บันทึก</button>

@@ -11587,6 +11587,57 @@ form.s10-row { margin: 0 0 4px; }
 }
 .pe-advanced-link:active { color: var(--ink); }
 
+/* "บัญชีที่ผูก" rows in the staff profile sheet — read-only LINE +
+   phone status. Same visual rhythm as customer's .s10-row .connect-row
+   but condensed for the bottom-sheet density. */
+.pe-conn-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-xs);
+  color: var(--ink-soft);
+  margin: 16px 0 6px;
+  letter-spacing: 0.02em;
+}
+.pe-conn {
+  display: flex;
+  flex-direction: column;
+  gap: 2px;
+  margin-bottom: 4px;
+  border-radius: 14px;
+  overflow: hidden;
+  background: var(--surface);
+}
+.pe-conn-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 12px;
+}
+.pe-conn-icon {
+  width: 28px;
+  height: 28px;
+  border-radius: 8px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.pe-conn-icon svg { width: 16px; height: 16px; }
+.pe-conn-icon.line { background: rgba(6, 199, 85, 0.14); color: #06C755; }
+.pe-conn-icon.phone { background: rgba(17, 17, 17, 0.06); color: var(--ink); }
+.pe-conn-name {
+  flex: 1;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  font-weight: 600;
+  color: var(--ink);
+}
+.pe-conn-status {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-xs);
+  color: var(--ink-softer);
+}
+.pe-conn-status.on { color: var(--ink-soft); font-weight: 500; }
+
 /* /shop/no_permission — friendly 403 for staff who tap a gated link.
    Centered card with lock icon, message, and "back to dashboard" CTA. */
 .no-perm {
