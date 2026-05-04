@@ -14,6 +14,7 @@ from app.models.shop import Shop
 from app.models.shop_item import ShopItem
 from app.models.shop_menu_item import ShopMenuItem
 from app.models.staff import StaffMember
+from app.models.user import User
 
 __all__ = [
     "AppSecret",
@@ -36,4 +37,5 @@ __all__ = [
     "ShopMenuItem",
     "StaffMember",
     "TopupSlip",
+    "User",
 ]
