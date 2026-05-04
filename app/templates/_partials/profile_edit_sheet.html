@@ -60,11 +60,13 @@
     function show() {
       nextField.value = window.location.pathname + window.location.search;
       overlay.setAttribute('aria-hidden', 'false');
-      overlay.classList.add('is-open');
+      // Class name 'open' matches the existing .install-sheet-overlay.open
+      // CSS rule that handles the slide-up transition.
+      overlay.classList.add('open');
     }
     function hide() {
       overlay.setAttribute('aria-hidden', 'true');
-      overlay.classList.remove('is-open');
+      overlay.classList.remove('open');
     }
 
     document.querySelectorAll('[data-open="profile-edit"]').forEach((btn) => {
