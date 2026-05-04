@@ -1,5 +1,6 @@
 from datetime import timedelta
 from typing import Optional
+from urllib.parse import quote, unquote
 from loguru import logger
 from jose import jwt
 
@@ -175,7 +176,7 @@ async def line_customer_confirm(
     onboard_name = None
     picture_url = None
     if c3_line_ctx:
-        parts = c3_line_ctx.split("|||")
+        parts = [unquote(p) for p in c3_line_ctx.split("|||")]
         if len(parts) >= 3:
             line_name = parts[0] or None
             onboard_name = parts[1] or None
@@ -398,9 +399,16 @@ async def line_callback(
         redirect = RedirectResponse(
             url=target_url, status_code=status.HTTP_303_SEE_OTHER
         )
+        # Cookie values must round-trip through latin-1 (Set-Cookie header
+        # encoding), so percent-encode each piece — display_name from LINE
+        # is typically Thai. Reader does unquote() on the same boundary.
+        ctx_value = "|||".join(
+            quote(s or "", safe="")
+            for s in (display_name, onboard_name, picture_url)
+        )
         redirect.set_cookie(
             key="c3_line_ctx",
-            value=f"{display_name or ''}|||{onboard_name or ''}|||{picture_url or ''}",
+            value=ctx_value,
             httponly=True,
             path="/",
         )
