@@ -1016,31 +1016,45 @@ async def settings_page(
         .where(ShopMenuItem.shop_id == shop.id)
     )).one()
 
-    # Connect-status rows for the shop owner. Shop schema only carries
-    # line_id, owner_email, and phone — Google sign-in writes owner_email,
-    # phone is the OTP login identity. Disabled providers (no client_id /
-    # not in shop_logins) are filtered out in the template.
+    # Connect-status rows source from the active StaffMember (owner is
+    # is_owner=True; non-owner staff get their own identity row). All
+    # four providers are listed so the page mirrors the customer
+    # /card/account layout — disabled rows (provider not configured /
+    # not in shop_logins) are filtered out by the template.
+    staff = request.state.staff
+
+    def _mask_phone(p: str | None) -> str | None:
+        if not p or len(p) < 6:
+            return p
+        return f"{p[:3]}•••{p[-3:]}"
+
     connect_rows = [
         {
             "id": "line",
             "name": "LINE",
-            "connected": bool(shop.line_id),
+            "connected": bool(staff and staff.line_id),
             "enabled": app_settings.is_login_enabled("shop", "line")
             and bool(app_settings.line_channel_id),
         },
         {
             "id": "google",
             "name": "Google",
-            "connected": bool(shop.owner_email),
-            "value": shop.owner_email,
+            "connected": bool(staff and staff.google_id),
             "enabled": app_settings.is_login_enabled("shop", "google")
             and bool(app_settings.google_client_id),
         },
         {
+            "id": "facebook",
+            "name": "Facebook",
+            "connected": bool(staff and staff.facebook_id),
+            "enabled": app_settings.is_login_enabled("shop", "facebook")
+            and bool(app_settings.facebook_app_id),
+        },
+        {
             "id": "phone",
             "name": "เบอร์โทร",
-            "connected": bool(shop.phone),
-            "value": shop.phone,
+            "connected": bool(staff and staff.phone),
+            "value": _mask_phone(staff.phone) if staff else None,
             "enabled": app_settings.is_login_enabled("shop", "phone"),
         },
     ]
