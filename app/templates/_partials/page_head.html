@@ -7,17 +7,15 @@
    and `ph_sub` to override.
 
    `ph_action_kind` controls the icon row in the right slot:
-     'qr'      → just the QR-of-me button → /my-id
-     'gear'    → just the settings cog    → /card/account
-     'qr_gear' → both, QR first then gear (default for dock-anchored
-                 pages — keeps the chrome consistent so the customer
-                 always knows where to find both).
-   Anything else (or empty) leaves the slot blank.
+     'qr' / 'qr_gear' (default) → QR-of-me button → /my-id
+   The 'gear' option is gone — settings now lives in the dock as a
+   primary tab (commit 4dff748). Keeping qr_gear as the default keeps
+   the existing call sites working without per-page edits.
 
    Pages with an .app-bar back-arrow (story / my-id / inbox detail /
    notifications) intentionally skip this partial — the back nav owns
    the chrome instead. #}
-{% set _ph_kinds = (ph_action_kind.split('_') if ph_action_kind else ['qr', 'gear']) %}
+{% set _ph_kinds = (ph_action_kind.split('_') if ph_action_kind else ['qr']) %}
 <div class="page-head">
   <div class="ph-text">
     <h1>
@@ -36,17 +34,6 @@
             <rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/>
             <rect x="14" y="14" width="7" height="7" rx="1"/>
-          </svg>
-        </a>
-      {% endif %}
-      {% if 'gear' in _ph_kinds %}
-        {# Gear → C6 settings. Replaces the dock's old "ตั้งค่า" tab per
-           the Apr 30 design (settings is no longer a top-level destination
-           — gear in the page-head is the only way in). #}
-        <a href="/card/account" class="ph-icon-btn" title="ตั้งค่า" aria-label="ตั้งค่า">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="12" cy="12" r="3"/>
-            <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
           </svg>
         </a>
       {% endif %}
