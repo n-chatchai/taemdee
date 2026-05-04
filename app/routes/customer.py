@@ -3,7 +3,7 @@
 import uuid
 from typing import Optional
 
-from fastapi import APIRouter, Cookie, Depends, File, Form, HTTPException, Request, UploadFile, status
+from fastapi import APIRouter, Cookie, Depends, File, Form, HTTPException, Request, Response, UploadFile, status
 from fastapi.responses import HTMLResponse, JSONResponse, RedirectResponse, StreamingResponse
 from app.core.templates import templates
 from sqlmodel import func, select
@@ -38,6 +38,12 @@ async def publish_gifts_update(customer_id: uuid.UUID) -> None:
 
 
 router = APIRouter()
+
+# Short-lived flash cookie. Used by form-POST handlers that want to
+# surface a Thai error message on the next /card/account render
+# without leaking raw 4xx JSON to the user (browser would show it as
+# mojibake, since iOS Safari falls back to latin-1 on bare JSON).
+_FLASH_COOKIE = "td_flash"
 
 
 @router.get("/sse/me")
@@ -213,6 +219,7 @@ def _shop_swatch(shop_id: uuid.UUID) -> str:
 async def account_menu(
     request: Request,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    flash_cookie: Optional[str] = Cookie(None, alias=_FLASH_COOKIE),
     db: AsyncSession = Depends(get_session),
 ):
     """C6 — customer account menu (profile, my-stuff, settings, logout, delete).
@@ -269,7 +276,15 @@ async def account_menu(
         },
     ]
 
-    return templates.TemplateResponse(
+    flash_message: Optional[str] = None
+    if flash_cookie:
+        from urllib.parse import unquote
+        try:
+            flash_message = unquote(flash_cookie)
+        except Exception:
+            flash_message = None
+
+    response = templates.TemplateResponse(
         request=request,
         name="card_account.html",
         context={
@@ -281,8 +296,12 @@ async def account_menu(
             "text_size": customer.text_size or "md",
             "connect_rows": connect_rows,
             "is_anonymous": customer.is_anonymous,
+            "flash_message": flash_message,
         },
     )
+    if flash_cookie:
+        response.delete_cookie(_FLASH_COOKIE, path="/")
+    return response
 
 
 @router.get("/card/account/notifications", response_class=HTMLResponse)
@@ -531,17 +550,47 @@ async def customer_disconnect(
     """Unlink one identity (line / google / facebook / phone) from the
     current customer. soft_wall.disconnect_provider enforces the
     last-identity guard so the customer can't end up with a row no
-    one can log into."""
+    one can log into.
+
+    On error: redirect back to /card/account with a short-lived flash
+    cookie carrying the Thai error message. The form posts as a plain
+    HTML submit (no fetch handler), so a raw 409/JSON would show up as
+    mojibaked text in the browser; the redirect-with-flash pattern
+    keeps the user inside the PWA UI."""
     from app.services.soft_wall import IdentityConflict, disconnect_provider
     customer, _ = await find_or_create_customer(customer_cookie, db)
     if customer.is_anonymous:
-        raise HTTPException(status.HTTP_403_FORBIDDEN, "ยังไม่ได้เข้าสู่ระบบ")
+        response = RedirectResponse(
+            url="/card/account", status_code=status.HTTP_303_SEE_OTHER,
+        )
+        _set_flash(response, "ยังไม่ได้เข้าสู่ระบบ")
+        return response
     try:
         await disconnect_provider(db, customer, provider)
     except IdentityConflict as e:
-        raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+        response = RedirectResponse(
+            url="/card/account", status_code=status.HTTP_303_SEE_OTHER,
+        )
+        _set_flash(response, str(e))
+        return response
     return RedirectResponse(
         url="/card/account", status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+def _set_flash(response: Response, message: str) -> None:
+    """One-shot flash cookie. The /card/account renderer reads it and
+    clears it on the same response, so the message shows once and goes
+    away. Percent-encoded so Thai survives the latin-1 cookie boundary."""
+    from urllib.parse import quote
+    response.set_cookie(
+        key=_FLASH_COOKIE,
+        value=quote(message, safe=""),
+        path="/",
+        max_age=30,
+        httponly=True,
+        secure=True,
+        samesite="lax",
     )
 
 

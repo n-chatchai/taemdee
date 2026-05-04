@@ -38,6 +38,15 @@ when you're already here). #}
    mounted in c_base.html. Settings stays focused on connection
    status, notification toggles, and account-level actions. #}
 
+{% if flash_message %}
+<div class="s10-flash" role="alert"
+     style="margin: 12px 22px 0; padding: 12px 14px; border-radius: 12px;
+            background: #FFE9E2; color: #B0331C; border: 1px solid #F5C6B6;
+            font-size: 14px; line-height: 1.5;">
+  {{ flash_message }}
+</div>
+{% endif %}
+
 {# Connect status — one row per enabled provider. Anonymous customers
    get a tappable row that kicks the OAuth/OTP flow (claims their card);
    already-claimed customers see read-only status because soft_wall only
