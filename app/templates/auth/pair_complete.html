@@ -8,11 +8,18 @@
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
 </head>
 <body>
-  {# OAuth pairing completion page — shown to the system browser
-     (Safari / Chrome / etc) after a PWA-initiated OAuth flow finishes.
-     The PWA's SSE has already been notified; the customer just needs
-     to switch back to the home-screen app. Android can deep-link via
-     the PWA protocol handler if registered; iOS users return manually. #}
+  {# OAuth pairing completion page — shown after a PWA-initiated
+     OAuth flow finishes. Two contexts can land here:
+       1. System browser (window.open dispatched OAuth out of the
+          PWA): user closes this tab/window, returns to PWA, the
+          PWA's SSE/redeem flow finishes the cookie handoff.
+       2. Inside the PWA web view itself (some Android PWAs and
+          older iOS keep window.open inside the standalone view):
+          the customer cookie is already set on this response, so
+          the user just needs to navigate to /my-cards.
+     We can't reliably detect which context we're in from the
+     server, so render BOTH actions and let whichever one applies
+     do the right thing. #}
   <div class="td td-pair-complete">
     <div class="pair-complete">
       {% if ok %}
@@ -23,18 +30,23 @@
         </div>
         <h1>เข้าสู่ระบบสำเร็จ</h1>
         <p class="pair-sub">ผูกบัญชี {{ provider_label }} เรียบร้อย</p>
-        <p class="pair-instruction">
-          <strong>ปิดหน้านี้</strong> แล้วกลับไปเปิดแอป<strong>แต้มดี</strong>
-          บนหน้าจอโทรศัพท์ของคุณ
-        </p>
+
+        <a href="/my-cards" class="pair-cta-primary">
+          ไปที่บัตรของฉัน
+          <span class="arr">→</span>
+        </a>
+        <button type="button" class="pair-cta-secondary" id="pair-close-btn">
+          ปิดหน้านี้
+        </button>
+
         <div class="pair-icon-hint">
-          <svg class="smile-stamp" viewBox="0 0 100 100" width="64" height="64">
+          <svg class="smile-stamp" viewBox="0 0 100 100" width="56" height="56">
             <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
             <circle cx="36" cy="42" r="9" fill="#FFD952"/>
             <circle cx="64" cy="42" r="9" fill="#FFD952"/>
             <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
           </svg>
-          <div class="pair-icon-caption">มองหาไอคอนนี้</div>
+          <div class="pair-icon-caption">หรือกลับไปเปิดแอปแต้มดีบนหน้าจอ</div>
         </div>
       {% else %}
         <div class="pair-icon err">
@@ -49,5 +61,25 @@
       {% endif %}
     </div>
   </div>
+  <script>
+    // "ปิดหน้านี้" — window.close() only works for windows that were
+    // opened via window.open() (which is exactly how the PWA's pair
+    // flow opens the OAuth tab). Fall back to a navigate-away if the
+    // close call gets blocked (e.g. user opened this URL directly).
+    (function () {
+      const btn = document.getElementById('pair-close-btn');
+      if (!btn) return;
+      btn.addEventListener('click', () => {
+        try {
+          window.close();
+          // If close was blocked, the page is still here — fall
+          // through to /my-cards as a graceful default.
+          setTimeout(() => { window.location.href = '/my-cards'; }, 200);
+        } catch (_) {
+          window.location.href = '/my-cards';
+        }
+      });
+    })();
+  </script>
 </body>
 </html>
