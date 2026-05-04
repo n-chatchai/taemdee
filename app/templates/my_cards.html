@@ -5,30 +5,79 @@
 
 {% block head_extra %}
 <style>
-/* "พร้อมใช้" carousel — mirrors .cl-hero from design/taemdee-customer
-   .html (orange gradient, glass pill, big bottom CTA), wrapped as a
-   horizontal swipe carousel and with a reward-image badge on the
-   right. Each form is a snap target inside .cl-carousel; the inner
-   button is the visual hero card with full-bleed gradient. */
-.cl-ready-hero {
+/* Voucher card "พร้อมใช้" — mirrors .cl-voucher-* from
+   design/taemdee-customer.html. Two-section card: 130px image strip
+   on top (gradient + reward illustration + "พร้อมใช้" pill at top-
+   left) and a body below (shop logo + name, reward text, white pill
+   CTA). Carousel snaps at 78% width per card; .single state expands
+   to 100% width and disables horizontal scroll. */
+.cl-voucher-section { margin-bottom: 14px; }
+.cl-voucher-h {
+  margin: 0 20px 10px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.cl-voucher-h .lab {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  display: inline-flex;
+  align-items: center;
+  gap: 6px;
+}
+.cl-voucher-h .count {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink-soft);
+}
+.cl-voucher-h .count strong {
+  color: var(--accent);
+  font-weight: 700;
+}
+.cl-voucher-carousel {
+  display: flex;
+  gap: 10px;
+  overflow-x: auto;
+  overflow-y: hidden;
+  padding: 0 14px 6px;
+  scroll-snap-type: x mandatory;
+  scroll-padding-left: 14px;
+  scrollbar-width: none;
+}
+.cl-voucher-carousel::-webkit-scrollbar { display: none; }
+.cl-voucher-section.single .cl-voucher-carousel {
+  overflow: visible;
+  scroll-snap-type: none;
+}
+.cl-voucher-section.single .cl-voucher-card {
   width: 100%;
-  position: relative;
-  border-radius: 22px;
-  padding: 18px 18px 16px;
+  max-width: 100%;
+}
+
+.cl-voucher-card {
+  flex: 0 0 78%;
+  max-width: 280px;
+  scroll-snap-align: start;
+  border-radius: 20px;
+  overflow: hidden;
   background: linear-gradient(135deg, #FF8A5C 0%, #FF5E3A 55%, #E04020 100%);
   color: #fff;
-  overflow: hidden;
-  box-shadow: 0 12px 28px -10px rgba(255, 94, 58, 0.55);
-  text-align: left;
-  border: none;
-  font: inherit;
+  position: relative;
+  box-shadow: 0 12px 28px -10px rgba(255, 94, 58, 0.45);
   cursor: pointer;
-  display: block;
+  display: flex;
+  flex-direction: column;
+  border: none;
+  text-align: left;
+  font: inherit;
+  padding: 0;
 }
-.cl-ready-hero::before {
+.cl-voucher-card::before {
   content: '';
-  position: absolute;
-  inset: 0;
+  position: absolute; inset: 0;
   background-image:
     radial-gradient(circle at 18% 30%, rgba(255,255,255,0.22) 0, transparent 8%),
     radial-gradient(circle at 82% 18%, rgba(255,255,255,0.18) 0, transparent 12%),
@@ -36,124 +85,257 @@
     radial-gradient(circle at 30% 75%, rgba(255,255,255,0.15) 0, transparent 8%),
     radial-gradient(circle at 90% 60%, rgba(255,217,82,0.30) 0, transparent 14%);
   pointer-events: none;
+  z-index: 0;
 }
-.cl-ready-hero > * { position: relative; z-index: 1; }
-.cl-ready-hero:active { transform: scale(0.99); }
+.cl-voucher-card > * { position: relative; z-index: 1; }
+.cl-voucher-card:active { transform: scale(0.99); }
 
-.cl-ready-tag {
+.cl-voucher-image {
+  height: 130px;
+  position: relative;
+  overflow: hidden;
+  background: rgba(0, 0, 0, 0.18);
+}
+.cl-voucher-image .reward-svg {
+  width: 100%;
+  height: 100%;
+  display: block;
+  opacity: 0.9;
+}
+.cl-voucher-image::after {
+  content: '';
+  position: absolute; inset: 0;
+  background: linear-gradient(180deg, transparent 50%, rgba(0,0,0,0.18) 100%);
+  pointer-events: none;
+}
+.cl-voucher-image .v-tag {
+  position: absolute;
+  top: 12px; left: 12px;
   display: inline-flex;
   align-items: center;
-  gap: 6px;
-  background: rgba(255, 255, 255, 0.22);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 5px 11px;
+  gap: 5px;
+  background: rgba(0,0,0,0.55);
+  backdrop-filter: blur(6px);
+  -webkit-backdrop-filter: blur(6px);
+  padding: 4px 9px;
   border-radius: 99px;
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-2xs);
-  font-weight: 600;
-  margin-bottom: 14px;
   color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  font-weight: 600;
+  z-index: 2;
 }
-.cl-ready-tag .pulse {
-  width: 6px; height: 6px;
+.cl-voucher-image .v-tag .pulse {
+  width: 5px; height: 5px;
   border-radius: 50%;
   background: var(--butter);
-  animation: cl-ready-pulse 1.5s infinite;
+  animation: cl-pulse 1.5s infinite;
 }
-@keyframes cl-ready-pulse {
+@keyframes cl-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(255,217,82,0.7); }
   70%  { box-shadow: 0 0 0 8px rgba(255,217,82,0); }
   100% { box-shadow: 0 0 0 0 rgba(255,217,82,0); }
 }
 
-.cl-ready-row {
+.cl-voucher-body {
+  padding: 14px 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.cl-voucher-shop {
   display: flex;
   align-items: center;
-  gap: 12px;
-  margin-bottom: 16px;
+  gap: 8px;
 }
-.cl-ready-shop-logo {
-  width: 50px; height: 50px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.95);
+.cl-voucher-shop .logo {
+  width: 28px; height: 28px;
+  border-radius: 8px;
+  background: rgba(255,255,255,0.95);
   color: var(--ink);
   display: inline-flex;
   align-items: center;
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
-  font-size: 18px;
+  font-size: 13px;
   letter-spacing: -0.04em;
   flex-shrink: 0;
   overflow: hidden;
 }
-.cl-ready-shop-logo .shop-avatar-img {
+.cl-voucher-shop .logo .shop-avatar-img {
   width: 100%; height: 100%;
   object-fit: cover; display: block;
 }
-.cl-ready-shop-logo > span,
-.cl-ready-shop-logo > span > span:not(.dot) { color: inherit; }
-.cl-ready-shop-logo .dot { color: var(--accent); margin-left: 1px; }
-
-.cl-ready-info {
-  flex: 1;
-  min-width: 0;
-}
-.cl-ready-name {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: var(--text-md);
-  color: #fff;
-  letter-spacing: -0.01em;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cl-ready-reward {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-xs);
-  color: rgba(255, 255, 255, 0.94);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-
-.cl-ready-img {
-  width: 56px; height: 56px;
-  border-radius: 14px;
-  background: rgba(255, 255, 255, 0.95);
-  flex-shrink: 0;
-  overflow: hidden;
-  border: 1.5px solid rgba(255, 255, 255, 0.6);
-  box-shadow: 0 4px 12px rgba(0, 0, 0, 0.12);
-}
-.cl-ready-img .reward-svg {
-  width: 100%; height: 100%; display: block;
-}
-
-.cl-ready-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(0, 0, 0, 0.18);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 14px;
-  padding: 11px 16px;
+.cl-voucher-shop .logo > span,
+.cl-voucher-shop .logo > span > span:not(.dot) { color: inherit; }
+.cl-voucher-shop .logo .dot { color: var(--accent); margin-left: 1px; }
+.cl-voucher-shop .name {
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
-  font-size: var(--text-sm);
-  color: #fff;
-  border: 1px solid rgba(255, 255, 255, 0.20);
+  font-size: 13.5px;
+  color: rgba(255,255,255,0.95);
+  flex: 1;
+  min-width: 0;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.cl-ready-cta svg {
-  width: 16px; height: 16px;
+.cl-voucher-reward {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 16px;
+  line-height: 1.3;
+  color: #fff;
+  letter-spacing: -0.01em;
+}
+.cl-voucher-cta {
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  gap: 8px;
+  padding: 11px 14px;
+  background: rgba(255,255,255,0.96);
+  color: var(--accent);
+  border-radius: 12px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  margin-top: 4px;
+}
+.cl-voucher-cta svg {
+  width: 14px; height: 14px;
   stroke: currentColor; fill: none;
-  stroke-width: 2.5;
+  stroke-width: 2.4;
   stroke-linecap: round; stroke-linejoin: round;
+}
+
+/* ── voucher.confirm bottom sheet ───────────────────────────────── */
+.rc-overlay {
+  position: fixed;
+  inset: 0;
+  background: rgba(17,17,17,0.5);
+  z-index: 9000;
+  display: flex;
+  align-items: flex-end;
+  justify-content: center;
+}
+.rc-overlay[hidden] { display: none; }
+.rc-sheet {
+  background: var(--bg);
+  border-top: 1px solid rgba(17,17,17,0.18);
+  border-top-left-radius: 24px;
+  border-top-right-radius: 24px;
+  padding: 14px 20px 20px;
+  width: 100%;
+  max-width: 480px;
+  box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.25);
+  position: relative;
+}
+.rc-sheet .sheet-handle {
+  width: 36px; height: 4px;
+  border-radius: 999px;
+  background: var(--ink-softer);
+  margin: 0 auto 16px;
+  opacity: 0.4;
+}
+.vc-icon {
+  width: 56px; height: 56px;
+  margin: 4px auto 14px;
+  border-radius: 50%;
+  background: rgba(255, 94, 58, 0.12);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.vc-icon svg {
+  width: 28px; height: 28px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2;
+  stroke-linecap: round; stroke-linejoin: round;
+}
+.vc-h {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800;
+  font-size: 20px;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+  margin-bottom: 8px;
+  line-height: 1.2;
+}
+.vc-sub {
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  line-height: 1.5;
+  margin-bottom: 18px;
+  padding: 0 6px;
+}
+.vc-card {
+  background: #FFF7DA;
+  border: 1px solid rgba(255, 217, 82, 0.45);
+  border-radius: 14px;
+  padding: 14px;
+  margin-bottom: 18px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+}
+.vc-card .vc-logo {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+  overflow: hidden;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 16px;
+}
+.vc-card .vc-logo .shop-avatar-img {
+  width: 100%; height: 100%;
+  object-fit: cover; display: block;
+}
+.vc-card .vc-info { flex: 1; min-width: 0; }
+.vc-card .vc-shop {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.vc-card .vc-reward {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  margin-top: 2px;
+}
+.rc-actions { display: flex; gap: 8px; }
+.rc-actions button {
+  flex: 1;
+  padding: 14px;
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  cursor: pointer;
+}
+.rc-actions .cancel {
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.18);
+  color: var(--ink-soft);
+}
+.rc-actions .send {
+  background: var(--accent);
+  border: none;
+  color: #fff;
+  flex: 1.4;
+  box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.5);
 }
 </style>
 {% endblock %}
@@ -281,42 +463,34 @@
      carousel makes it discoverable. Tap → /my-gifts where they can hit
      "ใช้" on the row. #}
   {% if hero_vouchers %}
-    <div class="cl-section-h" style="margin-top: 4px;">
-      <span class="icon" style="color: var(--accent);">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M20 12v6a2 2 0 01-2 2H6a2 2 0 01-2-2v-6"/><path d="M12 3v12"/><path d="M15 6l-3-3-3 3"/></svg>
-      </span>
-      พร้อมใช้
-      <span class="count">{{ hero_vouchers|length }} รางวัล</span>
-    </div>
-    <div class="cl-carousel-wrap">
-      <div class="cl-carousel">
+    <div class="cl-voucher-section{% if hero_vouchers|length == 1 %} single{% endif %}" style="margin-top: 4px;">
+      <div class="cl-voucher-h">
+        <span class="lab">🎁 ของขวัญพร้อมใช้</span>
+        <span class="count"><strong>{{ hero_vouchers|length }}</strong> ใบ</span>
+      </div>
+      <div class="cl-voucher-carousel">
         {% for voucher in hero_vouchers %}
-          <form method="post" action="/voucher/{{ voucher.redemption.id }}/use?next=/my-cards"
-                style="margin:0; flex: 0 0 90%; scroll-snap-align: center;">
-            <button type="submit" class="cl-ready-hero">
-              <div class="cl-ready-tag">
-                <span class="pulse"></span>
-                ครบแล้ว · พร้อมรับรางวัล
+          <button type="button" class="cl-voucher-card"
+                  data-voucher-id="{{ voucher.redemption.id }}"
+                  data-shop-name="{{ voucher.shop.name }}"
+                  data-reward="{{ voucher.shop.reward_description }}">
+            <div class="cl-voucher-image">
+              {% set img_id = voucher.shop.reward_image %}
+              {% include "_partials/reward_svg.html" %}
+              <span class="v-tag"><span class="pulse"></span>พร้อมใช้</span>
+            </div>
+            <div class="cl-voucher-body">
+              <div class="cl-voucher-shop">
+                <span class="logo">{% with shop = voucher.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}</span>
+                <span class="name">{{ voucher.shop.name }}</span>
               </div>
-              <div class="cl-ready-row">
-                <div class="cl-ready-shop-logo">
-                  {% with shop = voucher.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
-                </div>
-                <div class="cl-ready-info">
-                  <div class="cl-ready-name">{{ voucher.shop.name }}</div>
-                  <div class="cl-ready-reward">{{ voucher.shop.reward_description }}</div>
-                </div>
-                <div class="cl-ready-img">
-                  {% set img_id = voucher.shop.reward_image %}
-                  {% include "_partials/reward_svg.html" %}
-                </div>
-              </div>
-              <div class="cl-ready-cta">
-                <span>รับรางวัลตอนนี้</span>
+              <div class="cl-voucher-reward">{{ voucher.shop.reward_description }}</div>
+              <div class="cl-voucher-cta">
+                <span>แลกของขวัญ</span>
                 <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
-            </button>
-          </form>
+            </div>
+          </button>
         {% endfor %}
       </div>
     </div>
@@ -403,6 +577,35 @@
   {% if is_guest %}
     {% include "_partials/signup_picker.html" %}
   {% endif %}
+
+  {# voucher.confirm bottom sheet — opened when user taps a voucher
+     card. Confirm step protects against accidental redemption since
+     "ใช้แล้วคืนไม่ได้". POSTs to /voucher/<id>/use on confirm. #}
+  <div class="rc-overlay" id="vc-overlay" hidden>
+    <form class="rc-sheet vc-sheet" method="post" id="vc-form" style="margin:0;">
+      <div class="sheet-handle"></div>
+      <div class="vc-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="vc-h">แลกของขวัญตอนนี้?</div>
+      <div class="vc-sub">แลกแล้วจะคืนไม่ได้ · พี่ต้องอยู่ที่ร้านเพื่อโชว์หน้าจอให้พนักงาน</div>
+      <div class="vc-card">
+        <div class="vc-logo" id="vc-logo"></div>
+        <div class="vc-info">
+          <div class="vc-shop" id="vc-shop"></div>
+          <div class="vc-reward" id="vc-reward"></div>
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button type="button" class="cancel" id="vc-cancel">ยังไม่แลก</button>
+        <button type="submit" class="send">แลกเลย</button>
+      </div>
+    </form>
+  </div>
 {% endblock %}
 
 {% block body_end %}
@@ -419,6 +622,43 @@
           const name = (row.dataset.shopName || '').toLowerCase();
           row.style.display = q && !name.includes(q) ? 'none' : '';
         }
+      });
+    })();
+
+    // voucher.confirm — opens the bottom sheet on voucher card tap.
+    // POSTing happens on confirm; "ยังไม่แลก" closes the sheet.
+    (function () {
+      const overlay = document.getElementById('vc-overlay');
+      const form = document.getElementById('vc-form');
+      const logoEl = document.getElementById('vc-logo');
+      const shopEl = document.getElementById('vc-shop');
+      const rewardEl = document.getElementById('vc-reward');
+      const cancelBtn = document.getElementById('vc-cancel');
+      if (!overlay || !form) return;
+
+      document.addEventListener('click', (e) => {
+        const card = e.target.closest('.cl-voucher-card[data-voucher-id]');
+        if (!card) return;
+        e.preventDefault();
+        const id = card.dataset.voucherId;
+        form.action = `/voucher/${id}/use?next=/my-cards`;
+        // Mirror the card's logo + shop name + reward into the sheet
+        // so the user sees what they're about to spend.
+        const logoSrc = card.querySelector('.cl-voucher-shop .logo');
+        if (logoSrc) logoEl.innerHTML = logoSrc.innerHTML;
+        shopEl.textContent = card.dataset.shopName || '';
+        rewardEl.textContent = card.dataset.reward || '';
+        overlay.hidden = false;
+        document.body.style.overflow = 'hidden';
+      });
+
+      function close() {
+        overlay.hidden = true;
+        document.body.style.overflow = '';
+      }
+      cancelBtn.addEventListener('click', close);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
       });
     })();
 
