@@ -32,7 +32,7 @@
 
   async function getRegistration() {
     let reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) reg = await navigator.serviceWorker.register('/static/js/sw.js');
+    if (!reg) reg = await navigator.serviceWorker.register('/sw.js');
     return reg;
   }
 

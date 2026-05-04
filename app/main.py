@@ -222,6 +222,22 @@ async def favicon_redirect():
     return RedirectResponse(url="/static/taemdee-icons/taemdee-icon-32.png")
 
 
+@app.get("/sw.js")
+async def service_worker():
+    """Serve the service worker at root so it can scope to '/'.
+
+    A SW served from /static/js/sw.js is scoped to /static/js/ by default,
+    which means it can't intercept top-level navigations. Serving the same
+    file at root gives it root-scope without needing the
+    Service-Worker-Allowed header dance.
+    """
+    return FileResponse(
+        "static/js/sw.js",
+        media_type="application/javascript",
+        headers={"Cache-Control": "no-cache"},
+    )
+
+
 @app.get("/")
 async def home(request: Request, db: AsyncSession = Depends(get_session)):
     """Marketing home for guests. Logged-in users get sent to their app —

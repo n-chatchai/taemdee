@@ -1,0 +1,89 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0, viewport-fit=cover">
+<title>เซิร์ฟเวอร์ไม่พร้อมใช้งาน · แต้มดี</title>
+<meta name="theme-color" content="#FF5E3A">
+<style>
+  :root { color-scheme: light; }
+  * { box-sizing: border-box; }
+  html, body { margin: 0; padding: 0; height: 100%; }
+  body {
+    font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", "Sukhumvit Set",
+                 "IBM Plex Sans Thai", "Noto Sans Thai", system-ui, sans-serif;
+    background: #F6F1E5;
+    color: #1c1c1e;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 24px;
+  }
+  .wrap {
+    max-width: 360px;
+    width: 100%;
+    text-align: center;
+    padding: 28px 22px 22px;
+    background: #fff;
+    border-radius: 22px;
+    box-shadow: 0 1px 2px rgba(0,0,0,.04), 0 8px 28px rgba(255,94,58,.08);
+  }
+  .mark {
+    width: 88px; height: 88px; margin: 0 auto 16px;
+    border-radius: 22px;
+    background: linear-gradient(160deg, #FF7A4D 0%, #FF5E3A 100%);
+    display: flex; align-items: center; justify-content: center;
+    color: #fff;
+    box-shadow: 0 6px 18px rgba(255,94,58,.28);
+  }
+  .mark svg { width: 44px; height: 44px; }
+  h1 { font-size: 20px; margin: 6px 0 6px; font-weight: 700; }
+  p  { font-size: 15px; line-height: 1.55; color: #555; margin: 0 0 18px; }
+  .small { font-size: 13px; color: #888; margin-top: 14px; }
+  button {
+    appearance: none;
+    border: 0;
+    background: #FF5E3A;
+    color: #fff;
+    font-weight: 600;
+    font-size: 15px;
+    padding: 12px 18px;
+    border-radius: 14px;
+    width: 100%;
+    cursor: pointer;
+    transition: transform .1s ease, opacity .15s ease;
+  }
+  button:active { transform: scale(.98); }
+  button[disabled] { opacity: .6; cursor: progress; }
+</style>
+</head>
+<body>
+  <div class="wrap" role="alert" aria-live="polite">
+    <div class="mark" aria-hidden="true">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"
+           stroke-linecap="round" stroke-linejoin="round">
+        <path d="M2 8.5a15 15 0 0 1 20 0"></path>
+        <path d="M5 12.5a10 10 0 0 1 14 0"></path>
+        <path d="M8.5 16a5 5 0 0 1 7 0"></path>
+        <line x1="12" y1="20" x2="12.01" y2="20"></line>
+      </svg>
+    </div>
+    <h1>เชื่อมต่อไม่ได้</h1>
+    <p>ตอนนี้แอปไม่สามารถติดต่อเซิร์ฟเวอร์ได้<br>กรุณาตรวจสอบสัญญาณอินเทอร์เน็ต<br>แล้วลองอีกครั้ง</p>
+    <button id="retry" type="button">ลองอีกครั้ง</button>
+    <div class="small">แต้มดี</div>
+  </div>
+  <script>
+    (function () {
+      var btn = document.getElementById('retry');
+      btn.addEventListener('click', function () {
+        btn.disabled = true;
+        btn.textContent = 'กำลังลองใหม่…';
+        location.reload();
+      });
+      // Auto-retry once we detect the network is back.
+      window.addEventListener('online', function () { location.reload(); });
+    })();
+  </script>
+</body>
+</html>

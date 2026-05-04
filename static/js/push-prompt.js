@@ -55,7 +55,7 @@
 
   async function subscribePush() {
     let reg = await navigator.serviceWorker.getRegistration();
-    if (!reg) reg = await navigator.serviceWorker.register('/static/js/sw.js');
+    if (!reg) reg = await navigator.serviceWorker.register('/sw.js');
     const r = await fetch('/push/vapid-public');
     if (!r.ok) throw new Error('vapid-not-configured');
     const j = await r.json();
