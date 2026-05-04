@@ -5,58 +5,92 @@
 
 {% block head_extra %}
 <style>
-.cl-hero-mini {
-  flex: 0 0 85%;
-  scroll-snap-align: center;
-  border-radius: 22px;
-  overflow: hidden;
+/* "พร้อมใช้" carousel — modeled on c7-card.featured from
+   design/taemdee-customer.html. Butter background, rotated "พร้อมใช้"
+   tag at top-right, reward image on the left. Sits in the existing
+   .cl-carousel wrap so swipe + scroll-snap work the same as
+   "ใกล้แล้ว". */
+/* Form wraps the button so the swipe-snap target is the form (direct
+   child of .cl-carousel); the button itself is the visual card. */
+.cl-ready {
+  width: 100%;
+  background: var(--butter);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 18px;
+  padding: 14px 14px;
   position: relative;
   text-decoration: none;
-  color: #fff;
-  margin-right: 10px;
-  background: var(--surface);
-  border: 1px solid var(--line);
+  color: var(--ink);
+  display: grid;
+  grid-template-columns: 64px 1fr auto;
+  gap: 14px;
+  align-items: center;
+  box-shadow: none;
+  cursor: pointer;
+  text-align: left;
+  font: inherit;
 }
-.cl-hero-mini-img {
+.cl-ready:active { transform: scale(0.99); }
+.cl-ready-tag {
+  position: absolute;
+  top: -10px;
+  right: 12px;
+  transform: rotate(4deg);
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 10px;
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-style: italic;
+  font-size: var(--text-xs);
+  letter-spacing: -0.005em;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  pointer-events: none;
+}
+.cl-ready-tag .dot {
+  width: 5px;
+  height: 5px;
+  background: #fff;
+  border-radius: 50%;
+}
+.cl-ready-img {
+  width: 64px;
+  height: 64px;
+  border-radius: 14px;
+  overflow: hidden;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  flex-shrink: 0;
+  background: #FFF1B8;
+}
+.cl-ready-img .reward-svg {
   width: 100%;
-  aspect-ratio: 16/9;
+  height: 100%;
+  display: block;
+}
+.cl-ready-info {
+  min-width: 0;
+}
+.cl-ready-shop {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-size: 64px;
-  position: relative;
-  background: linear-gradient(135deg, #FF8A5C 0%, #FF5E3A 55%, #E04020 100%);
-}
-.cl-hero-mini-reward-text {
-  position: absolute;
-  bottom: 12px;
-  left: 16px;
-  right: 16px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 600;
-  font-size: var(--text-base);
-  text-shadow: 0 1px 3px rgba(0,0,0,0.4);
-}
-.cl-hero-mini-cta {
+  gap: 8px;
+  margin-bottom: 4px;
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
   font-size: var(--text-sm);
-  color: #fff;
-  background: #E04020;
-  padding: 8px 14px;
-  border-radius: 10px;
-  flex-shrink: 0;
+  color: var(--ink-soft);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.cl-hero-mini-shop {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 12px 16px;
-}
-.shop-logo-bubble {
-  width: 28px;
-  height: 28px;
-  border-radius: 8px;
+.cl-ready-shop-logo {
+  width: 22px;
+  height: 22px;
+  border-radius: 6px;
   background: var(--ink);
   color: #fff;
   display: flex;
@@ -64,25 +98,48 @@
   justify-content: center;
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 700;
-  font-size: 12px;
+  font-size: 10px;
   overflow: hidden;
   flex-shrink: 0;
 }
-.shop-logo-bubble .shop-avatar-img {
+.cl-ready-shop-logo .shop-avatar-img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
 }
-.shop-logo-bubble > span,
-.shop-logo-bubble > span > span:not(.dot) { color: inherit; }
-.shop-logo-bubble .dot { color: var(--accent); }
-.shop-name {
+.cl-ready-shop-logo > span,
+.cl-ready-shop-logo > span > span:not(.dot) { color: inherit; }
+.cl-ready-shop-logo .dot { color: var(--accent); }
+.cl-ready-reward {
   font-family: 'Prompt', sans-serif;
-  font-weight: 600;
-  font-size: var(--text-sm);
+  font-weight: 700;
+  font-size: 15px;
+  letter-spacing: -0.015em;
+  line-height: 1.2;
   color: var(--ink);
-  flex: 1;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cl-ready-cta {
+  flex-shrink: 0;
+  background: var(--ink);
+  color: var(--bg);
+  padding: 8px 14px;
+  border-radius: 999px;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-xs);
+  border: none;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+.cl-ready-cta .arr {
+  font-size: 13px;
+  margin-left: 2px;
 }
 </style>
 {% endblock %}
@@ -220,17 +277,24 @@
     <div class="cl-carousel-wrap">
       <div class="cl-carousel">
         {% for voucher in hero_vouchers %}
-          <form method="post" action="/voucher/{{ voucher.redemption.id }}/use?next=/my-cards" class="cl-hero-mini" style="margin:0;">
-            <button type="submit" style="border:none;cursor:pointer;width:100%;text-align:left;background:transparent;color:inherit;">
-              <div class="cl-hero-mini-img">
-                {{ voucher.emoji }}
-                <div class="cl-hero-mini-reward-text">{{ voucher.shop.reward_description }}</div>
+          <form method="post" action="/voucher/{{ voucher.redemption.id }}/use?next=/my-cards"
+                style="margin:0; flex: 0 0 85%; scroll-snap-align: center;">
+            <button type="submit" class="cl-ready">
+              <span class="cl-ready-tag"><span class="dot"></span>พร้อมใช้</span>
+              <div class="cl-ready-img">
+                {% set img_id = voucher.shop.reward_image %}
+                {% include "_partials/reward_svg.html" %}
               </div>
-              <div class="cl-hero-mini-shop">
-                <span class="shop-logo-bubble">{% with shop = voucher.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}</span>
-                <span class="shop-name">{{ voucher.shop.name }}</span>
-                <div class="cl-hero-mini-cta">ใช้เลย</div>
+              <div class="cl-ready-info">
+                <div class="cl-ready-shop">
+                  <span class="cl-ready-shop-logo">{% with shop = voucher.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}</span>
+                  <span>{{ voucher.shop.name }}</span>
+                </div>
+                <div class="cl-ready-reward">{{ voucher.shop.reward_description }}</div>
               </div>
+              <span class="cl-ready-cta">
+                ใช้เลย<span class="arr">→</span>
+              </span>
             </button>
           </form>
         {% endfor %}
