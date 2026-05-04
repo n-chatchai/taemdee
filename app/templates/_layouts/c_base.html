@@ -145,18 +145,52 @@ Child templates fill these blocks:
           writeJSON(PENDING, { provider: provider, t: Date.now() });
         });
 
-        // 2. On foreground with fresh pending → move to done + reload.
+        // 2a. Track when the page goes hidden — used by both the OAuth
+        // pending → done handoff and the staleness reload below.
+        var hiddenAt = null;
         document.addEventListener('visibilitychange', function () {
-          if (document.visibilityState !== 'visible') return;
-          var p = readJSON(PENDING);
-          if (!p || !p.t) return;
-          if (Date.now() - p.t > 10 * 60 * 1000) {  // 10 min cap
-            clear(PENDING);
+          if (document.visibilityState === 'hidden') {
+            hiddenAt = Date.now();
             return;
           }
-          clear(PENDING);
-          writeJSON(DONE, p);
-          window.location.reload();
+          if (document.visibilityState !== 'visible') return;
+
+          // 2b. OAuth handoff: if there's a fresh pending flag, the user
+          // tapped a connect anchor and just came back from Safari /
+          // OAuth provider. Move to done and reload so the toast fires.
+          var p = readJSON(PENDING);
+          if (p && p.t && Date.now() - p.t <= 10 * 60 * 1000) {
+            clear(PENDING);
+            writeJSON(DONE, p);
+            window.location.reload();
+            return;
+          }
+          if (p) clear(PENDING);  // stale > 10min, drop.
+
+          // 2c. Staleness reload: iOS PWA doesn't auto-refresh on
+          // resume from background, so if the user backgrounded the
+          // PWA for a while and came back, the rendered page is stale
+          // (points, inbox, connect status, etc.). Reload after 20s
+          // of hidden time so they see fresh data without having to
+          // tap around. Short hides (app switcher, notification
+          // banner) don't trigger.
+          if (hiddenAt && Date.now() - hiddenAt > 20 * 1000) {
+            // Skip if the user has half-filled a form — reload would
+            // clobber their input (OTP, nickname, profile, etc.).
+            var dirty = false;
+            try {
+              var fields = document.querySelectorAll('input, textarea');
+              for (var i = 0; i < fields.length; i++) {
+                var el = fields[i];
+                if (el.type === 'hidden' || el.disabled || el.readOnly) continue;
+                if (el.value && el.value !== el.defaultValue) {
+                  dirty = true;
+                  break;
+                }
+              }
+            } catch (_) {}
+            if (!dirty) window.location.reload();
+          }
         });
 
         // 3. On page load → if just-completed flag, show toast.
