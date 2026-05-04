@@ -87,11 +87,28 @@ def has_thai(text: str) -> bool:
     return any("฀" <= c <= "๿" for c in (text or ""))
 
 
+def has_perm(staff, perm: str) -> bool:
+    """Mirror of core.auth.require_permission for templates.
+
+    Returns True when the staff is the owner (is_owner short-circuits
+    every gate) OR the named flag is set on the StaffMember row.
+    Pass `request.state.staff` directly. Returns False when staff is
+    None — covers the no-session and pre-unification cases so the UI
+    fails closed.
+    """
+    if staff is None:
+        return False
+    if getattr(staff, "is_owner", False):
+        return True
+    return bool(getattr(staff, perm, False))
+
+
 templates = Jinja2Templates(directory="app/templates")
 templates.env.globals["asset_version"] = ASSET_VERSION
 templates.env.globals["settings"] = settings
 templates.env.globals["shop_logo"] = shop_logo
 templates.env.globals["has_thai"] = has_thai
+templates.env.globals["has_perm"] = has_perm
 templates.env.filters.update({
     "bkk_hms": bkk_hms,
     "bkk_feed_time": bkk_feed_time,

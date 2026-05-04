@@ -1,12 +1,17 @@
-{# Shop liquid-glass dock — 5-tab bottom nav, used by every S3.* full-page
-   (dashboard / issue / customers / insights / settings). Caller passes
-   `nav_active` = one of "home" / "issue" / "customers" / "insights" /
-   "settings" to highlight the current tab. Optional `nav_issue_badge=True`
-   for the activity dot.
+{# Shop liquid-glass dock — up to 5 tabs (dashboard / issue / customers
+   / insights / settings). Caller passes `nav_active` = one of "home" /
+   "issue" / "customers" / "insights" / "settings" to highlight the
+   current tab. Optional `nav_issue_badge=True` for the activity dot.
+
+   The settings tab hides for staff without can_settings (see has_perm
+   in core/templates.py). The grid uses --tab-count to size columns
+   so 4-vs-5 visible tabs both render evenly.
 
    Mirrors the customer c_dock (5 tabs, settings as the 5th) — kept as a
    separate file because the destinations and labels differ. #}
-<nav class="s3-glass-nav" aria-label="Main navigation">
+{% set _gn_show_settings = has_perm(request.state.staff, 'can_settings') %}
+{% set _gn_tab_count = 5 if _gn_show_settings else 4 %}
+<nav class="s3-glass-nav" aria-label="Main navigation" style="--tab-count: {{ _gn_tab_count }}">
   <a class="gn-tab{% if nav_active == 'home' %} active{% endif %}" href="/shop/dashboard" aria-label="หน้าแรก">
     <span class="gn-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -44,6 +49,7 @@
     </span>
     <span class="gn-label">แนะนำ</span>
   </a>
+  {% if _gn_show_settings %}
   <a class="gn-tab{% if nav_active == 'settings' %} active{% endif %}" href="/shop/settings" aria-label="ตั้งค่า">
     <span class="gn-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -53,4 +59,5 @@
     </span>
     <span class="gn-label">ตั้งค่า</span>
   </a>
+  {% endif %}
 </nav>

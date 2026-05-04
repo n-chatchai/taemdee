@@ -335,6 +335,26 @@ async def auth_error_handler(request: Request, exc: HTTPException):
     return await http_exception_handler(request, exc)
 
 
+@app.exception_handler(status.HTTP_403_FORBIDDEN)
+async def permission_denied_handler(request: Request, exc: HTTPException):
+    """Friendly 403 page for HTML navigations — replaces the default
+    JSON {"detail": "Permission denied"} that staff would see when
+    they tap a link gated by require_owner / require_permission. API/
+    JSON callers still get the JSON error.
+    """
+    accept = request.headers.get("accept", "")
+    is_html = "text/html" in accept or "*/*" in accept or not accept
+    if is_html:
+        return templates.TemplateResponse(
+            request=request,
+            name="shop/no_permission.html",
+            status_code=status.HTTP_403_FORBIDDEN,
+            context={"detail": exc.detail},
+        )
+    from fastapi.exception_handlers import http_exception_handler
+    return await http_exception_handler(request, exc)
+
+
 app.mount("/static", StaticFiles(directory="static"), name="static")
 
 

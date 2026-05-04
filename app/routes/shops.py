@@ -11,7 +11,7 @@ from app.core.templates import templates
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import get_current_shop
+from app.core.auth import get_current_shop, require_permission
 from app.core.database import get_session
 from app.core.urls import customer_base_url
 from app.models import Redemption, Shop, Point
@@ -777,7 +777,11 @@ async def onboard_done_post(
 
 # --------- Top-up (S7 + S7 confirm) — UI placeholder; Slip2Go integration in R7 ---------
 
-@router.get("/topup", response_class=HTMLResponse)
+@router.get(
+    "/topup",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_topup"))],
+)
 async def topup_page(
     request: Request,
     error: Optional[str] = None,
@@ -817,7 +821,10 @@ async def topup_page(
     )
 
 
-@router.post("/topup/upload")
+@router.post(
+    "/topup/upload",
+    dependencies=[Depends(require_permission("can_topup"))],
+)
 async def topup_upload(
     file: UploadFile = File(...),
     shop: Shop = Depends(get_current_shop),
@@ -864,7 +871,11 @@ async def topup_upload(
     )
 
 
-@router.get("/topup/history", response_class=HTMLResponse)
+@router.get(
+    "/topup/history",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_topup"))],
+)
 async def topup_history(
     request: Request,
     shop: Shop = Depends(get_current_shop),
@@ -887,7 +898,11 @@ async def topup_history(
     )
 
 
-@router.get("/credit/log", response_class=HTMLResponse)
+@router.get(
+    "/credit/log",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_topup"))],
+)
 async def credit_log(
     request: Request,
     shop: Shop = Depends(get_current_shop),
@@ -977,7 +992,11 @@ async def shop_events(request: Request):
     )
 
 
-@router.get("/settings", response_class=HTMLResponse)
+@router.get(
+    "/settings",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_page(
     request: Request,
     shop: Shop = Depends(get_current_shop),
@@ -1302,7 +1321,11 @@ async def customers_page(
 # ── S10.identity ────────────────────────────────────────────────────────────
 # Edit shop name + logo from settings — same logo gen as the onboarding step.
 
-@router.get("/settings/identity", response_class=HTMLResponse)
+@router.get(
+    "/settings/identity",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_identity_get(
     request: Request,
     gen: int = 0,
@@ -1337,7 +1360,11 @@ async def settings_identity_get(
         },
     )
 
-@router.get("/settings/identity/logos_partial", response_class=HTMLResponse)
+@router.get(
+    "/settings/identity/logos_partial",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_identity_logos_partial(
     request: Request,
     name: str,
@@ -1361,7 +1388,10 @@ async def settings_identity_logos_partial(
     )
 
 
-@router.post("/settings/identity")
+@router.post(
+    "/settings/identity",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_identity_post(
     name: str = Form(...),
     logo_choice: Optional[str] = Form(None),
@@ -1386,7 +1416,11 @@ async def settings_identity_post(
 # ── S10.location ────────────────────────────────────────────────────────────
 # Province (existing Shop.location) + district + address detail.
 
-@router.get("/settings/location", response_class=HTMLResponse)
+@router.get(
+    "/settings/location",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_location_get(request: Request, shop: Shop = Depends(get_current_shop)):
     return templates.TemplateResponse(
         request=request,
@@ -1395,7 +1429,10 @@ async def settings_location_get(request: Request, shop: Shop = Depends(get_curre
     )
 
 
-@router.post("/settings/location")
+@router.post(
+    "/settings/location",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_location_post(
     province: Optional[str] = Form(None),
     district: Optional[str] = Form(None),
@@ -1417,7 +1454,11 @@ async def settings_location_post(
 _DAYS = ("mon", "tue", "wed", "thu", "fri", "sat", "sun")
 
 
-@router.get("/settings/contact", response_class=HTMLResponse)
+@router.get(
+    "/settings/contact",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_contact_get(request: Request, shop: Shop = Depends(get_current_shop)):
     # Hydrate hours with defaults so the template can render every day even
     # for shops that haven't saved yet. Default = closed.
@@ -1441,7 +1482,10 @@ async def settings_contact_get(request: Request, shop: Shop = Depends(get_curren
     )
 
 
-@router.post("/settings/contact")
+@router.post(
+    "/settings/contact",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_contact_post(
     request: Request,
     shop_phone: Optional[str] = Form(None),
@@ -1466,7 +1510,11 @@ async def settings_contact_post(
     return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
 
 
-@router.get("/settings/story", response_class=HTMLResponse)
+@router.get(
+    "/settings/story",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_story_get(
     request: Request,
     shop: Shop = Depends(get_current_shop),
@@ -1491,7 +1539,10 @@ async def settings_story_get(
     )
 
 
-@router.post("/settings/story")
+@router.post(
+    "/settings/story",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_story_post(
     thanks_message: Optional[str] = Form(None),
     story_text: Optional[str] = Form(None),
@@ -1515,7 +1566,11 @@ _MENU_EMOJI_PALETTE = (
 )
 
 
-@router.get("/settings/menu", response_class=HTMLResponse)
+@router.get(
+    "/settings/menu",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_menu_get(
     request: Request,
     shop: Shop = Depends(get_current_shop),
@@ -1542,7 +1597,10 @@ async def settings_menu_get(
     )
 
 
-@router.post("/settings/menu")
+@router.post(
+    "/settings/menu",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_menu_create(
     name: str = Form(...),
     price: Optional[str] = Form(None),
@@ -1583,7 +1641,10 @@ async def settings_menu_create(
     )
 
 
-@router.post("/settings/menu/{item_id}/delete")
+@router.post(
+    "/settings/menu/{item_id}/delete",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_menu_delete(
     item_id: uuid.UUID,
     shop: Shop = Depends(get_current_shop),
@@ -1600,7 +1661,10 @@ async def settings_menu_delete(
     )
 
 
-@router.post("/settings/menu/{item_id}/signature")
+@router.post(
+    "/settings/menu/{item_id}/signature",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_menu_toggle_signature(
     item_id: uuid.UUID,
     shop: Shop = Depends(get_current_shop),
@@ -1653,7 +1717,11 @@ def _cooldown_form_state(minutes: int) -> dict:
     return {"value": max(minutes // _COOLDOWN_UNIT_MINUTES["day"], 1), "unit": "day"}
 
 
-@router.get("/settings/cooldown", response_class=HTMLResponse)
+@router.get(
+    "/settings/cooldown",
+    response_class=HTMLResponse,
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_cooldown_get(
     request: Request,
     shop: Shop = Depends(get_current_shop),
@@ -1668,7 +1736,10 @@ async def settings_cooldown_get(
     )
 
 
-@router.post("/settings/cooldown")
+@router.post(
+    "/settings/cooldown",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
 async def settings_cooldown_post(
     value: int = Form(1),
     unit: str = Form("day"),

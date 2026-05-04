@@ -8723,7 +8723,10 @@ form.s10-row { margin: 0 0 4px; }
     0 14px 40px -12px rgba(17, 17, 17, 0.24),
     0 4px 14px -4px rgba(17, 17, 17, 0.10);
   display: grid;
-  grid-template-columns: repeat(5, 1fr);
+  /* --tab-count is set inline by glass_nav.html (4 when staff lacks
+     can_settings, 5 otherwise). Defaults to 5 for c-glass-nav and any
+     caller that doesn't set it. */
+  grid-template-columns: repeat(var(--tab-count, 5), 1fr);
   gap: 2px;
   isolation: isolate;
 }
@@ -11576,6 +11579,59 @@ form.s10-row { margin: 0 0 4px; }
   text-decoration: none;
 }
 .pe-advanced-link:active { color: var(--ink); }
+
+/* /shop/no_permission — friendly 403 for staff who tap a gated link.
+   Centered card with lock icon, message, and "back to dashboard" CTA. */
+.no-perm {
+  margin: 40px 24px 0;
+  text-align: center;
+}
+.no-perm-icon {
+  width: 64px;
+  height: 64px;
+  margin: 0 auto 18px;
+  border-radius: 50%;
+  background: rgba(255, 94, 58, 0.08);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+.no-perm-icon svg { width: 30px; height: 30px; }
+.no-perm h1 {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-xl);
+  font-weight: 700;
+  margin: 0 0 8px;
+  color: var(--ink);
+}
+.no-perm p {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin: 0 auto 18px;
+  max-width: 320px;
+}
+.no-perm-detail {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: var(--text-2xs);
+  color: var(--ink-softer);
+  margin-bottom: 18px;
+}
+.no-perm-cta {
+  display: inline-block;
+  padding: 12px 22px;
+  border-radius: 14px;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-md);
+  text-decoration: none;
+  box-shadow: 0 6px 16px -4px rgba(255, 94, 58, 0.45);
+}
+.no-perm-cta:active { transform: scale(0.98); }
 
 /* Inbox filter pills — tab-like row above the list. */
 .inbox-filters {

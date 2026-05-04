@@ -96,6 +96,9 @@
       <div class="arrow-r">›</div>
     </a>
 
+    {# Branches is owner-only (require_owner gates every /shop/branches/*
+       route). Hide for non-owners so the row doesn't appear-then-403. #}
+    {% if request.state.staff and request.state.staff.is_owner %}
     <a href="/shop/branches" class="s10-row">
       <div class="row-icon mint">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -111,6 +114,7 @@
       </div>
       <div class="arrow-r">›</div>
     </a>
+    {% endif %}
   </div>
 
   <div class="s10-section">
@@ -169,6 +173,8 @@
     {# เมนูเด็ด moved into /shop/settings/story — both feed the customer's
        "ทำความรู้จัก" page so they live together as one entry. #}
 
+    {# Team is owner-only — same reasoning as the branches row. #}
+    {% if request.state.staff and request.state.staff.is_owner %}
     <a href="/shop/team" class="s10-row">
       <div class="row-icon">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
@@ -184,8 +190,13 @@
       </div>
       <div class="arrow-r">›</div>
     </a>
+    {% endif %}
   </div>
 
+  {# Credit section hidden entirely for staff without can_topup, since
+     the section's only entry-point goes through the gated /shop/topup
+     route. has_perm short-circuits True for owners. #}
+  {% if has_perm(request.state.staff, 'can_topup') %}
   <div class="s10-section">
     <div class="label">เครดิต</div>
 
@@ -218,6 +229,7 @@
       <span class="s10-soon-tag">เร็วๆ นี้</span>
     </div>
   </div>
+  {% endif %}
 
 
   {% set _has_connect = connect_rows|selectattr('enabled')|list or connect_rows|selectattr('connected')|list %}

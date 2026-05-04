@@ -1,0 +1,25 @@
+{% extends "_layouts/s_base.html" %}
+{% block title %}ไม่มีสิทธิ์ · TaemDee{% endblock %}
+
+{% block content %}
+{% set app_bar_back = '/shop/dashboard' %}
+{% set app_bar_title = 'ไม่มีสิทธิ์' %}
+{% include "_partials/app_bar.html" %}
+
+<div class="no-perm">
+  <div class="no-perm-icon" aria-hidden="true">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.6"
+         stroke-linecap="round" stroke-linejoin="round">
+      <rect x="4" y="10" width="16" height="11" rx="2"/>
+      <path d="M8 10V7a4 4 0 0 1 8 0v3"/>
+    </svg>
+  </div>
+  <h1>ไม่มีสิทธิ์ในส่วนนี้</h1>
+  <p>หน้านี้สงวนไว้สำหรับเจ้าของร้านหรือทีมที่ได้รับสิทธิ์<br>
+     ลองติดต่อเจ้าของร้านเพื่อขอสิทธิ์เพิ่ม</p>
+  {% if detail %}
+    <div class="no-perm-detail"><code>{{ detail }}</code></div>
+  {% endif %}
+  <a href="/shop/dashboard" class="no-perm-cta">กลับหน้าหลัก</a>
+</div>
+{% endblock %}
