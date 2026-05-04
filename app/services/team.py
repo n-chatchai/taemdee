@@ -32,6 +32,51 @@ from app.services.identity import (
 VALID_PERMISSIONS = {"can_void", "can_deereach", "can_topup", "can_settings"}
 INVITE_TOKEN_TTL_HOURS = 24
 
+# bcrypt — already a dep via passlib[bcrypt]. Direct bcrypt API is
+# fine here since we don't need the algo-mux features of passlib.
+import bcrypt  # noqa: E402
+
+
+def hash_pin(pin: str) -> str:
+    """bcrypt-hash a 6-digit PIN. Caller validates the digit shape
+    before calling — we don't enforce here so test fixtures can use
+    short strings."""
+    return bcrypt.hashpw(pin.encode("utf-8"), bcrypt.gensalt()).decode("utf-8")
+
+
+def verify_pin(pin: str, pin_hash: Optional[str]) -> bool:
+    if not pin or not pin_hash:
+        return False
+    try:
+        return bcrypt.checkpw(pin.encode("utf-8"), pin_hash.encode("utf-8"))
+    except Exception:
+        return False
+
+
+def is_valid_pin(pin: str) -> bool:
+    """6 digits, no spaces, no other chars."""
+    return bool(pin) and len(pin) == 6 and pin.isdigit()
+
+
+async def find_staff_by_username(
+    db: AsyncSession,
+    shop_id: UUID,
+    username: str,
+) -> Optional[StaffMember]:
+    """Look up a non-revoked staff at this shop by username. Used by
+    /staff/pin-login. Returns None for unknown / revoked / username
+    NULL — caller's PIN check then short-circuits to a generic error."""
+    if not username:
+        return None
+    result = await db.exec(
+        select(StaffMember).where(
+            StaffMember.shop_id == shop_id,
+            StaffMember.username == username,
+            StaffMember.revoked_at.is_(None),
+        )
+    )
+    return result.first()
+
 # Staff identity field set — no recovery_code (staff don't use the
 # anonymous-claim flow), so the four social/phone columns are it.
 _STAFF_IDENTITY_FIELDS = ("line_id", "google_id", "facebook_id", "phone")

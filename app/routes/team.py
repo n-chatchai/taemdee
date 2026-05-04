@@ -57,6 +57,8 @@ async def team_add_form(
 @router.post("/add")
 async def team_add_post(
     display_name: str = Form(""),
+    username: Optional[str] = Form(None),
+    pin: Optional[str] = Form(None),
     can_void: Optional[str] = Form(None),
     can_deereach: Optional[str] = Form(None),
     can_topup: Optional[str] = Form(None),
@@ -68,6 +70,27 @@ async def team_add_post(
     name = (display_name or "").strip()
     if not name:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "ใส่ชื่อเล่นพนักงานก่อนนะครับ")
+
+    from app.services.team import (
+        find_staff_by_username, hash_pin, is_valid_pin,
+    )
+
+    uname = (username or "").strip() or None
+    pin_value = (pin or "").strip() or None
+    if uname and not pin_value:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "ใส่ PIN 6 หลักด้วยนะครับ")
+    if pin_value and not uname:
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "ใส่ Username ด้วยนะครับ")
+    if pin_value and not is_valid_pin(pin_value):
+        raise HTTPException(status.HTTP_400_BAD_REQUEST, "PIN ต้องเป็นตัวเลข 6 หลัก")
+    if uname:
+        existing = await find_staff_by_username(db, shop.id, uname)
+        if existing is not None:
+            raise HTTPException(
+                status.HTTP_409_CONFLICT,
+                f"Username '{uname}' มีคนใช้แล้วในร้านนี้ · ลองชื่ออื่นนะครับ",
+            )
+
     # Pending invite needs a User row even with no provider id yet — the
     # invitee will fold this row in when they sign in via OAuth.
     user = User(display_name=name)
@@ -76,6 +99,8 @@ async def team_add_post(
     staff = StaffMember(
         shop_id=shop.id,
         user_id=user.id,
+        username=uname,
+        pin_hash=hash_pin(pin_value) if pin_value else None,
         can_void=bool(can_void),
         can_deereach=bool(can_deereach),
         can_topup=bool(can_topup),
@@ -130,6 +155,7 @@ async def team_invite_page(
     mm, ss = divmod(rem, 60)
     expire_label = f"{hh:02d}:{mm:02d}:{ss:02d}"
 
+    pin_login_url = f"{base_url}/staff/pin-login?shop={shop.id}"
     return templates.TemplateResponse(
         request=request,
         name="shop/team_invite.html",
@@ -139,6 +165,7 @@ async def team_invite_page(
             "join_url": join_url,
             "qr_svg": qr_svg,
             "expire_label": expire_label,
+            "pin_login_url": pin_login_url,
         },
     )
 

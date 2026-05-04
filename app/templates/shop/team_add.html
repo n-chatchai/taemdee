@@ -18,6 +18,27 @@
         <div class="ssf-helper">ลูกค้าจะเห็นชื่อนี้ใน feed · เปลี่ยนได้ทีหลัง</div>
       </div>
 
+      {# Username + 6-digit PIN — alternative login. Owner shares
+         credentials with staff verbally; staff signs in at
+         /staff/pin-login on the shop subdomain. Both fields are
+         optional — owner can also leave them blank and use the
+         OAuth invite flow instead. #}
+      <div class="ssf-field">
+        <div class="ssf-label">Username (เข้าด้วย PIN)</div>
+        <input class="ssf-input" type="text" name="username"
+               placeholder="เช่น 001 หรือ bee"
+               autocapitalize="none" autocorrect="off">
+        <div class="ssf-helper">ตัวพิมพ์เล็กก็ได้ · ห้ามซ้ำในร้านเดียวกัน · ปล่อยว่างถ้าจะใช้ LINE/Google/เบอร์ผูก</div>
+      </div>
+
+      <div class="ssf-field">
+        <div class="ssf-label">PIN (6 หลัก)</div>
+        <input class="ssf-input" type="text" name="pin"
+               inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+               placeholder="••••••" autocomplete="off">
+        <div class="ssf-helper">ตัวเลข 6 หลัก · บอกพนักงานทางวาจา · เปลี่ยนได้โดยลบแล้วเพิ่มใหม่</div>
+      </div>
+
       <div class="ssf-perm-section">
         <div class="ssf-perm-h">สิทธิ์การใช้งาน</div>
         <div class="ssf-perm-sub">เลือกสิ่งที่พนักงานทำได้ · ปรับได้ทีหลังในตั้งค่า</div>

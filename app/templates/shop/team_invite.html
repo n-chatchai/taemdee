@@ -25,6 +25,38 @@
         คัดลอก
       </button>
     </div>
+
+    {# Username + PIN credentials block. Only renders when the owner
+       set them at /add. Username + PIN bypass the OAuth flow above —
+       staff signs in directly at /staff/pin-login with what's shown
+       here. The PIN itself isn't shown (we only have the bcrypt hash);
+       owner is expected to remember / write down the PIN at create
+       time. If they forget, they re-add the staff with a new PIN. #}
+    {% if staff.username %}
+    <div class="ssi-pin-card" style="margin-top: 18px; padding: 14px 16px;
+                                      background: var(--surface);
+                                      border: 1px solid var(--line);
+                                      border-radius: 14px;">
+      <div style="font-family: 'Prompt', sans-serif; font-weight: 700;
+                   font-size: var(--text-sm); margin-bottom: 6px;">
+        เข้าด้วย Username + PIN
+      </div>
+      <div style="font-family: 'Prompt', sans-serif; font-size: var(--text-xs);
+                   color: var(--ink-soft); line-height: 1.55; margin-bottom: 8px;">
+        Username: <strong style="font-family: 'JetBrains Mono', monospace;
+                                  letter-spacing: 0.04em;
+                                  color: var(--ink);">{{ staff.username }}</strong><br>
+        PIN: <span style="color: var(--ink-soft);">บอกพนักงานทางวาจา · บันทึกเฉพาะตอนสร้าง</span>
+      </div>
+      <a href="{{ pin_login_url }}"
+         target="_blank" rel="noopener"
+         style="display: inline-flex; align-items: center; gap: 6px;
+                font-family: 'Prompt', sans-serif; font-size: var(--text-xs);
+                color: var(--accent); text-decoration: none; font-weight: 600;">
+        เปิดหน้าเข้าสู่ระบบ →
+      </a>
+    </div>
+    {% endif %}
   </div>
 {% endblock %}
 

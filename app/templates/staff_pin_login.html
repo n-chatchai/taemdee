@@ -1,0 +1,62 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เข้าสู่ระบบพนักงาน · TaemDee</title>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="topbar"><span></span><span></span></div>
+    <div class="s1-hero" style="padding: 56px 30px 16px;">
+      <div class="s1-logo-mark" style="margin-bottom:14px;">
+        <svg class="smile-stamp" viewBox="0 0 100 100" width="72" height="72">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+          <circle cx="36" cy="42" r="6" fill="#FFD952"/>
+          <circle cx="64" cy="42" r="6" fill="#FFD952"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="s1-name">เข้าสู่ระบบพนักงาน</div>
+      <div class="s1-tag">
+        {% if shop %}
+          {{ shop.name }}<br>
+          ใส่ Username · PIN ที่เจ้าของร้านให้มา
+        {% else %}
+          เปิดลิงก์/สแกน QR จากเจ้าของร้านเพื่อเข้าสู่ระบบ
+        {% endif %}
+      </div>
+    </div>
+
+    {% if shop %}
+    <form class="s1-otp-form" method="POST" action="/staff/pin-login"
+          style="margin-top: 18px;">
+      <input type="hidden" name="shop_id" value="{{ shop.id }}">
+
+      <label for="staff-username">Username</label>
+      <input id="staff-username" type="text" name="username"
+             autocapitalize="none" autocorrect="off" autocomplete="username"
+             placeholder="เช่น 001" required>
+
+      <label for="staff-pin" style="margin-top: 12px;">PIN (6 หลัก)</label>
+      <input id="staff-pin" type="password" name="pin"
+             inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
+             autocomplete="current-password"
+             placeholder="••••••" required>
+
+      <button type="submit" class="s1-btn s1-btn-phone" style="margin-top: 16px;">
+        เข้าสู่ระบบ
+      </button>
+    </form>
+    {% endif %}
+
+    <div class="s1-foot">
+      ถือว่ายอมรับ <a href="/privacy">นโยบายความเป็นส่วนตัว</a>
+    </div>
+
+    {% include "_partials/footer_mark.html" %}
+  </div>
+</body>
+</html>
