@@ -120,6 +120,22 @@ async def logout(response: Response):
     return {"ok": True}
 
 
+async def _mark_pair_failed(db: AsyncSession, pair_code: str) -> None:
+    """Expire a Pairing row so the PWA's SSE fires `expired` immediately
+    instead of polling until the natural 10-minute TTL. Called when the
+    OAuth round-trip fails (e.g. invalid_grant on a re-submitted code)
+    so the user gets a fast "ลองใหม่อีกครั้ง" prompt rather than waiting
+    out the full timeout."""
+    from app.services.pairing import find_active_pairing, _local_signal
+    row = await find_active_pairing(db, pair_code)
+    if row is None:
+        return
+    row.expires_at = utcnow()
+    db.add(row)
+    await db.commit()
+    _local_signal(pair_code)
+
+
 async def _resolve_connect_customer_id(
     db: AsyncSession, pair: Optional[str]
 ) -> Optional[str]:
@@ -369,13 +385,46 @@ async def line_callback(
         logger.warning(f"↪️ Bouncing Shop Owner to: https://{shop_host}/auth/line/callback?transfer=...")
         return RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
 
-    # 3. Proceed with login if not already done via transfer
+    # 3. Proceed with login if not already done via transfer.
     if not goto_login:
+        # Idempotency: if the pair flow already claimed this code on a
+        # previous hit (refresh / back button on the system browser),
+        # the auth code is now spent and LINE will return invalid_grant.
+        # Detect that here and render the success page instead of
+        # surfacing a 502 to the user.
+        if pair_code:
+            from app.services.pairing import find_active_pairing
+            pair_row = await find_active_pairing(db, pair_code)
+            if pair_row is not None and pair_row.customer_id is not None:
+                logger.info(
+                    "line_callback: pair %s already claimed — rendering "
+                    "complete page idempotently", pair_code[:8],
+                )
+                response = templates.TemplateResponse(
+                    request=request,
+                    name="auth/pair_complete.html",
+                    context={"ok": True, "provider_label": "LINE"},
+                )
+                response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
+                return response
+
         try:
             tokens = await exchange_code_for_token(code)
             profile = await fetch_profile(tokens["access_token"])
         except LineLoginError as e:
             logger.error(f"❌ Token Exchange Failed: {e}")
+            if pair_code:
+                # PWA flow — render the friendly pair_complete error so
+                # the system browser shows a real page (and the PWA's
+                # SSE expires immediately) instead of raw JSON 502.
+                await _mark_pair_failed(db, pair_code)
+                response = templates.TemplateResponse(
+                    request=request,
+                    name="auth/pair_complete.html",
+                    context={"ok": False, "provider_label": "LINE"},
+                )
+                response.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
+                return response
             raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
         line_id = profile["userId"]
@@ -759,10 +808,35 @@ async def google_callback(
     pair_code = payload.get("pair")
     connect_customer_id = payload.get("connect_customer_id")
 
+    # Idempotency: re-fired callback (refresh / back) on an already-
+    # claimed pair would re-spend the OAuth code and fail. Render
+    # success early instead.
+    if pair_code:
+        from app.services.pairing import find_active_pairing
+        pair_row = await find_active_pairing(db, pair_code)
+        if pair_row is not None and pair_row.customer_id is not None:
+            response = templates.TemplateResponse(
+                request=request,
+                name="auth/pair_complete.html",
+                context={"ok": True, "provider_label": "Google"},
+            )
+            response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
+            return response
+
     try:
         tokens = await google_login.exchange_code_for_token(code)
         profile = await google_login.fetch_profile(tokens["access_token"])
     except google_login.GoogleLoginError as e:
+        logger.error(f"❌ Google Token Exchange Failed: {e}")
+        if pair_code:
+            await _mark_pair_failed(db, pair_code)
+            response = templates.TemplateResponse(
+                request=request,
+                name="auth/pair_complete.html",
+                context={"ok": False, "provider_label": "Google"},
+            )
+            response.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
+            return response
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
     google_id = profile.get("sub")
@@ -835,10 +909,35 @@ async def facebook_callback(
     pair_code = payload.get("pair")
     connect_customer_id = payload.get("connect_customer_id")
 
+    # Idempotency: re-fired callback (refresh / back) on an already-
+    # claimed pair would re-spend the OAuth code and fail. Render
+    # success early instead.
+    if pair_code:
+        from app.services.pairing import find_active_pairing
+        pair_row = await find_active_pairing(db, pair_code)
+        if pair_row is not None and pair_row.customer_id is not None:
+            response = templates.TemplateResponse(
+                request=request,
+                name="auth/pair_complete.html",
+                context={"ok": True, "provider_label": "Facebook"},
+            )
+            response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
+            return response
+
     try:
         tokens = await facebook_login.exchange_code_for_token(code)
         profile = await facebook_login.fetch_profile(tokens["access_token"])
     except facebook_login.FacebookLoginError as e:
+        logger.error(f"❌ Facebook Token Exchange Failed: {e}")
+        if pair_code:
+            await _mark_pair_failed(db, pair_code)
+            response = templates.TemplateResponse(
+                request=request,
+                name="auth/pair_complete.html",
+                context={"ok": False, "provider_label": "Facebook"},
+            )
+            response.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
+            return response
         raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
     facebook_id = profile.get("id")
