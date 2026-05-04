@@ -11170,9 +11170,19 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Inbox/C6/C9/C8 — mirrors shop-side .s3-glass-nav. Position FIXED, not
    sticky (design says sticky but .td overflow-x:hidden breaks sticky-
    bottom in prod — see memory feedback_dock_position_fixed). */
-/* .c-glass-nav now shares its full chassis with .s3-glass-nav above —
+/* .c-glass-nav shares its full chassis with .s3-glass-nav above —
    styles, badge, animation are defined once in the combined selector
-   block. Customer-specific tweaks (if any) belong here in the future. */
+   block. Customer-specific tweaks below.
+
+   Customer dock has 5 tabs (cards / scan / inbox / gifts / settings)
+   vs the shop's 4, so override the grid + tighten the tab padding so
+   labels don't wrap on narrow phones. */
+.c-glass-nav { grid-template-columns: repeat(5, 1fr); gap: 2px; }
+.c-glass-nav .gn-tab { padding: 10px 4px 8px; }
+.c-glass-nav .gn-tab .gn-label {
+  font-size: 10.5px;
+  white-space: nowrap;
+}
 
 /* When the dock is present, leave room at the bottom of `.td` so it doesn't
    sit on top of the last content row. Applied via .has-c-dock on the

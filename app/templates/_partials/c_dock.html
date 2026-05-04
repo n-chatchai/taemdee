@@ -1,9 +1,10 @@
-{# Customer dock — 4-tab liquid-glass bottom nav. Caller passes `nav_active`
-   = one of "cards" / "scan" / "gifts" / "inbox" to highlight the current
-   tab. Optional `nav_inbox_badge=True` for an unread-message dot.
+{# Customer dock — 5-tab liquid-glass bottom nav. Caller passes `nav_active`
+   = one of "cards" / "scan" / "inbox" / "gifts" / "settings" to highlight
+   the current tab. Optional `nav_inbox_badge=True` for an unread-message dot.
 
-   "ตั้งค่า" was removed from the dock per the Apr 30 design refresh —
-   reach C6 via the gear icon in /my-cards page-head instead.
+   ตั้งค่า was lifted back into the dock as a 5th tab on 2026-05-04 — the
+   gear icon in /my-cards page-head was easy to miss on small phones. The
+   CSS overrides the shared 4-col grid for .c-glass-nav with 5 columns.
 
    NB per memory `feedback_dock_position_fixed.md`: must be position fixed
    even though design says sticky — `.td` overflow-x:hidden breaks sticky-
@@ -48,6 +49,15 @@
       {% if nav_gifts_badge %}<span class="gn-badge{% if nav_gifts_badge is number and nav_gifts_badge > 0 %} has-count{% endif %}">{% if nav_gifts_badge is number and nav_gifts_badge > 0 %}{{ nav_gifts_badge }}{% endif %}</span>{% endif %}
     </span>
     <span class="gn-label">ของขวัญ</span>
+  </a>
+  <a class="gn-tab{% if nav_active == 'settings' %} active{% endif %}" href="/card/account" aria-label="ตั้งค่า">
+    <span class="gn-icon">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <circle cx="12" cy="12" r="3"/>
+        <path d="M19.4 15a1.65 1.65 0 0 0 .33 1.82l.06.06a2 2 0 0 1 0 2.83 2 2 0 0 1-2.83 0l-.06-.06a1.65 1.65 0 0 0-1.82-.33 1.65 1.65 0 0 0-1 1.51V21a2 2 0 0 1-2 2 2 2 0 0 1-2-2v-.09A1.65 1.65 0 0 0 9 19.4a1.65 1.65 0 0 0-1.82.33l-.06.06a2 2 0 0 1-2.83 0 2 2 0 0 1 0-2.83l.06-.06a1.65 1.65 0 0 0 .33-1.82 1.65 1.65 0 0 0-1.51-1H3a2 2 0 0 1-2-2 2 2 0 0 1 2-2h.09A1.65 1.65 0 0 0 4.6 9a1.65 1.65 0 0 0-.33-1.82l-.06-.06a2 2 0 0 1 0-2.83 2 2 0 0 1 2.83 0l.06.06a1.65 1.65 0 0 0 1.82.33H9a1.65 1.65 0 0 0 1-1.51V3a2 2 0 0 1 2-2 2 2 0 0 1 2 2v.09a1.65 1.65 0 0 0 1 1.51 1.65 1.65 0 0 0 1.82-.33l.06-.06a2 2 0 0 1 2.83 0 2 2 0 0 1 0 2.83l-.06.06a1.65 1.65 0 0 0-.33 1.82V9a1.65 1.65 0 0 0 1.51 1H21a2 2 0 0 1 2 2 2 2 0 0 1-2 2h-.09a1.65 1.65 0 0 0-1.51 1z"/>
+      </svg>
+    </span>
+    <span class="gn-label">ตั้งค่า</span>
   </a>
 </nav>
 
