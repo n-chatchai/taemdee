@@ -1691,7 +1691,7 @@ z-index: 4;
 }
 .section-head-block p {
   font-family: 'Prompt', sans-serif;
-  font-size: clamp(14px, 1.4vw, 16px);
+  font-size: clamp(18px, 1.4vw, 16px);
   color: var(--ink-soft);
   max-width: 620px;
   margin: 0 auto;
