@@ -414,42 +414,11 @@ async def service_worker():
 
 
 @app.get("/")
-async def home(request: Request, db: AsyncSession = Depends(get_session)):
-    """Marketing home for guests. Logged-in users get sent to their app —
-    matters most for PWA installs (Add to Home Screen): the saved icon
-    should open the user's dashboard, not the marketing pitch they've
-    already seen. A returning customer who hits / (e.g. via PWA fallback
-    or bookmark) should land on /my-cards; a shop owner on /shop/dashboard.
-
-    Both cookies valid → customer side wins (more common entry); shop
-    owners can switch by typing /shop/dashboard themselves.
-    """
-    from uuid import UUID
-
-    customer_cookie = request.cookies.get(CUSTOMER_COOKIE_NAME)
-    if customer_cookie:
-        customer_id = decode_customer_token(customer_cookie)
-        if customer_id and await db.get(Customer, customer_id):
-            return RedirectResponse(
-                url="/my-cards", status_code=status.HTTP_303_SEE_OTHER
-            )
-
-    shop_cookie = request.cookies.get(SESSION_COOKIE_NAME)
-    if shop_cookie:
-        payload = decode_session_token(shop_cookie)
-        # Verify the referenced shop still exists — otherwise /shop/dashboard
-        # would raise SessionAuthError → /shop/login, stranding the user
-        # behind a login wall their cookie can't satisfy.
-        if payload and (shop_id := payload.get("shop_id")):
-            try:
-                if await db.get(Shop, UUID(shop_id)):
-                    return RedirectResponse(
-                        url="/shop/dashboard",
-                        status_code=status.HTTP_303_SEE_OTHER,
-                    )
-            except ValueError:
-                pass  # Malformed shop_id in token — fall through to marketing.
-
+async def home(request: Request):
+    """Marketing home — always served on `/`. The PWA manifests point
+    `start_url` at `/my-cards` (customer) and `/shop/dashboard` (shop)
+    so installed icons still open the app directly; browser users who
+    type the bare domain see the marketing page regardless of cookies."""
     return templates.TemplateResponse(request=request, name="home.html")
 
 
