@@ -20,21 +20,10 @@
     .reward-pill .rlabel { font-size: 11px; }
     .reward-pill .rname { font-size: var(--text-sm); }
 
-    /* Two stacked links → one row, equal-width buttons. Bottom
-       margin clears the c-glass-nav dock at the page foot. */
-    .c1-nav-links {
-      display: flex;
-      gap: 8px;
-      margin: 14px 14px 100px;
-    }
-    .c1-nav-links .c1-shop-link {
-      margin: 0;
-      flex: 1;
-      padding: 10px 8px;
-      font-size: var(--text-xs);
-      background: var(--surface);
-      border: 1px solid rgba(17, 17, 17, 0.10);
-    }
+    /* Single "ไปที่บัตรของฉัน" link uses the default .c1-shop-link
+       styling. Add bottom margin so the c-glass-nav dock doesn't
+       overlap on shorter phones. */
+    .c1-shop-link { margin-bottom: 100px; }
   </style>
 </head>
 <body>
@@ -170,16 +159,10 @@
        /story but it doesn't read as tappable, and the dock tabs at
        the bottom cover other surfaces. These two stacked links make
        the routes from this page obvious. #}
-    <div class="c1-nav-links">
-      <a href="/my-cards" class="c1-shop-link">
-        <span>ไปที่บัตรของฉัน</span>
-        <span aria-hidden="true">→</span>
-      </a>
-      <a href="/story/{{ shop.id }}" class="c1-shop-link">
-        <span>ไปที่ร้าน</span>
-        <span aria-hidden="true">→</span>
-      </a>
-    </div>
+    <a href="/my-cards" class="c1-shop-link">
+      <span>ไปที่บัตรของฉัน</span>
+      <span aria-hidden="true">→</span>
+    </a>
 
     {% include "_partials/footer_mark.html" %}
 
