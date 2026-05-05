@@ -100,7 +100,7 @@ ITEMS: list[CustomerDashboardItem] = [
         # Skip = "I already added it" OR "I don't use LINE". Either
         # way the row hides; the auto-fulfill predicate catches the
         # actual follow event when the webhook later confirms.
-        skip_explain="พี่ต้องเข้ามาดูข้อความในกล่องข้อความบ่อยนะ",
+        skip_explain="พี่ต้องเข้ามาดูข้อความในกล่องข้อความบ่อยๆนะ",
         scan_count=3,  # Line friend is a bit more work, so show it later than the others.
     ),
     CustomerDashboardItem(
@@ -110,7 +110,7 @@ ITEMS: list[CustomerDashboardItem] = [
         cta="เปิดเลย →",
         # No `link` — frontend wires the tap to navigator pushManager.
         is_fulfilled=lambda c: bool(c.web_push_endpoint),
-        skip_explain="พี่ต้องเข้ามาดูข้อความในกล่องข้อความบ่อยนะ",
+        skip_explain="พี่ต้องเข้ามาดูข้อความในกล่องข้อความบ่อยๆนะ",
     ),
     CustomerDashboardItem(
         kind="set_picture",

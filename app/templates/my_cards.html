@@ -411,6 +411,27 @@
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+/* Card fade-out: applied on CTA / skip click so the row visibly
+   collapses before the underlying action (sheet, navigation, server
+   POST) lands. Transition wraps opacity + size so neighbouring rows
+   slide up to fill the gap. */
+.cl-todo {
+  transition: opacity 220ms ease, max-height 260ms ease,
+              margin 260ms ease, padding 260ms ease, border-width 260ms ease;
+  max-height: 200px;
+  overflow: hidden;
+}
+.cl-todo.cl-todo--out {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  padding-top: 0;
+  padding-bottom: 0;
+  border-width: 0;
+  pointer-events: none;
+}
+
 /* CTA — orange pill with a soft accent-tinted glow that breathes
    slowly. Animation is gentle (4s, subtle scale + shadow change) so
    the eye picks it up without it feeling like a banner ad. Honors
@@ -566,6 +587,14 @@
               <a href="{{ settings.line_oa_friend_url }}" target="_blank" rel="noopener"
                  class="cl-todo-cta"
                  onclick="{{ _claim_beacon }}">{{ it.cta }}</a>
+            {% elif it.kind == 'set_picture' %}
+              {# Slide up the existing profile_edit_sheet (avatar +
+                 display_name editing) instead of bouncing through
+                 /card/account. data-open="profile-edit" wires into
+                 the partial's global click handler. #}
+              <button type="button" class="cl-todo-cta"
+                      data-open="profile-edit"
+                      onclick="{{ _claim_beacon }}">{{ it.cta }}</button>
             {% elif it.link %}
               <a href="{{ it.link }}" class="cl-todo-cta"
                  onclick="{{ _claim_beacon }}">{{ it.cta }}</a>
@@ -736,6 +765,25 @@
 {% endblock %}
 
 {% block body_end %}
+  {# Fade-out + collapse the todo card on CTA / skip click so the
+     user sees immediate acknowledgement of their tap. The underlying
+     onclick handlers (sendBeacon claim, sheet open, navigation,
+     pushManager.subscribe, form POST) continue running in parallel —
+     the animation is purely visual. #}
+  <script>
+    (function () {
+      function fade(card) {
+        if (!card || card.classList.contains('cl-todo--out')) return;
+        card.classList.add('cl-todo--out');
+      }
+      document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('.cl-todo-cta, .cl-todo-skip-x');
+        if (!trigger) return;
+        fade(trigger.closest('.cl-todo'));
+      });
+    })();
+  </script>
+
   {# Tiny client-side filter for the "เก็บแต้มอยู่" search box. Hides
      rows whose data-shop-name doesn't contain the typed term. #}
   <script>
