@@ -55,7 +55,7 @@ class CustomerDashboardItem:
     # makes sense for anonymous customers with a code on file). Default
     # is "always show".
     is_eligible: Callable[[Customer], bool] = lambda c: True
-    scan_count: int = 2 # How many times the customer scanned their card before this item appears?
+    scan_count: int = 0 # How many times the customer scanned their card before this item appears?
 
 
 def _has_any_provider(c: Customer) -> bool:
