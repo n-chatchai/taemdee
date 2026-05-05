@@ -28,7 +28,16 @@ import asyncio
 import random
 import sys
 from datetime import datetime, timedelta, timezone
+from pathlib import Path
 from uuid import UUID, uuid4
+
+# Allow `python scripts/seed_sample_data.py` from the project root —
+# without this, sys.path[0] is the scripts/ dir and `app` is not
+# importable. Prepending the parent (project root) keeps the script
+# runnable both standalone and as a module.
+_REPO_ROOT = Path(__file__).resolve().parent.parent
+if str(_REPO_ROOT) not in sys.path:
+    sys.path.insert(0, str(_REPO_ROOT))
 
 from sqlalchemy import delete, text, update
 from sqlmodel import select
