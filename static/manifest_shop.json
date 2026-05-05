@@ -5,6 +5,7 @@
   "description": "ระบบจัดการแต้มสะสมสำหรับร้านค้าแต้มดี — ฟรีระบบสมาชิก จ่ายแค่ตอนส่งข้อความหาลูกค้า ",
   "start_url": "/shop/dashboard",
   "scope": "/",
+  "launch_handler": { "client_mode": "focus-existing" },
   "display": "standalone",
   "orientation": "portrait",
   "background_color": "#F6F1E5",
