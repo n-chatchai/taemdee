@@ -290,6 +290,19 @@ async def issue_scan_grant(
                 customer.display_name or "ลูกค้า",
             ),
         )
+        # Drop the customer's `ของขวัญ` dock badge live — the voucher
+        # they were holding just got served, so it's no longer pending.
+        from app.services.events import publish_customer
+        active_count = (await db.exec(
+            select(func.count())
+            .select_from(Redemption)
+            .where(
+                Redemption.customer_id == customer.id,
+                Redemption.served_at.is_(None),
+                Redemption.is_voided == False,  # noqa: E712
+            )
+        )).one()
+        publish_customer(customer.id, "gifts-update", str(active_count))
         return {
             "served_redemption_id": str(pending_redemption.id),
             "customer_id": str(customer.id),
@@ -812,4 +825,18 @@ async def void_redemption_route(
 
     await void_redemption(db, redemption, by_staff_id=ctx.staff_id)
     publish(ctx.shop_id, "void", f'<span data-row="row-{redemption.id}"></span>')
+    # Bump the customer's `ของขวัญ` badge: a voided unserved voucher
+    # would have been counted as active, so the count should drop.
+    if redemption.customer_id is not None:
+        from app.services.events import publish_customer
+        active_count = (await db.exec(
+            select(func.count())
+            .select_from(Redemption)
+            .where(
+                Redemption.customer_id == redemption.customer_id,
+                Redemption.served_at.is_(None),
+                Redemption.is_voided == False,  # noqa: E712
+            )
+        )).one()
+        publish_customer(redemption.customer_id, "gifts-update", str(active_count))
     return {"voided": True, "redemption_id": str(redemption.id)}

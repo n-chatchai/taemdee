@@ -1859,6 +1859,13 @@ async def my_inbox_mark_read(
         row.read_at = utcnow()
         db.add(row)
         await db.commit()
+        # Drop the dock `ข้อความ` badge live on every open tab — the SSE
+        # stream picks this up and updates without a page refresh.
+        from app.services.events import publish_customer
+        publish_customer(
+            customer.id, "inbox-update",
+            str(await _inbox_unread_count(db, customer.id)),
+        )
     return JSONResponse({"ok": True}, status_code=200)
 
 
@@ -1882,6 +1889,13 @@ async def my_inbox_detail(
         row.read_at = utcnow()
         db.add(row)
         await db.commit()
+        # Drop the dock `ข้อความ` badge live on every open tab — the SSE
+        # stream picks this up and updates without a page refresh.
+        from app.services.events import publish_customer
+        publish_customer(
+            customer.id, "inbox-update",
+            str(await _inbox_unread_count(db, customer.id)),
+        )
 
     from app.models import CustomerShopMute
     is_muted = False
