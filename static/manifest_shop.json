@@ -1,4 +1,5 @@
 {
+  "id": "/?app=taemdee-shop",
   "name": "ร้านแต้มดี",
   "short_name": "ร้านแต้มดี",
   "description": "ระบบจัดการแต้มสะสมสำหรับร้านค้าแต้มดี — ฟรีระบบสมาชิก จ่ายแค่ตอนส่งข้อความหาลูกค้า ",
@@ -32,6 +33,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/apps/shop.png",
+      "sizes": "1260x2736",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "หน้าจอแดชบอร์ดร้าน"
     }
   ]
 }

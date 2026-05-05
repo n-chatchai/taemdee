@@ -1,4 +1,5 @@
 {
+  "id": "/?app=taemdee-customer",
   "name": "แต้มดี",
   "short_name": "แต้มดี",
   "description": "บัตรสะสมแต้มดิจิทัล สแกน QR แล้วได้แต้มทันที ไม่ต้องโหลดแอป ไม่บังคับสมัครสมาชิก",
@@ -33,6 +34,15 @@
       "sizes": "512x512",
       "type": "image/png",
       "purpose": "maskable"
+    }
+  ],
+  "screenshots": [
+    {
+      "src": "/static/apps/card.png",
+      "sizes": "1260x2736",
+      "type": "image/png",
+      "form_factor": "narrow",
+      "label": "บัตรสะสมแต้มของลูกค้า"
     }
   ]
 }
