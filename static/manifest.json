@@ -44,5 +44,34 @@
       "form_factor": "narrow",
       "label": "บัตรสะสมแต้มของลูกค้า"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "บัตรของฉัน",
+      "short_name": "บัตร",
+      "description": "ดูบัตรสะสมแต้มและ todos",
+      "url": "/my-cards",
+      "icons": [
+        { "src": "/static/taemdee-icons/taemdee-icon-192.png", "sizes": "192x192" }
+      ]
+    },
+    {
+      "name": "ของขวัญของพี่",
+      "short_name": "ของขวัญ",
+      "description": "ดูของรางวัลที่พร้อมใช้",
+      "url": "/my-gifts",
+      "icons": [
+        { "src": "/static/taemdee-icons/taemdee-icon-192.png", "sizes": "192x192" }
+      ]
+    },
+    {
+      "name": "กล่องข้อความ",
+      "short_name": "ข้อความ",
+      "description": "ข้อความจากร้านโปรด",
+      "url": "/my-inbox",
+      "icons": [
+        { "src": "/static/taemdee-icons/taemdee-icon-192.png", "sizes": "192x192" }
+      ]
+    }
   ]
 }

@@ -43,5 +43,34 @@
       "form_factor": "narrow",
       "label": "หน้าจอแดชบอร์ดร้าน"
     }
+  ],
+  "shortcuts": [
+    {
+      "name": "ออกแต้ม",
+      "short_name": "ออกแต้ม",
+      "description": "สแกนลูกค้าหรือกรอกเบอร์เพื่อออกแต้ม",
+      "url": "/shop/issue",
+      "icons": [
+        { "src": "/static/taemdee-icons/taemdee-icon-192.png", "sizes": "192x192" }
+      ]
+    },
+    {
+      "name": "แดชบอร์ด",
+      "short_name": "แดชบอร์ด",
+      "description": "ภาพรวมร้านวันนี้",
+      "url": "/shop/dashboard",
+      "icons": [
+        { "src": "/static/taemdee-icons/taemdee-icon-192.png", "sizes": "192x192" }
+      ]
+    },
+    {
+      "name": "เติมเครดิต",
+      "short_name": "เติมเครดิต",
+      "description": "เติมเครดิตสำหรับส่งโปรชวนกลับ",
+      "url": "/shop/topup",
+      "icons": [
+        { "src": "/static/taemdee-icons/taemdee-icon-192.png", "sizes": "192x192" }
+      ]
+    }
   ]
 }
