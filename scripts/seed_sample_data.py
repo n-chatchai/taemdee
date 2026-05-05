@@ -107,7 +107,9 @@ async def _wipe_existing_samples(db) -> int:
 
 async def _already_seeded(db, shop_id: UUID) -> bool:
     """True if any sample-prefix user already has points at this shop —
-    cheap idempotency guard so re-running the script is a no-op."""
+    cheap idempotency guard so re-running the script is a no-op.
+    asyncpg won't auto-cast str→uuid, so the param is passed as a UUID
+    object and the column comparison stays native."""
     row = (await db.exec(
         text(
             """
@@ -119,7 +121,7 @@ async def _already_seeded(db, shop_id: UUID) -> bool:
               AND p.shop_id = :sid
             LIMIT 1
             """
-        ).bindparams(prefix=f"{SAMPLE_NAME_PREFIX}%", sid=str(shop_id))
+        ).bindparams(prefix=f"{SAMPLE_NAME_PREFIX}%", sid=shop_id)
     )).first()
     return row is not None
 
@@ -214,7 +216,7 @@ async def seed(shop_id: UUID, *, reset: bool = False) -> None:
                         LIMIT 1
                         """
                     ).bindparams(
-                        sid=str(shop_id),
+                        sid=shop_id,
                         redeem_ts=redeem_ts,
                         threshold=reward_threshold,
                     )
@@ -251,9 +253,9 @@ async def seed(shop_id: UUID, *, reset: bool = False) -> None:
                         )
                         """
                     ).bindparams(
-                        rid=str(redemption.id),
-                        sid=str(shop_id),
-                        cid=str(cid),
+                        rid=redemption.id,
+                        sid=shop_id,
+                        cid=cid,
                         redeem_ts=redeem_ts,
                     )
                 )
