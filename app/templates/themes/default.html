@@ -8,6 +8,34 @@
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {% include "_partials/pwa_head.html" %}
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+  <style>
+    /* Per-shop overrides for the customer daily card. Reward pill
+       shrunk (margin / padding / gift size) and nav links inlined
+       on a single row so the content doesn't slide under the bottom
+       dock on smaller phones. */
+    .reward-pill { margin: 14px 20px 0; padding: 12px 14px; gap: 12px; }
+    .reward-pill .gift { width: 60px; height: 60px; border-radius: 14px; }
+    .reward-pill .gift svg { width: 32px; height: 32px; }
+    .reward-pill .gift:has(img) { width: 64px; height: 64px; }
+    .reward-pill .rlabel { font-size: 11px; }
+    .reward-pill .rname { font-size: var(--text-sm); }
+
+    /* Two stacked links → one row, equal-width buttons. Bottom
+       margin clears the c-glass-nav dock at the page foot. */
+    .c1-nav-links {
+      display: flex;
+      gap: 8px;
+      margin: 14px 14px 100px;
+    }
+    .c1-nav-links .c1-shop-link {
+      margin: 0;
+      flex: 1;
+      padding: 10px 8px;
+      font-size: var(--text-xs);
+      background: var(--surface);
+      border: 1px solid rgba(17, 17, 17, 0.10);
+    }
+  </style>
 </head>
 <body>
   {% set is_full = point_count >= shop.reward_threshold %}
