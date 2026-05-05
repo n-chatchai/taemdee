@@ -71,7 +71,7 @@ ITEMS: list[CustomerDashboardItem] = [
     CustomerDashboardItem(
         kind="pwa_install",
         label="<strong>เพิ่มลงหน้าจอ</strong>",
-        sub="เปิดแต้มดีจากไอคอนหน้าจอ · ไม่ต้องเปิดเบราว์เซอร์",
+        sub="เปิดแต้มดีจากหน้าจอ · ไม่ต้องเปิดเบราว์เซอร์",
         cta="เพิ่มเลย →",
         # No `link` — user opens via the existing install_sheet trigger;
         # auto-fulfills when /track/pwa flips customer.is_pwa to True.
@@ -81,7 +81,7 @@ ITEMS: list[CustomerDashboardItem] = [
     CustomerDashboardItem(
         kind="connect_provider",
         label="<strong>ผูกบัญชี</strong>เก็บแต้มไว้ไม่ให้หาย",
-        sub="LINE / Google / เบอร์โทร · กู้คืนแต้มได้ถ้าเปลี่ยนเครื่อง",
+        sub="LINE / Google · กู้คืนแต้มได้ถ้าเปลี่ยนเครื่อง",
         cta="ผูกที่นี่ →",
         link="/card/account",
         # Anonymous customer with no provider linked yet.
@@ -91,8 +91,8 @@ ITEMS: list[CustomerDashboardItem] = [
     ),
     CustomerDashboardItem(
         kind="line_friend",
-        label="เพิ่ม <strong>@taemdee</strong> เป็นเพื่อน",
-        sub="รับข่าวร้านโปรดผ่าน LINE · แจ้งเตือนของฝาก",
+        label="เพิ่ม <strong>แต้มดี</strong> เป็นเพื่อน",
+        sub="แจ้งเตือนของฝาก รับข่าวร้านโปรดผ่านไลน์แต้มดี",
         cta="เพิ่มเพื่อน →",
         # link injected at render time from settings.line_oa_friend_url
         is_eligible=lambda c: bool(c.line_id) and _line_messaging_enabled(),
@@ -104,8 +104,8 @@ ITEMS: list[CustomerDashboardItem] = [
     ),
     CustomerDashboardItem(
         kind="enable_push",
-        label="<strong>เปิดแจ้งเตือน</strong>ในเบราว์เซอร์",
-        sub="ช่องที่ถูกที่สุด · ส่งตรงถึงเครื่องโดยไม่ต้องผูก LINE",
+        label="<strong>เปิดแจ้งเตือนแต้มดี</strong>",
+        sub="แจ้งเตือนของฝาก รับข่าวร้านโปรดผ่านแต้มดี",
         cta="เปิดเลย →",
         # No `link` — frontend wires the tap to navigator pushManager.
         is_fulfilled=lambda c: bool(c.web_push_endpoint),
@@ -114,23 +114,11 @@ ITEMS: list[CustomerDashboardItem] = [
     CustomerDashboardItem(
         kind="set_picture",
         label="<strong>ตั้งรูปโปรไฟล์</strong>",
-        sub="แต่งบัญชีให้เป็นตัวเอง · ขนาดไหนก็ได้",
+        sub="ปรับแต่งบัญชีให้เป็นตัวเอง ให้ร้านรู้จักคุณได้ง่ายขึ้น",
         cta="เลือกรูป →",
         link="/card/account",
         is_fulfilled=lambda c: bool(c.picture_url),
         skip_explain="ใช้รูปเริ่มต้นก็ได้ · เปลี่ยนได้ภายหลัง",
-    ),
-    CustomerDashboardItem(
-        kind="set_preferred_channel",
-        label="<strong>เลือกช่องทาง</strong>รับข้อความ",
-        sub="LINE / Web Push / SMS · ระบบเลือกถูกที่สุดให้เป็นค่าเริ่มต้น",
-        cta="เลือกที่นี่ →",
-        link="/card/account/notifications",
-        # Surface only when at least 2 channels are reachable — otherwise
-        # there's no choice to make.
-        is_eligible=lambda c: _reachable_channel_count(c) >= 2,
-        is_fulfilled=lambda c: bool(c.preferred_channel),
-        skip_explain="ใช้ค่าเริ่มต้น · ระบบเลือกถูกที่สุดให้เอง",
     ),
 ]
 
