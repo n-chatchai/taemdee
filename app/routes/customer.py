@@ -1637,17 +1637,9 @@ async def my_gifts(
         .limit(30)
     )).all()
 
-    # Voucher expiry: compute from created_at + 90 days. Sort active
-    # asc by expires_at so the soonest-expiring is the hero. Days <= 7
-    # → urgent treatment in the template (red pulse, "หมดใน N วัน").
-    from datetime import timedelta
-    VOUCHER_EXPIRY_DAYS = 90
-    URGENT_THRESHOLD_DAYS = 7
-    now = utcnow()
-
+    # Voucher expiry pulled out — vouchers don't expire in the current
+    # product. Hero = newest unredeemed; the rest go to the grid.
     def _gift_dict(r: Redemption, s: Shop) -> dict:
-        expires_at = r.created_at + timedelta(days=VOUCHER_EXPIRY_DAYS)
-        days_left = (expires_at - now).days
         return {
             "id": r.id,
             "name": s.reward_description,
@@ -1656,18 +1648,12 @@ async def my_gifts(
             "emoji": _gift_emoji(s.reward_image),
             "reward_image": s.reward_image,
             "shop_color": _shop_swatch(s.id),
-            "expires_at_short": _bkk_short_date(expires_at),
-            "days_left": days_left,
-            "is_urgent": 0 <= days_left <= URGENT_THRESHOLD_DAYS,
-            "is_expired": days_left < 0,
             "use_url": f"/card/{s.id}/claimed?r={r.id}",
         }
 
-    active_all = [_gift_dict(r, s) for r, s in active_rows]
-    # Skip expired ones (server-side guard — voucher.use refuses anyway).
-    active_all = [g for g in active_all if not g["is_expired"]]
-    # Sort: soonest-expiring first.
-    active_all.sort(key=lambda g: g["days_left"])
+    # Sort by created_at desc so the newest voucher is the hero.
+    active_sorted = sorted(active_rows, key=lambda rs: rs[0].created_at, reverse=True)
+    active_all = [_gift_dict(r, s) for r, s in active_sorted]
 
     hero_gift = active_all[0] if active_all else None
     grid_gifts = active_all[1:] if len(active_all) > 1 else []

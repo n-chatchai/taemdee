@@ -55,10 +55,22 @@ from app.services.deereach import CHANNEL_COST_SATANG  # noqa: E402,F401
 # (R6c: replace each stub body with a real API call)
 # ---------------------------------------------------------------------------
 
-def _send_web_push(customer: Customer, message: str) -> bool:
+def _send_web_push(
+    customer: Customer,
+    message: str,
+    *,
+    shop: Shop,
+    inbox_id: UUID,
+) -> bool:
     """Encrypt + sign with VAPID and POST to the customer's push endpoint.
     Returns True on 2xx, False on any error (including 410 Gone — caller
     should clear the dead subscription separately).
+
+    Title is the shop name (NOT the brand "แต้มดี") so iOS doesn't fold
+    title === manifest.name into "from แต้มดี" attribution and instead
+    surfaces the shop's identity to the customer. URL deep-links to the
+    specific inbox row so tapping the notification opens THAT message
+    rather than the inbox list.
 
     Drops to log-only stub when the worker hasn't loaded VAPID keys
     (ensure_vapid_keys never ran for some reason) so dev / tests pass
@@ -88,9 +100,9 @@ def _send_web_push(customer: Customer, message: str) -> bool:
                 },
             },
             data=json.dumps({
-                "title": "แต้มดี",
+                "title": shop.name or "แต้มดี",
                 "body": message,
-                "url": "/my-inbox",
+                "url": f"/my-inbox/{inbox_id}",
             }),
             vapid_private_key=private_key,
             vapid_claims={"sub": WEB_PUSH_VAPID_SUB},
@@ -158,24 +170,30 @@ def _send_sms(phone: Optional[str], message: str) -> bool:
     return True
 
 
-async def _send_inbox(
+async def _create_inbox_row(
     db: AsyncSession,
     customer_id: UUID,
     shop_id: UUID,
     campaign_id: UUID,
     message: str,
-) -> bool:
-    """DeeCard in-app inbox — DB write only, always succeeds. Customer
-    sees the message next time they open their card; reads on their own
-    time via /my-cards inbox tab."""
-    db.add(Inbox(
+) -> Inbox:
+    """Insert an Inbox row + flush so the generated id is available for
+    deep-link URLs (web push) before the row is committed at end-of-job.
+
+    Inbox is the source-of-truth fallback — every campaign message
+    lands here regardless of which channel the dispatcher picked, so
+    customers can re-read past notifications.
+    """
+    row = Inbox(
         customer_id=customer_id,
         shop_id=shop_id,
         campaign_id=campaign_id,
         body=message,
-    ))
-    log.info("inbox → customer=%s msg=%r", customer_id, message[:40])
-    return True
+    )
+    db.add(row)
+    await db.flush()  # populates row.id without committing
+    log.info("inbox → customer=%s id=%s msg=%r", customer_id, row.id, message[:40])
+    return row
 
 
 def _substitute_placeholders(text: str, customer: Customer, shop: Shop) -> str:
@@ -213,19 +231,24 @@ async def _dispatch_channel(
     customer: Customer,
     message: str,
     *,
-    db: AsyncSession,
-    shop_id: UUID,
-    campaign_id: UUID,
+    shop: Shop,
+    inbox_id: UUID,
 ) -> bool:
-    """Route to the correct channel handler. Returns True = delivered."""
+    """Route to the correct channel handler. Returns True = delivered.
+
+    The inbox row is created upfront in the dispatch loop (so its id
+    can power deep-link URLs) — `inbox` channel here is therefore a
+    no-op success: the inbox write IS the primary delivery and has
+    already happened by the time we get here.
+    """
     if channel == "web_push":
-        return _send_web_push(customer, message)
+        return _send_web_push(customer, message, shop=shop, inbox_id=inbox_id)
     if channel == "line":
         return _send_line(customer, message)
     if channel == "sms":
         return _send_sms(customer.phone, message)
     if channel == "inbox":
-        return await _send_inbox(db, customer.id, shop_id, campaign_id, message)
+        return True
     log.error("Unknown channel %r — treating as failed", channel)
     return False
 
@@ -316,21 +339,19 @@ async def _run(campaign_id: UUID) -> None:
                 campaign.message_text or "", customer, shop,
             )
 
+            # Always create the inbox row first — both because inbox
+            # is the source-of-truth fallback (every campaign message
+            # is re-readable there), AND so its id is available to the
+            # web_push channel for the notification's deep-link URL.
+            inbox_row = await _create_inbox_row(
+                db, customer.id, shop.id, campaign.id, message_text,
+            )
+            inbox_recipient_ids.add(customer.id)
+
             success = await _dispatch_channel(
                 msg.channel, customer, message_text,
-                db=db, shop_id=shop.id, campaign_id=campaign.id,
+                shop=shop, inbox_id=inbox_row.id,
             )
-
-            # Inbox is the source of truth — every campaign message lands
-            # there so customers can re-read past notifications (and so the
-            # primary push isn't lost if it was missed/dismissed). When
-            # the primary channel WAS inbox, _dispatch_channel already wrote
-            # the row — don't double-write.
-            if msg.channel != "inbox":
-                await _send_inbox(
-                    db, customer.id, shop.id, campaign.id, message_text,
-                )
-            inbox_recipient_ids.add(customer.id)
 
             if success:
                 msg.status = "delivered"

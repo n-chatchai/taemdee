@@ -5,9 +5,9 @@
 {% block head_extra %}
 <style>
 /* gifts.list — mirror design/taemdee-customer.html .gl-* spec.
-   Summary banner → hero voucher (urgent / normal pulse) → 2-col
-   grid of secondary vouchers → "ใช้แล้ว" accordion. Card colour
-   tints from each shop's swatch via --shop-color. */
+   Summary banner → hero voucher → 2-col grid of secondary vouchers
+   → "ใช้แล้ว" accordion. Card colour tints from each shop's swatch
+   via --shop-color. */
 
 .gl-summary {
   margin: 0 16px 14px;
@@ -42,7 +42,7 @@
   margin-top: 2px;
 }
 
-/* Hero voucher card — soonest expiring */
+/* Hero voucher card — newest unredeemed */
 .gl-hero {
   margin: 0 16px 18px;
   border-radius: 22px;
@@ -111,23 +111,10 @@
   background: var(--butter);
   animation: gh-pulse 1.5s infinite;
 }
-.gh-pulse-tag.urgent {
-  background: #FFE3DA;
-  color: #B0341A;
-}
-.gh-pulse-tag.urgent .pulse {
-  background: #B0341A;
-  animation: gh-urgent-pulse 1s infinite;
-}
 @keyframes gh-pulse {
   0%   { box-shadow: 0 0 0 0 rgba(255,217,82,0.6); }
   70%  { box-shadow: 0 0 0 8px rgba(255,217,82,0); }
   100% { box-shadow: 0 0 0 0 rgba(255,217,82,0); }
-}
-@keyframes gh-urgent-pulse {
-  0%   { box-shadow: 0 0 0 0 rgba(176,52,26,0.65); }
-  70%  { box-shadow: 0 0 0 6px rgba(176,52,26,0); }
-  100% { box-shadow: 0 0 0 0 rgba(176,52,26,0); }
 }
 
 .gh-body { padding: 16px 18px 18px; }
@@ -156,15 +143,6 @@
   color: rgba(255,255,255,0.92);
   flex: 1; min-width: 0;
   white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
-}
-.gh-expiry {
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  color: rgba(255,255,255,0.85);
-  background: rgba(0,0,0,0.18);
-  padding: 4px 10px;
-  border-radius: 99px;
-  flex-shrink: 0;
 }
 .gh-reward {
   font-family: 'Prompt', sans-serif;
@@ -271,15 +249,6 @@
 .gl-mini-foot {
   margin-top: 6px;
   display: flex; align-items: center; justify-content: space-between;
-}
-.gl-mini-expiry {
-  font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
-  color: var(--ink-softer);
-}
-.gl-mini-expiry.urgent {
-  color: #B0341A;
-  font-weight: 700;
 }
 .gl-mini-action {
   font-family: 'Prompt', sans-serif;
@@ -502,7 +471,7 @@
     </div>
     {% endif %}
 
-    {# Hero — soonest-expiring voucher, urgent treatment if ≤ 7 days. #}
+    {# Hero — newest unredeemed voucher. #}
     {% if hero_gift %}
     <button type="button" class="gl-hero"
             style="--shop-color: {{ hero_gift.shop_color }};"
@@ -512,23 +481,15 @@
       <div class="gh-image">
         {% set img_id = hero_gift.reward_image %}
         {% include "_partials/reward_svg.html" %}
-        {% if hero_gift.is_urgent %}
-          <span class="gh-pulse-tag urgent">
-            <span class="pulse"></span>
-            หมดใน {{ hero_gift.days_left }} วัน
-          </span>
-        {% else %}
-          <span class="gh-pulse-tag">
-            <span class="pulse"></span>
-            พร้อมใช้
-          </span>
-        {% endif %}
+        <span class="gh-pulse-tag">
+          <span class="pulse"></span>
+          พร้อมใช้
+        </span>
       </div>
       <div class="gh-body">
         <div class="gh-shop-row">
           <span class="gh-logo">{% with shop = hero_gift.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}</span>
           <span class="gh-shop">{{ hero_gift.shop_name }}</span>
-          <span class="gh-expiry">หมด {{ hero_gift.expires_at_short }}</span>
         </div>
         <div class="gh-reward">{{ hero_gift.name }}</div>
         <div class="gh-cta">
@@ -563,9 +524,6 @@
             <div class="gl-mini-shop">{{ g.shop_name }}</div>
             <div class="gl-mini-name">{{ g.name }}</div>
             <div class="gl-mini-foot">
-              <span class="gl-mini-expiry{% if g.is_urgent %} urgent{% endif %}">
-                {% if g.is_urgent %}หมดใน {{ g.days_left }} วัน{% else %}หมด {{ g.expires_at_short }}{% endif %}
-              </span>
               <span class="gl-mini-action">แลก →</span>
             </div>
           </div>
