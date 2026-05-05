@@ -273,17 +273,13 @@ async def dashboard(
     # the day-caption row when count > 1.
     s3_top = await s3_top_context(db, shop, now=now)
 
-    # Build the "แต้มดีแนะนำ" attention cards from current state. Three slots:
-    # warn (low credits), opp (near-ready customers), ai (suggestion count).
+    # Build the "แต้มดีแนะนำ" attention cards from current state. Two slots:
+    # opp (near-ready customers), ai (suggestion count). The low-credit
+    # warn card lived here too but was pulled — credit nudging is handled
+    # at the topup entry-points instead, the dashboard recs section is
+    # for revenue opportunities, not bookkeeping.
     suggestions = await compute_suggestions(db, shop)
     attn_cards = []
-    if shop.credit_balance < 100:
-        attn_cards.append({
-            "kind": "warn",
-            "head": f"เครดิตเหลือ {shop.credit_balance} · ใกล้หมด",
-            "sub": "เติมก่อนใช้ส่งโปรชวนกลับ",
-            "link": "/shop/topup",
-        })
     near_ready = next((s for s in suggestions if s.kind == "almost_there"), None)
     if near_ready:
         attn_cards.append({

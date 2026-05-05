@@ -101,6 +101,12 @@ class Settings(BaseSettings):
     # Welcome-credit grant amount (in CREDITS, not satang)
     credit_welcome_amount: int = 50
 
+    # Optional dev/staging seed: when set to a real shop UUID, the
+    # 0014 migration backfills 10 days of sample points + redemptions
+    # against this shop. Leave unset in production — the migration is
+    # a no-op when this is empty.
+    shop_sample_id: Optional[str] = "f1020114-d509-4ac0-93bc-25c67405abd2"
+
     # Cloudflare R2 Storage.
     r2_endpoint_url: Optional[str] = None
     r2_access_key_id: Optional[str] = None

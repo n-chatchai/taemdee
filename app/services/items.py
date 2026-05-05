@@ -59,7 +59,7 @@ ITEMS: list[DashboardItem] = [
     DashboardItem(
         kind="welcome_credit",
         label="รับ<strong>เครดิต {amount}</strong>เปิดบัญชี",
-        sub="ครั้งเดียว · ส่งดีรีชหาลูกค้าได้ {amount} ครั้ง",
+        sub="ครั้งเดียว · ส่งข้อความหาลูกค้าได้ {amount} ครั้ง",
         cta="รับเลย →",
         skip_explain="ข้ามไปก่อน · เครดิตจะไม่เข้าบัญชี",
     ),
