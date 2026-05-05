@@ -138,17 +138,26 @@
        removed (Option A — respect customer choice). Guests can still convert
        via the C4 redeem gate (signup_picker still mounted below). #}
 
-    {# Explicit "ไปที่ร้าน" — the shop-head wordmark already links to the
-       story page, but it doesn't read as tappable. This text link makes
-       the route obvious from the bottom of the card. #}
-    <a href="/story/{{ shop.id }}" class="c1-shop-link">
-      <span>ไปที่ร้าน</span>
-      <span aria-hidden="true">→</span>
-    </a>
+    {# Explicit nav links — the shop-head wordmark already links to
+       /story but it doesn't read as tappable, and the dock tabs at
+       the bottom cover other surfaces. These two stacked links make
+       the routes from this page obvious. #}
+    <div class="c1-nav-links">
+      <a href="/my-cards" class="c1-shop-link">
+        <span>ไปที่บัตรของฉัน</span>
+        <span aria-hidden="true">→</span>
+      </a>
+      <a href="/story/{{ shop.id }}" class="c1-shop-link">
+        <span>ไปที่ร้าน</span>
+        <span aria-hidden="true">→</span>
+      </a>
+    </div>
 
     {% include "_partials/footer_mark.html" %}
 
-    {% set nav_active = 'cards' %}
+    {# Dock active state intentionally unset — the customer is on a
+       per-shop card surface, not the cards-list. Highlighting "บัตร"
+       would mislead them about which page they're on. #}
     {% include "_partials/c_dock.html" %}
 
     {% if is_guest %}
