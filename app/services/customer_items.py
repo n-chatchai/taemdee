@@ -90,21 +90,6 @@ ITEMS: list[CustomerDashboardItem] = [
         skip_explain="ใช้แบบไม่ผูกบัญชีก็ได้ · แต้มจะอยู่บนเครื่องนี้",
     ),
     CustomerDashboardItem(
-        kind="backup_recovery",
-        label="<strong>เซฟรหัสกู้คืน</strong>",
-        sub="พิมพ์รหัส 12 หลัก · เอาไว้ดึงแต้มกลับถ้าเครื่องเสีย",
-        cta="ดูรหัส →",
-        link="/recover",
-        # Only for anonymous customers who already have a recovery code
-        # generated. Claimed customers don't need it (they have OAuth /
-        # phone). Brand-new anons don't get the code until they skip the
-        # signup picker.
-        is_eligible=lambda c: c.is_anonymous and bool(c.recovery_code),
-        # No auto-fulfill — actively viewing the code is the completion.
-        # Customer claims by tapping the CTA; the route can mark it.
-        skip_explain="ไม่ต้องเซฟก็ได้ · ดูได้ภายหลัง",
-    ),
-    CustomerDashboardItem(
         kind="line_friend",
         label="เพิ่ม <strong>@taemdee</strong> เป็นเพื่อน",
         sub="รับข่าวร้านโปรดผ่าน LINE · แจ้งเตือนของฝาก",
