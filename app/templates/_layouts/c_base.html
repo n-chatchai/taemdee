@@ -114,12 +114,42 @@ Child templates fill these blocks:
       }
       .td-toast-icon svg { width: 16px; height: 16px; }
       .td-toast-msg { font-weight: 600; font-size: 15px; }
+
+      /* Reload mask — fixed overlay matching the page bg, dropped over
+         the document right before window.location.reload() so the
+         iOS-PWA white flash during the reload is hidden behind the
+         brand colour. The new page paints on top and fades the mask
+         out via the .reloaded class set on pageshow. */
+      .td-reload-mask {
+        position: fixed; inset: 0;
+        background: var(--bg);
+        z-index: 99999;
+        opacity: 0;
+        pointer-events: none;
+        transition: opacity 120ms ease-out;
+      }
+      .td-reload-mask.show { opacity: 1; pointer-events: auto; }
     </style>
     <script>
       (function () {
         var PENDING = 'td_oauth_pending';
         var DONE = 'td_oauth_just_completed';
         var LABELS = { line: 'LINE', google: 'Google', facebook: 'Facebook', phone: 'เบอร์โทร' };
+
+        // Reload with a bg-colored mask to hide the iOS PWA white
+        // flash. requestAnimationFrame ensures the mask paints
+        // BEFORE the reload starts; the small extra timeout makes
+        // sure the paint actually committed (some iOS versions
+        // discard the frame otherwise).
+        function softReload() {
+          var mask = document.createElement('div');
+          mask.className = 'td-reload-mask';
+          document.body.appendChild(mask);
+          requestAnimationFrame(function () {
+            mask.classList.add('show');
+            setTimeout(function () { window.location.reload(); }, 140);
+          });
+        }
 
         function readJSON(key) {
           try {
@@ -162,7 +192,7 @@ Child templates fill these blocks:
           if (p && p.t && Date.now() - p.t <= 10 * 60 * 1000) {
             clear(PENDING);
             writeJSON(DONE, p);
-            window.location.reload();
+            softReload();
             return;
           }
           if (p) clear(PENDING);  // stale > 10min, drop.
@@ -189,7 +219,7 @@ Child templates fill these blocks:
                 }
               }
             } catch (_) {}
-            if (!dirty) window.location.reload();
+            if (!dirty) softReload();
           }
         });
 
