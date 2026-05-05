@@ -22,8 +22,8 @@
       </div>
       <div class="s1-name" x-text="step === 'register' ? 'สมัครร้านใหม่' : 'เข้าสู่ระบบ'"></div>
       <div class="s1-tag">
-        <span x-show="step === 'login'">ใส่ Username · PIN ที่ตั้งไว้</span>
-        <span x-show="step === 'register'" x-cloak>สร้างร้านใหม่ด้วย Username + PIN</span>
+        <span x-show="step === 'login'">ใส่ชื่อผู้ใช้ · รหัส / พิน ที่ตั้งไว้</span>
+        <span x-show="step === 'register'" x-cloak>สร้างร้านใหม่ด้วย ชื่อผู้ใช้ + รหัส / พิน</span>
       </div>
     </div>
 
@@ -34,13 +34,13 @@
       <div class="err" style="margin-bottom: 12px;">{{ error }}</div>
       {% endif %}
 
-      <label for="login-username">Username</label>
+      <label for="login-username">ชื่อผู้ใช้</label>
       <input id="login-username" type="text" name="username"
              autocapitalize="none" autocorrect="off" autocomplete="username"
              value="{{ username_value|default('') }}"
-             placeholder="เช่น 001 หรือ shopname" required>
+             placeholder="" required>
 
-      <label for="login-pin" style="margin-top: 12px;">PIN (6 หลัก)</label>
+      <label for="login-pin" style="margin-top: 12px;">รหัส / พิน (6 หลัก)</label>
       <input id="login-pin" type="password" name="pin"
              inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
              autocomplete="current-password"
@@ -66,13 +66,13 @@
              value="{{ shop_name_value|default('') }}"
              placeholder="เช่น ร้านกาแฟลุงหมี" required>
 
-      <label for="reg-username" style="margin-top: 12px;">Username</label>
+      <label for="reg-username" style="margin-top: 12px;">ชื่อผู้ใช้</label>
       <input id="reg-username" type="text" name="username"
              autocapitalize="none" autocorrect="off" autocomplete="username"
              value="{{ username_value|default('') }}"
              placeholder="ใช้เข้าสู่ระบบครั้งหน้า" required>
 
-      <label for="reg-pin" style="margin-top: 12px;">PIN (6 หลัก)</label>
+      <label for="reg-pin" style="margin-top: 12px;">รหัส / พิน (6 หลัก)</label>
       <input id="reg-pin" type="password" name="pin"
              inputmode="numeric" pattern="[0-9]{6}" maxlength="6"
              autocomplete="new-password"

@@ -5132,6 +5132,143 @@
     color: var(--ink-soft);
   }
 
+  /* setup.reward · advanced section (expiry + disclaimer · collapsed default) */
+  .s2-advanced {
+    margin: 18px 20px 0;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.10);
+    border-radius: 14px;
+  }
+  .s2-advanced-h {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    cursor: pointer;
+  }
+  .s2-advanced-h .lab {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 13.5px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    display: inline-flex;
+    align-items: baseline;
+    gap: 6px;
+  }
+  .s2-advanced-h .lab .opt {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    font-weight: 500;
+  }
+  .s2-advanced-h .arr {
+    color: var(--ink-soft);
+    font-size: 14px;
+    transition: transform 0.2s ease;
+  }
+  .s2-advanced.open .s2-advanced-h .arr {
+    transform: rotate(90deg);
+  }
+  .s2-advanced-body {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px solid rgba(17,17,17,0.06);
+  }
+  .s2-advanced.collapsed .s2-advanced-body {
+    display: none;
+  }
+  .s2-adv-field {
+    margin-bottom: 14px;
+  }
+  .s2-adv-field:last-child { margin-bottom: 0; }
+  .s2-adv-label {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: 12.5px;
+    color: var(--ink);
+    margin-bottom: 4px;
+    letter-spacing: -0.005em;
+  }
+  .s2-adv-helper {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-bottom: 10px;
+    line-height: 1.4;
+  }
+  .s2-expiry-pills {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+  }
+  .s2-expiry-pill {
+    padding: 7px 13px;
+    background: var(--bg);
+    border: 1px solid rgba(17,17,17,0.16);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .s2-expiry-pill.selected {
+    background: var(--ink);
+    color: var(--bg);
+    border-color: var(--ink);
+    font-weight: 600;
+  }
+  .s2-expiry-pill.custom {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    color: var(--ink);
+  }
+  .s2-expiry-pill.custom .plus {
+    font-weight: 700;
+    color: var(--accent);
+  }
+  .s2-disclaimer {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid rgba(17,17,17,0.16);
+    border-radius: 10px;
+    background: var(--bg);
+    font-family: 'Prompt', sans-serif;
+    font-size: 12.5px;
+    color: var(--ink);
+    line-height: 1.5;
+    resize: none;
+    outline: none;
+    box-sizing: border-box;
+    min-height: 64px;
+  }
+  .s2-disclaimer::placeholder {
+    color: var(--ink-softer);
+  }
+  .s2-disclaimer-templates {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 5px;
+    margin-top: 8px;
+  }
+  .s2-disclaimer-templates .tpl {
+    padding: 4px 10px;
+    background: var(--butter-soft, #FFF7DA);
+    border: 1px solid rgba(255, 217, 82, 0.45);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .s2-disclaimer-templates .tpl::before {
+    content: '+ ';
+    color: var(--accent);
+    font-weight: 700;
+  }
+
   .s2-goal-pills {
     margin: 14px 20px 0;
     display: flex; gap: 6px;
@@ -9436,6 +9573,44 @@
             </div>
             <div class="s2-hint" style="margin: 8px 24px 0;">ส่วนใหญ่ใช้ 10 แต้ม กำลังพอดี</div>
 
+            <div class="s2-advanced open">
+              <div class="s2-advanced-h">
+                <span class="lab">
+                  ตั้งค่าเพิ่มเติม
+                  <span class="opt">(ไม่บังคับ)</span>
+                </span>
+                <span class="arr">›</span>
+              </div>
+              <div class="s2-advanced-body">
+
+                <div class="s2-adv-field">
+                  <div class="s2-adv-label">อายุของขวัญ</div>
+                  <div class="s2-adv-helper">หลังลูกค้าได้รับของขวัญ · ใช้ได้ภายในกี่วัน</div>
+                  <div class="s2-expiry-pills">
+                    <span class="s2-expiry-pill">30 วัน</span>
+                    <span class="s2-expiry-pill selected">60 วัน</span>
+                    <span class="s2-expiry-pill">90 วัน</span>
+                    <span class="s2-expiry-pill">จนกว่าของจะหมด</span>
+                    <span class="s2-expiry-pill">ไม่หมดอายุ</span>
+                    <span class="s2-expiry-pill custom"><span class="plus">+</span><span>กำหนดเอง</span></span>
+                  </div>
+                </div>
+
+                <div class="s2-adv-field">
+                  <div class="s2-adv-label">เงื่อนไข · disclaimer</div>
+                  <div class="s2-adv-helper">โชว์ใต้รางวัล · ลูกค้าเห็นก่อนแลก</div>
+                  <textarea class="s2-disclaimer" placeholder="เช่น สงวนสิทธิ์ในการเปลี่ยนแปลง หรือยกเลิกของขวัญโดยไม่ต้องแจ้งล่วงหน้า · ใช้ได้ครั้งละ 1 ใบ · งดให้สิทธิ์เมื่อใช้ร่วมกับโปรโมชันอื่น">สงวนสิทธิ์ในการเปลี่ยนแปลงของขวัญโดยไม่ต้องแจ้งล่วงหน้า · งดให้สิทธิ์เมื่อใช้ร่วมกับโปรโมชันอื่น</textarea>
+                  <div class="s2-disclaimer-templates">
+                    <span class="tpl">จนกว่าของจะหมด</span>
+                    <span class="tpl">ใช้ได้ครั้งละ 1 ใบ</span>
+                    <span class="tpl">ใช้กับเมนูใดก็ได้</span>
+                    <span class="tpl">ไม่รวมกับโปรอื่น</span>
+                  </div>
+                </div>
+
+              </div>
+            </div>
+
             <div class="s2-foot">
               <button class="back">←</button>
               <button class="next">
@@ -10809,7 +10984,7 @@
               </div>
               <div class="s3-cust-attn-list">
                 <a class="s3-attn-row">
-                  <div class="icon gift">🎁</div>
+                  <div class="icon gift"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
                   <div class="info">
                     <div class="name">ก้อง · เกือบรับรางวัล</div>
                     <div class="reason">9/10 · มาบ่อย 12 ครั้ง</div>
@@ -10817,7 +10992,7 @@
                   <div class="cta">ส่งเตือน</div>
                 </a>
                 <a class="s3-attn-row">
-                  <div class="icon away">👋</div>
+                  <div class="icon away"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><path d="M18 11V6a2 2 0 00-2-2v0a2 2 0 00-2 2v0"/><path d="M14 10V4a2 2 0 00-2-2v0a2 2 0 00-2 2v2"/><path d="M10 10.5V6a2 2 0 00-2-2v0a2 2 0 00-2 2v8"/><path d="M18 8a2 2 0 114 0v6a8 8 0 01-8 8h-2c-2.8 0-4.5-.86-5.99-2.34l-3.6-3.6a2 2 0 012.83-2.82L7 15"/></svg></div>
                   <div class="info">
                     <div class="name">ปาน · หายไป 14 วัน</div>
                     <div class="reason">เหลือ 6/10 · เคยมา 4 ครั้ง</div>
@@ -10862,7 +11037,7 @@
               <a class="cust-row">
                 <div class="cust-avatar">ก</div>
                 <div class="cust-info">
-                  <div class="cust-name">ก้อง <span class="cust-tag">🎁 ใกล้รับ</span></div>
+                  <div class="cust-name">ก้อง <span class="cust-tag"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; width:11px; height:11px; vertical-align:-1px; margin-right:3px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>ใกล้รับ</span></div>
                   <div class="cust-meta">มาบ่อย · 12 ครั้ง</div>
                 </div>
                 <div class="cust-progress accent">
@@ -10997,7 +11172,7 @@
               </div>
               <div class="s3-cust-attn-list">
                 <a class="s3-attn-row">
-                  <div class="icon gift">🎁</div>
+                  <div class="icon gift"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
                   <div class="info">
                     <div class="name">ก้อง · เกือบรับรางวัล</div>
                     <div class="reason">9/10 · มาบ่อย 12 ครั้ง</div>
@@ -11027,7 +11202,7 @@
                 </div>
 
                 <div class="rc-channel">
-                  <div class="icon">📲</div>
+                  <div class="icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:14px;height:14px;"><rect x="5" y="2" width="14" height="20" rx="2"/><line x1="12" y1="18" x2="12" y2="18"/><circle cx="12" cy="6" r="0.5" fill="currentColor"/></svg></div>
                   <div class="ch-info">
                     <div class="ch-name">Web Push · ลูกค้ารับได้</div>
                     <div class="ch-sub">ส่งเข้า DeeCard บนมือถือทันที</div>
@@ -11544,7 +11719,7 @@
                 <span class="s13d-title">แถมของฝาก <span class="s13d-opt">· ไม่บังคับ</span></span>
               </div>
               <div class="s13c-offer-attached">
-                <div class="off-icon">🎁</div>
+                <div class="off-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
                 <div class="off-info">
                   <div class="off-name">ลด 50 บาท ทุกเมนู</div>
                   <div class="off-meta">หมดอายุ 30 วัน · ใช้ได้ 1 ครั้ง</div>
@@ -11562,7 +11737,7 @@
                 <div class="prev-line">สวัสดี Chatchai ตอนนี้ร้านมีเมนูใหม่</div>
                 <div class="prev-line">คาราเมลลาเต้ มาลองนะ</div>
                 <div class="prev-offer">
-                  <div class="po-icon">🎁</div>
+                  <div class="po-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
                   <div class="po-info">
                     <div class="po-name">ลด 50 บาท ทุกเมนู</div>
                     <div class="po-meta">รับเลย · หมดใน 30 วัน</div>
@@ -11839,7 +12014,7 @@
             <div class="s-offer-section">
               <div class="s-offer-label">ลูกค้าจะเห็นแบบนี้</div>
               <div class="s-offer-preview">
-                <div class="opv-icon">🎁</div>
+                <div class="opv-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg></div>
                 <div class="opv-info">
                   <div class="opv-name">ลด 50 บาท</div>
                   <div class="opv-meta">ใช้ได้ถึง 15 พ.ค.</div>

@@ -127,10 +127,8 @@ def issue_customer_token(customer_id: UUID) -> str:
 
 
 def decode_customer_token(token: str) -> Optional[UUID]:
-    logger.debug(f"Decoding customer token: {token[:20]}")
     try:
         payload = jwt.decode(token, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
-        logger.debug(f"Decoded customer token payload: {payload}")
         return UUID(payload["customer_id"])
     except (JWTError, KeyError, ValueError):
         logger.warning("Failed to decode customer token: %s", token[:20])

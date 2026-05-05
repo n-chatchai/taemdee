@@ -219,6 +219,8 @@ class SubdomainRoutingMiddleware:
             "/favicon.ico",
             "/version",
             "/privacy",
+            "/terms",
+            "/contact",
             "/data-deletion",
             "/sw.js",
         }
@@ -425,6 +427,20 @@ async def home(request: Request):
 @app.get("/privacy", tags=["pages"])
 async def privacy(request: Request):
     return templates.TemplateResponse(request=request, name="privacy.html")
+
+
+@app.get("/terms", tags=["pages"])
+async def terms(request: Request):
+    return templates.TemplateResponse(request=request, name="terms.html")
+
+
+@app.get("/contact", tags=["pages"])
+async def contact(request: Request):
+    return templates.TemplateResponse(
+        request=request,
+        name="contact.html",
+        context={"settings": settings},
+    )
 
 
 @app.get("/data-deletion", tags=["pages"])

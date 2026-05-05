@@ -3,8 +3,8 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>แต้มดี — บัตรสะสมแต้มที่ลูกค้ารัก</title>
-<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='6' y='6' width='88' height='88' rx='22' fill='%23111'/><circle cx='36' cy='42' r='6' fill='%23FF5E3A'/><circle cx='64' cy='42' r='6' fill='%23FF5E3A'/><path d='M30 62 Q50 80 70 62' stroke='%23FFD952' stroke-width='6' fill='none' stroke-linecap='round'/></svg>">
+<title>แต้มดี — บัตรสะสมแต้มที่คุณจะรัก</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='6' y='6' width='88' height='88' rx='22' fill='%23FF5E3A'/><circle cx='36' cy='42' r='9' fill='%23FFD952'/><circle cx='64' cy='42' r='9' fill='%23FFD952'/><path d='M30 62 Q50 80 70 62' stroke='%23FFD952' stroke-width='7' fill='none' stroke-linecap='round'/></svg>">
 <!-- PWA: install on iOS / Android home screen -->
 <meta name="theme-color" content="#FF5E3A">
 <meta name="apple-mobile-web-app-capable" content="yes">
@@ -195,8 +195,7 @@ img { max-width: 100%; }
   background: var(--bg);
   border: 1.5px solid var(--ink);
   border-radius: 22px;
-  box-shadow: 6px 6px 0 var(--ink);
-  width: 100%;
+width: 100%;
   max-width: 420px;
   padding: 26px 22px 22px;
   position: relative;
@@ -258,15 +257,12 @@ img { max-width: 100%; }
   text-decoration: none;
   color: var(--ink);
   transition: transform 0.15s, box-shadow 0.15s;
-  box-shadow: 2px 2px 0 var(--ink);
 }
 .login-modal-role:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 4px 4px 0 var(--ink);
 }
 .login-modal-role.primary {
   background: var(--ink); color: #FFF;
-  box-shadow: 3px 3px 0 var(--accent);
 }
 .login-modal-role.primary .role-icon {
   background: var(--accent); color: #FFF;
@@ -275,7 +271,6 @@ img { max-width: 100%; }
 .login-modal-role.primary .role-meta { color: var(--butter); opacity: 1; }
 .login-modal-role.primary .role-arrow { color: var(--butter); }
 .login-modal-role.primary:hover {
-  box-shadow: 5px 5px 0 var(--accent);
 }
 .login-modal-role .role-icon {
   width: 40px; height: 40px;
@@ -372,6 +367,135 @@ img { max-width: 100%; }
   margin-left: auto;
   margin-right: auto;
 }
+
+/* Hero CTA · big primary action button (single-role, dramatic) */
+.hero-cta-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 14px;
+  margin-bottom: 24px;
+  max-width: 100%;
+}
+.hero-cta {
+  position: relative;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 14px;
+  padding: 22px 42px 22px 32px;
+  background: linear-gradient(135deg, #FF7C53 0%, #FF5E3A 50%, #E04020 100%);
+  color: #fff;
+  text-decoration: none;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800;
+  font-size: clamp(20px, 2.6vw, 26px);
+  letter-spacing: -0.02em;
+  border: 2px solid var(--ink);
+  border-radius: 999px;
+transition: transform 0.18s ease, box-shadow 0.18s ease;
+  overflow: hidden;
+  cursor: pointer;
+  z-index: 1;
+}
+.hero-cta::before {
+  content: '';
+  position: absolute;
+  top: 0; left: -150%;
+  width: 60%; height: 100%;
+  background: linear-gradient(90deg, transparent, rgba(255,255,255,0.45), transparent);
+  transform: skewX(-22deg);
+  animation: hero-cta-shine 3s ease-in-out infinite;
+  pointer-events: none;
+}
+@keyframes hero-cta-shine {
+  0% { left: -150%; }
+  60% { left: 150%; }
+  100% { left: 150%; }
+}
+.hero-cta:hover {
+  transform: translate(-3px, -3px);
+}
+.hero-cta .cta-badge {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  background: var(--butter);
+  color: var(--ink);
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800;
+  font-size: 12px;
+  letter-spacing: 0.04em;
+  padding: 4px 10px;
+  border-radius: 99px;
+  border: 1.5px solid var(--ink);
+  text-transform: uppercase;
+  flex-shrink: 0;
+}
+.hero-cta .cta-text {
+  display: inline-flex;
+  align-items: center;
+  gap: 10px;
+}
+.hero-cta .cta-arrow {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 36px; height: 36px;
+  background: var(--ink);
+  color: var(--butter);
+  border-radius: 50%;
+  flex-shrink: 0;
+  font-weight: 700;
+  font-size: 18px;
+  transition: transform 0.2s ease;
+}
+.hero-cta:hover .cta-arrow {
+  transform: translateX(3px);
+}
+/* Pulse ring · subtle attention */
+.hero-cta::after {
+  content: '';
+  position: absolute;
+  inset: -6px;
+  border: 2px dashed rgba(255, 94, 58, 0.4);
+  border-radius: 999px;
+  pointer-events: none;
+  animation: hero-cta-pulse 2.4s ease-in-out infinite;
+}
+@keyframes hero-cta-pulse {
+  0%, 100% { opacity: 0; transform: scale(1); }
+  50% { opacity: 0.7; transform: scale(1.05); }
+}
+.hero-cta-meta {
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+  font-style: italic;
+}
+.hero-cta-meta .check {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 16px; height: 16px;
+  background: var(--mint);
+  color: #fff;
+  border-radius: 50%;
+  font-size: 9px;
+  font-weight: 800;
+}
+@media (max-width: 480px) {
+  .hero-cta {
+    padding: 18px 24px 18px 18px;
+    gap: 10px;
+    width: 100%;
+  }
+  .hero-cta .cta-badge { font-size: 10px; padding: 3px 7px; }
+  .hero-cta .cta-arrow { width: 30px; height: 30px; font-size: 15px; }
+}
 .hero-tag {
   display: inline-flex;
   align-items: center;
@@ -385,8 +509,7 @@ img { max-width: 100%; }
   padding: 6px 14px 6px 8px;
   border-radius: 999px;
   border: 1.5px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
-  margin-bottom: 22px;
+margin-bottom: 22px;
 }
 .hero-tag .pulse-dot {
   width: 8px; height: 8px;
@@ -394,7 +517,6 @@ img { max-width: 100%; }
   border-radius: 50%;
   display: inline-block;
   animation: pulse-d 1.4s ease-in-out infinite;
-  box-shadow: 0 0 0 0 rgba(255,94,58,0.5);
 }
 @keyframes pulse-d {
   0%, 100% { box-shadow: 0 0 0 0 rgba(255,94,58,0.5); }
@@ -415,9 +537,10 @@ img { max-width: 100%; }
 }
 .hero p.lead {
   font-family: 'Prompt', sans-serif;
-  font-size: clamp(15px, 1.5vw, 18px);
+  font-size: clamp(17px, 1.5vw, 18px);
   color: var(--ink-soft);
   line-height: 1.55;
+  margin-top: 30px;
   margin-bottom: 30px;
   max-width: 540px;
 }
@@ -443,12 +566,10 @@ img { max-width: 100%; }
 .btn-primary {
   background: var(--ink);
   color: var(--bg);
-  box-shadow: 4px 4px 0 var(--ink);
 }
 .btn-secondary {
   background: var(--surface);
   color: var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
 }
 .btn-primary .arrow-pill, .btn-secondary .arrow-pill {
   width: 26px; height: 26px;
@@ -466,10 +587,9 @@ img { max-width: 100%; }
   font-size: 16px;
   padding: 18px 22px 18px 28px;
   border-radius: 999px;
-  box-shadow: 5px 5px 0 var(--accent);
-  letter-spacing: -0.01em;
+letter-spacing: -0.01em;
 }
-.btn-hero:hover { box-shadow: 7px 7px 0 var(--accent); }
+.btn-hero:hover {}
 .btn-hero .arrow-pill {
   width: 32px; height: 32px;
   font-size: 14px;
@@ -505,14 +625,12 @@ img { max-width: 100%; }
   grid-template-columns: 44px 1fr 24px;
   gap: 12px;
   align-items: center;
-  box-shadow: 4px 4px 0 var(--ink);
-  cursor: pointer;
+cursor: pointer;
   transition: transform 0.15s, box-shadow 0.15s;
   position: relative;
 }
 .role-card:hover {
   transform: translate(-2px, -2px);
-  box-shadow: 6px 6px 0 var(--ink);
 }
 .role-card.role-shop {
   background: var(--ink);
@@ -611,6 +729,79 @@ img { max-width: 100%; }
   border: 1px solid var(--mint-ink);
 }
 
+/* Merged hero feature card · combines product + AI + trust */
+.hero-feature {
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 22px;
+  padding: 22px 26px;
+  margin: 8px auto 18px;
+  max-width: 540px;
+text-align: left;
+}
+.hero-feature .hf-head {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+.hero-feature .hf-icon {
+  width: 30px; height: 30px;
+  border-radius: 9px;
+  background: var(--accent);
+  color: var(--butter);
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 16px;
+  font-weight: 800;
+  border: 1.5px solid var(--ink);
+  flex-shrink: 0;
+}
+.hero-feature .hf-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 800;
+  font-size: 17px;
+  color: var(--ink);
+  letter-spacing: -0.015em;
+}
+.hero-feature .hf-text {
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  color: var(--ink-soft);
+  line-height: 1.55;
+  margin-bottom: 14px;
+}
+.hero-feature .hf-trust {
+  padding-top: 12px;
+  border-top: 1px dashed rgba(17,17,17,0.18);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12.5px;
+  color: var(--ink);
+  font-style: italic;
+}
+.hero-feature .hf-trust .check-mini {
+  width: 16px; height: 16px;
+  background: var(--mint);
+  color: var(--mint-ink);
+  border-radius: 50%;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  font-size: 10px;
+  font-weight: 800;
+  border: 1px solid var(--mint-ink);
+  flex-shrink: 0;
+}
+@media (max-width: 480px) {
+  .hero-feature { padding: 18px 20px; }
+  .hero-feature .hf-title { font-size: 15px; }
+  .hero-feature .hf-text { font-size: 13px; }
+}
+
 /* Hero phone mockup */
 .hero-visual {
   position: relative;
@@ -642,7 +833,6 @@ img { max-width: 100%; }
   align-items: center;
   gap: 6px;
   border: 1.5px solid var(--ink);
-  box-shadow: 2px 2px 0 var(--accent);
 }
 .phone-label .pl-num {
   width: 18px; height: 18px;
@@ -665,8 +855,7 @@ img { max-width: 100%; }
 .phone-label-cust {
   background: var(--butter);
   color: var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
-  bottom: 12px;
+bottom: 12px;
   right: 4%;
   transform: rotate(5deg);
 }
@@ -680,11 +869,7 @@ img { max-width: 100%; }
   background: #0a0a0a;
   border-radius: 32px;
   padding: 7px;
-  box-shadow:
-    0 30px 60px -20px rgba(0,0,0,0.35),
-    0 10px 20px -10px rgba(0,0,0,0.2),
-    inset 0 0 0 1px #222;
-  position: absolute;
+position: absolute;
 }
 .hero-phone-back {
   top: 20px;
@@ -755,7 +940,6 @@ img { max-width: 100%; }
   letter-spacing: -0.005em;
   display: inline-flex; align-items: center; gap: 4px;
   z-index: 5;
-  box-shadow: 0 4px 10px -3px rgba(17,17,17,0.3);
 }
 .hero-phone .screen-tilted-badge svg {
   width: 10px; height: 6px;
@@ -893,8 +1077,7 @@ img { max-width: 100%; }
   gap: 9px;
   text-align: left;
   position: relative;
-  box-shadow: 2px 2px 0 var(--ink);
-  margin-bottom: 10px;
+margin-bottom: 10px;
 }
 .hero-phone .reward-card::before {
   content: 'ใกล้แล้ว!';
@@ -1001,8 +1184,7 @@ img { max-width: 100%; }
   color: var(--bg);
   border-radius: 12px;
   border: 1.5px solid var(--ink);
-  box-shadow: 1.5px 1.5px 0 var(--ink);
-  z-index: 2;
+z-index: 2;
   overflow: hidden;
 }
 .hero-phone .wallet-stats::before {
@@ -1074,8 +1256,7 @@ img { max-width: 100%; }
   background: var(--surface);
   border: 1.5px solid var(--ink);
   border-radius: 10px;
-  box-shadow: 1.5px 1.5px 0 var(--ink);
-  padding: 7px 9px;
+padding: 7px 9px;
   display: grid;
   grid-template-columns: 24px 1fr auto;
   gap: 8px;
@@ -1214,7 +1395,6 @@ img { max-width: 100%; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 1.5px 1.5px 0 var(--ink);
 }
 .hero-phone .dash-branch::before {
   content: '';
@@ -1292,7 +1472,6 @@ img { max-width: 100%; }
   background: var(--surface);
   border: 1.5px solid var(--ink);
   border-radius: 9px;
-  box-shadow: 1.5px 1.5px 0 var(--ink);
 }
 .hero-phone .dash-stats .ds-tile .n {
   font-family: 'Host Grotesk', sans-serif;
@@ -1316,8 +1495,7 @@ img { max-width: 100%; }
   background: var(--butter);
   border: 1.5px solid var(--ink);
   border-radius: 12px;
-  box-shadow: 1.5px 1.5px 0 var(--ink);
-  z-index: 2;
+z-index: 2;
 }
 .hero-phone .dash-reach .dr-kicker {
   display: inline-flex;
@@ -1379,8 +1557,7 @@ img { max-width: 100%; }
   font-size: 22px;
   letter-spacing: -0.03em;
   transform: rotate(-10deg);
-  box-shadow: 3px 3px 0 var(--ink);
-  z-index: 4;
+z-index: 4;
   text-align: center;
   display: none;
 }
@@ -1513,7 +1690,7 @@ img { max-width: 100%; }
 .section-head-block h2 {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: clamp(32px, 4.5vw, 56px);
+  font-size: clamp(34px, 4.5vw, 56px);
   letter-spacing: -0.03em;
   line-height: 1.05;
   margin-bottom: 16px;
@@ -1565,21 +1742,16 @@ img { max-width: 100%; }
   border-radius: 999px;
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
-  font-size: 13px;
   letter-spacing: -0.005em;
   display: inline-flex;
   align-items: center;
   gap: 10px;
   border: 1.5px solid var(--ink);
-  box-shadow: 4px 4px 0 var(--accent);
   position: relative;
-  transform: rotate(-2deg);
 }
 .audience-tag.butter .tag-pill {
   background: var(--butter);
   color: var(--ink);
-  box-shadow: 4px 4px 0 var(--ink);
-  transform: rotate(2deg);
 }
 .audience-tag .tag-pill .num-circle {
   width: 24px; height: 24px;
@@ -1635,7 +1807,7 @@ img { max-width: 100%; }
   position: relative;
   transition: none;
 }
-.feature-card:hover { transform: none; box-shadow: none; }
+.feature-card:hover { transform: none;}
 .feature-card.butter, .feature-card.dark {
   background: transparent;
   color: var(--ink);
@@ -1706,8 +1878,7 @@ img { max-width: 100%; }
   background: var(--surface);
   border: 1.5px solid var(--ink);
   border-radius: 28px;
-  box-shadow: 6px 6px 0 var(--ink);
-  padding: clamp(24px, 3vw, 36px);
+padding: clamp(24px, 3vw, 36px);
   display: grid;
   grid-template-columns: 1fr;
   gap: 36px;
@@ -1821,31 +1992,27 @@ img { max-width: 100%; }
   width: 280px;
   aspect-ratio: 9 / 19;
   background: #0a0a0a;
-  border-radius: 36px;
-  padding: 8px;
-  box-shadow:
-    0 30px 60px -20px rgba(0,0,0,0.35),
-    0 10px 20px -10px rgba(0,0,0,0.2),
-    inset 0 0 0 1px #222;
+  border-radius: 40px;
+  padding: 10px;
   position: relative;
-  transform: rotate(-3deg);
 }
 .section-phone::before {
-  content: '';
-  position: absolute;
-  top: 14px; left: 50%;
-  transform: translateX(-50%);
-  width: 78px; height: 20px;
-  background: #000;
-  border-radius: 10px;
-  z-index: 10;
+  display: none;
 }
 .section-phone .screen {
   width: 100%; height: 100%;
   background: var(--bg);
-  border-radius: 28px;
+  border-radius: 30px;
   overflow: hidden;
   position: relative;
+}
+
+/* screen-img · for real screenshot images replacing HTML mocks */
+.section-phone .screen-img .phone-screenshot {
+  width: 100%;
+  height: 100%;
+  object-fit: contain;
+  display: block;
 }
 /* Reuse all .hero-phone screen styles for section-phone screens */
 .section-phone .screen-shop,
@@ -1894,7 +2061,6 @@ img { max-width: 100%; }
   letter-spacing: -0.005em;
   display: inline-flex; align-items: center; gap: 4px;
   z-index: 5;
-  box-shadow: 0 4px 10px -3px rgba(17,17,17,0.3);
 }
 .section-phone .screen-tilted-badge svg {
   width: 10px; height: 6px;
@@ -1942,7 +2108,6 @@ img { max-width: 100%; }
   display: inline-flex;
   align-items: center;
   gap: 4px;
-  box-shadow: 1.5px 1.5px 0 var(--ink);
 }
 .section-phone .dash-branch::before {
   content: '';
@@ -2020,7 +2185,6 @@ img { max-width: 100%; }
   background: var(--surface);
   border: 1.5px solid var(--ink);
   border-radius: 10px;
-  box-shadow: 1.5px 1.5px 0 var(--ink);
 }
 .section-phone .dash-stats .ds-tile .n {
   font-family: 'Host Grotesk', sans-serif;
@@ -2044,8 +2208,7 @@ img { max-width: 100%; }
   background: transparent;
   border: none;
   border-radius: 0;
-  box-shadow: none;
-  z-index: 2;
+z-index: 2;
   display: flex;
   flex-direction: column;
   gap: 7px;
@@ -2081,7 +2244,6 @@ img { max-width: 100%; }
   border: 1px solid rgba(17,17,17,0.1);
   border-radius: 11px;
   padding: 8px 10px 8px;
-  box-shadow: 0 1px 2px rgba(17,17,17,0.04);
 }
 .section-phone .dash-reach .dr-fc-tags {
   display: flex;
@@ -2235,8 +2397,7 @@ img { max-width: 100%; }
   color: var(--bg);
   border-radius: 14px;
   border: 1.5px solid var(--ink);
-  box-shadow: 1.5px 1.5px 0 var(--ink);
-  z-index: 2;
+z-index: 2;
   overflow: hidden;
 }
 .section-phone .wallet-stats::before {
@@ -2308,8 +2469,7 @@ img { max-width: 100%; }
   background: var(--surface);
   border: 1.5px solid var(--ink);
   border-radius: 11px;
-  box-shadow: 1.5px 1.5px 0 var(--ink);
-  padding: 8px 10px;
+padding: 8px 10px;
   display: grid;
   grid-template-columns: 26px 1fr auto;
   gap: 9px;
@@ -2424,8 +2584,7 @@ img { max-width: 100%; }
   font-weight: 700;
   font-size: 12px;
   line-height: 1.2;
-  box-shadow: 3px 3px 0 var(--ink);
-  text-align: center;
+text-align: center;
   display: none;
 }
 @media (min-width: 600px) {
@@ -2644,7 +2803,6 @@ img { max-width: 100%; }
   display: flex;
   align-items: center;
   gap: 10px;
-  box-shadow: 0 3px 8px rgba(17,17,17,0.06);
 }
 .section-phone .dc-gift-icon {
   width: 36px; height: 36px;
@@ -2688,7 +2846,6 @@ img { max-width: 100%; }
   font-size: 10px;
   letter-spacing: -0.01em;
   transform: rotate(8deg);
-  box-shadow: 1.5px 1.5px 0 var(--ink);
 }
 
 /* Old dash-mockup CSS (now unused but keep stubs to not break anything) */
@@ -2761,8 +2918,7 @@ img { max-width: 100%; }
   border-radius: 0;
   padding: 16px 6px;
   position: relative;
-  box-shadow: none;
-  display: flex;
+display: flex;
   flex-direction: column;
   align-items: center;
   text-align: center;
@@ -2781,7 +2937,6 @@ img { max-width: 100%; }
   font-size: 11px;
   letter-spacing: -0.01em;
   margin-bottom: 10px;
-  box-shadow: none;
 }
 .how-c-step h3 {
   font-family: 'Prompt', sans-serif;
@@ -2833,7 +2988,6 @@ img { max-width: 100%; }
   border-radius: 14px;
   padding: 5px;
   position: relative;
-  box-shadow: 2px 2px 0 var(--accent);
 }
 @media (min-width: 768px) {
   .how-mini { margin-top: 18px; }
@@ -2841,8 +2995,7 @@ img { max-width: 100%; }
     width: 130px;
     border-radius: 20px;
     padding: 8px;
-    box-shadow: 3px 3px 0 var(--accent);
-  }
+}
 }
 .how-mini-screen {
   width: 100%;
@@ -2951,7 +3104,6 @@ img { max-width: 100%; }
   padding: 2px 6px;
   border-radius: 999px;
   border: 1px solid #111;
-  box-shadow: 1px 1px 0 #111;
 }
 @media (min-width: 768px) {
   .how-mini-stamp { padding: 14px 10px; gap: 0; }
@@ -3041,7 +3193,6 @@ img { max-width: 100%; }
   border-radius: 22px;
   padding: 26px 22px;
   position: relative;
-  box-shadow: 4px 4px 0 var(--accent);
 }
 .how-step .step-num {
   display: inline-flex;
@@ -3057,7 +3208,6 @@ img { max-width: 100%; }
   font-size: 16px;
   letter-spacing: -0.01em;
   margin-bottom: 16px;
-  box-shadow: 2px 2px 0 var(--ink);
 }
 .how-step h3 {
   font-family: 'Prompt', sans-serif;
@@ -3321,7 +3471,6 @@ img { max-width: 100%; }
   display: inline-flex;
   align-items: center;
   justify-content: center;
-  box-shadow: 0 0 0 8px rgba(232,122,106,0.18), 0 0 40px rgba(232,122,106,0.45);
 }
 .section-phone .sc-icon svg {
   width: 38px; height: 38px;
@@ -3437,7 +3586,6 @@ img { max-width: 100%; }
   letter-spacing: -0.01em;
   display: inline-flex; align-items: center; gap: 5px;
   z-index: 3;
-  box-shadow: 0 4px 12px -4px rgba(17,17,17,0.25);
 }
 .section-phone .td .td-badge .s { width: 11px; height: 6.5px; color: var(--accent); }
 
@@ -3601,8 +3749,7 @@ img { max-width: 100%; }
   padding: 14px 16px;
   display: flex; align-items: center; gap: 12px;
   border: 1.5px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  position: relative;
+position: relative;
 }
 .section-phone .td .reward-pill .badge-tilted {
   position: absolute;
@@ -3693,8 +3840,7 @@ img { max-width: 100%; }
   color: #FFF;
   border-radius: 16px;
   border: 1.5px solid var(--ink);
-  box-shadow: 3px 3px 0 var(--ink);
-  display: flex; align-items: center; gap: 10px;
+display: flex; align-items: center; gap: 10px;
   position: relative;
 }
 .section-phone .td .c2-celebration .plus {
@@ -3761,7 +3907,6 @@ img { max-width: 100%; }
   font-weight: 600; font-size: 13px;
   display: flex; align-items: center; justify-content: center; gap: 8px;
   cursor: pointer;
-  box-shadow: 3px 3px 0 var(--ink);
 }
 .section-phone .td .c2-cta .save-btn svg { width: 15px; height: 15px; }
 .section-phone .td .c2-cta .reassure {
@@ -3803,8 +3948,7 @@ img { max-width: 100%; }
   border-radius: 50%;
   background: var(--accent); color: #fff;
   border: 1.5px solid var(--ink);
-  box-shadow: 0 8px 20px -6px rgba(255,94,58,0.5), 3px 3px 0 var(--ink);
-  display: flex; align-items: center; justify-content: center;
+display: flex; align-items: center; justify-content: center;
   position: relative;
 }
 .section-phone .td.c5 .claimed-mark svg { width: 32px; height: 32px; }
@@ -3869,8 +4013,7 @@ img { max-width: 100%; }
   background: var(--butter);
   border: 1.5px solid var(--ink);
   border-radius: 14px;
-  box-shadow: 3px 3px 0 var(--ink);
-  position: relative;
+position: relative;
   transform: rotate(-1.5deg);
 }
 .section-phone .td.c5 .voucher::before, .section-phone .td.c5 .voucher::after {
@@ -3959,8 +4102,7 @@ img { max-width: 100%; }
   border: 1.5px solid var(--ink);
   border-radius: 18px;
   padding: 18px 18px;
-  box-shadow: 3px 3px 0 var(--ink);
-  display: grid;
+display: grid;
   grid-template-columns: 44px 1fr;
   gap: 14px;
   align-items: flex-start;
@@ -4008,15 +4150,11 @@ img { max-width: 100%; }
   display: inline-flex;
   align-items: center;
   gap: 8px;
-  background: var(--surface);
-  border: 1.5px solid var(--ink);
-  border-radius: 999px;
   padding: 9px 16px;
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: 15px;
   font-weight: 500;
   color: var(--ink);
-  box-shadow: 2px 2px 0 var(--ink);
 }
 .cust-trust-row li.butter { background: var(--butter); }
 .cust-trust-row li svg {
@@ -4028,6 +4166,23 @@ img { max-width: 100%; }
 .cust-phone-wrap {
   display: flex;
   justify-content: center;
+}
+
+/* Customer section CTA — symmetric with For Shops */
+.cust-cta-row {
+  display: flex;
+  flex-wrap: wrap;
+  align-items: center;
+  justify-content: center;
+  gap: 16px;
+  margin-top: 36px;
+}
+.cust-cta-meta {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
 }
 
 /* Customer cards visual */
@@ -4049,8 +4204,7 @@ img { max-width: 100%; }
   border: 1.5px solid var(--ink);
   border-radius: 18px;
   padding: 16px;
-  box-shadow: 4px 4px 0 var(--ink);
-  display: grid;
+display: grid;
   grid-template-columns: 44px 1fr auto;
   gap: 12px;
   align-items: center;
@@ -4169,8 +4323,7 @@ img { max-width: 100%; }
   border: 1.5px solid var(--ink);
   border-radius: 22px;
   padding: 28px 24px;
-  box-shadow: 4px 4px 0 var(--ink);
-  position: relative;
+position: relative;
   display: flex;
   flex-direction: column;
 }
@@ -4278,8 +4431,7 @@ img { max-width: 100%; }
   align-items: center;
   justify-content: space-between;
   width: 100%;
-  box-shadow: 3px 3px 0 var(--ink);
-  cursor: pointer;
+cursor: pointer;
   transition: transform 0.15s;
 }
 .price-card .pkg-cta:hover { transform: translateY(-2px); }
@@ -4344,8 +4496,7 @@ img { max-width: 100%; }
   border: 1.5px solid var(--ink);
   border-radius: 22px;
   padding: 24px 22px;
-  box-shadow: 4px 4px 0 var(--ink);
-  position: relative;
+position: relative;
 }
 .testi-card.tilt-l { transform: rotate(-1deg); }
 .testi-card.tilt-r { transform: rotate(1deg); }
@@ -4416,59 +4567,321 @@ img { max-width: 100%; }
   letter-spacing: 1px;
 }
 
-/* ==================== FAQ ==================== */
-.faq-section {
+/* ==================== MANIFESTO · BY SME, FOR SME ==================== */
+.manifesto {
   padding: clamp(80px, 10vw, 120px) 0;
+  background: var(--ink);
+  color: var(--bg);
+  position: relative;
+  overflow: hidden;
 }
-.faq-list {
-  max-width: 800px;
-  margin: 0 auto;
+.manifesto::before {
+  content: '';
+  position: absolute;
+  inset: 0;
+  background-image:
+    radial-gradient(circle at 12% 18%, rgba(255, 217, 82, 0.10) 0, transparent 18%),
+    radial-gradient(circle at 88% 75%, rgba(255, 94, 58, 0.13) 0, transparent 22%),
+    radial-gradient(circle at 50% 110%, rgba(255, 217, 82, 0.08) 0, transparent 30%);
+  pointer-events: none;
 }
-.faq-item {
+.manifesto > * { position: relative; z-index: 1; }
+.manifesto .audience-tag .tag-pill {
+  background: rgba(255, 217, 82, 0.12);
+  color: var(--butter);
+  border: 1px solid rgba(255, 217, 82, 0.25);
+}
+.manifesto .audience-tag .tag-pill .num-circle {
+  background: var(--butter);
+  color: var(--ink);
+}
+.manifesto .audience-tag .tag-pill .role-meta {
+  color: rgba(255, 217, 82, 0.6);
+}
+.manifesto .section-head-block .kicker {
+  background: rgba(255, 94, 58, 0.18);
+  color: var(--butter);
+}
+.manifesto .section-head-block h2 {
+  color: var(--bg);
+}
+.manifesto .section-head-block h2 em {
+  color: var(--butter);
+}
+.manifesto .section-head-block h2 .hl {
+  background: linear-gradient(transparent 62%, var(--accent) 62%);
+  color: var(--bg);
+}
+.manifesto .section-head-block p {
+  color: rgba(255, 255, 255, 0.7);
+  max-width: 720px;
+}
+.manifesto-pillars {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 20px;
+  margin-top: clamp(40px, 5vw, 56px);
+  max-width: 1100px;
+  margin-left: auto;
+  margin-right: auto;
+}
+.mp-card {
+  padding: 28px 24px;
+  background: rgba(255, 255, 255, 0.04);
+  border: 1px solid rgba(255, 255, 255, 0.08);
+  border-radius: 20px;
+  position: relative;
+}
+.mp-card .mp-num {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 700;
+  letter-spacing: 0.15em;
+  color: var(--butter);
+  margin-bottom: 18px;
+}
+.mp-card .mp-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 22px;
+  letter-spacing: -0.02em;
+  line-height: 1.2;
+  color: var(--bg);
+  margin-bottom: 10px;
+}
+.mp-card .mp-title em {
+  font-style: italic;
+  color: var(--accent);
+  font-weight: 700;
+}
+.mp-card .mp-desc {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13.5px;
+  color: rgba(255, 255, 255, 0.68);
+  line-height: 1.55;
+}
+.manifesto-pledge {
+  margin-top: clamp(48px, 6vw, 72px);
+  padding: 28px 32px;
+  background: rgba(255, 217, 82, 0.08);
+  border: 1px solid rgba(255, 217, 82, 0.2);
+  border-radius: 24px;
+  max-width: 760px;
+  margin-left: auto;
+  margin-right: auto;
+  text-align: center;
+}
+.manifesto-pledge .pledge-quote {
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-size: clamp(18px, 2.2vw, 22px);
+  color: var(--bg);
+  line-height: 1.5;
+  letter-spacing: -0.01em;
+  margin-bottom: 12px;
+}
+.manifesto-pledge .pledge-quote .accent { color: var(--accent); font-style: normal; font-weight: 600; }
+.manifesto-pledge .pledge-quote .butter { color: var(--butter); font-style: normal; font-weight: 600; }
+.manifesto-pledge .pledge-by {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  letter-spacing: 0.18em;
+  text-transform: uppercase;
+  color: rgba(255, 217, 82, 0.7);
+}
+@media (max-width: 900px) {
+  .manifesto-pillars {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px;
+  }
+  .mp-card { padding: 22px 20px; }
+  .mp-card .mp-title { font-size: 18px; }
+}
+@media (max-width: 520px) {
+  .manifesto-pillars { grid-template-columns: 1fr; }
+}
+
+/* ==================== PRICING STRIP ==================== */
+.pricing-strip {
+  padding: clamp(48px, 7vw, 80px) 0;
+}
+.pricing-card {
+  background: var(--butter-soft);
+  border: 1.5px solid var(--ink);
+  border-radius: 24px;
+  padding: clamp(28px, 5vw, 48px) clamp(28px, 5vw, 56px);
+  display: grid;
+  grid-template-columns: 1.2fr 1fr;
+  gap: clamp(24px, 4vw, 56px);
+  align-items: center;
+  position: relative;
+  overflow: hidden;
+}
+@media (max-width: 760px) {
+  .pricing-card { grid-template-columns: 1fr;padding: 28px 22px; }
+}
+.pricing-card::before {
+  content: '';
+  position: absolute;
+  top: -40%;
+  right: -10%;
+  width: 280px; height: 280px;
+  background: radial-gradient(circle, var(--butter) 0%, transparent 70%);
+  opacity: 0.7;
+  pointer-events: none;
+}
+.pricing-l { position: relative; }
+.pricing-tag {
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11px;
+  font-weight: 600;
+  letter-spacing: 0.12em;
+  text-transform: uppercase;
+  color: var(--ink);
+  opacity: 0.55;
+  margin-bottom: 14px;
+}
+.pricing-l h3 {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: clamp(34px, 5vw, 52px);
+  line-height: 0.95;
+  letter-spacing: -0.04em;
+  margin-bottom: 14px;
+}
+.pricing-l h3 em { font-style: italic; color: var(--accent); }
+.pricing-l p {
+  font-size: 14.5px;
+  color: var(--ink);
+  opacity: 0.78;
+  line-height: 1.6;
+  max-width: 440px;
+}
+.pricing-l p strong { font-weight: 700; opacity: 1; }
+.pricing-r {
+  position: relative;
   background: var(--surface);
   border: 1.5px solid var(--ink);
   border-radius: 16px;
-  box-shadow: 3px 3px 0 var(--ink);
-  margin-bottom: 12px;
-  overflow: hidden;
+  padding: 22px 24px;
+}
+.pricing-r-h {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  letter-spacing: -0.01em;
+  margin-bottom: 14px;
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+.pricing-r-h::before {
+  content: '';
+  width: 12px; height: 12px;
+  background: var(--accent);
+  border-radius: 4px;
+}
+.pricing-rates {
+  list-style: none;
+  display: flex;
+  flex-direction: column;
+  gap: 10px;
+}
+.pricing-rates li {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  font-size: 13.5px;
+  border-bottom: 1px dashed var(--line);
+  padding-bottom: 8px;
+}
+.pricing-rates li:last-child { border-bottom: none; padding-bottom: 0; }
+.pricing-rates .ch { color: var(--ink); font-weight: 500; }
+.pricing-rates .px {
+  font-family: 'JetBrains Mono', monospace;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--ink);
+}
+.pricing-rates .px .unit {
+  font-weight: 400;
+  color: var(--ink-soft);
+  font-size: 10.5px;
+  margin-left: 3px;
+}
+.pricing-rates .px.free { color: var(--accent); font-size: 14px; }
+.pricing-foot {
+  margin-top: 14px;
+  padding-top: 12px;
+  border-top: 1px solid var(--line);
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 10.5px;
+  letter-spacing: 0.06em;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+}
+
+/* ==================== FAQ ==================== */
+.faq-section {
+  padding: clamp(48px, 6vw, 72px) 0;
+}
+.faq-section .section-head-block {
+  margin-bottom: clamp(24px, 3vw, 40px);
+}
+.faq-section .section-head-block h2 {
+  font-size: clamp(26px, 3.4vw, 40px);
+}
+.faq-list {
+  max-width: 720px;
+  margin: 0 auto;
+}
+.faq-item {
+  border-bottom: 1px solid var(--line);
+}
+.faq-item:last-child {
+  border-bottom: none;
 }
 .faq-item summary {
   list-style: none;
   cursor: pointer;
-  padding: 18px 20px;
+  padding: 20px 4px;
   display: flex;
   align-items: center;
   justify-content: space-between;
   gap: 16px;
   font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.01em;
+  font-weight: 600;
+  font-size: 17px;
+  letter-spacing: -0.005em;
+  transition: color 0.15s ease;
 }
+.faq-item summary:hover { color: var(--accent); }
 .faq-item summary::-webkit-details-marker { display: none; }
 .faq-item summary .toggle-icon {
   flex-shrink: 0;
-  width: 28px; height: 28px;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 50%;
-  display: flex;
+  width: 24px; height: 24px;
+  display: inline-flex;
   align-items: center;
   justify-content: center;
-  font-size: 16px;
-  font-weight: 700;
-  transition: background 0.2s, transform 0.2s;
+  font-size: 22px;
+  font-weight: 300;
+  color: var(--ink-softer);
+  transition: transform 0.25s ease, color 0.2s ease;
+}
+.faq-item[open] summary {
+  color: var(--ink);
 }
 .faq-item[open] summary .toggle-icon {
-  background: var(--accent);
+  color: var(--accent);
   transform: rotate(45deg);
 }
 .faq-item .answer {
-  padding: 0 20px 20px;
+  padding: 0 4px 22px;
   font-family: 'Prompt', sans-serif;
-  font-size: 14px;
+  font-size: 15.5px;
   color: var(--ink-soft);
-  line-height: 1.6;
+  line-height: 1.7;
+  max-width: 640px;
 }
 
 /* ==================== FINAL CTA ==================== */
@@ -4538,6 +4951,52 @@ img { max-width: 100%; }
   margin: 0 auto 30px;
   line-height: 1.55;
 }
+.cta-card .cta-steps {
+  display: grid;
+  grid-template-columns: repeat(4, 1fr);
+  gap: 12px;
+  max-width: 600px;
+  margin: clamp(48px, 7vw, 80px) auto 40px;
+  list-style: none;
+  padding: 0;
+}
+@media (max-width: 700px) {
+  .cta-card .cta-steps {
+    grid-template-columns: repeat(2, 1fr);
+    max-width: 340px;
+    gap: 12px 10px;
+  }
+}
+@media (max-width: 420px) {
+  .cta-card .cta-steps {
+    grid-template-columns: 1fr;
+    max-width: 220px;
+    gap: 14px;
+  }
+}
+.cta-card .cta-steps li {
+  text-align: left;
+  position: relative;
+}
+.cta-card .cta-steps .cs-num {
+  display: block;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: 11.5px;
+  font-weight: 700;
+  letter-spacing: 0.14em;
+  color: var(--butter);
+  margin-bottom: 8px;
+}
+.cta-card .cta-steps .cs-label {
+  display: block;
+  font-family: 'Prompt', sans-serif;
+  font-size: 16px;
+  font-weight: 600;
+  color: var(--bg);
+  line-height: 1.3;
+  letter-spacing: -0.015em;
+  white-space: nowrap;
+}
 .cta-card .cta-buttons {
   display: flex;
   gap: 12px;
@@ -4548,20 +5007,18 @@ img { max-width: 100%; }
 .cta-card .btn-primary {
   background: var(--bg);
   color: var(--ink);
-  box-shadow: 4px 4px 0 var(--accent);
 }
 .cta-card .btn-secondary {
   background: transparent;
   color: var(--bg);
   border-color: var(--bg);
-  box-shadow: 4px 4px 0 var(--accent);
 }
 .cta-card .trust {
   display: inline-flex;
   align-items: center;
   gap: 16px;
   font-family: 'Prompt', sans-serif;
-  font-size: 12px;
+  font-size: 14px;
   color: var(--ink-softer);
   flex-wrap: wrap;
   justify-content: center;
@@ -4657,20 +5114,20 @@ img { max-width: 100%; }
   <div class="container">
     <a href="#" class="nav-logo">
       <svg class="logo-stamp" viewBox="0 0 100 100" width="28" height="28" aria-hidden="true">
-        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+        <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+        <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
       </svg>
       แต้มดี<span class="dot">.</span>
     </a>
     <div class="nav-links">
       <a href="#shops">สำหรับร้าน</a>
-      <a href="#how">วิธีใช้</a>
+      <a href="#customers">หน้าจอลูกค้า</a>
       <a href="#faq">คำถามบ่อย</a>
     </div>
     <div class="nav-cta">
-      <a href="#cta" class="secondary">เปิดร้านฟรี</a>
+      <a href="#cta" class="secondary">เข้าสู่ระบบ</a>
     </div>
   </div>
 </nav>
@@ -4681,47 +5138,15 @@ img { max-width: 100%; }
     <div class="hero-centered">
       <div class="hero-tag">
         <span class="pulse-dot"></span>
-        ใหม่ · ใช้ได้ทั่วไทย ไม่จำกัดพื้นที่
+        ฟรีตลอดไป · จ่ายเฉพาะส่งข้อความ
       </div>
       <h1>
         บัตรสะสมแต้ม<br>
-        ที่ลูกค้า<span class="hl">รัก<span class="accent">.</span></span>
+        ที่<span class="hl">คุณจะรัก<span class="accent">.</span></span>
       </h1>
       <p class="lead">
-        แต้มดีคือบัตรสะสมแต้มดิจิทัลสำหรับร้านค้า
-        ลูกค้าสแกน QR ได้แต้มทันที ไม่ต้องโหลดแอป
-        ร้านเปิดใช้งานฟรีในไม่กี่นาที
+        เริ่มใช้ฟรีในนาทีเดียว · ลูกค้าไม่ต้องโหลดแอป · ระบบชวนกลับให้อัตโนมัติ
       </p>
-
-      <div class="role-chooser">
-        <a href="#shops" class="role-card role-shop">
-          <div class="role-icon">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-              <path d="M3 9l1-5h16l1 5"/>
-              <path d="M5 9v11a1 1 0 001 1h12a1 1 0 001-1V9"/>
-              <line x1="9" y1="13" x2="15" y2="13"/>
-            </svg>
-          </div>
-          <div class="role-text">
-            <div class="role-name">เปิดร้านฟรี</div>
-            <div class="role-meta">ตั้งค่าใน 60 วินาที · ไม่มีค่ารายเดือน</div>
-          </div>
-          <div class="role-arrow">→</div>
-        </a>
-      </div>
-
-      <div class="hero-feature">
-        <div class="hf-head">
-          <div class="hf-icon">✦</div>
-          <div class="hf-title">ตัวช่วยอัจฉริยะในตัว</div>
-        </div>
-        <div class="hf-text">ระบบดูแลให้ — ใครใกล้รับรางวัล · ใครหายไป · ร่างข้อความชวนกลับให้พร้อมส่ง</div>
-      </div>
-
-      <div class="hero-trust">
-        <span class="check-mini">✓</span>
-        ไม่มีค่ารายเดือน · ไม่ต้องใส่บัตรเครดิต · ไม่ต้องโหลดแอป
-      </div>
     </div>
   </div>
 </section>
@@ -4731,22 +5156,13 @@ img { max-width: 100%; }
   <div class="container">
     <div class="audience-tag">
       <div class="tag-pill">
-        <span class="num-circle">01</span>
+        <span class="num-circle"></span>
         สำหรับเจ้าของร้าน
         <span class="role-meta">FOR SHOPS</span>
       </div>
     </div>
     <div class="section-head-block">
-      <div class="kicker">
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        ฟีเจอร์เด่นสำหรับร้าน
-      </div>
       <h2>เปลี่ยน<em>ลูกค้าจร</em><br>ให้เป็นลูกค้าประจำ.</h2>
-      <p>ข้อมูลลูกค้าประจำบนแดชบอร์ด ส่งโปรชวนกลับใน 1 คลิก — เริ่มได้ในไม่กี่นาที ฟรีตลอดไป</p>
     </div>
 
     <div class="dash-preview">
@@ -4759,199 +5175,13 @@ img { max-width: 100%; }
           <li><span class="check-tile">✓</span><span>ส่งโปรชวนลูกค้าที่หายไปกลับ ในคลิกเดียว</span></li>
         </ul>
         <a href="#cta" class="btn-primary btn-hero">
-          ลองใช้ฟรี
+          เปิดร้านฟรี
           <span class="arrow-pill">→</span>
         </a>
       </div>
       <div class="section-phone-wrap">
         <div class="section-phone">
-          <div class="screen screen-shop">
-            <div class="dash-content">
-              <div class="dash-greet">
-                <div class="dg-h">สวัสดีพี่หมี
-                  <svg viewBox="0 0 20 12" fill="none" style="width:13px;height:8px;color:var(--accent);display:inline-block;vertical-align:1px;margin-left:2px;"><circle cx="5" cy="3" r="1.5" fill="currentColor"/><circle cx="15" cy="3" r="1.5" fill="currentColor"/><path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/></svg>
-                </div>
-                <div class="dg-day">วันศุกร์ · เริ่มต้นวันได้ดี</div>
-              </div>
-              <div class="dash-branch">นิมมาน</div>
-            </div>
-            <div class="dash-hero">
-              <div class="dh-label">✦ สัปดาห์นี้</div>
-              <div class="dh-num">
-                <span class="accent">23</span>
-                <svg class="dh-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-              </div>
-              <div class="dh-cap">ลูกค้ากลับมา</div>
-              <div class="dh-delta">↑ +8 จากสัปดาห์ที่แล้ว</div>
-            </div>
-            <div class="dash-stats">
-              <div class="ds-tile"><div class="n">147</div><div class="l">แจก</div></div>
-              <div class="ds-tile"><div class="n">6</div><div class="l">แลก</div></div>
-              <div class="ds-tile balance"><div class="n">412</div><div class="l">เครดิต</div></div>
-            </div>
-            <div class="dash-reach">
-              <div class="dr-header">
-                <span class="dr-h-title">
-                  <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 21s-7-4.5-9.5-9C1 9 2.5 5 6 5c2 0 3.5 1 4.5 2.5C11.5 6 13 5 15 5c3.5 0 5 4 3.5 7-2.5 4.5-9.5 9-9.5 9z" stroke="currentColor" stroke-width="0"/></svg>
-                  แต้มดี
-                </span>
-                <span class="dr-h-meta">อัพเดททุกเช้า</span>
-              </div>
-
-              <div class="dr-feed-card">
-                <div class="dr-fc-tags">
-                  <span class="dr-fc-pill">วินแบ็ค</span>
-                  <span class="dr-fc-count">23 คน</span>
-                </div>
-                <div class="dr-fc-head">ดึงลูกค้าเก่ากลับมา</div>
-                <div class="dr-fc-meta">23 คนไม่ได้มา 60 วันแล้ว ส่งข้อความชวนกลับ?</div>
-                <button class="dr-fc-btn">
-                  <span>ส่งเลย</span>
-                  <span class="cost">50 เครดิต</span>
-                </button>
-              </div>
-
-              <div class="dr-feed-card">
-                <div class="dr-fc-tags">
-                  <span class="dr-fc-pill alt">ใกล้ครบ</span>
-                  <span class="dr-fc-count">12 คน</span>
-                </div>
-                <div class="dr-fc-head">กระตุ้นคนใกล้ครบ</div>
-                <div class="dr-fc-meta">12 คนเหลืออีก 1-2 แต้มก็ครบ ส่งเตือน?</div>
-                <button class="dr-fc-btn">
-                  <span>ส่งเลย</span>
-                  <span class="cost">24 เครดิต</span>
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-        <div class="section-phone-decor decor-tag-shop">
-          <span class="d-num">+1</span>
-          <span class="d-label">แต้มใหม่</span>
-        </div>
-      </div>
-    </div>
-  </div>
-</section>
-
-<!-- ==================== HOW IT WORKS ==================== -->
-<section class="how" id="how">
-  <div class="container">
-    <div class="section-head-block">
-      <div class="kicker">
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        วิธีใช้งาน
-      </div>
-      <h2>ลูกค้าของคุณ <em>ใช้งานยังไง.</em></h2>
-      <p>3 ขั้นตอน — ไม่ต้องอบรมพนักงาน ไม่ต้องโหลดแอป</p>
-    </div>
-
-    <div class="how-compact">
-      <div class="how-c-step">
-        <div class="step-num">1</div>
-        <h3>ลูกค้าสแกน QR</h3>
-        <p>ใช้กล้องในเครื่องสแกน QR ที่เคาน์เตอร์ เปิดบัตรสะสมแต้มในเบราว์เซอร์</p>
-        <div class="how-mini">
-          <div class="how-mini-phone">
-            <div class="how-mini-screen how-mini-qr">
-              <div class="qr-frame">
-                <svg viewBox="0 0 36 36" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
-                  <rect x="0" y="0" width="36" height="36" fill="#FDFAF2"/>
-                  <rect x="3" y="3" width="9" height="9" fill="#111"/>
-                  <rect x="6" y="6" width="3" height="3" fill="#FDFAF2"/>
-                  <rect x="24" y="3" width="9" height="9" fill="#111"/>
-                  <rect x="27" y="6" width="3" height="3" fill="#FDFAF2"/>
-                  <rect x="3" y="24" width="9" height="9" fill="#111"/>
-                  <rect x="6" y="27" width="3" height="3" fill="#FDFAF2"/>
-                  <rect x="15" y="3" width="3" height="3" fill="#111"/>
-                  <rect x="21" y="3" width="3" height="3" fill="#111"/>
-                  <rect x="15" y="9" width="3" height="3" fill="#111"/>
-                  <rect x="18" y="6" width="3" height="3" fill="#111"/>
-                  <rect x="21" y="12" width="3" height="3" fill="#111"/>
-                  <rect x="3" y="15" width="3" height="3" fill="#111"/>
-                  <rect x="9" y="15" width="3" height="3" fill="#111"/>
-                  <rect x="15" y="15" width="6" height="3" fill="#111"/>
-                  <rect x="24" y="15" width="3" height="3" fill="#111"/>
-                  <rect x="30" y="15" width="3" height="3" fill="#111"/>
-                  <rect x="6" y="18" width="3" height="3" fill="#111"/>
-                  <rect x="12" y="18" width="6" height="3" fill="#111"/>
-                  <rect x="21" y="18" width="3" height="3" fill="#111"/>
-                  <rect x="27" y="18" width="3" height="3" fill="#111"/>
-                  <rect x="3" y="21" width="3" height="3" fill="#111"/>
-                  <rect x="9" y="21" width="6" height="3" fill="#111"/>
-                  <rect x="18" y="21" width="3" height="3" fill="#111"/>
-                  <rect x="24" y="21" width="9" height="3" fill="#111"/>
-                  <rect x="15" y="24" width="3" height="3" fill="#111"/>
-                  <rect x="21" y="24" width="3" height="3" fill="#111"/>
-                  <rect x="27" y="24" width="3" height="3" fill="#111"/>
-                  <rect x="15" y="27" width="6" height="3" fill="#111"/>
-                  <rect x="24" y="27" width="3" height="3" fill="#111"/>
-                  <rect x="30" y="27" width="3" height="3" fill="#111"/>
-                  <rect x="18" y="30" width="3" height="3" fill="#111"/>
-                  <rect x="24" y="30" width="6" height="3" fill="#111"/>
-                </svg>
-              </div>
-              <div class="how-mini-cap">สแกนเพื่อสะสมแต้ม</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="how-c-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </div>
-      <div class="how-c-step">
-        <div class="step-num">2</div>
-        <h3>ได้แต้มทันที</h3>
-        <p>แต้มขึ้นบนบัตรของลูกค้า เห็นเลยว่าใกล้รับรางวัลแค่ไหน</p>
-        <div class="how-mini">
-          <div class="how-mini-phone">
-            <div class="how-mini-screen how-mini-stamp">
-              <div class="hms-num">7<span class="hms-sub">/10</span></div>
-              <div class="hms-stamps">
-                <div class="hms-s on"></div>
-                <div class="hms-s on"></div>
-                <div class="hms-s on"></div>
-                <div class="hms-s on"></div>
-                <div class="hms-s on"></div>
-                <div class="hms-s on"></div>
-                <div class="hms-s on new"></div>
-                <div class="hms-s"></div>
-                <div class="hms-s"></div>
-                <div class="hms-s"></div>
-              </div>
-              <div class="hms-toast">+1 แต้ม</div>
-            </div>
-          </div>
-        </div>
-      </div>
-      <div class="how-c-arrow">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="5" y1="12" x2="19" y2="12"/>
-          <polyline points="12 5 19 12 12 19"/>
-        </svg>
-      </div>
-      <div class="how-c-step">
-        <div class="step-num">3</div>
-        <h3>รับรางวัลที่ร้าน</h3>
-        <p>เก็บครบ — ลูกค้ากดที่หน้าเคาน์เตอร์เพื่อรับรางวัล ไม่มีคูปองให้ปริ้น</p>
-        <div class="how-mini">
-          <div class="how-mini-phone">
-            <div class="how-mini-screen how-mini-reward">
-              <div class="hmr-badge">
-                <svg viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-              </div>
-              <div class="hmr-num">10<span class="hms-sub">/10</span></div>
-              <div class="hmr-msg">พร้อมรับรางวัล</div>
-              <div class="hmr-btn">รับเลย</div>
-            </div>
+          <div class="screen screen-img">shop ui go here
           </div>
         </div>
       </div>
@@ -4964,21 +5194,13 @@ img { max-width: 100%; }
   <div class="container">
     <div class="audience-tag butter">
       <div class="tag-pill">
-        <span class="num-circle">02</span>
-        ลูกค้าของคุณจะเห็น
-        <span class="role-meta">WHAT THEY SEE</span>
+        <span class="num-circle"></span>
+        หน้าจอลูกค้า
+        <span class="role-meta">CUSTOMER VIEW</span>
       </div>
     </div>
     <div class="section-head-block">
-      <div class="kicker">
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        ฝั่งลูกค้า
-      </div>
-      <h2>ลูกค้าจะอยาก<em>กลับมา.</em><br>เก็บแต้มต่อ.</h2>
+      <h2>ลูกค้าจะอยาก<em>กลับมา</em><br>เก็บแต้มต่อ.</h2>
     </div>
 
     <ul class="cust-trust-row">
@@ -4989,92 +5211,70 @@ img { max-width: 100%; }
         </svg>
         ไม่ต้องโหลด app
       </li>
-      <li class="butter">
+      <li>
         <svg viewBox="0 0 24 24" fill="currentColor" stroke="none">
-          <path d="M13 2 L4 13 h6 l-1 9 L20 11 h-6 l-1 -9 z"/>
+          <path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/>
         </svg>
-        สแกนแล้วได้แต้มทันที
+        ไม่บังคับสมัครสมาชิก
       </li>
       <li>
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
-          <polyline points="20 12 20 22 4 22 4 12"/>
-          <rect x="2" y="7" width="20" height="5"/>
-          <line x1="12" y1="22" x2="12" y2="7"/>
-          <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-          <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
+          <path d="M20.84 4.61a5.5 5.5 0 0 0-7.78 0L12 5.67l-1.06-1.06a5.5 5.5 0 0 0-7.78 7.78l1.06 1.06L12 21.23l7.78-7.78 1.06-1.06a5.5 5.5 0 0 0 0-7.78z"/>
         </svg>
-        สมัครแค่ตอนรับรางวัล
+        ติดตามร้านโปรด
       </li>
     </ul>
 
     <div class="cust-phone-wrap">
       <div class="section-phone-wrap">
         <div class="section-phone">
-          <div class="screen">
-            <div class="td">
-
-              <div class="c1-avatar" title="ดูบัตรทั้งหมด">ส</div>
-
-              <div class="shop-head">
-                <div class="shop-logo-mark">mhee<span class="dot">.</span></div>
-                <div class="shop-sub">ร้านกาแฟลุงหมี <span class="dotsep"></span> เชียงใหม่</div>
-              </div>
-
-              <div class="c1-greet-bubble">
-                <span class="cgb-text">สวัสดีครับ<strong>พี่สมศรี</strong> เพิ่มแต้มให้แล้วนะครับ ขอให้มีวันที่ดีครับ</span>
-              </div>
-
-              <div class="hero-num-wrap">
-                <div class="hero-label">แต้มของพี่ที่ร้านลุงหมี</div>
-                <div class="hero-num">
-                  7
-                  <svg class="mini-star" viewBox="0 0 16 16" fill="currentColor"><path d="M8 0 L9.5 6.5 L16 8 L9.5 9.5 L8 16 L6.5 9.5 L0 8 L6.5 6.5 Z"/></svg>
-                </div>
-                <div class="hero-num-sub">
-                  <em>อีก 3 แต้ม!</em> <span class="of">/ จาก 10</span>
-                </div>
-              </div>
-
-              <div class="stamps-wrap">
-                <div class="stamps">
-                  <div class="stamp on"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp on butter"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp on butter"></div>
-                  <div class="stamp on"></div>
-                  <div class="stamp"></div><div class="stamp"></div><div class="stamp"></div>
-                </div>
-              </div>
-
-              <div class="reward-pill">
-                <div class="badge-tilted">ใกล้แล้ว!</div>
-                <div class="gift">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 12 20 22 4 22 4 12"/>
-                    <rect x="2" y="7" width="20" height="5"/>
-                    <line x1="12" y1="22" x2="12" y2="7"/>
-                    <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
-                    <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
-                  </svg>
-                </div>
-                <div class="rtxt">
-                  <div class="rlabel">รางวัล</div>
-                  <div class="rname">กาแฟ Signature ฟรี 1 แก้ว</div>
-                </div>
-              </div>
-
-              <div class="footer-mark">
-                <span class="fm-brand">
-                  <svg class="smile-stamp" viewBox="0 0 100 100" width="22" height="22"><rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/><circle cx="36" cy="42" r="6" fill="#FF5E3A"/><circle cx="64" cy="42" r="6" fill="#FF5E3A"/><path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/></svg>
-                  <span class="brand">taemdee<span class="dot">.</span></span>
-                </span>
-                <a class="fm-install"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M12 5v14"/><path d="M5 12l7 7 7-7"/></svg> เพิ่มลงหน้าจอ</a>
-              </div>
-            </div>
+          <div class="screen screen-img">
+            customer phone ui go here
           </div>
         </div>
+      </div>
+    </div>
+  </div>
+</section>
+
+<!-- ==================== MANIFESTO ==================== -->
+<section class="manifesto" id="manifesto">
+  <div class="container">
+    <div class="audience-tag">
+      <div class="tag-pill">
+        <span class="num-circle"></span>
+        ภารกิจของเรา
+        <span class="role-meta">OUR MISSION</span>
+      </div>
+    </div>
+    <div class="section-head-block">
+      <h2>ร้านกาแฟใต้ตึก<br>ร้านข้าวมันไก่ปากซอย<br>ร้านตัดผมข้างบ้าน.</h2>
+      <p>ในวันที่เครื่องมือดิจิทัลถูกสร้างมาเพื่อบริษัทใหญ่ เราอยากให้ร้านแบบนี้มีเครื่องมือที่เอื้อมถึง และใช้ได้จริง — ทั้งฝั่งร้านและฝั่งลูกค้า</p>
+    </div>
+
+    <div class="manifesto-pillars">
+      <div class="mp-card">
+        <div class="mp-num">01 / REIMAGINE</div>
+        <div class="mp-title"><em>คิดใหม่</em><br>เรื่อง SME</div>
+        <div class="mp-desc">SME คือร้านที่ทำงานต่างจากแบรนด์ใหญ่ ยืดหยุ่น ใกล้ชิดลูกค้า ตัดสินใจไว เครื่องมือต้องเข้ากับวิธีคิดนั้น</div>
+      </div>
+
+      <div class="mp-card">
+        <div class="mp-num">02 / EASY</div>
+        <div class="mp-title">ใช้ง่าย<br>เหมือน<em>มือถือ</em></div>
+        <div class="mp-desc">ตั้งร้านใน 60 วินาที ไม่ต้องอ่านคู่มือ ไม่ต้องอบรม ไม่ต้องลงแอป สแกน QR เก็บแต้มได้ทันที พนักงานใหม่เริ่มใช้ได้ในนาทีเดียว</div>
+      </div>
+
+      <div class="mp-card">
+        <div class="mp-num">03 / AFFORDABLE</div>
+        <div class="mp-title"><em>ฟรี</em>ตลอดไป<br>จ่ายเฉพาะตอนส่งข้อความ</div>
+        <div class="mp-desc">ไม่มีค่ารายเดือน ไม่ต้องผูกบัตรเครดิต ใช้ฟีเจอร์หลักได้ครบ จ่ายแค่เครดิตเมื่อจะส่งข้อความหาลูกค้า</div>
+      </div>
+
+      <div class="mp-card">
+        <div class="mp-num">04 / OPEN</div>
+        <div class="mp-title">เคารพ<br><em>ลูกค้าของคุณ</em></div>
+        <div class="mp-desc">ลูกค้าไม่ต้องโหลดแอป ไม่บังคับสมัครสมาชิก ไม่ต้องผูกข้อมูลส่วนตัว</div>
       </div>
     </div>
   </div>
@@ -5084,14 +5284,6 @@ img { max-width: 100%; }
 <section class="faq-section" id="faq">
   <div class="container">
     <div class="section-head-block">
-      <div class="kicker">
-        <svg class="smile" viewBox="0 0 20 12" fill="none">
-          <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
-          <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
-          <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
-        </svg>
-        คำถามบ่อย
-      </div>
       <h2>คำถามที่ <em>เจอบ่อย.</em></h2>
     </div>
 
@@ -5181,15 +5373,28 @@ img { max-width: 100%; }
         เริ่มได้เลย
       </div>
       <h2>เปิดร้านใหม่ <em>ในไม่กี่นาที.</em><br><span class="hl-light">ไม่มีค่ารายเดือน.</span></h2>
-      <p>ใส่ชื่อร้าน เลือกรางวัล พิมพ์ QR ติดที่เคาน์เตอร์ — เริ่มเก็บลูกค้าประจำได้ตั้งแต่วันแรก ไม่ต้องเซ็นสัญญา ไม่ต้องใส่บัตรเครดิต</p>
+      <ol class="cta-steps">
+        <li>
+          <span class="cs-num">01 / NAME</span>
+          <span class="cs-label">ใส่ข้อมูลร้าน</span>
+        </li>
+        <li>
+          <span class="cs-num">02 / REWARD</span>
+          <span class="cs-label">เลือกรางวัล</span>
+        </li>
+        <li>
+          <span class="cs-num">03 / THEME</span>
+          <span class="cs-label">เลือกธีมร้าน</span>
+        </li>
+        <li>
+          <span class="cs-num">04 / QR</span>
+          <span class="cs-label">พิมพ์คิวอาร์ตั้งหน้าร้าน</span>
+        </li>
+      </ol>
       <div class="cta-buttons">
-        <a href="#" class="btn-primary">
+        <a href="/shop/login" class="btn-primary">
           เปิดร้านฟรี
           <span class="arrow-pill">→</span>
-        </a>
-        <a href="#" class="btn-secondary">
-          ลูกค้า · ดูบัตรของฉัน
-          <span class="arrow-pill" style="background:var(--accent);">→</span>
         </a>
       </div>
       <div class="trust">
@@ -5207,53 +5412,32 @@ img { max-width: 100%; }
     <div class="foot-brand">
       <a href="#" class="nav-logo" style="font-size: 26px;">
         <svg class="logo-stamp" viewBox="0 0 100 100" width="36" height="36" aria-hidden="true">
-          <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-          <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-          <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+          <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+          <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
         </svg>
         แต้มดี<span class="dot">.</span>
       </a>
-      <p>บัตรสะสมแต้มดิจิทัลสำหรับร้านค้า — ใช้ง่าย ลูกค้าไม่ต้องโหลดแอป</p>
+      <p>บัตรสะสมแต้มดิจิทัลสำหรับร้านค้า</p>
     </div>
     <div class="foot-col">
       <ul>
         <li><a href="#shops">สำหรับร้าน</a></li>
-        <li><a href="#customers">สำหรับลูกค้า</a></li>
-        <li><a href="#how">วิธีใช้</a></li>
+        <li><a href="#customers">หน้าจอลูกค้า</a></li>
       </ul>
     </div>
     <div class="foot-col">
       <ul>
         <li><a href="#faq">คำถามบ่อย</a></li>
-        <li><a href="#">ติดต่อเรา</a></li>
-        <li><a href="#">คู่มือใช้งาน</a></li>
+        <li><a href="/contact">ติดต่อเรา</a></li>
       </ul>
     </div>
     <div class="foot-col">
       <ul>
-        <li><a href="#">นโยบายความเป็นส่วนตัว</a></li>
-        <li><a href="#">ข้อตกลงการใช้งาน</a></li>
+        <li><a href="/privacy">นโยบายความเป็นส่วนตัว</a></li>
+        <li><a href="/terms">ข้อตกลงการใช้งาน</a></li>
       </ul>
-    </div>
-  </div>
-  <div class="container">
-    <div class="foot-bottom">
-      <span>© 2026 แต้มดี · บริษัท แต้มดี จำกัด</span>
-      <div class="socials">
-        <a class="social-pill" aria-label="Facebook">
-          <svg viewBox="0 0 24 24" fill="currentColor"><path d="M22 12c0-5.52-4.48-10-10-10S2 6.48 2 12c0 4.84 3.44 8.87 8 9.8V15H8v-3h2V9.5C10 7.57 11.57 6 13.5 6H16v3h-2c-.55 0-1 .45-1 1v2h3v3h-3v6.95c5.05-.5 9-4.76 9-9.95z"/></svg>
-        </a>
-        <a class="social-pill" aria-label="Instagram">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2"><rect x="2" y="2" width="20" height="20" rx="5"/><path d="M16 11.37A4 4 0 1112.63 8 4 4 0 0116 11.37z"/><line x1="17.5" y1="6.5" x2="17.51" y2="6.5"/></svg>
-        </a>
-        <a class="social-pill social-pill-line" aria-label="LINE">
-          <svg viewBox="0 0 24 24" xmlns="http://www.w3.org/2000/svg">
-            <path fill="#fff" d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/>
-            <text x="12" y="13.2" text-anchor="middle" font-family="system-ui,-apple-system,sans-serif" font-size="5.6" font-weight="900" fill="#06C755" letter-spacing="-0.3">LINE</text>
-          </svg>
-        </a>
-      </div>
     </div>
   </div>
 </footer>
@@ -5265,10 +5449,10 @@ img { max-width: 100%; }
     <a class="login-modal-close" href="#" aria-label="ปิด">×</a>
     <div class="login-modal-head">
       <svg class="logo-stamp" viewBox="0 0 100 100" width="40" height="40" aria-hidden="true">
-        <rect x="6" y="6" width="88" height="88" rx="22" fill="#111"/>
-        <circle cx="36" cy="42" r="6" fill="#FF5E3A"/>
-        <circle cx="64" cy="42" r="6" fill="#FF5E3A"/>
-        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
+        <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+        <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+        <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+        <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
       </svg>
       <h3>เข้าสู่<em>ระบบ.</em></h3>
       <p>คุณคือ?</p>

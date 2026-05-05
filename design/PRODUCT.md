@@ -1,221 +1,128 @@
-# TaemDee (แต้มดี) — Product Requirements Document
+# TaemDee (แต้มดี) — Product
 
-**Audience:** Core Product & Engineering · **Status:** Current · **Last updated:** 2026-04-28
+**Last updated:** 2026-05-05
 
----
+## 1. What it is
 
-## 1. What we're building
-
-TaemDee is a digital point-card platform for Thai SME shops (cafés, salons, food stalls). It replaces the paper point card with a friction-free digital experience: customer scans a QR, gets a point, sees progress — no app install, no signup. Shops sign up in minutes and pay **nothing** for the loyalty engine itself.
-
-We earn only when a shop taps "Send" on an outbound, system-generated message we surfaced (**DeeReach™**).
+A digital point-card platform for Thai SME shops (cafés, salons, food stalls). Customer scans a QR sticker, gets a stamp, sees progress — no app install, no signup. Shops sign up in minutes. The loyalty engine itself is **free**; revenue comes only when a shop sends an outbound message (**DeeReach**).
 
 ## 2. Users
 
-### Customer
-- Walks into a shop, sees a QR sticker, scans with phone camera.
-- Wants a free coffee eventually. Will not install an app. Will not fill a form.
-- Mid-range Android phone, 4G or shop Wi-Fi, attention span = seconds at the counter.
+- **Customer** — walks in, scans, wants a free coffee eventually. Won't install an app or fill a form. Mid-range Android, attention span ≈ seconds at the counter.
+- **Shop owner** — does everything. Decisions are yes/no taps, never forms. Phone is the primary device.
+- **Shop staff (optional)** — invited by the owner. Per-staff toggles: issue, void, DeeReach, top-up, settings. The dashboard adapts to permissions.
 
-### Shop Owner
-- One person doing everything — cashier, marketer, accountant.
-- Decision capacity: yes/no taps. **Never forms or rules.**
-- Time per interaction: ~10 seconds between customers.
-- Devices: phone (primary, all day), tablet + occasional desktop (evenings, top-ups).
+## 3. Voice & brand
 
-### Shop Staff (optional)
-- Invited by the Shop Owner via phone OTP or LINE.
-- Permissions are **per-staff toggles** set at invite time: Issue points, Void, DeeReach, Top-up, Settings. Owner can edit anytime.
-- Dashboard surfaces adapt based on permissions.
+- **Bilingual.** Thai script primary, English secondary. ร้าน, ลูกค้า — never "merchant" or "customer".
+- **น้องแต้ม** is the customer-side helper character. First-person ผม, addresses the customer as "พี่ + nickname". Shop side stays generic / neutral.
+- **One primary action per view.** Mobile-first, scaled up for desktop.
 
-## 3. Brand & Voice Principles
-
-- **Bilingual:** Thai script primary, English secondary. Use ร้าน not "merchant", ลูกค้า not "customer".
-- **Casual and warm:** No corporate language. Short sentences.
-- **Helper character — "น้องแต้ม":** The customer-side voice is a friendly helper character named **น้องแต้ม**. Speaks in first-person ("ผม"), addresses the customer with "พี่" + their nickname.
-- **Shop voice:** Generic, no character — the shop side stays neutral. Greetings like "สวัสดี" without a name.
-- **Mobile-first & Minimal:** Lots of whitespace, one primary action per view. Designed for a phone first, scaled up for desktop.
-
-## 4. Proprietary Terms
+## 4. Terms
 
 | Term | Meaning |
 |---|---|
-| **DeeCard™** | The customer's digital point card |
-| **DeeBoard™** | The shop's dashboard |
-| **DeeReach™** | An outbound message the shop sends (win-back, birthday, new-product, almost-there) |
+| **DeeCard** | The customer's digital point card |
+| **แดชบอร์ด** | The shop's dashboard |
+| **DeeReach** | An outbound message the shop sends to its customers |
 
-## 5. Screen Inventory (Route Identifiers)
+## 5. Screens
 
-The codebase routes, templates, and comments are heavily mapped to these identifiers. While the visual UX may change, these represent the constant logical views of the application.
-
-### Customer-facing
-| # | Screen | Purpose |
+### Customer (PWA, no login)
+| # | Route | Purpose |
 |---|---|---|
-| C1 | **DeeCard** | Daily point card — shows progress, shop branding, reward summary. |
-| C2.1 | **First scan · Greeting** | First-ever scan. น้องแต้ม character introduces itself and asks for nickname. |
-| C2.2 | **First scan · First stamp** | Reveal of the first point (+1/N) and the reward goal. |
-| C2.3 | **First scan · Save & signup** | Soft Wall: Offers Link LINE or Verify Phone (OTP) for permanent save, or skip. |
-| C3 | **Phone OTP** | Phone OTP form for customers who chose "Verify Phone". |
-| C4 | **Redeem state** | DeeCard at reward threshold. Primary CTA to redeem. |
-| C5 | **Reward claimed** | Celebration screen shown right after a redemption. |
-| C6 | **Account menu** | Profile, preferred notification channel toggle, privacy submenu, logout, delete account (PDPA). |
-| C7 | **My Cards** | List of all DeeCards across shops. Has scan-camera button. |
-| C8 | **My QR** | Guest QR for shops that use "Shop scans customer" issuance method. |
-| C9 | **Shop Story** | Customer-facing emotional layer — shop's story, menu, reviews. |
-| Install | **Add to home** | Bottom sheet with install steps. |
+| C1 | `/card/{shop_id}` | DeeCard — daily progress + reward summary |
+| C2 | first-scan flow | Greeting → first stamp → optional "save" via LINE / Google |
+| C4 | C1 at threshold | "เปิดของขวัญ" CTA — open to guests; soft signup link below |
+| C5 | redeem result | Voucher saved to "ของขวัญ" tab; new blank card starts immediately |
+| C6 | `/card/account` | Profile, preferred channel, privacy, logout, delete |
+| C7 | `/my-cards` | List of all DeeCards across shops + onboarding todos |
+| C8 | `/my-qr` | Customer's QR for shops that scan customers |
+| C9 | `/story/{shop_id}` | Shop's story / menu / vibe |
+| Gifts | `/my-gifts` + `/voucher/{id}` | พร้อมใช้ / ใช้แล้ว · tap "ใช้" → fullscreen QR for staff |
+| Inbox | `/my-inbox` | DeeReach messages addressed to this customer |
+| Install | sheet | Add-to-home prompt |
 
-### Shop-facing
-| # | Screen | Purpose |
+### Shop (login required)
+| # | Route | Purpose |
 |---|---|---|
-| S1 | **Login** | Mobile OTP or LINE Login. |
-| S2 | **Onboarding** | Shop name + reward goal → logo → pick a theme → print QR. |
-| S3 | **DeeBoard home** | One big number + live notification feed + DeeReach suggestion cards. |
-| S4 | **DeeReach suggestion card** | Inline in feed: one-tap outbound message approval. |
-| S5 | **Issuance** | Issuance methods (Customer Scans / Shop Scans / Phone Entry). |
-| S6 | **Point notification** | Guest ID + [Void] button. |
-| S7 | **Top-up** | Pick package → PromptPay QR → upload slip. |
-| S8 | **Shop QR print page** | Printable PDF/PNG of the shop's pointing QR. |
-| S9 | **Theme picker** | Gallery of themes to apply. |
-| S10 | **Settings** | Edit shop name, reward goal, logo, theme, location, contact phone, opening hours. |
-| S11 | **Team (in Settings)** | Owner-only: invite staff with per-staff permission toggles. |
-| S12 | **Branches (in Settings)** | Owner-only: add/edit/remove branches and set reward mode (Shared/Separate). |
+| S1 | `/shop/login` · `/staff/pin-login` | LINE / Google / username + 6-digit PIN |
+| S2 | `/shop/onboarding` | Name + reward goal → logo → theme → print QR |
+| S3 | `/shop/dashboard` | One headline number + live feed + DeeReach suggestion cards + แต้มดีแนะนำ todos |
+| S5 | `/shop/issue/*` | Customer-scans · shop-scans · phone-entry. Method toggles per shop |
+| S6 | feed-row sheet | +1 / รับรางวัล with `[Void]` for a short window |
+| S7 | `/shop/topup` | Pick package → PromptPay QR → upload slip (Slip2Go verify) |
+| S8 | `/shop/qr` | Printable QR sheet |
+| S9 | `/shop/themes` | Theme picker |
+| S10 | `/shop/settings` | Name, reward goal, logo, theme, location, hours, login methods |
+| S11 | `/shop/team` | Owner-only · invite staff with permission toggles |
+| S12 | `/shop/branches` | Owner-only · shared vs separate reward mode |
 
-## 6. Key Mechanisms & Flows
-
-### Customer Onboarding & Retention
-- **First Visit:** A brief, warm onboarding flow introduces "น้องแต้ม" and asks for a nickname. Points are issued instantly without forced account creation (anonymous guest mode).
-- **Return Visits:** Extremely fast (≤2 seconds). A scan updates the progress in place without re-onboarding.
-- **Identity Claim (Soft Wall):** Guests are encouraged to link their LINE account or phone number (OTP) to persist their points across devices or to redeem rewards.
-
-### Shop Operations
-- **Frictionless Setup:** Phone/LINE login, minimal configuration (name, reward, logo, theme). First batch of points is free.
-- **Daily Issuance:** Staff can issue points via shop-side scanning, customer-side scanning (QR stickers), or phone entry. Configurable cooldowns prevent abuse.
-- **Redemption:** Customers initiate redemption on their phone when reaching the goal. The shop's dashboard reflects the redemption instantly with a window to void if fraudulent.
-- **Multi-Branch:** Shops can add branches, choosing between "Shared" (one reward goal across all) or "Separate" (independent goals per branch) reward modes.
-
-## 7. Product Principles
-
-- **Speed:** Point issuance and redemption flows must complete in under 3 seconds. Use partial DOM updates (e.g., HTMX).
-- **One action per view:** Avoid complex, multi-step forms.
-- **Actionable Costs:** Every paid action must show the cost in credits **inside the same tap that approves it** (no surprise confirmation modals).
-- **Bookmarkable URLs:** Customers can bookmark their DeeCard for easy access.
-
-## 8. Trust & Compliance
-
-- **Anti-Fraud Mechanics:** 
-  - Every point or redemption notification carries a `[Void]` action with a short time window.
-  - An anti-rescan cooldown prevents rapid scanning (configurable per shop, defaults to 0).
-  - Pattern alerts surface unusual activity (e.g., "8 points in 2 minutes") directly to the shop.
-- **PDPA / Privacy:** Customer data is captured only after explicit consent (Soft Wall). Anonymous profiles expire after 12 months. Account deletion is a single-tap process.
-
-## 9. Offers & Referrals
-
-- **Offers:** Promises funded by either the system or the shop (e.g., `credit_grant`, `free_point`, `bonus_point_count`, `free_item`). They act as digital vouchers that create ledger records upon redemption. They are presented contextually (on cards or inside messages) rather than on dedicated "offer pages".
-- **Referrals:** Current implementation supports Shop-to-Shop referrals. An existing shop generates a link, and when a new shop signs up and completes onboarding, both receive a `credit_grant` Offer.
-
-
-## 10. Monetization (DeeReach)
-
-TaemDee operates on a **freemium** model. The core loyalty engine (DeeCard, DeeBoard, point issuance, voiding, redemption, themes) is completely free for shops to use. 
-
-Our sole revenue stream is **DeeReach™** — outbound, system-generated marketing messages that shops send to their customers (e.g., win-back campaigns, birthday rewards, almost-there nudges). 
-
-Shops pre-purchase **Credits** using real THB via PromptPay. The cost of sending a DeeReach campaign is calculated dynamically based on the delivery channel required for each customer in the target audience.
-
-### Push Channel Pricing Strategy
-
-The platform routes messages based on the customer's **Preferred Channel**. If the customer has not set a preference in their Account Menu (C6), the system defaults to a **Waterfall strategy**, automatically routing through the cheapest available channel the customer has unlocked. We only charge for the channel actually used.
-
-1. **DeeCard Inbox (Cheapest Fallback)**
-   - **Suggested Cost:** ~0.1 Credits per message.
-   - **Mechanism:** For anonymous guests or customers who haven't opted into Web Push, LINE, or SMS, the message silently drops into an "Inbox" tab on their DeeCard. 
-   - **Rationale:** Ensures 100% campaign coverage. Pure margin for the platform since there are no external API costs, while establishing a baseline value for reaching every customer.
-
-2. **PWA Web Notification (Low Cost)**
-   - **Suggested Cost:** ~0.5 Credits per message.
-   - **Mechanism:** Delivered via Web Push API for customers who have saved the DeeCard to their home screen and allowed notifications.
-   - **Rationale:** Zero variable cost for TaemDee. High margin, and incentivizes shops to encourage customers to "Add to Home Screen".
-
-3. **LINE Message (Moderate)**
-   - **Suggested Cost:** 1 Credit per message.
-   - **Mechanism:** Delivered via LINE Official Account Push API for customers who linked their LINE account during the Soft Wall flow.
-   - **Rationale:** High visibility. TaemDee passes on the LINE API per-message cost with a slight markup.
-
-4. **SMS (Most Expensive)**
-   - **Suggested Cost:** 2 Credits per message.
-   - **Mechanism:** Delivered via an SMS gateway for customers who verified via OTP but haven't linked LINE or enabled Web Push.
-   - **Rationale:** Universal reach, but carries the highest hard cost to the platform. The THB-to-Credit conversion ratio must include a sufficient safety margin to absorb fluctuating SMS carrier costs.
-
-### Credit Calculation: Charge on Delivery
-
-**Critical UX requirement:** The shop owner must never be surprised by a cost, and they only pay for successful deliveries.
-
-When a DeeReach suggestion card appears on the DeeBoard, the system pre-calculates the maximum estimated cost.
-
-- **Example:** *"Send birthday wishes to 10 customers? [Yes · Est. 15 Credit]"*
-  *(Calculation breakdown hidden from user: 5 on Web Push @ 0.5 + 3 on LINE @ 1.5 + 2 on SMS @ 4.0 = 15.0 Credits)*
-- Tapping "Yes" places a **hold (lock)** on the estimated 15 credits.
-- **Delivery Reconciliation:** The system attempts delivery. If a Web Push fails or an SMS bounces, the unspent credits are automatically unlocked and refunded to the shop's balance.
-
-### Anti-Spam & Opt-Outs (PDPA)
-
-To protect the platform's reputation and prevent customers from mass-blocking the TaemDee LINE account:
-- **Per-Shop Muting:** Customers can mute notifications from a specific shop (e.g., *Café Tana*) without losing updates from other shops. Muted customers default to the cheapest "DeeCard Inbox" fallback.
-- **Platform Rate Limiting:** The system enforces a hard cap (e.g., 1 DeeReach message per customer per shop every 14 days) to prevent aggressive spamming.
-
-## 11. Future Roadmap
-
-| Feature | Status | Description |
+### Shared
+| # | Route | Purpose |
 |---|---|---|
-| Analytics dashboards | Future | Currently, DeeBoard focuses on a single core metric. |
-| Advanced Offer Kinds | Future | `point_multiplier`, `free_reward`, `free_gift`, `discount` (requires more complex cashier UX). |
-| Customer Discovery | Future | System → Customer offers (DeeWelcome). |
-| Cross-Shop Wallet (DeePass) | Future | Customer → Customer offers and referrals. |
-| Shop → Customer Referral | Future | Cashier "first visit" UX. |
-| Gamification (Missions) | Future | Behavior-driven challenges (e.g., `visit_streak`). See below. |
+| Picker | `/` (when device has both shop + customer cookies) | Two tiles: ร้านค้า / ลูกค้า. Re-entry via `/switch` |
 
-### Gamification (Missions) Overview (Deferred)
+## 6. Flows
 
-Missions are challenges that, when completed, generate an Offer. 
-- **Example:** *"Visit 3 times this week → free shop t-shirt."*
-- **Mechanism:** Count un-voided points in a window. When the goal is reached, an Offer appears on the DeeCard.
-- **Why Deferred:** Requires a gamification rule engine and additional cashier/inventory UX support.
+**Customer onboarding.** Anonymous on first scan — points issue immediately. The "save your card" prompt at ≥3 stamps is soft, never required. Linking LINE / Google merges identity onto a shared `users` row so stamps survive across devices. iOS PWA Safari hand-off uses a transfer-token bounce so the OAuth callback's cookie reaches the PWA cleanly; stale PWA cookies that miss the Set-Cookie follow `customers.merged_into_id` to the live identity.
 
-## 12. Tech Notes
-- Web app, HTMX-powered. No native apps.
+**Issuance.** Three methods: customer scans the shop's QR, shop scans the customer's QR, or shop types the customer's phone. Each is a per-shop toggle. Optional anti-rescan cooldown.
+
+**Auto-redeem.** Hitting `shop.reward_threshold` inside `issue_point()` flips the stamp into a redemption automatically — works for every issuance path (customer scan, shop scan, phone entry, manual grant, DeeReach `bonus_stamp_count`). The voucher lands in the customer's "ของขวัญ" tab.
+
+**Voucher use.** Customer taps "ใช้" → `served_at` stamps now → fullscreen QR shows for staff (5-min audit window). The shop dashboard's feed picks this up live. If the customer's voucher is already pending and the shop scans them within 30 minutes, the scan flips `served_at` instead of issuing a new stamp — handles the "stamp the customer who's collecting their free coffee" race.
+
+**Live updates.** `/sse/me` is the customer's per-tab SSE channel. Events: `inbox-update` (unread count), `gifts-update` (active voucher count), `stamped`, `redeemed`. Cross-worker fan-out via Postgres `LISTEN/NOTIFY`. Shop side has the equivalent on `shop.id` driving the live feed.
+
+**DeeReach delivery.** Routed by the customer's preferred channel; otherwise waterfall (cheapest viable). Cost is locked when the shop taps "Yes" and reconciled per recipient — failed sends refund automatically.
+
+| Channel | Cost | Notes |
+|---|---|---|
+| `inbox` | 0 Cr | Always reachable. Free fallback. |
+| `web_push` | 0.5 Cr | PWA installed + permission granted |
+| `line` | 1.0 Cr | LINE OA push (customer must be friended) |
+| `sms` | 2.0 Cr | Phone-only customers |
+
+Trigger kinds the platform suggests today: `almost_there`, `win_back`, `unredeemed_reward`, `new_customer`. Per-customer rate limit + per-shop mute live in `customer_shop_mutes`.
+
+## 7. Principles
+
+- **Speed.** Issuance and redemption flows must complete in under 3 seconds.
+- **One tap, one cost.** Every paid action shows the credit cost on the same button that approves it. No surprise modals.
+- **Bookmarkable URLs.** A customer can pin their DeeCard.
+- **No login wall on PWA.** The customer side is connect-only. Logout returns to `/my-cards`, never to a marketing page.
+
+## 8. Trust & PDPA
+
+- Every issuance and redemption row carries a `[Void]` action for a short window. Voiding releases the underlying points.
+- Pattern alerts surface unusual activity (e.g. "8 points in 2 minutes") to the shop.
+- Customer data is only captured after explicit consent. Anonymous profiles expire after 12 months. Account deletion is a single tap.
+- Per-shop mute: customers can silence one shop without losing reach from others. Muted recipients fall back to the inbox channel.
+
+## 9. Offers & referrals
+
+- **Offers** (welcome credit, free stamp, bonus-stamp count, etc.) are funded by either the platform or the shop and create ledger records on redemption. Surfaced contextually — no dedicated offer pages.
+- **Referrals** are Shop → Shop today. An existing shop generates `/shop/login?ref=<code>`; on the new shop's first onboarding completion, both sides receive a `credit_grant` Offer.
+
+## 10. Monetization
+
+Freemium. The loyalty engine is free. Revenue comes from DeeReach credits (PromptPay top-up). See pricing table in §6.
+
+## 11. Tech notes
+
+- Web app, FastAPI + Jinja + HTMX + small inline scripts. No native apps.
 - Mobile-first responsive — desktop is a scaled-up phone view.
-- Real-time notifications via server-sent events.
+- Real-time via SSE (`/sse/me` customer · `/shop/events` shop) over Postgres `LISTEN/NOTIFY`.
+- Background jobs (DeeReach send, reconciliation) run in RQ workers.
 
-## 13. UX Decisions Log (Apr 2026 update)
+## 12. Future
 
-### Customer dock & scan
-- Dock = 4 tabs: บัตร · สแกน · ของขวัญ · ข้อความ (settings moved to top-right gear)
-- "สแกน" tab = primary action · 1-tap opens fullscreen camera modal (high-frequency action)
-- C-scan modal has bottom toggle to switch to QR display (for cases when shop scans customer instead)
-
-### Vouchers/Gifts
-- "วอชเชอร์" → "ของขวัญ" (friendly Thai term · SME-friendly)
-- C-gifts dedicated page with พร้อมใช้ + ใช้แล้ว sections
-- C5 (reward claimed) reframed: "เก็บไว้ใช้ครั้งหน้า" (not "use now") · realistic flow accounts for customer leaving and returning
-
-### DeeReach terminology
-- "แคมเปญ" too marketing-heavy for SMEs · replaced with:
-  - "ข้อความ" (the message itself)
-  - "สร้างเอง" (custom message page · was "สร้างแคมเปญเอง")
-  - "ส่งอีกครั้ง" (re-send · was "ทำซ้ำแคมเปญ")
-  - "ปรับข้อความ" (edit · was "ปรับแคมเปญ")
-
-### S13 enhancements
-- Segment badges with AI-suggested filters (หายไป 14+ วัน · มีแต้ม 4+ · ลูกค้าใหม่)
-- Template badges (ชวนกลับ · เกือบครบ · วันเกิด · เมนูใหม่ · ขอบคุณ · เปล่า)
-- Channel chips per customer showing waterfall (Push 0.5 → LINE 1 → SMS 3 → Inbox)
-  - Active (orange) = will send
-  - Available (white outline) = fallback option
-  - Strikethrough = customer has no permission
-- Search + ปลดทั้งหมด integrated INTO customer box
-
-### Accessibility
-- Font-size picker in customer settings: เล็ก / กลาง / ใหญ่
-- rem-based 9-tier scale · toggles `<html>` font-size
-- Respects iOS Dynamic Type
-
+| Feature | Status |
+|---|---|
+| Analytics dashboards | future |
+| Advanced offer kinds (`point_multiplier`, `discount`, ...) | future |
+| Customer-side discovery (DeeWelcome) | future |
+| Cross-shop wallet (DeePass) | future |
+| Shop → customer referral | future |
+| Gamification / missions | future |
