@@ -55,6 +55,7 @@ class CustomerDashboardItem:
     # makes sense for anonymous customers with a code on file). Default
     # is "always show".
     is_eligible: Callable[[Customer], bool] = lambda c: True
+    scan_count: int = 2 # How many times the customer scanned their card before this item appears?
 
 
 def _has_any_provider(c: Customer) -> bool:
@@ -175,18 +176,37 @@ async def list_available(
       - items the customer claimed/skipped (CustomerItem row exists)
       - items not eligible right now (is_eligible(customer) → False)
       - items already fulfilled (is_fulfilled(customer) → True)
+      - items gated behind more scans than the customer has yet
+        (it.scan_count > customer's lifetime point count)
 
     The fulfillment check happens AFTER the eligibility check so an
     ineligible-but-fulfilled state still skips the row.
     """
+    from sqlmodel import func
+    from app.models import Point
+
     claimed = (await db.exec(
         select(CustomerItem.kind).where(CustomerItem.customer_id == customer.id)
     )).all()
     claimed_set = set(claimed)
 
+    # Lifetime scan count — non-voided Point rows for this customer.
+    # Used to drip-feed todos so brand-new customers aren't buried
+    # in 6 things to do on their first stamp.
+    scan_count = (await db.exec(
+        select(func.count())
+        .select_from(Point)
+        .where(
+            Point.customer_id == customer.id,
+            Point.is_voided == False,  # noqa: E712
+        )
+    )).one()
+
     out: list[CustomerDashboardItem] = []
     for it in ITEMS:
         if it.kind in claimed_set:
+            continue
+        if it.scan_count > scan_count:
             continue
         if not it.is_eligible(customer):
             continue
