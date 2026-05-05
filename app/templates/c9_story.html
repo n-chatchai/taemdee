@@ -1,5 +1,7 @@
 {% extends "_layouts/c_base.html" %}
-{% set nav_active = 'cards' %}
+{# Dock active state intentionally unset — the customer is on a per-shop
+   story surface, not the cards-list. Highlighting "บัตร" would mislead
+   them about which page they're on. #}
 {% block title %}{{ shop.name }} · ทำความรู้จัก · TaemDee{% endblock %}
 
 {% block td_class %} shop-story-page{% endblock %}
@@ -22,7 +24,11 @@
     </div>
 
     <div class="ss-cover-actions">
-      <a href="/card/{{ shop.id }}" class="ss-fab" aria-label="ย้อนกลับ">
+      {# Back goes wherever the user came from — /my-cards (voucher
+         card tap), /card/<shop> (shop daily wordmark), or any deep
+         link. Uses history.back() so we don't override the natural
+         flow and trap users on /card/<shop> regardless of entry. #}
+      <a href="javascript:history.back()" class="ss-fab" aria-label="ย้อนกลับ">
         <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </a>
       <div class="ss-fab-group"></div>

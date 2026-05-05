@@ -625,11 +625,13 @@
       </div>
       <div class="cl-voucher-carousel">
         {% for voucher in hero_vouchers %}
-          <button type="button" class="cl-voucher-card"
-                  style="--shop-color: {{ voucher.shop_color }};"
-                  data-voucher-id="{{ voucher.redemption.id }}"
-                  data-shop-name="{{ voucher.shop.name }}"
-                  data-reward="{{ voucher.shop.reward_description }}">
+          {# Tap → shop story so the customer reads about the shop
+             before redeeming. The story page links forward to the
+             shop's daily card, where the actual voucher.confirm sheet
+             lives. #}
+          <a class="cl-voucher-card"
+             href="/story/{{ voucher.shop.id }}"
+             style="--shop-color: {{ voucher.shop_color }};">
             <div class="cl-voucher-image">
               {% set img_id = voucher.shop.reward_image %}
               {% include "_partials/reward_svg.html" %}
@@ -642,11 +644,11 @@
               </div>
               <div class="cl-voucher-reward">{{ voucher.shop.reward_description }}</div>
               <div class="cl-voucher-cta">
-                <span>แลกของขวัญ</span>
+                <span>ดูร้าน</span>
                 <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
               </div>
             </div>
-          </button>
+          </a>
         {% endfor %}
       </div>
     </div>
@@ -734,34 +736,9 @@
     {% include "_partials/signup_picker.html" %}
   {% endif %}
 
-  {# voucher.confirm bottom sheet — opened when user taps a voucher
-     card. Confirm step protects against accidental redemption since
-     "ใช้แล้วคืนไม่ได้". POSTs to /voucher/<id>/use on confirm. #}
-  <div class="rc-overlay" id="vc-overlay" hidden>
-    <form class="rc-sheet vc-sheet" method="post" id="vc-form" style="margin:0;">
-      <div class="sheet-handle"></div>
-      <div class="vc-icon">
-        <svg viewBox="0 0 24 24">
-          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
-          <line x1="12" y1="9" x2="12" y2="13"/>
-          <line x1="12" y1="17" x2="12.01" y2="17"/>
-        </svg>
-      </div>
-      <div class="vc-h">แลกของขวัญตอนนี้?</div>
-      <div class="vc-sub">แลกแล้วจะคืนไม่ได้ · พี่ต้องอยู่ที่ร้านเพื่อโชว์หน้าจอให้พนักงาน</div>
-      <div class="vc-card">
-        <div class="vc-logo" id="vc-logo"></div>
-        <div class="vc-info">
-          <div class="vc-shop" id="vc-shop"></div>
-          <div class="vc-reward" id="vc-reward"></div>
-        </div>
-      </div>
-      <div class="rc-actions">
-        <button type="button" class="cancel" id="vc-cancel">ยังไม่แลก</button>
-        <button type="submit" class="send">แลกเลย</button>
-      </div>
-    </form>
-  </div>
+  {# voucher.confirm sheet lives in /my-gifts now. On /my-cards the
+     voucher card links to /story/<shop> (read about the shop first);
+     the actual confirm + redeem flow happens from there. #}
 {% endblock %}
 
 {% block body_end %}
@@ -797,45 +774,6 @@
           const name = (row.dataset.shopName || '').toLowerCase();
           row.style.display = q && !name.includes(q) ? 'none' : '';
         }
-      });
-    })();
-
-    // voucher.confirm — opens the bottom sheet on voucher card tap.
-    // POSTing happens on confirm; "ยังไม่แลก" closes the sheet.
-    (function () {
-      const overlay = document.getElementById('vc-overlay');
-      const form = document.getElementById('vc-form');
-      const logoEl = document.getElementById('vc-logo');
-      const shopEl = document.getElementById('vc-shop');
-      const rewardEl = document.getElementById('vc-reward');
-      const cancelBtn = document.getElementById('vc-cancel');
-      if (!overlay || !form) return;
-
-      document.addEventListener('click', (e) => {
-        const card = e.target.closest('.cl-voucher-card[data-voucher-id]');
-        if (!card) return;
-        e.preventDefault();
-        const id = card.dataset.voucherId;
-        // No ?next= — fall through to /voucher/<id> fullscreen page
-        // (the "show this screen to staff" QR view).
-        form.action = `/voucher/${id}/use`;
-        // Mirror the card's logo + shop name + reward into the sheet
-        // so the user sees what they're about to spend.
-        const logoSrc = card.querySelector('.cl-voucher-shop .logo');
-        if (logoSrc) logoEl.innerHTML = logoSrc.innerHTML;
-        shopEl.textContent = card.dataset.shopName || '';
-        rewardEl.textContent = card.dataset.reward || '';
-        overlay.hidden = false;
-        document.body.style.overflow = 'hidden';
-      });
-
-      function close() {
-        overlay.hidden = true;
-        document.body.style.overflow = '';
-      }
-      cancelBtn.addEventListener('click', close);
-      overlay.addEventListener('click', (e) => {
-        if (e.target === overlay) close();
       });
     })();
 

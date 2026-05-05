@@ -1,5 +1,7 @@
 {% extends "_layouts/c_base.html" %}
-{% set nav_active = 'cards' %}
+{# Dock active state intentionally unset — this is the celebration /
+   reward-claimed surface, not a cards-list page. Highlighting "บัตร"
+   would mislead the customer about where they are. #}
 {% block title %}เก็บครบแล้ว · {{ shop.name }} · TaemDee{% endblock %}
 {% block td_class %} c5{% endblock %}
 
