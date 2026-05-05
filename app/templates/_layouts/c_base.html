@@ -29,6 +29,35 @@ Child templates fill these blocks:
       {% include "_partials/pwa_head.html" %}
       <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
       {% block head_extra %}{% endblock %}
+
+      {# Speculation Rules — Chrome / Edge prerender these pages in a
+         hidden tab when the user hovers / starts touching the link, so
+         tapping the dock or any in-page link to one of these surfaces
+         is instant. Eagerness "moderate" fires only on user intent
+         (hover/pointerdown), not on viewport entry, so the server isn't
+         hammered with prerenders for users who never tap. Cap at 4 so
+         a long list of cards can't queue too much background work. #}
+      <script type="speculationrules">
+        {
+          "prerender": [
+            {
+              "where": {
+                "or": [
+                  { "href_matches": "/my-cards" },
+                  { "href_matches": "/my-gifts" },
+                  { "href_matches": "/my-inbox" },
+                  { "href_matches": "/my-qr" },
+                  { "href_matches": "/card/account" },
+                  { "href_matches": "/card/*" },
+                  { "href_matches": "/voucher/*" },
+                  { "href_matches": "/story/*" }
+                ]
+              },
+              "eagerness": "moderate"
+            }
+          ]
+        }
+      </script>
     </head>
 
   <body>
