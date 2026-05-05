@@ -269,6 +269,17 @@ async def seed(shop_id: UUID, *, reset: bool = False) -> None:
         )
 
 
+async def _run(shop_id: UUID, *, reset: bool) -> None:
+    """Run seed + dispose the engine inside one event loop. Calling
+    engine.dispose() in a separate asyncio.run() raises 'Event loop
+    is closed' because asyncpg's connections are pinned to the loop
+    they were created on."""
+    try:
+        await seed(shop_id, reset=reset)
+    finally:
+        await engine.dispose()
+
+
 def main() -> None:
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument(
@@ -288,10 +299,7 @@ def main() -> None:
             "No shop id — set SHOP_SAMPLE_ID in .env or pass --shop-id <UUID>"
         )
 
-    try:
-        asyncio.run(seed(shop_id, reset=args.reset))
-    finally:
-        asyncio.run(engine.dispose())
+    asyncio.run(_run(shop_id, reset=args.reset))
 
 
 if __name__ == "__main__":
