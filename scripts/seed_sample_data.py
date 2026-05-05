@@ -27,7 +27,7 @@ import argparse
 import asyncio
 import random
 import sys
-from datetime import datetime, timedelta, timezone
+from datetime import timedelta
 from pathlib import Path
 from uuid import UUID, uuid4
 
@@ -45,6 +45,7 @@ from sqlmodel import select
 from app.core.config import settings
 from app.core.database import SessionFactory, engine
 from app.models import Customer, Point, Redemption, Shop, User
+from app.models.util import utcnow
 
 
 SAMPLE_NAME_PREFIX = "TaemDee Sample"
@@ -144,7 +145,7 @@ async def seed(shop_id: UUID, *, reset: bool = False) -> None:
 
         rng = random.Random(int(shop_id))
 
-        today_utc = datetime.now(timezone.utc).replace(microsecond=0)
+        today_utc = utcnow().replace(microsecond=0)
         customer_anchor = today_utc - timedelta(days=DAYS_BACK + 1)
 
         customer_ids: list[UUID] = []
