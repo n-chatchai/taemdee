@@ -1427,9 +1427,38 @@ async def my_cards(
         .group_by(Inbox.shop_id)
     )).all())
 
+    # Hero now points at all unused vouchers (Redemption served_at IS NULL ·
+    # is_voided = False) as a carousel instead of a single hero tile.
+    # Auto-redeem on /scan means the threshold-hit moment immediately
+    # collapses into a Redemption row — by the time the customer lands on
+    # /my-cards there's a voucher waiting in /my-gifts, not a full unredeemed
+    # card. The hero surfaces "ของขวัญรอพี่อยู่" with a tap-through to use it.
+    hero_redemptions = (await db.exec(
+        select(Redemption)
+        .where(
+            Redemption.customer_id == customer.id,
+            Redemption.served_at.is_(None),
+            Redemption.is_voided == False,  # noqa: E712
+        )
+        .order_by(Redemption.created_at.desc())
+    )).all()
+
+    # Batch-load every referenced shop in a single round trip — was N+1
+    # (one db.get per shop in the points view + one per hero voucher), so
+    # a customer with 10 shops + 3 vouchers paid 13 sequential SELECTs.
+    needed_shop_ids = {sid for sid, _ in points_per_shop}
+    needed_shop_ids.update(r.shop_id for r in hero_redemptions)
+    shops_by_id: dict = {}
+    if needed_shop_ids:
+        shops_by_id = {
+            s.id: s for s in (await db.exec(
+                select(Shop).where(Shop.id.in_(needed_shop_ids))
+            )).all()
+        }
+
     cards = []
     for shop_id, active_count in points_per_shop:
-        shop = await db.get(Shop, shop_id)
+        shop = shops_by_id.get(shop_id)
         if shop is None:
             continue
         threshold = shop.reward_threshold or 1
@@ -1446,24 +1475,9 @@ async def my_cards(
         })
     cards.sort(key=lambda c: c["ratio"], reverse=True)
 
-    # Hero now points at all unused vouchers (Redemption served_at IS NULL ·
-    # is_voided = False) as a carousel instead of a single hero tile.
-    # Auto-redeem on /scan means the threshold-hit moment immediately
-    # collapses into a Redemption row — by the time the customer lands on
-    # /my-cards there's a voucher waiting in /my-gifts, not a full unredeemed
-    # card. The hero surfaces "ของขวัญรอพี่อยู่" with a tap-through to use it.
-    hero_redemptions = (await db.exec(
-        select(Redemption)
-        .where(
-            Redemption.customer_id == customer.id,
-            Redemption.served_at.is_(None),
-            Redemption.is_voided == False,  # noqa: E712
-        )
-        .order_by(Redemption.created_at.desc())
-    )).all()
     hero_vouchers = []
     for i, redemption in enumerate(hero_redemptions):
-        shop = await db.get(Shop, redemption.shop_id)
+        shop = shops_by_id.get(redemption.shop_id)
         if shop is not None:
             hero_vouchers.append({
                 "redemption": redemption,
@@ -1490,12 +1504,10 @@ async def my_cards(
     ]
 
     # Per PRD §10 / DeeReach inbox channel — surface unread DeeReach
-    # messages so the customer notices and reads them.
-    inbox_unread = (await db.exec(
-        select(func.count())
-        .select_from(Inbox)
-        .where(Inbox.customer_id == customer.id, Inbox.read_at.is_(None))
-    )).one()
+    # messages so the customer notices and reads them. Reuses
+    # unread_per_shop (already in memory from the earlier GROUP BY)
+    # instead of running a second aggregate.
+    inbox_unread = sum(unread_per_shop.values())
 
     # Customer-side dashboard todos — install PWA, link a provider,
     # friend the OA on LINE, etc. Auto-skips items that are already
@@ -1517,7 +1529,10 @@ async def my_cards(
             "total_stamps": total_stamps,
             "weekday_th": weekday_th,
             "inbox_unread": inbox_unread,
-            "nav_gifts_badge": await _active_gifts_count(db, customer.id),
+            # Active-gifts badge is exactly the hero_redemptions list
+            # (same WHERE: served_at IS NULL · is_voided = False ·
+            # customer_id match) — use len() instead of a 2nd aggregate.
+            "nav_gifts_badge": len(hero_redemptions),
             "customer_items": customer_items,
         },
     )
