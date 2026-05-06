@@ -106,3 +106,8 @@
 
   <div class="dash-flash" :class="flashKind" x-show="flash" x-cloak x-text="flash"></div>
 {% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'issue' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}

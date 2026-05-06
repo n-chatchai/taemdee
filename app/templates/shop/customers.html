@@ -5,6 +5,39 @@
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
+  {# 4-up stats band — shop-wide totals, not affected by the active
+     filter chip. Gives the owner a glance at the customer base shape
+     before they drill into a specific bucket. #}
+  <div class="s3-cust-stats">
+    <a class="s3-cust-stat" href="/shop/customers">
+      <div class="num">{{ stats_total }}</div>
+      <div class="lab">ทั้งหมด</div>
+    </a>
+    <a class="s3-cust-stat accent" href="/shop/customers?filter=near">
+      <div class="num">{{ stats_near }}</div>
+      <div class="lab">ใกล้รับ</div>
+    </a>
+    <a class="s3-cust-stat warn" href="/shop/customers?filter=lapsed">
+      <div class="num">{{ stats_lapsed }}</div>
+      <div class="lab">หายไป</div>
+    </a>
+    <div class="s3-cust-stat mint">
+      <div class="num">{{ stats_new }}</div>
+      <div class="lab">ใหม่</div>
+    </div>
+  </div>
+
+  {# น่าสนใจวันนี้ — visual placeholder. Logic deferred until we have
+     a clearer product angle (recognition vs outbound, in-person vs
+     digital). The section keeps its slot in the layout so the
+     dashboard doesn't reflow when we wire it up. #}
+  <div class="s3-cust-attn">
+    <div class="s3-cust-attn-h">
+      <span class="lab">น่าสนใจวันนี้</span>
+    </div>
+    <div class="s3-cust-attn-empty">เร็วๆ นี้</div>
+  </div>
+
   <form method="GET" action="/shop/customers" class="s3-search-bar"
         {# Submit on input change debounced — keeps URL in sync without
            extra JS framework. Form GET preserves the active filter. #}>
@@ -30,23 +63,31 @@
     ] %}
     {% for fid, flabel in filters %}
       <a class="fc{% if active_filter == fid %} active{% endif %}"
-         href="/shop/customers?filter={{ fid }}{% if q %}&q={{ q }}{% endif %}">{{ flabel }}</a>
+         href="/shop/customers?filter={{ fid }}{% if q %}&q={{ q }}{% endif %}">
+        {{ flabel }} <span class="fc-count">{{ chip_counts[fid] }}</span>
+      </a>
     {% endfor %}
   </div>
 
-  <div class="s3-cust-count">{{ total }} คน</div>
-
   <div class="s3-cust-list">
+    {# Header row mirrors design — bucket label + count inside the
+       list card. The label tracks the active filter so a switch
+       to "หายไป" reads "ลูกค้าหายไป · 47 คน". #}
+    {% set _bucket_label = {'all': 'ลูกค้าทั้งหมด', 'regular': 'ลูกค้าประจำ', 'near': 'ลูกค้าใกล้รับ', 'lapsed': 'ลูกค้าหายไป'}[active_filter] %}
+    <div class="if-head">
+      <div class="if-label">{{ _bucket_label }}</div>
+      <div class="if-count">{{ total }} คน</div>
+    </div>
     {% for r in rows %}
-      <a class="cust-row" href="#"
-         {# v2 will route to /shop/customers/{r.id} — for now stays on the
-            listing so taps don't 404. #}>
-        <div class="cust-avatar">{{ r.initial }}</div>
+      <a class="cust-row" href="/shop/customers/{{ r.id }}">
+        <div class="cust-avatar{% if r.just_claimed %} mint{% endif %}">{{ r.initial }}</div>
         <div class="cust-info">
           <div class="cust-name">
             {{ r.name }}
-            {% if r.tag == 'ready' %}<span class="cust-tag">🎁 ใกล้รับ</span>
-            {% elif r.tag == 'near' %}<span class="cust-tag">🎁 ใกล้รับ</span>
+            {% if r.tag in ['ready', 'near'] %}
+              <span class="cust-tag">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="display:inline-block; width:11px; height:11px; vertical-align:-1px; margin-right:3px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>ใกล้รับ
+              </span>
             {% elif r.tag == 'lapsed' %}<span class="cust-tag soft">หายไป</span>
             {% endif %}
           </div>

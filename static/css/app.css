@@ -60,7 +60,7 @@ body {
   --mint: #C8E8D0;
   --mint-ink: #1A6B3A;
   --line-green: #06C755;
-  --line: rgba(17, 17, 17, 0.08);
+  --line: rgba(17, 17, 17, 0.10);
   /* Text-size scale (Apr 30 design refresh — rem-based so the C6
      ขนาดตัวอักษร picker can swap font-size on <html> and any rule
      using these vars scales naturally). 1rem = 16px default. */
@@ -7577,9 +7577,90 @@ form.s10-row { margin: 0 0 4px; }
   border-color: var(--ink);
   font-weight: 600;
 }
+/* Bucket count appended to each chip label, e.g. "ลูกค้าประจำ 86" —
+   smaller, dimmer than the label so it reads as metadata. */
+.s3-filter-chips .fc .fc-count {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  color: var(--ink-softer);
+  margin-left: 4px;
+}
+.s3-filter-chips .fc.active .fc-count { color: rgba(255,255,255,0.7); }
 
-.s3-cust-count {
-  margin: 0 20px 8px;
+/* ==========================================================
+   S3.customers — 4-up stats band (ทั้งหมด · ใกล้รับ · หายไป · ใหม่)
+   ========================================================== */
+.s3-cust-stats {
+  display: grid;
+  grid-template-columns: repeat(4, minmax(0, 1fr));
+  gap: 8px;
+  /* 8px top margin matches .s3-metrics on the dashboard so the
+     first content block sits at the same y-coordinate across all
+     dock tabs — no vertical jump when navigating between pages. */
+  margin: 8px 20px 14px;
+}
+.s3-cust-stat {
+  background: var(--surface);
+  border: 1px solid var(--ink);
+  border-radius: 12px;
+  padding: 12px 8px 10px;
+  text-align: center;
+  text-decoration: none;
+  color: inherit;
+  display: block;
+  transition: background 120ms ease, border-color 120ms ease;
+}
+.s3-cust-stat:active { background: var(--bg); }
+.s3-cust-stat .num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 22px;
+  line-height: 1;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.s3-cust-stat .lab {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+.s3-cust-stat.accent .num { color: var(--accent); }
+.s3-cust-stat.warn   .num { color: #B0341A; }
+.s3-cust-stat.mint   .num { color: var(--mint-ink); }
+
+/* น่าสนใจวันนี้ placeholder — keeps the layout slot reserved while
+   the product angle for this section is still being figured out.
+   When the real list ships, the .s3-cust-attn--coming variant goes
+   away and the rows mount in the same wrapper. */
+.s3-cust-attn {
+  margin: 0 20px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 14px;
+  padding: 12px 14px;
+}
+.s3-cust-attn-h {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+}
+.s3-cust-attn-h .lab {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+/* Placeholder body shown until we have a product angle for this
+   section (see git history for the recognition / outbound debate).
+   Reserves a small block of vertical space so the layout stays
+   stable when we swap in the real list. */
+.s3-cust-attn-empty {
+  margin-top: 8px;
+  padding: 14px 0 4px;
+  text-align: center;
   font-family: 'Prompt', sans-serif;
   font-size: 12px;
   color: var(--ink-softer);
@@ -7588,6 +7669,13 @@ form.s10-row { margin: 0 0 4px; }
 
 .s3-cust-list {
   margin: 0 20px 100px;
+  /* Bordered white card per design spec — was a flat block before,
+     now reads as its own surface and matches the dashboard's
+     .s3-issue-feed visual treatment. */
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 8px 14px;
 }
 .cust-row {
   display: flex;
@@ -7665,6 +7753,285 @@ form.s10-row { margin: 0 0 4px; }
   flex-shrink: 0;
 }
 
+/* ==========================================================
+   S3.customers detail — /shop/customers/{id}
+   Header card with avatar + progress bar, stat strip,
+   activity timeline. Matches the bordered-surface treatment
+   of .s3-cust-list and .s3-issue-feed elsewhere on shop side.
+   ========================================================== */
+.cd-card,
+.cd-activity {
+  margin: 8px 20px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 16px 16px 14px;
+}
+.cd-activity { padding: 14px 16px 8px; margin-bottom: 100px; }
+
+.cd-head {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 16px;
+}
+.cd-avatar {
+  flex-shrink: 0;
+  width: 52px; height: 52px;
+  border-radius: 50%;
+  background: var(--accent);
+  color: #FFF;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 20px;
+}
+.cd-avatar.mint { background: var(--mint); color: var(--mint-ink); }
+.cd-id { flex: 1; min-width: 0; }
+.cd-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 2px;
+}
+.cd-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+}
+.cd-pill {
+  flex-shrink: 0;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 11.5px;
+  padding: 5px 10px;
+  border-radius: 99px;
+}
+.cd-pill.ready {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.cd-pill.claimed {
+  color: var(--mint-ink);
+  background: var(--mint);
+}
+
+.cd-progress {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  margin-bottom: 18px;
+}
+.cd-progress-bar {
+  flex: 1;
+  height: 8px;
+  background: rgba(17, 17, 17, 0.06);
+  border-radius: 99px;
+  overflow: hidden;
+}
+.cd-progress-fill {
+  height: 100%;
+  background: var(--accent);
+  border-radius: 99px;
+  transition: width 240ms ease;
+}
+.cd-progress-num {
+  flex-shrink: 0;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 700;
+}
+.cd-progress-num .cp-num { font-size: 18px; color: var(--ink); }
+.cd-progress-num .cp-of { font-size: 12px; color: var(--ink-softer); }
+
+.cd-stats {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: 8px;
+}
+.cd-stat {
+  text-align: center;
+  padding: 10px 4px;
+  background: var(--bg);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
+.cd-stat .num {
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 18px;
+  line-height: 1.1;
+  color: var(--ink);
+  letter-spacing: -0.02em;
+}
+.cd-stat .lab {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 4px;
+}
+
+/* Generic list-card wrapper for the customer detail page —
+   reused by both รางวัลล่าสุด (gifts) and ออกแต้มล่าสุด (points).
+   Same surface treatment as .s3-cust-list / .s3-issue-feed so all
+   three list cards on the customer detail look uniform. */
+.cd-list {
+  margin: 0 20px 14px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 16px;
+  padding: 8px 16px 12px;
+}
+
+/* Individual gift row inside .cd-list. Bordered between rows like
+   .cust-row; last row drops the divider. */
+.cd-gift {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.04);
+}
+.cd-gift:last-child { border-bottom: none; }
+.cd-gift-icon {
+  flex-shrink: 0;
+  width: 40px; height: 40px;
+  border-radius: 12px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+}
+.cd-gift-icon.served {
+  background: var(--mint);
+  color: var(--mint-ink);
+}
+.cd-gift-icon svg { width: 22px; height: 22px; }
+.cd-gift-icon img { width: 28px; height: 28px; object-fit: cover; border-radius: 8px; }
+.cd-gift-info { flex: 1; min-width: 0; line-height: 1.3; }
+.cd-gift-reward {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 14px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+  margin-bottom: 3px;
+}
+.cd-gift-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+.cd-gift-status {
+  font-weight: 700;
+  font-size: 11px;
+  padding: 2px 8px;
+  border-radius: 99px;
+}
+.cd-gift-status.ready {
+  color: var(--accent);
+  background: var(--accent-soft);
+}
+.cd-gift-status.used {
+  color: var(--mint-ink);
+  background: var(--mint);
+}
+
+.cd-activity-h {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding: 0 2px 8px;
+  border-bottom: 1px solid var(--line);
+  margin-bottom: 4px;
+}
+.cd-activity-h .lab {
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-weight: 500;
+  font-size: 13px;
+  color: var(--ink);
+}
+.cd-activity-h .count {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-softer);
+}
+.cd-act-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.04);
+}
+.cd-act-row:last-child { border-bottom: none; }
+.cd-act-icon {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+}
+.cd-act-icon.point { background: var(--accent-soft); color: var(--accent); }
+.cd-act-icon.redemption { background: var(--mint); color: var(--mint-ink); }
+.cd-act-icon svg { width: 16px; height: 16px; }
+.cd-act-info { flex: 1; min-width: 0; }
+.cd-act-label {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+}
+.cd-act-time {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-softer);
+  margin-top: 1px;
+}
+.cd-empty {
+  padding: 18px 12px;
+  text-align: center;
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-softer);
+}
+/* Activity pager — sits below the activity rows. Disabled state
+   (already on first/last page) keeps the same footprint so the
+   pager doesn't reflow when toggling between pages. */
+.cd-pager {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  gap: 8px;
+  margin-top: 12px;
+  padding: 10px 0 4px;
+  border-top: 1px solid var(--line);
+}
+.cd-pager-btn {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 12px;
+  color: var(--accent);
+  text-decoration: none;
+  padding: 6px 10px;
+  border-radius: 8px;
+  transition: background 120ms ease;
+}
+.cd-pager-btn:active { background: var(--accent-soft); }
+.cd-pager-btn.disabled {
+  color: var(--ink-softer);
+  opacity: 0.5;
+  pointer-events: none;
+}
+.cd-pager-info {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
 /* Tabbed layouts (customers / insights / etc.) reserve room at the bottom
    for the floating glass nav. */
 .td.td-tabbed { padding-bottom: 112px; }
@@ -7677,7 +8044,7 @@ form.s10-row { margin: 0 0 4px; }
   margin: 8px 20px 14px;
   padding: 18px 20px 16px;
   background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.12);
+  border: 1px solid var(--line);
   border-radius: 18px;
 }
 .s3-metrics .met-head {
@@ -8433,20 +8800,30 @@ form.s10-row { margin: 0 0 4px; }
    left, ทั้งหมด/สแกน/แลก pills on the right, hairline separator below.
    Replaces the older standalone .ph-section-h pattern that left the
    pills outside the card. */
-.s3-issue-feed .if-head {
+/* if-head — list-card header with bucket label (left) + total count
+   (right). Used by both the issue feed and the customers list. */
+.s3-issue-feed .if-head,
+.s3-cust-list .if-head {
   display: flex;
   justify-content: space-between;
   align-items: center;
   padding: 6px 2px 10px;
-  border-bottom: 1px solid rgba(17, 17, 17, 0.06);
+  border-bottom: 1px solid var(--line);
   margin-bottom: 4px;
 }
-.s3-issue-feed .if-head .if-label {
+.s3-issue-feed .if-head .if-label,
+.s3-cust-list .if-head .if-label {
   font-family: 'Prompt', sans-serif;
   font-style: italic;
   font-weight: 500;
   font-size: 13px;
   color: var(--ink);
+}
+.s3-cust-list .if-head .if-count {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-softer);
+  letter-spacing: 0.02em;
 }
 .s3-issue-feed .sap-table {
   width: 100%;

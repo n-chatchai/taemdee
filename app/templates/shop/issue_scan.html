@@ -84,3 +84,8 @@
     window.addEventListener('pagehide', () => scanner.stop(), { once: true });
   </script>
 {% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'issue' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}

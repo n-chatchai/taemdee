@@ -1,0 +1,161 @@
+{% extends "_layouts/s_base.html" %}
+{% block title %}{{ name }} · ลูกค้า · {{ shop.name }} · TaemDee{% endblock %}
+
+{% set app_bar_title = name %}
+
+{% block content %}
+  {% include "_partials/app_bar.html" %}
+
+  <div class="cd-card">
+    <div class="cd-head">
+      <div class="cd-avatar">{{ initial }}</div>
+      <div class="cd-id">
+        <div class="cd-name">{{ name }}</div>
+        <div class="cd-meta">
+          {% if is_anonymous %}
+            ลูกค้าไม่ได้ผูกบัญชี
+          {% else %}
+            {{ last_visit_str }}
+          {% endif %}
+        </div>
+      </div>
+      {% if active >= threshold %}
+        <div class="cd-pill ready">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:13px;height:13px;margin-right:4px;vertical-align:-2px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
+          ใกล้รับ
+        </div>
+      {% endif %}
+    </div>
+
+    <div class="cd-progress">
+      <div class="cd-progress-bar">
+        <div class="cd-progress-fill" style="width: {{ ((active / threshold * 100) if threshold else 0)|round(0) }}%"></div>
+      </div>
+      <div class="cd-progress-num">
+        <span class="cp-num">{{ active }}</span>
+        <span class="cp-of">/{{ threshold }}</span>
+      </div>
+    </div>
+
+    <div class="cd-stats">
+      <div class="cd-stat">
+        <div class="num">{{ visits }}</div>
+        <div class="lab">มาทั้งหมด</div>
+      </div>
+      <div class="cd-stat">
+        <div class="num">{{ redemption_count }}</div>
+        <div class="lab">รับรางวัลแล้ว</div>
+      </div>
+      <div class="cd-stat">
+        <div class="num">
+          {% if first_at %}{{ first_at|bkk_short_date }}{% else %}—{% endif %}
+        </div>
+        <div class="lab">มาครั้งแรก</div>
+      </div>
+    </div>
+  </div>
+
+  {% if gifts_total > 0 %}
+    <div class="cd-list" id="gifts">
+      <div class="cd-activity-h">
+        <span class="lab">รางวัลล่าสุด</span>
+        <span class="count">{{ gifts_total }} ชิ้น</span>
+      </div>
+      {% for g in gifts %}
+        <div class="cd-gift">
+          <div class="cd-gift-icon{% if g.served %} served{% endif %}">
+            {% set img_id = g.reward_image %}
+            {% include "_partials/reward_svg.html" ignore missing %}
+          </div>
+          <div class="cd-gift-info">
+            <div class="cd-gift-reward">{{ g.reward_description or 'ของขวัญ' }}</div>
+            <div class="cd-gift-meta">
+              {% if g.served %}
+                <span class="cd-gift-status used">✓ ใช้แล้ว</span>
+                <span>· {{ g.served_at|bkk_feed_time_short }}</span>
+              {% else %}
+                <span class="cd-gift-status ready">พร้อมใช้</span>
+                <span>· รับเมื่อ {{ g.created_at|bkk_feed_time_short }}</span>
+              {% endif %}
+            </div>
+          </div>
+        </div>
+      {% endfor %}
+
+      {% if gifts_has_prev or gifts_has_next %}
+        <div class="cd-pager">
+          {% if gifts_has_prev %}
+            <a class="cd-pager-btn"
+               href="/shop/customers/{{ customer.id }}?gifts_page={{ gifts_page - 1 }}&points_page={{ activity_page }}#gifts">
+              <span aria-hidden="true">←</span> ก่อนหน้า
+            </a>
+          {% else %}
+            <span class="cd-pager-btn disabled"><span aria-hidden="true">←</span> ก่อนหน้า</span>
+          {% endif %}
+          <span class="cd-pager-info">หน้า {{ gifts_page }} / {{ gifts_total_pages }}</span>
+          {% if gifts_has_next %}
+            <a class="cd-pager-btn"
+               href="/shop/customers/{{ customer.id }}?gifts_page={{ gifts_page + 1 }}&points_page={{ activity_page }}#gifts">
+              ถัดไป <span aria-hidden="true">→</span>
+            </a>
+          {% else %}
+            <span class="cd-pager-btn disabled">ถัดไป <span aria-hidden="true">→</span></span>
+          {% endif %}
+        </div>
+      {% endif %}
+    </div>
+  {% endif %}
+
+  <div class="cd-activity" id="points">
+    <div class="cd-activity-h">
+      <span class="lab">ออกแต้มล่าสุด</span>
+      <span class="count">{{ activity_total }} รายการ</span>
+    </div>
+    {% for a in activity %}
+      <div class="cd-act-row">
+        <div class="cd-act-icon {{ a.kind }}">
+          {% if a.kind == 'point' %}
+            <svg viewBox="0 0 24 24" fill="currentColor"><polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/></svg>
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+          {% endif %}
+        </div>
+        <div class="cd-act-info">
+          <div class="cd-act-label">{{ a.label }}</div>
+          <div class="cd-act-time">{{ a.at|bkk_feed_time_short }}</div>
+        </div>
+      </div>
+    {% else %}
+      <div class="cd-empty">ยังไม่มีกิจกรรม</div>
+    {% endfor %}
+
+    {% if activity_has_prev or activity_has_next %}
+      <div class="cd-pager">
+        {% if activity_has_prev %}
+          <a class="cd-pager-btn"
+             href="/shop/customers/{{ customer.id }}?points_page={{ activity_page - 1 }}&gifts_page={{ gifts_page }}#points">
+            <span aria-hidden="true">←</span> ก่อนหน้า
+          </a>
+        {% else %}
+          <span class="cd-pager-btn disabled"><span aria-hidden="true">←</span> ก่อนหน้า</span>
+        {% endif %}
+        <span class="cd-pager-info">หน้า {{ activity_page }} / {{ activity_total_pages }}</span>
+        {% if activity_has_next %}
+          <a class="cd-pager-btn"
+             href="/shop/customers/{{ customer.id }}?points_page={{ activity_page + 1 }}&gifts_page={{ gifts_page }}#points">
+            ถัดไป <span aria-hidden="true">→</span>
+          </a>
+        {% else %}
+          <span class="cd-pager-btn disabled">ถัดไป <span aria-hidden="true">→</span></span>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+{% endblock %}
+
+{% block td_class %} td-tabbed{% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'customers' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}

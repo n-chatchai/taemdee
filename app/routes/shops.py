@@ -1334,12 +1334,14 @@ async def customers_page(
     # latest stamp + active stamps (no redemption assigned yet).
     aggs = {}
     for cid, created_at, redemption_id in point_rows:
-        a = aggs.setdefault(cid, {"visits": 0, "active": 0, "last_at": None})
+        a = aggs.setdefault(cid, {"visits": 0, "active": 0, "last_at": None, "first_at": None})
         a["visits"] += 1
         if redemption_id is None:
             a["active"] += 1
         if a["last_at"] is None or created_at > a["last_at"]:
             a["last_at"] = created_at
+        if a["first_at"] is None or created_at < a["first_at"]:
+            a["first_at"] = created_at
 
     # Track latest redemption time per customer — drives the "✓ รับแล้ว"
     # pill (only show for redemptions in the last few days).
@@ -1383,9 +1385,31 @@ async def customers_page(
             "threshold": threshold,
             "last_visit_str": _humanize_visit(agg["last_at"], now),
             "last_at": agg["last_at"],
+            "first_at": agg["first_at"],
             "tag": tag,
             "just_claimed": just_claimed,
         })
+
+    # Per-shop counts for the 4-up stats band — computed BEFORE the
+    # filter narrows the list so the stats reflect the entire shop,
+    # not just the current chip selection.
+    new_cutoff = now - timedelta(days=7)
+    stats_total = len(rows)
+    stats_near = sum(1 for r in rows if r["tag"] in ("near", "ready"))
+    stats_lapsed = sum(1 for r in rows if r["tag"] == "lapsed")
+    stats_regular = sum(1 for r in rows if r["visits"] >= _REGULAR_VISIT_THRESHOLD)
+    stats_new = sum(
+        1 for r in rows if r["first_at"] is not None and r["first_at"] >= new_cutoff
+    )
+    # Per-chip counts so each filter pill in the template can show
+    # its bucket size next to the label (matches the design's
+    # "ทั้งหมด 412 / ลูกค้าประจำ 86 / ใกล้รับ 23 / หายไป 47").
+    chip_counts = {
+        "all": stats_total,
+        "regular": stats_regular,
+        "near": stats_near,
+        "lapsed": stats_lapsed,
+    }
 
     # Apply filter
     if filter == _FILTER_REGULAR:
@@ -1423,7 +1447,148 @@ async def customers_page(
             "total": len(rows),
             "active_filter": filter,
             "q": q or "",
+            "stats_total": stats_total,
+            "stats_near": stats_near,
+            "stats_lapsed": stats_lapsed,
+            "stats_new": stats_new,
+            "chip_counts": chip_counts,
             **s3_top,
+        },
+    )
+
+
+# Per-customer detail page — opened from /shop/customers row tap.
+# Surfaces the same per-customer aggregate the list builds (visit
+# count, active stamps, last visit, just-claimed) plus the recent
+# point + redemption rows so the owner can see the activity timeline.
+_CUSTOMER_DETAIL_PAGE_SIZE = 10
+
+
+@router.get("/customers/{customer_id}", response_class=HTMLResponse)
+async def customer_detail(
+    request: Request,
+    customer_id: uuid.UUID,
+    points_page: int = 1,
+    gifts_page: int = 1,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    from app.models import Customer
+    customer = await db.get(Customer, customer_id)
+    if customer is None:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบลูกค้า")
+
+    # Pull this customer's points + redemptions at this shop for the
+    # detail card. Bounded — even a heavy regular has < 1k rows.
+    point_rows = (await db.exec(
+        select(Point.id, Point.created_at, Point.redemption_id, Point.is_voided)
+        .where(Point.shop_id == shop.id, Point.customer_id == customer_id)
+        .order_by(Point.created_at.desc())
+    )).all()
+    redemption_rows = (await db.exec(
+        select(Redemption.id, Redemption.created_at, Redemption.served_at, Redemption.is_voided)
+        .where(Redemption.shop_id == shop.id, Redemption.customer_id == customer_id)
+        .order_by(Redemption.created_at.desc())
+    )).all()
+
+    now = utcnow()
+    threshold = shop.reward_threshold or 1
+
+    visits = sum(1 for _, _, _, voided in point_rows if not voided)
+    # Active = stamps not yet consumed by a redemption. Naturally drops
+    # to 0 the moment a redemption row claims them, so no explicit
+    # "just claimed" reset needed.
+    active = sum(
+        1 for _, _, redemption_id, voided in point_rows
+        if not voided and redemption_id is None
+    )
+    last_at = max(
+        (created_at for _, created_at, _, voided in point_rows if not voided),
+        default=None,
+    )
+    first_at = min(
+        (created_at for _, created_at, _, voided in point_rows if not voided),
+        default=None,
+    )
+
+    redemption_count = sum(1 for _, _, _, voided in redemption_rows if not voided)
+
+    # All non-voided gifts (newest first) — rendered as a paginated
+    # list under "รางวัลล่าสุด". Each entry carries enough state for
+    # the พร้อมใช้ / ใช้แล้ว badge + timestamps.
+    gifts_all = [
+        {
+            "created_at": created_at,
+            "served_at": served_at,
+            "served": served_at is not None,
+            "reward_description": shop.reward_description,
+            "reward_image": shop.reward_image,
+        }
+        for _, created_at, served_at, voided in redemption_rows
+        if not voided
+    ]
+    # redemption_rows already ordered desc by created_at — preserve.
+    gifts_page = max(1, gifts_page)
+    gifts_total = len(gifts_all)
+    g_start = (gifts_page - 1) * _CUSTOMER_DETAIL_PAGE_SIZE
+    g_end = g_start + _CUSTOMER_DETAIL_PAGE_SIZE
+    gifts = gifts_all[g_start:g_end]
+    gifts_total_pages = max(
+        1, (gifts_total + _CUSTOMER_DETAIL_PAGE_SIZE - 1) // _CUSTOMER_DETAIL_PAGE_SIZE,
+    )
+    gifts_has_prev = gifts_page > 1
+    gifts_has_next = g_end < gifts_total
+
+    # Stamp timeline — points only (redemption events live in the
+    # latest_gift card above so this stays focused on "ออกแต้มล่าสุด").
+    # Sort desc by created_at; paginated below.
+    activity_all = [
+        {"kind": "point", "at": created_at, "label": "ออกแต้ม"}
+        for _, created_at, _, voided in point_rows
+        if not voided
+    ]
+    activity_all.sort(key=lambda a: a["at"], reverse=True)
+
+    points_page = max(1, points_page)
+    activity_total = len(activity_all)
+    p_start = (points_page - 1) * _CUSTOMER_DETAIL_PAGE_SIZE
+    p_end = p_start + _CUSTOMER_DETAIL_PAGE_SIZE
+    activity = activity_all[p_start:p_end]
+    activity_total_pages = max(
+        1, (activity_total + _CUSTOMER_DETAIL_PAGE_SIZE - 1) // _CUSTOMER_DETAIL_PAGE_SIZE,
+    )
+    activity_has_prev = points_page > 1
+    activity_has_next = p_end < activity_total
+
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/customer_detail.html",
+        context={
+            "shop": shop,
+            "customer": customer,
+            "name": (customer.display_name or "ลูกค้า") if not customer.is_anonymous else "ลูกค้า",
+            "initial": ((customer.display_name or "ล")[0]).upper(),
+            "is_anonymous": customer.is_anonymous,
+            "visits": visits,
+            "active": min(active, threshold),
+            "threshold": threshold,
+            "redemption_count": redemption_count,
+            "last_visit_str": _humanize_visit(last_at, now),
+            "first_at": first_at,
+            # Gifts list (paginated)
+            "gifts": gifts,
+            "gifts_total": gifts_total,
+            "gifts_page": gifts_page,
+            "gifts_total_pages": gifts_total_pages,
+            "gifts_has_prev": gifts_has_prev,
+            "gifts_has_next": gifts_has_next,
+            # Stamp activity (paginated)
+            "activity": activity,
+            "activity_total": activity_total,
+            "activity_page": points_page,
+            "activity_total_pages": activity_total_pages,
+            "activity_has_prev": activity_has_prev,
+            "activity_has_next": activity_has_next,
         },
     )
 
