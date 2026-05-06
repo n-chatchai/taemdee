@@ -7757,6 +7757,9 @@ form.s10-row { margin: 0 0 4px; }
   line-height: 1.3;
   padding-bottom: 4px;
 }
+/* delta == 0 → still occupies space (preserves .met-num-row height
+   so the chart below doesn't shift between periods) but invisible. */
+.s3-metrics .met-delta.met-delta--empty { visibility: hidden; }
 .s3-metrics .met-delta .delta-arr,
 .s3-metrics .met-delta .delta-num {
   font-family: 'Host Grotesk', sans-serif;
@@ -7774,7 +7777,19 @@ form.s10-row { margin: 0 0 4px; }
   color: var(--ink-softer);
   margin-top: 2px;
 }
-.s3-metrics .met-trend { margin-bottom: 14px; }
+/* Chart sits in its own bordered card so it reads as a distinct
+   block from the headline number + delta above. The card's own
+   padding gives the rotated tb-num labels (which extend up above
+   row 1 of each bar's grid) clear space inside the card instead
+   of bleeding past the edge. */
+.s3-metrics .met-trend {
+  margin-top: 14px;
+  margin-bottom: 14px;
+  padding: 16px 14px 12px;
+  background: var(--surface);
+  border: 1px solid var(--line);
+  border-radius: 12px;
+}
 .s3-metrics .met-trend .trend-legend {
   display: flex;
   gap: 14px;
@@ -7797,22 +7812,71 @@ form.s10-row { margin: 0 0 4px; }
 .s3-metrics .met-trend .trend-legend .lg-dot.redeem { background: var(--ink); }
 .s3-metrics .met-trend .trend-bars {
   display: grid;
-  grid-template-columns: repeat(7, 1fr);
+  /* Column count adapts to the active period: 7 (today/week) or 12
+     (month). Template sets --cols inline so the grid spans the full
+     card width regardless of bucket count. minmax(0, 1fr) lets the
+     bars shrink below their content (number labels) without
+     overflowing the row. */
+  grid-template-columns: repeat(var(--cols, 7), minmax(0, 1fr));
+  width: 100%;
   gap: 6px;
   align-items: end;
-  /* Taller than design's 64px because the top-of-bar number labels
-     ("5/2") need vertical room above the orange/ink bar. The actual
-     bar still draws on the bottom 64px slice via flex-end. */
-  height: 84px;
+  /* Taller chart so the bars have visible delta even on slow days,
+     and so the new "DD เดือน-abbrev" x-axis labels (today/week
+     periods) get a comfortable line of breathing room under the
+     bars. Total split: 16px label band on top (number) + ~ 100px
+     bar zone + 12px x-axis label band at the bottom. */
+  height: 132px;
+}
+/* When the chart compresses to 12 columns (month period), drop the
+   gap and label font so the day-of-month numbers don't visually
+   collide with each other. Same shrink for week period — its labels
+   carry "DD เดือน" (e.g. 23 มี.ค.) which is wider than today's
+   single-letter day abbrevs. */
+.s3-metrics .met-trend .trend-bars[data-cols="12"] { gap: 3px; }
+.s3-metrics .met-trend .trend-bars[data-cols="12"] .tb-num,
+.s3-metrics .met-trend .trend-bars[data-cols="12"] .tb-day {
+  /* 12-col month chart on phones is genuinely tight (~22px per
+     column). Smaller font + tighter letter spacing so 4-char Thai
+     month abbrevs ("ก.ย.") fit one line per cell. */
+  font-size: 8.5px;
+  letter-spacing: -0.04em;
+}
+.s3-metrics .met-trend .trend-bars[data-period="today"] .tb-day,
+.s3-metrics .met-trend .trend-bars[data-period="week"] .tb-day {
+  font-size: 9.5px;
 }
 .s3-metrics .met-trend .tb {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 4px;
+  /* 3-row grid with FIXED top/bottom row heights so the bar's top
+     never slides — every column reserves the same band for the
+     number above and the date below regardless of label content
+     ("5" vs "5/2", "พ.ค." vs "23 มี.ค."). Row 2 (1fr) is the bar
+     zone; the bar pins to the bottom via align-self: end. */
+  display: grid;
+  grid-template-rows: 14px 1fr 14px;
+  justify-items: center;
+  row-gap: 3px;
   height: 100%;
-  justify-content: flex-end;
+  min-width: 0;
 }
+.s3-metrics .met-trend .tb-num,
+.s3-metrics .met-trend .tb-day {
+  align-self: center;
+  max-width: 100%;
+  white-space: nowrap;
+}
+/* Day labels stay clipped to the column — they live in the bottom
+   lane where there's no spare space, so a wide label would push
+   the cell wider. */
+.s3-metrics .met-trend .tb-day {
+  overflow: hidden;
+  text-overflow: clip;
+}
+/* Numbers above the bar are rotated and extend upward into empty
+   space above the chart, so we deliberately allow overflow here —
+   clipping would chop off the rotated digits. */
+.s3-metrics .met-trend .tb-num { overflow: visible; }
+.s3-metrics .met-trend .tb .tb-bar { align-self: end; }
 .s3-metrics .met-trend .tb-num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 700;
@@ -7820,6 +7884,15 @@ form.s10-row { margin: 0 0 4px; }
   letter-spacing: -0.02em;
   color: var(--accent);
   line-height: 1;
+  /* Slight tilt so wider numbers ("127/3") extend diagonally instead
+     of bleeding into the neighbouring column on dense 12-col charts.
+     transform-origin: bottom-left pivots from the bar's top-left
+     corner so the number reads upward-and-right from where the bar
+     ends — and the .trend-bars row has no overflow clip so it can
+     extend slightly above the chart's top edge. */
+  transform: rotate(-25deg);
+  transform-origin: bottom left;
+  white-space: nowrap;
 }
 .s3-metrics .met-trend .tb-num.muted { color: var(--ink-softer); }
 .s3-metrics .met-trend .tb-num-redeem {
@@ -8250,7 +8323,7 @@ form.s10-row { margin: 0 0 4px; }
   gap: 8px;
   flex-wrap: wrap;
   border-top: 1px dashed rgba(17, 17, 17, 0.12);
-  background: rgba(255, 255, 255, 0.35);
+  background: var(--surface)
 }
 .s3-skip-btn {
   background: transparent;

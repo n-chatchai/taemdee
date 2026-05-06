@@ -19,4 +19,5 @@ uv run uvicorn app.main:app \
     --port 443 \
     --ssl-certfile "ssl/$CERT" \
     --ssl-keyfile "ssl/$KEY" \
-    --reload
+    --reload \
+    --timeout-graceful-shutdown 1

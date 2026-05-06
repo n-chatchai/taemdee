@@ -28,13 +28,16 @@
         <span class="num-big">{{ period_count }}</span>
         <span class="num-unit">คน</span>
       </div>
-      {% if period_delta != 0 %}
-        <div class="met-delta {% if period_delta > 0 %}up{% else %}down{% endif %}">
-          <span class="delta-arr">{% if period_delta > 0 %}↑{% else %}↓{% endif %}</span>
-          <span class="delta-num">{% if period_delta > 0 %}+{% endif %}{{ period_delta }}</span>
-          <span class="delta-from">{{ period_delta_label }}</span>
-        </div>
-      {% endif %}
+      {# Always render the delta block — when delta is zero we hide it
+         with visibility:hidden via the .met-delta--empty class so the
+         row's height stays constant across periods. Without this the
+         chart below jumps a few px when toggling วันนี้ ↔ สัปดาห์
+         depending on which period happens to have delta == 0. #}
+      <div class="met-delta {% if period_delta > 0 %}up{% elif period_delta < 0 %}down{% else %}met-delta--empty{% endif %}">
+        <span class="delta-arr">{% if period_delta > 0 %}↑{% elif period_delta < 0 %}↓{% else %}—{% endif %}</span>
+        <span class="delta-num">{% if period_delta > 0 %}+{% endif %}{{ period_delta }}</span>
+        <span class="delta-from">{{ period_delta_label }}</span>
+      </div>
     </div>
 
     <div class="met-trend">
@@ -42,13 +45,16 @@
         <span class="lg-item"><span class="lg-dot scan"></span>สแกน</span>
         <span class="lg-item"><span class="lg-dot redeem"></span>แลกรางวัล</span>
       </div>
-      <div class="trend-bars">
-        {# Labels are server-aligned: the rightmost bar IS today, the
-           leftmost is 6 days back. Bars stack scans (orange height
-           proportional to weekly max) with a redemption overlay (ink,
-           sized as a share of that day's stamps so it never overflows).
-           Top-of-bar number shows scan count, with "/N" suffix when at
-           least one redemption happened that day. #}
+      <div class="trend-bars"
+           style="--cols: {{ daily_pct|length }};"
+           data-cols="{{ daily_pct|length }}"
+           data-period="{{ period }}">
+        {# Bucket count adapts to the period pill: 7 daily / 7 weekly /
+           12 monthly. Rightmost bar is the most recent bucket. Bars
+           stack scans (orange) with a redemption overlay (ink, sized
+           as a share of that bucket's stamps so it never overflows).
+           Top-of-bar number shows scan count, with "/N" suffix when
+           at least one redemption happened that bucket. #}
         {% for pct in daily_pct %}
           {% set scans = daily_counts[loop.index0] %}
           {% set redeems = daily_redemptions[loop.index0] %}
@@ -90,7 +96,12 @@
          any credit. The explainer copy comes from items.py. #}
       <div class="s3-todo-wrap">
         {% if it.link %}
-          <a href="{{ it.link }}" class="s3-todo">
+          {# data-claim-kind tells the body_end JS to fire a
+             sendBeacon to /shop/items/<kind>/claim before the link
+             navigates, so the todo is recorded done on the very tap
+             instead of relying on the destination page to save. #}
+          <a href="{{ it.link }}" class="s3-todo"
+             data-claim-kind="{{ it.kind }}">
             <div class="td-info">
               <div class="td-h">{{ it.label|safe }}</div>
               <div class="td-s">{{ it.sub }}</div>
@@ -164,19 +175,46 @@
      (link / claim button) or the skip button so the owner sees the
      todo disappear immediately while the underlying navigation /
      form POST runs in parallel. Same idea as /my-cards' .cl-todo
-     fade. The next dashboard render won't include the row anyway
-     (claim/skip writes a ShopItem that filters it out), so this is
-     purely visual feedback. #}
+     fade. For link-style todos (<a data-claim-kind="...">) we also
+     fire a sendBeacon to /shop/items/<kind>/claim because the
+     destination page doesn't POST that claim itself — without this
+     the todo would silently come back on the next dashboard render. #}
   <script>
     (function () {
       function dismiss(wrap) {
         if (!wrap || wrap.classList.contains('s3-todo-wrap--out')) return;
         wrap.classList.add('s3-todo-wrap--out');
       }
+      function eagerClaim(kind) {
+        if (!kind) return;
+        const url = '/shop/items/' + encodeURIComponent(kind) + '/claim';
+        try {
+          if (navigator.sendBeacon) {
+            navigator.sendBeacon(url, new FormData());
+          } else {
+            fetch(url, { method: 'POST', credentials: 'same-origin', keepalive: true })
+              .catch(() => {});
+          }
+        } catch (_) {}
+      }
       document.addEventListener('click', (e) => {
         const trigger = e.target.closest('.s3-todo, .s3-skip-btn');
         if (!trigger) return;
         dismiss(trigger.closest('.s3-todo-wrap'));
+        // Link-style claim — beacon fires before the browser
+        // navigates so the POST actually leaves the device.
+        eagerClaim(trigger.dataset.claimKind);
+      });
+
+      // Tap "เปิดดู" → navigate → tap back. Without this, Safari /
+      // Chrome restores the dashboard from bfcache so the just-
+      // claimed todo still appears even though it's gone server-
+      // side. e.persisted=true means the page came from bfcache;
+      // reload to pick up the fresh todo list.
+      window.addEventListener('pageshow', function (e) {
+        if (e.persisted) {
+          window.location.reload();
+        }
       });
     })();
   </script>

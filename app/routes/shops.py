@@ -1,8 +1,8 @@
 import io
 import urllib.parse
 import uuid
-from datetime import timedelta, timezone
-from typing import Optional
+from datetime import date, datetime, time, timedelta, timezone
+from typing import List, Optional, Tuple
 
 import segno
 from fastapi import APIRouter, Cookie, Depends, Form, HTTPException, Request, Response, status, UploadFile, File
@@ -32,6 +32,83 @@ from app.services.referrals import (
 from app.services.storage import upload_to_r2
 
 router = APIRouter()
+
+
+# ── Dashboard trend chart helpers ─────────────────────────────────────
+# The bar chart adapts its bucket size to the active period pill so
+# tapping วันนี้ / สัปดาห์ / เดือน actually changes what the chart shows.
+_TH_DAY_LABELS = ("จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา.")
+_TH_MONTH_ABBREV = (
+    "ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+    "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.",
+)
+
+
+def _trend_buckets(
+    period: str, today_bkk_date: date,
+) -> Tuple[List[date], List[date], List[str]]:
+    """Return (bucket_starts, bucket_ends, labels) for the trend chart.
+
+    bucket_starts[i] / bucket_ends[i] is a half-open BKK-date range
+    [start, end) — bucket_index() decides which row goes where.
+
+    Buckets per period (oldest first, newest last so the rightmost bar
+    is the current day/week/month):
+      today   → 7 daily buckets
+      week    → 4 weekly (Mon-Sun) buckets
+      month   → 6 monthly buckets
+    """
+    starts: List[date] = []
+    ends: List[date] = []
+    labels: List[str] = []
+
+    if period == "month":
+        # 12 monthly buckets, this month last. Start = day 1 of the
+        # month, end = day 1 of the next month. Labels are Thai month
+        # abbrevs.
+        y, m = today_bkk_date.year, today_bkk_date.month
+        for offset in range(11, -1, -1):
+            yy, mm = y, m - offset
+            while mm <= 0:
+                mm += 12
+                yy -= 1
+            ny, nm = (yy + 1, 1) if mm == 12 else (yy, mm + 1)
+            starts.append(date(yy, mm, 1))
+            ends.append(date(ny, nm, 1))
+            labels.append(_TH_MONTH_ABBREV[mm - 1])
+    elif period == "week":
+        # 7 ISO weeks (Mon-Sun), this week last. Every label uses the
+        # same "DD เดือน-abbrev" format so the columns read uniformly
+        # across month boundaries (e.g. 27 เม.ย. → 4 พ.ค.).
+        this_monday = today_bkk_date - timedelta(days=today_bkk_date.weekday())
+        for offset in range(6, -1, -1):
+            mon = this_monday - timedelta(weeks=offset)
+            starts.append(mon)
+            ends.append(mon + timedelta(days=7))
+            labels.append(f"{mon.day} {_TH_MONTH_ABBREV[mon.month - 1]}")
+    else:
+        # today: 7 daily buckets, rightmost is today. Labels use the
+        # same "DD เดือน-abbrev" format as week so the chart reads
+        # uniformly across month boundaries.
+        for offset in range(6, -1, -1):
+            d = today_bkk_date - timedelta(days=offset)
+            starts.append(d)
+            ends.append(d + timedelta(days=1))
+            labels.append(f"{d.day} {_TH_MONTH_ABBREV[d.month - 1]}")
+
+    return starts, ends, labels
+
+
+def _bucket_index(
+    bkk_d: date, starts: List[date], ends: List[date],
+) -> Optional[int]:
+    """Locate the bucket a BKK-date falls into. Returns None when the
+    date is outside every bucket (shouldn't happen given how we size
+    the fetch window, but guards against off-by-one)."""
+    for i, (s, e) in enumerate(zip(starts, ends)):
+        if s <= bkk_d < e:
+            return i
+    return None
 
 
 @router.get("/login", response_class=HTMLResponse)
@@ -218,14 +295,25 @@ async def dashboard(
     redemptions_today = redemption_stats[0]
     redemptions_total = redemption_stats[1]
 
-    # 7-day buckets for the trend chart — one query per surface (points
-    # for the orange scan bar, redemptions for the ink overlay) so we
-    # can render the design's stacked tb-bar + tb-redeem.
+    # Period-aware trend buckets — chart now reflects the active pill:
+    #   today  → 7 daily bars (last 7 days, day-of-week labels)
+    #   week   → 4 weekly bars (this week + 3 prior, Monday-date labels)
+    #   month  → 6 monthly bars (this month + 5 prior, Thai abbrevs)
+    today_bkk_date = today_start_bkk.date()
+    bucket_starts, bucket_ends, daily_labels = _trend_buckets(
+        period, today_bkk_date,
+    )
+    # Earliest UTC datetime we need to fetch for the chart, so the DB
+    # round-trip pulls only what we'll actually bucket.
+    fetch_start_utc = (
+        datetime.combine(bucket_starts[0], time.min, tzinfo=BKK)
+        .astimezone(timezone.utc).replace(tzinfo=None)
+    )
     point_rows = (await db.exec(
         select(Point.created_at)
         .where(
             Point.shop_id == shop.id,
-            Point.created_at >= week_start_utc,
+            Point.created_at >= fetch_start_utc,
             Point.is_voided == False,  # noqa: E712
         )
     )).all()
@@ -233,39 +321,31 @@ async def dashboard(
         select(Redemption.created_at)
         .where(
             Redemption.shop_id == shop.id,
-            Redemption.created_at >= week_start_utc,
+            Redemption.created_at >= fetch_start_utc,
             Redemption.is_voided == False,  # noqa: E712
         )
     )).all()
-    daily_counts = [0] * 7
-    daily_redemptions = [0] * 7
-    today_bkk_date = today_start_bkk.date()
+    n = len(bucket_starts)
+    daily_counts = [0] * n
+    daily_redemptions = [0] * n
     for created_at in point_rows:
-        bkk_date = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
-        offset_days = (today_bkk_date - bkk_date).days
-        if 0 <= offset_days < 7:
-            daily_counts[6 - offset_days] += 1
+        bkk_d = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
+        idx = _bucket_index(bkk_d, bucket_starts, bucket_ends)
+        if idx is not None:
+            daily_counts[idx] += 1
     for created_at in redemption_rows:
-        bkk_date = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
-        offset_days = (today_bkk_date - bkk_date).days
-        if 0 <= offset_days < 7:
-            daily_redemptions[6 - offset_days] += 1
+        bkk_d = created_at.replace(tzinfo=timezone.utc).astimezone(BKK).date()
+        idx = _bucket_index(bkk_d, bucket_starts, bucket_ends)
+        if idx is not None:
+            daily_redemptions[idx] += 1
     max_daily = max(daily_counts) or 1
     daily_pct = [int(round(100 * c / max_daily)) for c in daily_counts]
-    # Redeem overlay is a share of the same day's stamps, so percentages
-    # divide against `daily_counts[i]`, not `max_daily`. Days with zero
-    # stamps stay at 0 (no overlay).
+    # Redeem overlay is a share of the same bucket's stamps, so percentages
+    # divide against `daily_counts[i]`, not `max_daily`. Empty buckets
+    # stay at 0 (no overlay).
     daily_redeem_pct = [
         int(round(100 * r / daily_counts[i])) if daily_counts[i] else 0
         for i, r in enumerate(daily_redemptions)
-    ]
-    # Day labels aligned to today: the rightmost bar IS today, so offset
-    # from today's BKK weekday backward by (6 - i). Drops the broken
-    # fixed-sequence formula that ignored what day it actually was.
-    _DAY_LABELS_TH = ("จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา.")
-    today_weekday = today_bkk_date.weekday()
-    daily_labels = [
-        _DAY_LABELS_TH[(today_weekday - (6 - i)) % 7] for i in range(7)
     ]
 
     # Branches count + first branch name in a single roundtrip via window

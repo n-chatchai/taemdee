@@ -10,7 +10,28 @@
    Also handles void events to dim out cancelled rows. #}
 <script>
   (function () {
-    const evt = new EventSource('/shop/events');
+    let evt = null;
+    function openStream() {
+      if (evt) return;
+      evt = new EventSource('/shop/events');
+      evt.addEventListener('feed-row', onFeedRow);
+      evt.addEventListener('void', onVoid);
+    }
+    function closeStream() {
+      if (!evt) return;
+      try { evt.close(); } catch (_) {}
+      evt = null;
+    }
+    // Close on tab background + on full unload — without this, every
+    // shop-page nav (clicking dashboard period pills, sidebar links,
+    // etc.) leaves the prior page's SSE held by the browser long
+    // enough to exhaust the HTTP/1.1 6-connection-per-origin cap,
+    // making subsequent navs look like the server's offline.
+    document.addEventListener('visibilitychange', () => {
+      if (document.hidden) closeStream(); else openStream();
+    });
+    window.addEventListener('pagehide', closeStream);
+
     const flash = document.getElementById('dash-flash');
     const feedBody = document.getElementById('sap-tbody');
     const FEED_CAP = parseInt('{{ feed_cap or 5 }}', 10) || 5;
@@ -69,7 +90,7 @@
       issueTabIcon.appendChild(dot);
     }
 
-    evt.addEventListener('feed-row', (e) => {
+    function onFeedRow(e) {
       if (onIssuePage) {
         feedBody.querySelector('.feed-row.latest')?.classList.remove('latest');
         feedBody.insertAdjacentHTML('afterbegin', e.data);
@@ -85,14 +106,17 @@
         showIssueTabBadge();
         playDing();
       }
-    });
+    }
 
-    evt.addEventListener('void', (e) => {
+    function onVoid(e) {
       const tmp = document.createElement('div');
       tmp.innerHTML = e.data;
       const rowId = tmp.firstElementChild?.dataset.row;
       if (rowId) document.getElementById(rowId)?.classList.add('voided');
-    });
+    }
+
+    // Initial connect when the page first becomes visible.
+    if (!document.hidden) openStream();
 
     // Tapping the ออกแต้ม tab clears the badge — visiting the page is the
     // implicit "I've seen the new activity" signal.

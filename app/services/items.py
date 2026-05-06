@@ -159,10 +159,17 @@ async def claim(db: AsyncSession, shop: Shop, kind: str) -> ShopItem:
     """Run the side-effect for `kind` and record the claim. Idempotent —
     a second call lands on IntegrityError (uq_shop_items_shop_kind),
     which we surface as ItemError so the route can return 409 instead of
-    a 500."""
-    handler: Optional[Callable[[AsyncSession, Shop], Awaitable[None]]] = _CLAIM_HANDLERS.get(kind)
-    if handler is None:
+    a 500.
+
+    Kinds without a registered handler are valid — the ShopItem row
+    alone is enough to dismiss the todo. Only welcome_credit needs a
+    real side-effect (credit grant); link-style todos like
+    issue_methods_review just need the row so list_available filters
+    them out next render.
+    """
+    if kind not in _KNOWN_KINDS:
         raise ItemError(f"Unknown item kind: {kind}")
+    handler: Optional[Callable[[AsyncSession, Shop], Awaitable[None]]] = _CLAIM_HANDLERS.get(kind)
 
     # Insert the row first so the unique constraint stops a double-claim
     # before any side-effect runs. If the side-effect fails after this,
@@ -177,7 +184,8 @@ async def claim(db: AsyncSession, shop: Shop, kind: str) -> ShopItem:
         raise ItemError(f"Already claimed: {kind}")
 
     try:
-        await handler(db, shop)
+        if handler is not None:
+            await handler(db, shop)
         await db.commit()
         await db.refresh(row)
         log.info("Shop %s claimed dashboard item %s", shop.id, kind)
