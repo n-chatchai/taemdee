@@ -107,6 +107,29 @@
         {% if q %}ไม่พบลูกค้าที่ตรงกับคำค้น{% else %}ยังไม่มีลูกค้า — รอสักครู่หลังเริ่มออกแต้ม{% endif %}
       </div>
     {% endfor %}
+
+    {% if has_prev or has_next %}
+      {% set _qs = '' %}
+      {% if active_filter and active_filter != 'all' %}{% set _qs = _qs + '&filter=' + active_filter %}{% endif %}
+      {% if q %}{% set _qs = _qs + '&q=' + q %}{% endif %}
+      <div class="cd-pager">
+        {% if has_prev %}
+          <a class="cd-pager-btn" href="/shop/customers?page={{ page - 1 }}{{ _qs }}">
+            <span aria-hidden="true">←</span> ก่อนหน้า
+          </a>
+        {% else %}
+          <span class="cd-pager-btn disabled"><span aria-hidden="true">←</span> ก่อนหน้า</span>
+        {% endif %}
+        <span class="cd-pager-info">หน้า {{ page }} / {{ total_pages }}</span>
+        {% if has_next %}
+          <a class="cd-pager-btn" href="/shop/customers?page={{ page + 1 }}{{ _qs }}">
+            ถัดไป <span aria-hidden="true">→</span>
+          </a>
+        {% else %}
+          <span class="cd-pager-btn disabled">ถัดไป <span aria-hidden="true">→</span></span>
+        {% endif %}
+      </div>
+    {% endif %}
   </div>
 {% endblock %}
 

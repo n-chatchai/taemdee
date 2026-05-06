@@ -53,6 +53,29 @@
       }
     }
   </script>
+  {# Speculation Rules — Chrome/Edge prerenders the dock targets on
+     hover/pointerdown ('moderate' eagerness) so tab switches feel
+     instant. Same pattern as c_base.html for the customer dock.
+     Eagerness moderate fires on user intent only, so we don't
+     hammer the server with prerenders on every page load. #}
+  <script type="speculationrules">
+    {
+      "prerender": [
+        {
+          "where": {
+            "or": [
+              { "href_matches": "/shop/dashboard" },
+              { "href_matches": "/shop/issue" },
+              { "href_matches": "/shop/customers" },
+              { "href_matches": "/shop/insights" },
+              { "href_matches": "/shop/settings" }
+            ]
+          },
+          "eagerness": "moderate"
+        }
+      ]
+    }
+  </script>
   {% block head_extra %}{% endblock %}
 </head>
 <body>

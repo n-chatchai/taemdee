@@ -353,28 +353,49 @@ async def dashboard(
     # the day-caption row when count > 1.
     s3_top = await s3_top_context(db, shop, now=now)
 
-    # Build the "แต้มดีแนะนำ" attention cards from current state. Two slots:
-    # opp (near-ready customers), ai (suggestion count). The low-credit
-    # warn card lived here too but was pulled — credit nudging is handled
-    # at the topup entry-points instead, the dashboard recs section is
-    # for revenue opportunities, not bookkeeping.
-    suggestions = await compute_suggestions(db, shop)
+    # Cheap "near reward" count for the dashboard attention card. Matches
+    # the semantics of /shop/customers?filter=near (anyone with active
+    # stamps in [threshold-2, threshold-1]) — slightly broader than
+    # DeeReach's almost_there suggestion (which also requires a LINE id),
+    # but the dashboard card is a teaser that links into the customer
+    # list where the LINE filter doesn't apply. Replaces a full
+    # compute_suggestions() call (6+ queries) with one COUNT.
+    threshold = shop.reward_threshold or 1
+    near_min = max(1, threshold - _NEAR_GAP_MAX)
+    near_subq = (
+        select(Point.customer_id)
+        .where(
+            Point.shop_id == shop.id,
+            Point.is_voided == False,  # noqa: E712
+            Point.redemption_id.is_(None),
+        )
+        .group_by(Point.customer_id)
+        .having(func.count() >= near_min)
+        .having(func.count() < threshold)
+        .subquery()
+    )
+    near_count = (await db.exec(
+        select(func.count()).select_from(near_subq)
+    )).one()
+
     attn_cards = []
-    near_ready = next((s for s in suggestions if s.kind == "almost_there"), None)
-    if near_ready:
+    if near_count > 0:
         attn_cards.append({
             "kind": "opp",
-            "head": f"{near_ready.audience_count} ลูกค้าใกล้รับรางวัล",
-            "sub": near_ready.body,
+            "head": f"{near_count} ลูกค้าใกล้รับรางวัล",
+            "sub": f"พวกเขาเหลืออีก 1–{_NEAR_GAP_MAX} แต้มเท่านั้น",
             "link": "/shop/customers?filter=near",
         })
-    if suggestions:
-        attn_cards.append({
-            "kind": "ai",
-            "head": suggestions[0].head,
-            "sub": f"{len(suggestions)} แคมเปญที่ระบบแนะนำ · เพิ่มได้",
-            "link": "/shop/insights",
-        })
+    # Static AI card — links into /shop/insights where compute_suggestions
+    # actually runs to produce per-kind recommendations. Was a dynamic head
+    # backed by compute_suggestions but the cost wasn't worth one card
+    # subtitle the owner reads two seconds later anyway.
+    attn_cards.append({
+        "kind": "ai",
+        "head": "ดูข้อความที่ระบบแนะนำ",
+        "sub": "แคมเปญที่ออกแบบให้ร้านคุณ · เพิ่มได้",
+        "link": "/shop/insights",
+    })
 
     from app.core.config import settings as app_settings
 
@@ -1276,6 +1297,7 @@ _REGULAR_VISIT_THRESHOLD = 3
 _NEAR_GAP_MAX = 2
 # "หายไป" — last visit longer than this ago.
 _LAPSED_DAYS = 14
+_CUSTOMERS_PAGE_SIZE = 20
 
 
 def _humanize_visit(last_at, now):
@@ -1295,6 +1317,7 @@ async def customers_page(
     request: Request,
     q: Optional[str] = None,
     filter: str = _FILTER_ALL,
+    page: int = 1,
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
@@ -1437,16 +1460,37 @@ async def customers_page(
         return (priority, -last_at_ts)
     rows.sort(key=sort_key)
 
+    # Paginate after filter/search/sort so page count tracks the
+    # current view, not the shop-wide roster. Page-size 20 keeps the
+    # initial paint light on slow phones — owners scrolling for a
+    # specific name can still bounce through pages quickly.
+    total_filtered = len(rows)
+    page = max(1, page)
+    total_pages = max(
+        1, (total_filtered + _CUSTOMERS_PAGE_SIZE - 1) // _CUSTOMERS_PAGE_SIZE,
+    )
+    if page > total_pages:
+        page = total_pages
+    p_start = (page - 1) * _CUSTOMERS_PAGE_SIZE
+    p_end = p_start + _CUSTOMERS_PAGE_SIZE
+    page_rows = rows[p_start:p_end]
+    has_prev = page > 1
+    has_next = p_end < total_filtered
+
     s3_top = await s3_top_context(db, shop, now=now)
     return templates.TemplateResponse(
         request=request,
         name="shop/customers.html",
         context={
             "shop": shop,
-            "rows": rows,
-            "total": len(rows),
+            "rows": page_rows,
+            "total": total_filtered,
             "active_filter": filter,
             "q": q or "",
+            "page": page,
+            "total_pages": total_pages,
+            "has_prev": has_prev,
+            "has_next": has_next,
             "stats_total": stats_total,
             "stats_near": stats_near,
             "stats_lapsed": stats_lapsed,
