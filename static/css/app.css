@@ -8221,6 +8221,20 @@ form.s10-row { margin: 0 0 4px; }
   border: 1px solid rgba(17, 17, 17, 0.10);
   border-radius: 16px;
   overflow: hidden;
+  transition: opacity 220ms ease, max-height 260ms ease,
+              margin 260ms ease, padding 260ms ease, border-width 260ms ease;
+  max-height: 320px;
+}
+/* Click on the main action OR the skip button collapses the wrap so
+   the owner sees immediate feedback while the underlying form POST
+   or link navigation runs in parallel. */
+.s3-todo-wrap.s3-todo-wrap--out {
+  opacity: 0;
+  max-height: 0;
+  margin-top: 0;
+  margin-bottom: 0;
+  border-width: 0;
+  pointer-events: none;
 }
 .s3-todo-wrap .s3-item-form { margin: 0; }
 /* Skip row sits inside the box, separated from the main action by a

@@ -2,7 +2,7 @@
 {% block title %}QR ของ {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-{% if branch %}{% set app_bar_back = '/shop/branches/' ~ branch.id %}{% set app_bar_title = 'คิวอาร์ · ' ~ branch.name %}{% else %}{% set app_bar_back = '/shop/dashboard' %}{% set app_bar_title = 'คิวอาร์ร้าน' %}{% endif %}
+{% set app_bar_title = 'คิวอาร์ · ' ~ branch.name if branch else 'คิวอาร์ร้าน' %}
 {% include "_partials/app_bar.html" %}
 
   <div class="s8-actions" style="display: flex; flex-direction: column; align-items: center; gap: 24px;">

@@ -158,3 +158,26 @@
 {% block nav %}
   {% include "_partials/glass_nav.html" %}
 {% endblock %}
+
+{% block body_end %}
+  {# Collapse the .s3-todo-wrap on click of either the main action
+     (link / claim button) or the skip button so the owner sees the
+     todo disappear immediately while the underlying navigation /
+     form POST runs in parallel. Same idea as /my-cards' .cl-todo
+     fade. The next dashboard render won't include the row anyway
+     (claim/skip writes a ShopItem that filters it out), so this is
+     purely visual feedback. #}
+  <script>
+    (function () {
+      function dismiss(wrap) {
+        if (!wrap || wrap.classList.contains('s3-todo-wrap--out')) return;
+        wrap.classList.add('s3-todo-wrap--out');
+      }
+      document.addEventListener('click', (e) => {
+        const trigger = e.target.closest('.s3-todo, .s3-skip-btn');
+        if (!trigger) return;
+        dismiss(trigger.closest('.s3-todo-wrap'));
+      });
+    })();
+  </script>
+{% endblock %}

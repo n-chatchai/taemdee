@@ -41,7 +41,6 @@
         }"
         x-init="['staticQr','liveQr','shopScan','phoneEntry','grant'].forEach(k => $watch(k, () => scheduleSave()));">
 
-{% set app_bar_back = '/shop/settings' %}
 {% set app_bar_title = 'วิธีออกแต้ม' %}
 {% include "_partials/app_bar.html" %}
 
@@ -71,11 +70,11 @@
           <div class="s5-chip-row">
             <button type="button" class="s5-chip" :class="{ on: staticQr }" @click="staticQr = !staticQr">
               <span class="chip-mark" x-text="staticQr ? '✓' : '✕'"></span>
-              <span>Static · ติดเคาน์เตอร์</span>
+              <span>ติดเคาน์เตอร์</span>
             </button>
             <button type="button" class="s5-chip" :class="{ on: liveQr }" @click="liveQr = !liveQr">
               <span class="chip-mark" x-text="liveQr ? '✓' : '✕'"></span>
-              <span>Dynamic · หน้าจอ</span>
+              <span>ผ่านหน้าจอแต้มดี</span>
             </button>
           </div>
         </div>
@@ -143,7 +142,7 @@
 
     <div class="s5-tip">
       <div class="tip-bulb">!</div>
-      <div>เปิดมากกว่า 1 วิธี → ปุ่ม "ออกแต้มลูกค้า" หน้าแดชบอร์ดจะ list ตัวเลือกให้เลือก</div>
+      <div>เปิดมากกว่า 1 วิธี → ปุ่ม "ออกแต้มลูกค้า" จะแสดงวิธีการออกแต้มที่เปิดใช้งาน</div>
     </div>
 
     {# Floating auto-save status. Stays out of the way most of the time;
