@@ -3380,7 +3380,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   box-shadow: none;
   text-decoration: none;
 }
-.c3 .btn-line { background: var(--line-green); color: #fff; }
+.c3 .btn-line { background: var(--accent); color: #fff; margin-top: 20px;}
 .c3 .btn-line svg { width: 18px; height: 18px; }
 .c3 .btn-phone { background: var(--ink); color: var(--bg); }
 .c3 .btn-phone svg { width: 16px; height: 16px; }
