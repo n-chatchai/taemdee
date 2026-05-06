@@ -43,6 +43,11 @@
   scroll-snap-align: start;
   border-radius: 18px;
   overflow: hidden;
+  /* Card is now an <a> — kill the default link underline + inherit
+     ink color so the typography inside reads the same as before. */
+  text-decoration: none;
+  color: inherit;
+  display: block;
   /* Per-shop tint via --shop-color (set inline). Lighter at 0%,
      base at 55%, darker at 100% — same shape as the design's
      hand-picked gradients but driven by the shop's swatch. */
@@ -625,10 +630,11 @@
       </div>
       <div class="cl-voucher-carousel">
         {% for voucher in hero_vouchers %}
-          {# Tap → shop story so the customer reads about the shop
-             before redeeming. The story page links forward to the
-             shop's daily card, where the actual voucher.confirm sheet
-             lives. #}
+          {# Card body link → /story (read about the shop). The
+             "แลกของขวัญ" CTA inside intercepts via data-redeem +
+             stopPropagation/preventDefault and opens the
+             voucher.confirm sheet instead, so the redeem flow stays
+             one-tap from /my-cards. #}
           <a class="cl-voucher-card"
              href="/story/{{ voucher.shop.id }}"
              style="--shop-color: {{ voucher.shop_color }};">
@@ -643,10 +649,16 @@
                 <span class="name">{{ voucher.shop.name }}</span>
               </div>
               <div class="cl-voucher-reward">{{ voucher.shop.reward_description }}</div>
-              <div class="cl-voucher-cta">
-                <span>ดูร้าน</span>
+              <span class="cl-voucher-cta"
+                    data-redeem
+                    data-voucher-id="{{ voucher.redemption.id }}"
+                    data-shop-name="{{ voucher.shop.name }}"
+                    data-reward="{{ voucher.shop.reward_description }}"
+                    role="button"
+                    tabindex="0">
+                <span>แลกของขวัญ</span>
                 <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
-              </div>
+              </span>
             </div>
           </a>
         {% endfor %}
@@ -736,9 +748,35 @@
     {% include "_partials/signup_picker.html" %}
   {% endif %}
 
-  {# voucher.confirm sheet lives in /my-gifts now. On /my-cards the
-     voucher card links to /story/<shop> (read about the shop first);
-     the actual confirm + redeem flow happens from there. #}
+  {# voucher.confirm bottom sheet — opened when the in-card "แลกของขวัญ"
+     CTA is tapped (the rest of the card is a link to /story). Confirm
+     step protects against accidental redemption since "ใช้แล้วคืนไม่ได้".
+     POSTs to /voucher/<id>/use on confirm. #}
+  <div class="rc-overlay" id="vc-overlay" hidden>
+    <form class="rc-sheet vc-sheet" method="post" id="vc-form" style="margin:0;">
+      <div class="sheet-handle"></div>
+      <div class="vc-icon">
+        <svg viewBox="0 0 24 24">
+          <path d="M10.29 3.86L1.82 18a2 2 0 001.71 3h16.94a2 2 0 001.71-3L13.71 3.86a2 2 0 00-3.42 0z"/>
+          <line x1="12" y1="9" x2="12" y2="13"/>
+          <line x1="12" y1="17" x2="12.01" y2="17"/>
+        </svg>
+      </div>
+      <div class="vc-h">แลกของขวัญตอนนี้?</div>
+      <div class="vc-sub">แลกแล้วจะคืนไม่ได้ · พี่ต้องอยู่ที่ร้านเพื่อโชว์หน้าจอให้พนักงาน</div>
+      <div class="vc-card">
+        <div class="vc-logo" id="vc-logo"></div>
+        <div class="vc-info">
+          <div class="vc-shop" id="vc-shop"></div>
+          <div class="vc-reward" id="vc-reward"></div>
+        </div>
+      </div>
+      <div class="rc-actions">
+        <button type="button" class="cancel" id="vc-cancel">ยังไม่แลก</button>
+        <button type="submit" class="send">แลกเลย</button>
+      </div>
+    </form>
+  </div>
 {% endblock %}
 
 {% block body_end %}
@@ -774,6 +812,50 @@
           const name = (row.dataset.shopName || '').toLowerCase();
           row.style.display = q && !name.includes(q) ? 'none' : '';
         }
+      });
+    })();
+
+    // voucher.confirm — clicking the in-card "แลกของขวัญ" CTA opens
+    // the bottom sheet instead of letting the surrounding link
+    // navigate to /story. preventDefault stops the link nav;
+    // stopPropagation keeps the click from bubbling up to anything
+    // else. POSTing happens on confirm; "ยังไม่แลก" closes the sheet.
+    (function () {
+      const overlay = document.getElementById('vc-overlay');
+      const form = document.getElementById('vc-form');
+      const logoEl = document.getElementById('vc-logo');
+      const shopEl = document.getElementById('vc-shop');
+      const rewardEl = document.getElementById('vc-reward');
+      const cancelBtn = document.getElementById('vc-cancel');
+      if (!overlay || !form) return;
+
+      document.addEventListener('click', (e) => {
+        const cta = e.target.closest('.cl-voucher-cta[data-redeem]');
+        if (!cta) return;
+        e.preventDefault();
+        e.stopPropagation();
+        const card = cta.closest('.cl-voucher-card');
+        const id = cta.dataset.voucherId;
+        // No ?next= — fall through to /voucher/<id> fullscreen page
+        // (the "show this screen to staff" QR view).
+        form.action = `/voucher/${id}/use`;
+        // Mirror the card's logo + shop name + reward into the sheet
+        // so the user sees what they're about to spend.
+        const logoSrc = card && card.querySelector('.cl-voucher-shop .logo');
+        if (logoSrc) logoEl.innerHTML = logoSrc.innerHTML;
+        shopEl.textContent = cta.dataset.shopName || '';
+        rewardEl.textContent = cta.dataset.reward || '';
+        overlay.hidden = false;
+        document.body.style.overflow = 'hidden';
+      });
+
+      function close() {
+        overlay.hidden = true;
+        document.body.style.overflow = '';
+      }
+      cancelBtn.addEventListener('click', close);
+      overlay.addEventListener('click', (e) => {
+        if (e.target === overlay) close();
       });
     })();
 
