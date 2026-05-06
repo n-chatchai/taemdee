@@ -3,7 +3,7 @@
 <head>
   <meta charset="UTF-8">
   <meta name="viewport" content="width=device-width, initial-scale=1.0">
-  <title>ยืนยันด้วยไลน์ · TaemDee แต้มดี</title>
+  <title>ยืนยันบัญชี · TaemDee แต้มดี</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
   {% include "_partials/pwa_head.html" %}
@@ -11,18 +11,20 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  {# C3.line — final consent step in the LINE signup flow. Reached only
-     after /auth/line/callback already promoted the anonymous Customer
-     via claim_by_line. Submitting POSTs the consent state and lands on
-     /my-cards (or /card/{shop}/claimed if next_redeem rides through). #}
+  {# C3.oauth — generic name-review step shared by Google + Facebook
+     customer connect. Mirrors c3_line.html minus the DeeReach consent
+     toggle (DR consent is per-shop, only meaningful when next_redeem
+     points at a shop — Google/Facebook callers without a redemption
+     in flight have nothing to consent to). #}
   <div class="td c3" x-data="{
-  drConsent: true,
-  mode: 'line',
+  mode: 'provider',
   customName: '',
-  lineName: '{{ (line_display_name or '')|e }}',
+  providerName: '{{ (provider_display_name or '')|e }}',
   onboardName: '{{ (onboard_name or '')|e }}',
   finalName() {
-    return this.mode === 'line' ? this.lineName : (this.customName || this.onboardName);
+    return this.mode === 'provider'
+      ? this.providerName
+      : (this.customName || this.onboardName);
   }
 }">
     <div class="topbar"><span></span><span></span></div>
@@ -31,24 +33,24 @@
       <a href="/my-cards" class="back" aria-label="ย้อนกลับ">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5"/><path d="M12 19l-7-7 7-7"/></svg>
       </a>
-      <div class="c3-title">เข้าด้วยไลน์</div>
+      <div class="c3-title">เชื่อม{{ provider_label }}</div>
     </div>
 
     <div class="sheet">
-      <div class="headline">ยืนยันบัญชี<em>ไลน์</em></div>
-      <div class="body-copy">ผมจะเก็บแต้มของพี่ไว้กับบัญชีไลน์นี้ตลอดไปครับ</div>
+      <div class="headline">ยืนยันบัญชี<em>{{ provider_label }}</em></div>
+      <div class="body-copy">ผมจะเก็บแต้มของพี่ไว้กับบัญชีนี้ตลอดไปครับ</div>
 
       <div class="line-account">
         <div class="la-avatar">
           {% if picture_url %}
             <img src="{{ picture_url }}" alt="" style="width:100%;height:100%;border-radius:inherit;object-fit:cover;">
           {% else %}
-            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 2C6.48 2 2 5.58 2 10c0 3.97 3.59 7.3 8.44 7.87L10 22l4.4-3.3c4.25-.69 7.6-3.99 7.6-8.7 0-4.42-4.48-8-10-8z"/></svg>
+            <svg viewBox="0 0 24 24" fill="currentColor"><path d="M12 12c2.21 0 4-1.79 4-4s-1.79-4-4-4-4 1.79-4 4 1.79 4 4 4zm0 2c-2.67 0-8 1.34-8 4v2h16v-2c0-2.66-5.33-4-8-4z"/></svg>
           {% endif %}
         </div>
         <div class="la-info">
-          <div class="la-label">บัญชี LINE</div>
-          <div class="la-name">{{ line_display_name or 'พี่' }}</div>
+          <div class="la-label">บัญชี {{ provider_label }}</div>
+          <div class="la-name">{{ provider_display_name or 'พี่' }}</div>
         </div>
       </div>
 
@@ -56,9 +58,9 @@
         <label class="c3-field-label">ชื่อที่พี่อยากให้เรียก</label>
         <div class="c3-name-options">
           <label class="c3-name-opt">
-            <input type="radio" name="name_mode" value="line" x-model="mode">
-            <span class="c3-name-opt-label">ใช้ชื่อ LINE</span>
-            <span class="c3-name-opt-value" x-text="lineName || 'พี่'"></span>
+            <input type="radio" name="name_mode" value="provider" x-model="mode">
+            <span class="c3-name-opt-label">ใช้ชื่อ {{ provider_label }}</span>
+            <span class="c3-name-opt-value" x-text="providerName || 'พี่'"></span>
           </label>
           <label class="c3-name-opt">
             <input type="radio" name="name_mode" value="custom" x-model="mode">
@@ -69,23 +71,9 @@
         </div>
       </div>
 
-      <form method="POST" action="/auth/line/customer/confirm">
+      <form method="POST" action="/auth/oauth/customer/confirm">
         {% if next_redeem %}<input type="hidden" name="next_redeem" value="{{ next_redeem }}">{% endif %}
         <input type="hidden" name="display_name" :value="finalName()">
-        <input type="hidden" name="dr_consent" :value="drConsent ? 'on' : 'off'">
-
-        <div class="consent-toggle" :class="{ off: !drConsent }"
-             @click="drConsent = !drConsent">
-          <div class="ct-info">
-            <div class="ct-title">ให้ร้านส่งข้อความหาพี่</div>
-            <div class="ct-sub">เตือนแต้มใกล้ครบ ของฝากและโปรพิเศษจากร้าน</div>
-          </div>
-          <div class="ct-switch"><div class="ct-dot"></div></div>
-        </div>
-        <div class="consent-plea">
-          พี่ครับ เตือนแต้มกับของฝากจากร้าน ผมยังเก็บไว้ในกล่องข้อความให้นะครับ
-          อย่าลืมเข้ามาดูนะครับ
-        </div>
 
         <button type="submit" class="btn-line">
           ตกลง

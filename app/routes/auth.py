@@ -15,7 +15,7 @@ from fastapi import (
     Response,
     status,
 )
-from fastapi.responses import RedirectResponse
+from fastapi.responses import HTMLResponse, RedirectResponse
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -126,6 +126,113 @@ _PROVIDER_LABELS = {
     "facebook": "Facebook",
     "phone": "เบอร์",
 }
+
+
+_C3_OAUTH_COOKIE = "c3_oauth_ctx"
+
+
+def _set_c3_oauth_ctx(
+    response: RedirectResponse,
+    provider: str,
+    provider_display_name: Optional[str],
+    onboard_name: Optional[str],
+    picture_url: Optional[str],
+) -> None:
+    """Stash the per-recipient OAuth review context (provider name from
+    the IdP profile + the prior onboarding name + picture) on the
+    redirect to /auth/oauth/customer/confirm. Cookie values must
+    round-trip through latin-1 — percent-encode each piece since
+    Thai display_names from Google/Facebook are common."""
+    ctx_value = "|||".join(
+        quote(s or "", safe="")
+        for s in (provider, provider_display_name, onboard_name, picture_url)
+    )
+    response.set_cookie(
+        key=_C3_OAUTH_COOKIE,
+        value=ctx_value,
+        httponly=True,
+        path="/",
+    )
+
+
+@router.get("/oauth/customer/confirm", response_class=HTMLResponse)
+async def oauth_customer_confirm_page(
+    request: Request,
+    next_redeem: Optional[str] = None,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    c3_oauth_ctx: Optional[str] = Cookie(None, alias=_C3_OAUTH_COOKIE),
+    db: AsyncSession = Depends(get_session),
+):
+    """C3.oauth — generic name-review step shown after Google or
+    Facebook OAuth callbacks. Mirrors /auth/line/customer/confirm but
+    provider-agnostic and without the DR consent toggle (DR consent is
+    per-shop, only meaningful when next_redeem points at a shop)."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    if customer.is_anonymous:
+        return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+    provider = "google"
+    provider_display_name = customer.display_name
+    onboard_name = customer.display_name
+    picture_url = None
+    if c3_oauth_ctx:
+        parts = [unquote(p) for p in c3_oauth_ctx.split("|||")]
+        if len(parts) >= 4:
+            provider = parts[0] or "google"
+            provider_display_name = parts[1] or None
+            onboard_name = parts[2] or None
+            picture_url = parts[3] or None
+
+    return templates.TemplateResponse(
+        request=request,
+        name="c3_oauth.html",
+        context={
+            "provider": provider,
+            "provider_label": _PROVIDER_LABELS.get(provider, "บัญชี"),
+            "provider_display_name": provider_display_name,
+            "onboard_name": onboard_name,
+            "picture_url": picture_url,
+            "next_redeem": next_redeem,
+        },
+    )
+
+
+@router.post("/oauth/customer/confirm")
+async def oauth_customer_confirm_save(
+    next_redeem: Optional[str] = Form(None),
+    display_name: Optional[str] = Form(None),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    c3_oauth_ctx: Optional[str] = Cookie(None, alias=_C3_OAUTH_COOKIE),
+    db: AsyncSession = Depends(get_session),
+):
+    """Persist the customer's chosen display_name from the c3_oauth
+    review, then land them on /my-cards (or /card/{shop}/claimed if
+    next_redeem rides through). Mirrors /auth/line/customer/confirm
+    minus the DR-consent mute write."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    if customer.is_anonymous:
+        return RedirectResponse(url="/my-cards", status_code=status.HTTP_303_SEE_OTHER)
+
+    if display_name and display_name.strip():
+        customer.user.display_name = display_name.strip()
+        db.add(customer.user)
+        await db.commit()
+
+    # Recover the provider from the cookie purely so connect-complete
+    # gets the right toast label ("เชื่อม Google สำเร็จ" etc).
+    provider = "google"
+    if c3_oauth_ctx:
+        parts = [unquote(p) for p in c3_oauth_ctx.split("|||")]
+        if parts and parts[0]:
+            provider = parts[0]
+
+    target_url = (
+        await _redeem_after_claim(db, customer, next_redeem)
+        or f"/auth/connect-complete?provider={provider}"
+    )
+    response = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+    response.delete_cookie(_C3_OAUTH_COOKIE, path="/")
+    return response
 
 
 @router.get("/connect-complete")
@@ -760,6 +867,15 @@ async def google_callback(
         return redirect
 
     # role == "customer"
+    # Capture the prior name before resolve so the review step can
+    # offer "use Google name" vs "use existing nickname". After resolve
+    # the user.display_name may have been auto-filled from the Google
+    # profile if it was previously empty.
+    prior_anon = await _connect_originator_or_cookie(
+        db, connect_customer_id, customer_cookie,
+    )
+    onboard_name = prior_anon.display_name if prior_anon else None
+
     claimed = await _resolve_customer_oauth(
         db, customer_cookie,
         "google", google_id,
@@ -767,14 +883,13 @@ async def google_callback(
         connect_customer_id=connect_customer_id,
     )
 
-    # next_redeem (auto-resume a C4 redemption) → land directly on the
-    # claimed page. Otherwise show the success page so PWA users get a
-    # clear "go back to the app" prompt; browser users click "Continue".
-    target_url = (
-        await _redeem_after_claim(db, claimed, next_redeem)
-        or "/auth/connect-complete?provider=google"
-    )
+    target_url = "/auth/oauth/customer/confirm"
+    if next_redeem:
+        target_url += f"?next_redeem={next_redeem}"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+    _set_c3_oauth_ctx(
+        redirect, "google", display_name, onboard_name, picture_url,
+    )
     set_customer_cookie(redirect, claimed.id)
     redirect.delete_cookie(GOOGLE_STATE_COOKIE, path="/auth/google")
     return redirect
@@ -872,6 +987,11 @@ async def facebook_callback(
         return redirect
 
     # role == "customer"
+    prior_anon = await _connect_originator_or_cookie(
+        db, connect_customer_id, customer_cookie,
+    )
+    onboard_name = prior_anon.display_name if prior_anon else None
+
     claimed = await _resolve_customer_oauth(
         db, customer_cookie,
         "facebook", facebook_id,
@@ -879,11 +999,13 @@ async def facebook_callback(
         connect_customer_id=connect_customer_id,
     )
 
-    target_url = (
-        await _redeem_after_claim(db, claimed, next_redeem)
-        or "/auth/connect-complete?provider=facebook"
-    )
+    target_url = "/auth/oauth/customer/confirm"
+    if next_redeem:
+        target_url += f"?next_redeem={next_redeem}"
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
+    _set_c3_oauth_ctx(
+        redirect, "facebook", display_name, onboard_name, picture_url,
+    )
     set_customer_cookie(redirect, claimed.id)
     redirect.delete_cookie(FACEBOOK_STATE_COOKIE, path="/auth/facebook")
     return redirect
