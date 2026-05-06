@@ -30,7 +30,7 @@ from typing import Optional
 from uuid import UUID
 
 from sqlalchemy.ext.asyncio import create_async_engine
-from sqlmodel import select
+from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.config import settings
@@ -38,6 +38,7 @@ from app.models.credit import CreditLog
 from app.models.customer import Customer
 from app.models.deereach import DeeReachCampaign, DeeReachMessage
 from app.models.inbox import Inbox
+from app.models.point import Point
 from app.models.shop import Shop
 from app.services import events
 
@@ -196,14 +197,19 @@ async def _create_inbox_row(
     return row
 
 
-def _substitute_placeholders(text: str, customer: Customer, shop: Shop) -> str:
+def _substitute_placeholders(
+    text: str,
+    customer: Customer,
+    shop: Shop,
+    *,
+    active_count: int = 0,
+) -> str:
     """Replace template placeholders with concrete values per recipient.
 
     Supported tokens (matches the chips in /shop/deereach editor):
       {name}        → customer.display_name (fallback "ลูกค้า")
-      {points}      → customer's active stamps at this shop (TODO once
-                      we wire it; placeholder swap-to-empty for now so
-                      it doesn't read as literal "{points}")
+      {points}      → customer's active stamps at this shop (passed in)
+      {remaining}   → max(threshold - active_count, 0)
       {shop_name}   → shop.name
       {shop_reward} → shop.reward_description
 
@@ -214,15 +220,15 @@ def _substitute_placeholders(text: str, customer: Customer, shop: Shop) -> str:
     if not text:
         return text
     name = customer.display_name or "ลูกค้า"
+    threshold = max(int(shop.reward_threshold or 0), 0)
+    remaining = max(threshold - max(active_count, 0), 0)
     return (
         text
         .replace("{name}", name)
         .replace("{shop_name}", shop.name or "")
         .replace("{shop_reward}", shop.reward_description or "")
-        # TODO: {points} requires a query for active-stamp count at this
-        # shop. Stripped to empty for now so the literal token doesn't
-        # ship to customers.
-        .replace("{points}", "")
+        .replace("{points}", str(active_count))
+        .replace("{remaining}", str(remaining))
     )
 
 
@@ -310,6 +316,27 @@ async def _run(campaign_id: UUID) -> None:
 
         log.info("Campaign %s: dispatching %d messages", campaign_id, len(messages))
 
+        # Pre-compute each recipient's active stamp count at this shop
+        # in ONE roundtrip so {points}/{remaining} placeholder
+        # substitution doesn't N+1 the database. Active = non-voided
+        # Point with no redemption_id (or with a voided redemption,
+        # but the dispatcher doesn't need that edge case for messaging
+        # copy — close enough).
+        active_by_customer: dict = {}
+        recipient_ids = [msg.customer_id for msg in messages if msg.customer_id is not None]
+        if recipient_ids:
+            active_rows = (await db.exec(
+                select(Point.customer_id, func.count())
+                .where(
+                    Point.shop_id == shop.id,
+                    Point.customer_id.in_(recipient_ids),
+                    Point.is_voided == False,  # noqa: E712
+                    Point.redemption_id.is_(None),
+                )
+                .group_by(Point.customer_id)
+            )).all()
+            active_by_customer = {cid: count for cid, count in active_rows}
+
         # ------------------------------------------------------------------
         # 3. Dispatch each message + mark delivered/failed
         # ------------------------------------------------------------------
@@ -337,6 +364,7 @@ async def _run(campaign_id: UUID) -> None:
             # the recipient's display_name, not the same literal for all.
             message_text = _substitute_placeholders(
                 campaign.message_text or "", customer, shop,
+                active_count=active_by_customer.get(customer.id, 0),
             )
 
             # Always create the inbox row first — both because inbox

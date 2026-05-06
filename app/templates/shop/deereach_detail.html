@@ -22,8 +22,22 @@
         }{% if not loop.last %},{% endif %}
         {% endfor %}
       };
+      // Starter templates — owner taps a chip to swap the textarea
+       // body. Matches design/taemdee-shop.html reach.create chip
+       // strip ("ชวนกลับ · เกือบครบ · วันเกิด · เมนูใหม่ · ขอบคุณ · เปล่า").
+       // {name} / {shop_name} / {shop_reward} placeholders resolve
+       // server-side at send time and in the live preview below.
+      const TEMPLATES = [
+        { id: 'win_back',     label: 'ชวนกลับ',  body: 'พี่{name} ครับ ไม่ได้เจอนานเลย · {shop_name} ฝากบอกพี่ว่าคิดถึงนะครับ แวะมาทักได้ตลอด' },
+        { id: 'almost_there', label: 'เกือบครบ', body: 'อีกนิดเดียวพี่{name} จะได้ {shop_reward} แล้ว · มาแต้มต่อกันที่ {shop_name} นะครับ' },
+        { id: 'birthday',     label: 'วันเกิด',  body: 'สุขสันต์วันเกิดครับพี่{name} · {shop_name} ขอให้พี่มีแต่ความสุข แวะมาฉลองด้วยกันได้นะ' },
+        { id: 'new_menu',     label: 'เมนูใหม่', body: 'พี่{name} ครับ {shop_name} มีเมนูใหม่มาให้ลองแล้ว แวะมาชิมได้นะ' },
+        { id: 'thanks',       label: 'ขอบคุณ',  body: 'ขอบคุณพี่{name} ที่อุดหนุน {shop_name} เสมอนะครับ · มาเจอกันใหม่' },
+        { id: 'empty',        label: 'เปล่า',    body: '' },
+      ];
       return {
         message: defaultMessage,
+        templates: TEMPLATES,
         selected: Object.fromEntries(audienceIds.map((id) => [id, true])),
         searchQuery: '',
         flash: '',
@@ -68,6 +82,17 @@
         },
         resetMessage() {
           this.message = defaultMessage;
+        },
+        applyTemplate(tpl) {
+          // Tapping a starter chip overwrites the textarea — owner
+          // sees instant feedback and can keep editing freely.
+          this.message = tpl.body;
+        },
+        isTemplateActive(tpl) {
+          // Active state = current message exactly matches the
+          // template body (or both empty for "เปล่า"). Edits drop
+          // the active state, which reads as "I've customised this."
+          return (this.message || '') === (tpl.body || '');
         },
       };
     }
@@ -135,13 +160,29 @@
   <div class="s13d-section">
     <div class="s13d-h">
       <span class="s13d-title">ข้อความ</span>
-      <span class="s13d-edit" @click="resetMessage()" title="คืนค่าข้อความเริ่มต้น">รีเซ็ต</span>
+      <span class="s13d-edit" @click="resetMessage()" title="คืนค่าข้อความเริ่มต้น">ล้าง</span>
+    </div>
+    {# Starter template strip — tap to load a seed body. Active state
+       follows the current textarea content so an edit drops the
+       active highlight (visual cue that the message is customised). #}
+    <div class="s13d-badges">
+      <template x-for="tpl in templates" :key="tpl.id">
+        <span class="s13d-badge tpl"
+              :class="{ active: isTemplateActive(tpl) }"
+              x-text="tpl.label"
+              @click="applyTemplate(tpl)"></span>
+      </template>
     </div>
     <textarea class="s13d-message s13d-message-edit" x-model="message" rows="4" maxlength="500" placeholder="พิมพ์ข้อความที่อยากส่งให้ลูกค้า..."></textarea>
+    {# Customer-aware variable chips — each tap appends a placeholder
+       that resolves at send time from the recipient's row. {points} =
+       active stamps at this shop, {remaining} = stamps still needed
+       for the next reward. Mirrors design's reach.create var strip. #}
     <div class="s13d-vars">
-      <div class="var-chip" @click="message += '{name}'">ชื่อลูกค้า</div>
-      <div class="var-chip" @click="message += '{shop_name}'">ชื่อร้าน</div>
-      <div class="var-chip" @click="message += '{shop_reward}'">รางวัล</div>
+      <div class="var-chip" @click="message += '{name}'">$ชื่อ</div>
+      <div class="var-chip" @click="message += '{points}'">$แต้ม</div>
+      <div class="var-chip" @click="message += '{remaining}'">$ที่เหลือ</div>
+      <div class="var-chip" @click="message += '{shop_reward}'">$รางวัล</div>
     </div>
   </div>
 
@@ -152,12 +193,17 @@
          previews exactly what the customer will receive. {name}
          shows "ลูกค้า" in the preview (we don't know which audience
          row to sample); {shop_name} / {shop_reward} use real values. #}
+      {# Mirrors the server-side _substitute_placeholders. {points}
+         and {remaining} are recipient-specific so we can't show
+         exact values here — sample with the threshold's mid-point
+         so the owner sees realistic copy length. #}
       <div class="prev-line"
            x-text="(message || 'ใส่ข้อความเพื่อดูตัวอย่าง')
              .replace(/\{name\}/g, 'ลูกค้า')
              .replace(/\{shop_name\}/g, '{{ shop.name }}')
-             .replace(/\{shop_reward\}/g, '{{ shop.reward_description or "" }}')
-             .replace(/\{points\}/g, '')"></div>
+             .replace(/\{shop_reward\}/g, '{{ shop.reward_description or '' }}')
+             .replace(/\{points\}/g, '{{ ((shop.reward_threshold or 10) // 2)|string }}')
+             .replace(/\{remaining\}/g, '{{ (((shop.reward_threshold or 10) - ((shop.reward_threshold or 10) // 2))|string) }}')"></div>
     </div>
   </div>
 

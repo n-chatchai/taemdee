@@ -10974,6 +10974,40 @@ form.s10-row { margin: 0 0 4px; }
   color: var(--ink);
   line-height: 1.6;
 }
+/* Starter-template chip strip — sits above the message textarea on
+   the deereach editor. Tap to load a seed body. Active state =
+   message exactly matches the chip body. Mirrors design's
+   reach.create .s13d-badges + .s13d-badge.tpl. */
+.s13d-badges {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin: 8px 0 12px;
+}
+.s13d-badge {
+  padding: 4px 10px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  cursor: pointer;
+  transition: background 120ms ease, color 120ms ease;
+}
+.s13d-badge.tpl {
+  background: rgba(17, 17, 17, 0.06);
+  color: var(--ink-soft);
+  font-weight: 500;
+}
+.s13d-badge.tpl:active { background: rgba(17, 17, 17, 0.10); }
+.s13d-badge.tpl.active {
+  background: var(--ink);
+  color: #fff;
+  font-weight: 700;
+}
+
 .s13d-vars {
   display: flex;
   gap: 6px;
