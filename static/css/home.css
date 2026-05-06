@@ -527,7 +527,6 @@ margin-bottom: 22px;
   line-height: 1.55;
   margin-top: 50px;
   margin-bottom: 30px;
-  max-width: 540px;
 }
 .hero-ctas {
   display: flex;
@@ -721,7 +720,6 @@ cursor: pointer;
   border-radius: 22px;
   padding: 22px 26px;
   margin: 8px auto 18px;
-  max-width: 540px;
 text-align: left;
 }
 .hero-feature .hf-head {
@@ -1874,6 +1872,7 @@ padding: clamp(24px, 3vw, 36px);
 .dash-text { align-self: start; padding: clamp(16px, 2vw, 28px) clamp(20px, 4vw, 48px); }
 @media (max-width: 879px) {
   .dash-text h3 { text-align: center; }
+  .dash-text ul { text-align: center; }
 }
 .dash-preview::before {
   content: '';
@@ -1928,6 +1927,7 @@ padding: clamp(24px, 3vw, 36px);
 }
 .dash-text ul {
   list-style: none;
+  margin-top: 15px;
   margin-bottom: 22px;
 }
 .dash-text ul li {

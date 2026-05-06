@@ -25,7 +25,7 @@ R6c: replace stub bodies with real API calls there.
 
 import logging
 from dataclasses import dataclass
-from datetime import timedelta
+from datetime import datetime, timedelta
 from typing import List, Optional
 from uuid import UUID
 
@@ -557,6 +557,13 @@ async def send_campaign(
     *,
     message_override: Optional[str] = None,
     selected_customer_ids: Optional[set] = None,
+    offer_kind: Optional[str] = None,
+    offer_label: Optional[str] = None,
+    offer_image: Optional[str] = None,
+    offer_amount: Optional[int] = None,
+    offer_unit: Optional[str] = None,
+    offer_starts_at: Optional[datetime] = None,
+    offer_expires_at: Optional[datetime] = None,
 ) -> DeeReachCampaign:
     """Lock → Enqueue → Return.  Zero UI latency — actual delivery is async.
 
@@ -624,6 +631,15 @@ async def send_campaign(
     # ------------------------------------------------------------------
     # Create campaign record
     # ------------------------------------------------------------------
+    # Trim/normalize the optional offer fields. When offer_label
+    # ends up empty (no offer attached or whitespace-only input),
+    # NULL out every offer field so a free-form blank doesn't leave
+    # half-set discount or icon columns on the row.
+    norm_offer_label = (offer_label or "").strip() or None
+    norm_offer_image = (offer_image or "").strip() or None
+    norm_offer_kind = (offer_kind or "").strip() or None
+    norm_offer_unit = (offer_unit or "").strip() or None
+    has_offer = norm_offer_label is not None
     campaign = DeeReachCampaign(
         shop_id=shop.id,
         kind=kind,
@@ -632,6 +648,13 @@ async def send_campaign(
         locked_credits_satang=locked_satang,
         final_credits_satang=0,
         message_text=message,
+        offer_kind=norm_offer_kind if has_offer else None,
+        offer_label=norm_offer_label,
+        offer_image=norm_offer_image if has_offer else None,
+        offer_amount=offer_amount if has_offer else None,
+        offer_unit=norm_offer_unit if has_offer else None,
+        offer_starts_at=offer_starts_at if has_offer else None,
+        offer_expires_at=offer_expires_at if has_offer else None,
         sent_at=utcnow(),
     )
     db.add(campaign)

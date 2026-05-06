@@ -1,16 +1,19 @@
 """DeeReach — S13 list / detail editor / sent confirmation + send action."""
 
+from datetime import timedelta
 from typing import List, Optional
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import SessionContext, get_current_shop, require_permission
 from app.core.database import get_session
 from app.core.templates import templates
-from app.models import DeeReachCampaign, Shop
+from app.models import DeeReachCampaign, Point, Shop
+from app.models.util import utcnow
 from app.services.deereach import (
     CHANNEL_COST_SATANG,
     DeeReachSendError,
@@ -69,7 +72,7 @@ KIND_FALLBACK_LABELS: dict[str, tuple[str, str, str]] = {
     "almost_there": ("ใกล้ครบ", "ส่งกำลังใจคนใกล้ครบ", "ไม่มีลูกค้าใกล้รับรางวัลขณะนี้"),
     "unredeemed_reward": ("รับรางวัลซะที", "เตือนคนที่ยังไม่รับรางวัล", "ไม่มีคนค้างรับรางวัลขณะนี้"),
     "new_customer": ("ขอบคุณลูกค้าใหม่", "ขอบคุณคนที่มาครั้งแรก", "ไม่มีลูกค้าใหม่ในช่วง 7 วันที่ผ่านมา"),
-    "manual": ("แคมเปญของคุณเอง", "สร้างแคมเปญเอง", "เลือกลูกค้า + พิมพ์ข้อความเอง"),
+    "manual": ("ข้อความของคุณเอง", "สร้างข้อความเอง", "เลือกลูกค้า + พิมพ์ข้อความเอง"),
 }
 
 
@@ -113,6 +116,65 @@ async def deereach_detail(
 
     audience = await _audience_for(db, shop, kind)
     message = await render_message(kind, shop)
+
+    # For the manual editor we expose segment chips above the
+    # customer list so the owner can bulk-select "everyone almost
+    # at threshold" / "everyone who lapsed" / "everyone who arrived
+    # in the last 7d" without ticking each row individually. We
+    # classify the manual audience inline rather than reusing the
+    # find_*_customers helpers from the suggestion engine — those
+    # require a LINE id (they're built for outreach), but the
+    # manual audience is broader (anyone reachable, including
+    # inbox-only customers). A single GROUP BY pulls the rollup,
+    # then Python tags each customer based on activity pattern.
+    audience_segments: dict[str, list[str]] = {}
+    if kind == "manual" and audience:
+        audience_id_set = {c.id for c in audience}
+        point_rows = (await db.exec(
+            select(Point.customer_id, Point.created_at, Point.redemption_id)
+            .where(
+                Point.shop_id == shop.id,
+                Point.is_voided == False,  # noqa: E712
+                Point.customer_id.in_(audience_id_set),
+            )
+        )).all()
+
+        aggs: dict = {}
+        for cid, created_at, redemption_id in point_rows:
+            a = aggs.setdefault(cid, {"active": 0, "last_at": None, "first_at": None})
+            if redemption_id is None:
+                a["active"] += 1
+            if a["last_at"] is None or created_at > a["last_at"]:
+                a["last_at"] = created_at
+            if a["first_at"] is None or created_at < a["first_at"]:
+                a["first_at"] = created_at
+
+        threshold = shop.reward_threshold or 1
+        now_ts = utcnow()
+        near_gap_max = 2
+        lapsed_cutoff = now_ts - timedelta(days=14)
+        new_cutoff = now_ts - timedelta(days=7)
+
+        near_ids: list[str] = []
+        lapsed_ids: list[str] = []
+        new_ids: list[str] = []
+        for cid in audience_id_set:
+            agg = aggs.get(cid)
+            if not agg:
+                continue
+            gap = threshold - agg["active"]
+            if 0 < gap <= near_gap_max:
+                near_ids.append(str(cid))
+            if agg["last_at"] is not None and agg["last_at"] < lapsed_cutoff:
+                lapsed_ids.append(str(cid))
+            if agg["first_at"] is not None and agg["first_at"] >= new_cutoff:
+                new_ids.append(str(cid))
+
+        audience_segments = {
+            "near":   near_ids,
+            "lapsed": lapsed_ids,
+            "new":    new_ids,
+        }
     # Per-customer cost + channel matrix for the editor:
     #   audience_cost[id]      satang the campaign locks for this recipient
     #                          (drives the live ส่ง-button total)
@@ -151,6 +213,7 @@ async def deereach_detail(
             "message": message,
             "audience_cost": audience_cost,
             "audience_channels": audience_channels,
+            "audience_segments": audience_segments,
             "channels": DEEREACH_CHANNELS,
             "credit_balance_satang": shop.credit_balance,
         },
@@ -162,6 +225,13 @@ async def send(
     kind: str = Form(...),
     message: Optional[str] = Form(None),
     customer_ids: Optional[List[str]] = Form(None),
+    offer_kind: Optional[str] = Form(None),
+    offer_label: Optional[str] = Form(None),
+    offer_image: Optional[str] = Form(None),
+    offer_amount: Optional[int] = Form(None),
+    offer_unit: Optional[str] = Form(None),
+    offer_starts_at: Optional[str] = Form(None),
+    offer_expires_at: Optional[str] = Form(None),
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(require_permission("can_deereach")),
     db: AsyncSession = Depends(get_session),
@@ -177,6 +247,10 @@ async def send(
         to send to everyone the audience query returns. Empty list (no
         checkboxes ticked) is treated the same as "no recipients" by
         the service.
+      - `offer_label / offer_image / offer_expires_at`: optional
+        attached "ของฝาก" rendered alongside the message in inbox.
+        offer_expires_at is a YYYY-MM-DD or ISO datetime string;
+        empty/invalid → no expiry.
     """
     selected_set: Optional[set[UUID]] = None
     if customer_ids is not None:
@@ -188,11 +262,41 @@ async def send(
                 # Ignore malformed ids; service-side check still rejects an
                 # empty selection so the user gets the right Thai detail.
                 continue
+
+    # Parse optional date inputs — accept YYYY-MM-DD (the
+    # <input type="date"> form value) and full ISO. Anything
+    # unparseable becomes None rather than rejecting the whole send.
+    from datetime import datetime as _dt
+
+    def _parse_date(raw: Optional[str], end_of_day: bool = False):
+        if not raw or not raw.strip():
+            return None
+        s = raw.strip()
+        try:
+            if "T" in s:
+                return _dt.fromisoformat(s.replace("Z", ""))
+            d = _dt.strptime(s, "%Y-%m-%d")
+            if end_of_day:
+                return d.replace(hour=23, minute=59, second=59)
+            return d
+        except ValueError:
+            return None
+
+    parsed_starts_at = _parse_date(offer_starts_at, end_of_day=False)
+    parsed_expires_at = _parse_date(offer_expires_at, end_of_day=True)
+
     try:
         campaign = await send_campaign(
             db, shop, kind,
             message_override=message,
             selected_customer_ids=selected_set,
+            offer_kind=offer_kind,
+            offer_label=offer_label,
+            offer_image=offer_image,
+            offer_amount=offer_amount,
+            offer_unit=offer_unit,
+            offer_starts_at=parsed_starts_at,
+            offer_expires_at=parsed_expires_at,
         )
     except DeeReachSendError as e:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, str(e))

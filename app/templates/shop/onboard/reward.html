@@ -4,8 +4,10 @@
 {% block td_attrs %}
 {% set valid_images = ['gift_box', 'card', 'star', 'coffee_cup'] %}
 {% set picked_image = shop.reward_image if shop.reward_image in valid_images else 'gift_box' %}
+{% set picked_desc = shop.reward_description if shop.reward_description != 'Free Coffee' else '' %}
 x-data="{
 rewardImage: '{{ picked_image }}',
+rewardDescription: {{ picked_desc|tojson }},
 goal: {{ shop.reward_threshold }},
 customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }},
 isUploading: false,
@@ -50,54 +52,25 @@ this.isUploading = false;
     <div class="sub">ลูกค้าได้อะไรเมื่อสะสมครบ</div>
   </div>
 
-  <div class="s2-field">
-    <div class="s2-label">รางวัลที่ลูกค้าจะได้รับ</div>
-    <input id="onboard-reward-desc" name="reward_description" type="text" required class="s2-input"
-      value="{% if shop.reward_description != 'Free Coffee' %}{{ shop.reward_description }}{% endif %}"
-      placeholder="เช่น กาแฟ Signature ฟรี 1 แก้ว">
-  </div>
-
-  <div class="s2-field" style="margin-top:18px;">
-    <div class="s2-label">รูปรางวัล</div>
-  </div>
-
-  <div class="s2-rewards" style="margin-top:8px;">
-    {% for img_id in reward_images %}
-    <button type="button" class="s2-reward" :class="{ selected: rewardImage === '{{ img_id }}' }"
-      @click="rewardImage = '{{ img_id }}'">
-      {% include "_partials/reward_svg.html" %}
-    </button>
-    {% endfor %}
-  </div>
-
-  <div class="s2-upload" @click="$refs.rewardFileInput.click()" :class="{ uploading: isUploading }"
-    style="margin: 12px 20px 0;">
-    <input type="file" x-ref="rewardFileInput" @change="handleFileUpload" accept="image/*" style="display: none;">
-    <template x-if="!isUploading">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"
-        stroke-linejoin="round" style="width:18px;height:18px;">
-        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4" />
-        <polyline points="17 8 12 3 7 8" />
-        <line x1="12" y1="3" x2="12" y2="15" />
-      </svg>
-    </template>
-    <template x-if="isUploading">
-      <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3"
-        style="width:18px;height:18px;">
-        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16" />
-      </svg>
-    </template>
-    <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้รูปของฉันเอง'"></span>
-  </div>
-
-  <template x-if="customRewardUrl">
-    <div class="s2-rewards" style="margin-top: 10px; padding: 0 20px;">
-      <button type="button" class="s2-reward" :class="{ selected: rewardImage === customRewardUrl }"
-        @click="rewardImage = customRewardUrl">
-        <img :src="customRewardUrl" style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
-      </button>
-    </div>
-  </template>
+  {# Onboarding reward shares the picker partial with the DeeReach
+     offer sheet — single source of truth for the name + icon + upload
+     fields. The hidden submit-friendly input below uses x-bind so the
+     server-side form POST still receives reward_description even
+     though the picker uses x-model="rewardDescription". #}
+  {% with
+    name_path = "rewardDescription",
+    image_path = "rewardImage",
+    upload_url_path = "customRewardUrl",
+    upload_handler = "handleFileUpload",
+    name_label = "รางวัลที่ลูกค้าจะได้รับ",
+    name_placeholder = "เช่น กาแฟ Signature ฟรี 1 แก้ว",
+    image_label = "รูปรางวัล",
+    image_options = reward_images,
+    name_input_attrs = "id='onboard-reward-desc' required"
+  %}
+    {% include "_partials/reward_picker.html" %}
+  {% endwith %}
+  <input type="hidden" name="reward_description" :value="rewardDescription">
 
   <div class="s2-field" style="margin-top:22px;">
     <div class="s2-label">เก็บกี่แต้มถึงได้รางวัล</div>

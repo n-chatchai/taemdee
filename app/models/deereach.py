@@ -31,6 +31,28 @@ class DeeReachCampaign(SQLModel, table=True):
     # Rendered message body sent to recipients (keeps a record for support).
     message_text: Optional[str] = Field(default=None)
 
+    # Optional attached "ของฝาก" — campaign carries a coupon-style offer
+    # rendered as a styled card inside the customer's inbox message.
+    # Staff verifies use manually at the shop; no separate Voucher
+    # entity in v1.
+    #
+    # offer_kind selects the design's two flavours:
+    #   'free_item' → owner types a label, picks an icon
+    #                 (e.g. "กาแฟ Signature ฟรี 1 แก้ว")
+    #   'discount'  → owner picks amount + unit
+    #                 (offer_label rendered as "ลด 50 บาท" / "ลด 10%")
+    #
+    # offer_label is the composed display string for both kinds; the
+    # dispatcher copies it onto Inbox.offer_text so customer-side
+    # rendering doesn't need to know about types.
+    offer_kind: Optional[str] = Field(default=None)
+    offer_label: Optional[str] = Field(default=None)
+    offer_image: Optional[str] = Field(default=None)
+    offer_amount: Optional[int] = Field(default=None)  # discount only
+    offer_unit: Optional[str] = Field(default=None)    # 'baht' | 'percent'
+    offer_starts_at: Optional[datetime] = Field(default=None)
+    offer_expires_at: Optional[datetime] = Field(default=None)
+
     # Set by the owner when they tap Send. Until then this row may not exist —
     # we only persist Campaign records when actually sending.
     sent_at: Optional[datetime] = Field(default=None)

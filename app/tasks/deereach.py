@@ -26,6 +26,7 @@ configured via `DATABASE_URL`. Use `asyncio.run` + a fresh engine per job.
 
 import asyncio
 import logging
+from datetime import datetime
 from typing import Optional
 from uuid import UUID
 
@@ -177,6 +178,9 @@ async def _create_inbox_row(
     shop_id: UUID,
     campaign_id: UUID,
     message: str,
+    *,
+    offer_text: Optional[str] = None,
+    offer_until: Optional[datetime] = None,
 ) -> Inbox:
     """Insert an Inbox row + flush so the generated id is available for
     deep-link URLs (web push) before the row is committed at end-of-job.
@@ -184,12 +188,18 @@ async def _create_inbox_row(
     Inbox is the source-of-truth fallback — every campaign message
     lands here regardless of which channel the dispatcher picked, so
     customers can re-read past notifications.
+
+    If the campaign carries an attached offer (label + optional
+    expiry), copy it onto the inbox row so the customer-side detail
+    template renders the offer card without re-loading the campaign.
     """
     row = Inbox(
         customer_id=customer_id,
         shop_id=shop_id,
         campaign_id=campaign_id,
         body=message,
+        offer_text=offer_text,
+        offer_until=offer_until,
     )
     db.add(row)
     await db.flush()  # populates row.id without committing
@@ -371,8 +381,13 @@ async def _run(campaign_id: UUID) -> None:
             # is the source-of-truth fallback (every campaign message
             # is re-readable there), AND so its id is available to the
             # web_push channel for the notification's deep-link URL.
+            # Carries the campaign's attached offer (if any) onto the
+            # inbox row so customer-side detail can render it without
+            # re-loading the campaign.
             inbox_row = await _create_inbox_row(
                 db, customer.id, shop.id, campaign.id, message_text,
+                offer_text=campaign.offer_label,
+                offer_until=campaign.offer_expires_at,
             )
             inbox_recipient_ids.add(customer.id)
 

@@ -1,0 +1,95 @@
+{# Shared reward picker — name input + icon presets + custom upload.
+   Reused by:
+     /shop/onboard/reward          (shop's main reward, ของฟรี-style)
+     /shop/deereach (offer sheet)  (campaign-attached ของฝาก)
+
+   Caller passes Alpine x-model paths via {% with %}, so the partial
+   can plug into whatever state shape the surface uses (top-level
+   state vs. nested offerDraft). Both surfaces speak the same
+   "free_item" reward shape; the discount variant lives outside the
+   partial because it has different fields entirely.
+
+   Required parameters (set via {% with %} before {% include %}):
+     name_path        — x-model path for the reward name input
+                        (e.g. 'rewardDescription' or 'offerDraft.label')
+     image_path       — x-model path for the chosen icon id
+                        (e.g. 'rewardImage' or 'offerDraft.image')
+     name_input_attrs — extra attrs on the <input> (e.g. server-side
+                        name='reward_description' value=… defaultValue
+                        for the form-POST onboarding flow). May be
+                        empty for sheet-style flows that submit via JS.
+
+   Optional:
+     upload_url_path     — x-model for the custom uploaded URL.
+                           Empty/missing → upload row is hidden.
+     upload_handler      — Alpine method to call on file change.
+     name_label          — section label (default 'รางวัลที่ลูกค้าจะได้รับ')
+     name_placeholder    — input placeholder
+     image_label         — section label (default 'รูปรางวัล')
+     image_options       — list of icon ids; defaults to the canonical 4
+                           ('gift_box', 'card', 'star', 'coffee_cup').
+#}
+{% set _name_label    = name_label    | default('รางวัลที่ลูกค้าจะได้รับ') %}
+{% set _name_ph       = name_placeholder | default('เช่น กาแฟ Signature ฟรี 1 แก้ว') %}
+{% set _image_label   = image_label   | default('รูปรางวัล') %}
+{% set _image_options = image_options | default(['gift_box', 'card', 'star', 'coffee_cup']) %}
+
+<div class="s2-field">
+  <div class="s2-label">{{ _name_label }}</div>
+  <input type="text" class="s2-input"
+         x-model="{{ name_path }}"
+         maxlength="60"
+         placeholder="{{ _name_ph }}"
+         {{ name_input_attrs | default('') | safe }}>
+</div>
+
+<div class="s2-field" style="margin-top:18px;">
+  <div class="s2-label">{{ _image_label }}</div>
+</div>
+<div class="s2-rewards" style="margin-top:8px;">
+  {% for img_id in _image_options %}
+    <button type="button" class="s2-reward"
+            :class="{ selected: {{ image_path }} === '{{ img_id }}' }"
+            @click="{{ image_path }} = '{{ img_id }}'">
+      {% with img_id = img_id %}
+        {% include "_partials/reward_svg.html" %}
+      {% endwith %}
+    </button>
+  {% endfor %}
+</div>
+
+{% if upload_url_path and upload_handler %}
+  <div class="s2-upload"
+       @click="$refs.rewardFileInput.click()"
+       :class="{ uploading: isUploading }"
+       style="margin: 12px 0 0;">
+    <input type="file" x-ref="rewardFileInput"
+           @change="{{ upload_handler }}"
+           accept="image/*" style="display: none;">
+    <template x-if="!isUploading">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2"
+           stroke-linecap="round" stroke-linejoin="round" style="width:18px;height:18px;">
+        <path d="M21 15v4a2 2 0 01-2 2H5a2 2 0 01-2-2v-4"/>
+        <polyline points="17 8 12 3 7 8"/>
+        <line x1="12" y1="3" x2="12" y2="15"/>
+      </svg>
+    </template>
+    <template x-if="isUploading">
+      <svg class="animate-spin" viewBox="0 0 24 24" fill="none" stroke="currentColor"
+           stroke-width="3" style="width:18px;height:18px;">
+        <circle cx="12" cy="12" r="10" stroke-dasharray="32" stroke-dashoffset="16"/>
+      </svg>
+    </template>
+    <span x-text="isUploading ? 'กำลังอัปโหลด...' : 'ใช้รูปของฉันเอง'"></span>
+  </div>
+  <template x-if="{{ upload_url_path }}">
+    <div class="s2-rewards" style="margin-top: 10px;">
+      <button type="button" class="s2-reward"
+              :class="{ selected: {{ image_path }} === {{ upload_url_path }} }"
+              @click="{{ image_path }} = {{ upload_url_path }}">
+        <img :src="{{ upload_url_path }}"
+             style="object-fit: cover; width: 100%; height: 100%; border-radius: inherit;">
+      </button>
+    </div>
+  </template>
+{% endif %}

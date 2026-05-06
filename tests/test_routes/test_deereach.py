@@ -132,7 +132,7 @@ async def test_deereach_manual_detail_renders(auth_client, db, shop):
     r = await auth_client.get("/shop/deereach/manual")
     assert r.status_code == 200
     body = r.text
-    assert "แคมเปญของคุณเอง" in body
+    assert "ข้อความของคุณเอง" in body
     # Customer row rendered
     assert str(c.id) in body
 

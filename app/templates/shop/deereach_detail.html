@@ -35,6 +35,16 @@
         { id: 'thanks',       label: 'ขอบคุณ',  body: 'ขอบคุณพี่{name} ที่อุดหนุน {shop_name} เสมอนะครับ · มาเจอกันใหม่' },
         { id: 'empty',        label: 'เปล่า',    body: '' },
       ];
+      // 4 preset icon ids — match the existing reward image set so
+      // a shop can attach an offer that mirrors the rest of their UI.
+      const OFFER_ICONS = ['gift_box', 'card', 'star', 'coffee_cup'];
+      // Two design types ("ของฟรี" / "ลดราคา"). offer_kind on the
+      // campaign records which one was chosen; the rendered label is
+      // composed from the type-specific fields below.
+      const OFFER_KINDS = [
+        { id: 'free_item', label: 'ของฟรี' },
+        { id: 'discount',  label: 'ลดราคา' },
+      ];
       return {
         message: defaultMessage,
         templates: TEMPLATES,
@@ -43,6 +53,121 @@
         flash: '',
         flashKind: 'is-error',
         balanceSatang,
+        // Attached offer state — null when none, object when set.
+        // The sheet lives in the same Alpine scope so opening edits
+        // start from the current value.
+        offer: null,
+        offerSheetOpen: false,
+        offerKinds: OFFER_KINDS,
+        offerIcons: OFFER_ICONS,
+        // Custom-image upload state for the offer's free-item picker
+        // — same shape as the onboarding/reward Alpine state so the
+        // shared _partials/reward_picker.html can reuse the upload
+        // row. POSTs to /shop/upload/reward (works for any shop-side
+        // caller, not onboarding-specific). Selected URL flows into
+        // offerDraft.image so saveOffer() persists it on the campaign.
+        customRewardUrl: '',
+        isUploading: false,
+        async handleFileUpload(e) {
+          const file = e.target.files && e.target.files[0];
+          if (!file) return;
+          this.isUploading = true;
+          const fd = new FormData();
+          fd.append('file', file);
+          try {
+            const res = await fetch('/shop/upload/reward', { method: 'POST', body: fd });
+            const data = await res.json();
+            if (data.url) {
+              this.customRewardUrl = data.url;
+              this.offerDraft.image = data.url;
+            }
+          } catch (err) {
+            console.error('Upload failed', err);
+          } finally {
+            this.isUploading = false;
+          }
+        },
+        // Draft mirrors all fields the sheet collects. When the kind
+        // is 'free_item' the user types `label` and picks `image`;
+        // when 'discount' they enter `amount` + `unit` and the
+        // composed label is generated for them. Both share `starts_at`
+        // and `expires_at`.
+        offerDraft: {
+          kind: 'free_item',
+          label: '', image: 'gift_box',
+          amount: 50, unit: 'baht',
+          starts_at: '', expires_at: '',
+        },
+        openOfferSheet() {
+          // Editing an existing offer pre-fills the draft; "+ ของฝาก"
+          // opens with defaults.
+          if (this.offer) {
+            this.offerDraft = {
+              kind: this.offer.kind || 'free_item',
+              label: this.offer.label || '',
+              image: this.offer.image || 'gift_box',
+              amount: this.offer.amount || 50,
+              unit: this.offer.unit || 'baht',
+              starts_at: this.offer.starts_at || '',
+              expires_at: this.offer.expires_at || '',
+            };
+          } else {
+            this.offerDraft = {
+              kind: 'free_item',
+              label: '', image: 'gift_box',
+              amount: 50, unit: 'baht',
+              starts_at: '', expires_at: '',
+            };
+          }
+          this.offerSheetOpen = true;
+        },
+        closeOfferSheet() { this.offerSheetOpen = false; },
+        composeDiscountLabel() {
+          const a = parseInt(this.offerDraft.amount, 10);
+          if (!a || a <= 0) return '';
+          return this.offerDraft.unit === 'percent'
+            ? 'ลด ' + a + '%'
+            : 'ลด ' + a + ' บาท';
+        },
+        saveOffer() {
+          const draft = this.offerDraft;
+          // Compose the display label from the kind-specific fields.
+          // free_item → user-typed label as-is.
+          // discount  → "ลด N บาท" / "ลด N%".
+          let label = '';
+          if (draft.kind === 'discount') {
+            label = this.composeDiscountLabel();
+          } else {
+            label = (draft.label || '').trim();
+          }
+          if (!label) return;
+          this.offer = {
+            kind: draft.kind,
+            label,
+            image: draft.kind === 'free_item' ? (draft.image || 'gift_box') : '',
+            amount: draft.kind === 'discount' ? parseInt(draft.amount, 10) : null,
+            unit: draft.kind === 'discount' ? draft.unit : '',
+            starts_at: draft.starts_at || '',
+            expires_at: draft.expires_at || '',
+          };
+          this.offerSheetOpen = false;
+        },
+        removeOffer() {
+          this.offer = null;
+          this.offerSheetOpen = false;
+        },
+        formatDate(yyyymmdd) {
+          if (!yyyymmdd) return '';
+          try {
+            const d = new Date(yyyymmdd + 'T00:00:00');
+            const months = ['ม.ค.','ก.พ.','มี.ค.','เม.ย.','พ.ค.','มิ.ย.','ก.ค.','ส.ค.','ก.ย.','ต.ค.','พ.ย.','ธ.ค.'];
+            return d.getDate() + ' ' + months[d.getMonth()];
+          } catch (_) { return yyyymmdd; }
+        },
+        offerExpiryHuman() {
+          if (!this.offer || !this.offer.expires_at) return 'ไม่มีวันหมดอายุ';
+          return 'หมดอายุ ' + this.formatDate(this.offer.expires_at);
+        },
         countSelected() {
           return Object.values(this.selected).filter(Boolean).length;
         },
@@ -72,6 +197,25 @@
         toggleAll() {
           const target = !this.allOn();
           for (const id of audienceIds) this.selected[id] = target;
+        },
+        // Bulk-select audience matching one of the manual-only
+        // segment chips (ใกล้ครบ / หายไป / ใหม่). Sets matching
+        // ids true and the rest false — owner can still tweak
+        // individual checkboxes after.
+        selectSegment(ids) {
+          const targetSet = new Set(ids);
+          for (const id of audienceIds) {
+            this.selected[id] = targetSet.has(id);
+          }
+        },
+        // Active state for the chip strip — true when the current
+        // selection EXACTLY matches the segment's id list (no more,
+        // no less). Drops to false the moment the owner adds or
+        // removes a tick.
+        isSegmentActive(ids) {
+          if (!ids || !ids.length) return false;
+          if (this.countSelected() !== ids.length) return false;
+          return ids.every((id) => this.selected[id]);
         },
         matchesSearchById(id) {
           if (!this.searchQuery) return true;
@@ -110,6 +254,33 @@
       <button type="button" class="s13d-select-all" @click="toggleAll()"
               x-text="allOn() ? 'ปลดทั้งหมด' : 'เลือกทั้งหมด'"></button>
     </div>
+
+    {# Manual-only audience-segment chips. Each chip bulk-selects the
+       customers in that bucket — ใกล้ครบ / หายไป / ใหม่. Active
+       state highlights when selection EXACTLY equals the chip's id
+       list. Empty buckets render disabled (greyed out, count 0)
+       rather than hidden so the bucket structure stays discoverable
+       — the owner sees "no one in หายไป today" instead of wondering
+       which buckets exist. Auto kinds skip the strip since their
+       audience is already pre-narrowed by the suggestion engine. #}
+    {% if suggestion.kind == 'manual' %}
+      {% set _seg_chips = [
+        ('near',   'ใกล้ครบ', audience_segments.get('near', [])),
+        ('lapsed', 'หายไป',   audience_segments.get('lapsed', [])),
+        ('new',    'ใหม่',    audience_segments.get('new', [])),
+      ] %}
+      <div class="s13d-segments">
+        {% for sid, slabel, sids in _seg_chips %}
+          <button type="button" class="s13d-seg-chip"
+                  {% if not sids %}disabled{% endif %}
+                  :class="{ active: isSegmentActive({{ sids|tojson }}) }"
+                  @click="selectSegment({{ sids|tojson }})">
+            <span>{{ slabel }}</span>
+            <span class="s13d-seg-count">{{ sids|length }}</span>
+          </button>
+        {% endfor %}
+      </div>
+    {% endif %}
 
     <div class="s13d-toolbar">
       <div class="s13d-search">
@@ -187,6 +358,34 @@
   </div>
 
   <div class="s13d-section">
+    <div class="s13d-h">
+      <span class="s13d-title">แถมของฝาก <span class="s13d-opt">· ไม่บังคับ</span></span>
+    </div>
+    {# Empty state — dashed "+ ของฝาก" tile. Tapping opens the
+       offer sheet with default icon. Filled state — show the
+       attached offer with edit / remove. Mirrors design's
+       reach.create empty + filled variants. #}
+    <template x-if="!offer">
+      <button type="button" class="s13d-offer-add" @click="openOfferSheet()">
+        <span class="plus" aria-hidden="true">+</span> ของฝาก
+      </button>
+    </template>
+    <template x-if="offer">
+      <div class="s13d-offer-attached">
+        <div class="off-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:24px;height:24px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div class="off-info">
+          <div class="off-name" x-text="offer.label"></div>
+          <div class="off-meta" x-text="offerExpiryHuman()"></div>
+        </div>
+        <a class="off-edit" @click="openOfferSheet()">แก้</a>
+        <a class="off-remove" aria-label="ลบ" @click="removeOffer()">×</a>
+      </div>
+    </template>
+  </div>
+
+  <div class="s13d-section">
     <div class="s13d-h"><span class="s13d-title">ลูกค้าจะเห็นแบบนี้</span></div>
     <div class="s13d-preview">
       {# Mirror the server-side _substitute_placeholders so the owner
@@ -204,6 +403,19 @@
              .replace(/\{shop_reward\}/g, '{{ shop.reward_description or '' }}')
              .replace(/\{points\}/g, '{{ ((shop.reward_threshold or 10) // 2)|string }}')
              .replace(/\{remaining\}/g, '{{ (((shop.reward_threshold or 10) - ((shop.reward_threshold or 10) // 2))|string) }}')"></div>
+      {# Inline offer card mirrors how the customer's inbox detail
+         renders the attached offer below the message body. #}
+      <template x-if="offer">
+        <div class="prev-offer">
+          <div class="po-icon">
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+          </div>
+          <div class="po-info">
+            <div class="po-name" x-text="offer.label"></div>
+            <div class="po-meta" x-text="'รับเลย · ' + offerExpiryHuman()"></div>
+          </div>
+        </div>
+      </template>
     </div>
   </div>
 
@@ -220,6 +432,15 @@
           for (const [cid, on] of Object.entries(selected)) {
             if (on) fd.append('customer_ids', cid);
           }
+          if (offer) {
+            fd.append('offer_kind', offer.kind || 'free_item');
+            fd.append('offer_label', offer.label);
+            fd.append('offer_image', offer.image || '');
+            if (offer.amount) fd.append('offer_amount', offer.amount);
+            if (offer.unit) fd.append('offer_unit', offer.unit);
+            fd.append('offer_starts_at', offer.starts_at || '');
+            fd.append('offer_expires_at', offer.expires_at || '');
+          }
           const r = await fetch('/shop/deereach/send', { method: 'POST', body: fd, redirect: 'manual' });
           if (r.type === 'opaqueredirect' || r.ok) {
             window.location.href = r.url || ('/shop/deereach/sent?campaign_id=__redirect__');
@@ -229,12 +450,138 @@
           }
         ">
     <button class="s13d-send" type="submit" :disabled="!message.trim() || countSelected() === 0 || !canAfford()">
-      <span x-text="'ส่งให้ ' + countSelected() + ' คน'"></span>
+      <span x-text="'ส่งให้ ' + countSelected() + ' คน' + (offer ? ' · พร้อมของฝาก' : '')"></span>
       <span class="s13d-cost" x-text="costCredits() + ' เครดิต'"></span>
     </button>
   </form>
 
   <div class="dash-flash is-error" x-show="flash" x-cloak x-text="flash" style="margin: 12px 20px 0;"></div>
+
+  {# S-offer.create — bottom sheet for adding / editing the attached
+     offer. Always mounted (no x-show display-toggle); .is-open
+     class fades the backdrop and slides the sheet up. Pointer-
+     events:none in the closed state means it doesn't intercept
+     anything. The "ใช้รูปของฉันเอง" button from the design is
+     deferred — v1 ships the 4 preset icons only. #}
+  <div class="rc-overlay" :class="{ 'is-open': offerSheetOpen }" @click.self="closeOfferSheet()">
+    <div class="rc-sheet" style="margin:0; max-width: 480px;">
+      <div class="sheet-handle"></div>
+      <div class="vc-h">สร้างของฝาก</div>
+      <div class="vc-sub">ลูกค้าจะเห็นในข้อความ · ใช้ได้ที่หน้าร้าน</div>
+
+      {# Type toggle — manual-only for now. Auto kinds (almost_there,
+         win_back, …) ship a free-item-style offer because the
+         pre-rendered template already implies a gift, not a discount.
+         Manual lets the owner pick either kind. Onboarding also stays
+         free-item-only until that surface gains a discount UI. #}
+      {% if suggestion.kind == 'manual' %}
+      <label class="off-field-label">ประเภท</label>
+      <div class="off-type-tabs">
+        <template x-for="k in offerKinds" :key="k.id">
+          <button type="button" class="off-type-tab"
+                  :class="{ active: offerDraft.kind === k.id }"
+                  @click="offerDraft.kind = k.id"
+                  x-text="k.label"></button>
+        </template>
+      </div>
+      {% endif %}
+
+      {# Both kind-specific branches share a CSS-grid stage and stack
+         in the same grid cell. The cell sizes to the taller branch
+         (free-item) and toggling visibility (not display) keeps the
+         hidden branch contributing layout space so nothing below
+         shifts when the user flips ประเภท. #}
+      <div class="off-kind-stage">
+        {# Free-item branch — uses the shared reward picker so this
+           sheet and onboarding/reward stay identical. Upload params
+           deferred until the upload endpoint is opened up to non-
+           onboarding callers. #}
+        <div {% if suggestion.kind == 'manual' %}:class="{ 'is-hidden': offerDraft.kind !== 'free_item' }"{% endif %}>
+          {% with
+            name_path = "offerDraft.label",
+            image_path = "offerDraft.image",
+            upload_url_path = "customRewardUrl",
+            upload_handler = "handleFileUpload",
+            name_label = "ชื่อของฟรี",
+            name_placeholder = "เช่น กาแฟ Signature ฟรี 1 แก้ว",
+            image_label = "รูปของฝาก"
+          %}
+            {% include "_partials/reward_picker.html" %}
+          {% endwith %}
+        </div>
+
+        {# Discount branch — manual only. Composed label ("ลด 50 บาท"
+           or "ลด 10%") shows live as a hint so the owner sees what
+           the customer will receive before saving. #}
+        {% if suggestion.kind == 'manual' %}
+        <div :class="{ 'is-hidden': offerDraft.kind !== 'discount' }">
+          <label class="off-field-label">รายละเอียด</label>
+          <div class="off-discount-row">
+            <span class="off-discount-prefix">ลด</span>
+            <input type="number"
+                   class="s2-input off-discount-input"
+                   x-model.number="offerDraft.amount"
+                   min="1" inputmode="numeric"
+                   placeholder="50">
+            <div class="off-unit-tabs">
+              <button type="button" class="off-unit-tab"
+                      :class="{ active: offerDraft.unit === 'baht' }"
+                      @click="offerDraft.unit = 'baht'">บาท</button>
+              <button type="button" class="off-unit-tab"
+                      :class="{ active: offerDraft.unit === 'percent' }"
+                      @click="offerDraft.unit = 'percent'">%</button>
+            </div>
+          </div>
+          <div class="off-discount-hint" x-show="composeDiscountLabel()" x-cloak
+               x-text="'ลูกค้าจะเห็น: ' + composeDiscountLabel()"></div>
+        </div>
+        {% endif %}
+      </div>
+
+      <label class="off-field-label">ใช้ได้ <span class="off-field-opt">· ไม่ใส่ก็ได้</span></label>
+      <div class="off-date-range">
+        <div class="off-date-cell">
+          <span class="off-date-cap">ตั้งแต่</span>
+          <input type="date" class="off-field-input off-date-input"
+                 x-model="offerDraft.starts_at">
+        </div>
+        <span class="off-date-arrow">→</span>
+        <div class="off-date-cell">
+          <span class="off-date-cap">ถึง</span>
+          <input type="date" class="off-field-input off-date-input"
+                 x-model="offerDraft.expires_at">
+        </div>
+      </div>
+
+      {# Live preview — owner sees the offer card exactly as the
+         customer will see it in their inbox. Composed label
+         updates as discount-amount or free_item-label changes. #}
+      <label class="off-field-label">ลูกค้าจะเห็นแบบนี้</label>
+      <div class="s-offer-preview">
+        <div class="opv-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" style="width:22px;height:22px;"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
+        </div>
+        <div class="opv-info">
+          <div class="opv-name"
+               x-text="offerDraft.kind === 'discount'
+                  ? (composeDiscountLabel() || 'ใส่จำนวนเงินเพื่อดูตัวอย่าง')
+                  : ((offerDraft.label || '').trim() || 'พิมพ์ชื่อของฝากเพื่อดูตัวอย่าง')"></div>
+          <div class="opv-meta"
+               x-text="offerDraft.expires_at
+                  ? ('ใช้ได้ถึง ' + formatDate(offerDraft.expires_at))
+                  : 'ใช้ได้ตลอด'"></div>
+        </div>
+      </div>
+
+      <button type="button" class="s-offer-cta"
+              :disabled="(offerDraft.kind === 'discount' ? !composeDiscountLabel() : !(offerDraft.label || '').trim())"
+              @click="saveOffer()">
+        <span>บันทึก · กลับไปส่ง</span>
+        <span class="arrow" aria-hidden="true">→</span>
+      </button>
+      <button type="button" class="s-offer-cancel" @click="closeOfferSheet()">ยกเลิก</button>
+    </div>
+  </div>
 {% endblock %}
 
 {# Bottom nav stays present so the owner can jump tabs without
