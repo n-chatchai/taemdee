@@ -53,14 +53,16 @@
       }
     }
   </script>
-  {# Speculation Rules — Chrome/Edge prerenders the dock targets on
-     hover/pointerdown ('moderate' eagerness) so tab switches feel
-     instant. Same pattern as c_base.html for the customer dock.
-     Eagerness moderate fires on user intent only, so we don't
-     hammer the server with prerenders on every page load. #}
+  {# Speculation Rules — prefetch (not prerender) the dock targets on
+     hover/pointerdown so tab switches feel snappy. Prefetch warms the
+     HTTP cache; the navigation still goes through the normal cross-
+     document path, which is required for the View Transitions API to
+     run and for the dock's view-transition-name='bottom-nav' to keep
+     the glass nav visually stable across pages. Prerender activations
+     skip view transitions and make the dock flicker. #}
   <script type="speculationrules">
     {
-      "prerender": [
+      "prefetch": [
         {
           "where": {
             "or": [

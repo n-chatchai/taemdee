@@ -1297,7 +1297,7 @@ _REGULAR_VISIT_THRESHOLD = 3
 _NEAR_GAP_MAX = 2
 # "หายไป" — last visit longer than this ago.
 _LAPSED_DAYS = 14
-_CUSTOMERS_PAGE_SIZE = 20
+_CUSTOMERS_PAGE_SIZE = 10
 
 
 def _humanize_visit(last_at, now):
