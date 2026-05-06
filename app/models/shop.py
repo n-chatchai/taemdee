@@ -21,6 +21,18 @@ class Shop(SQLModel, table=True):
 
     is_onboarded: bool = Field(default=False)
 
+    # Wizard cursor for the multi-step onboarding flow. Tracks the
+    # highest-numbered step the owner has completed so /shop/onboard
+    # routes them back to where they bailed instead of always
+    # restarting at step 1.
+    #   0 = nothing yet → /shop/onboard/identity
+    #   1 = identity done → /shop/onboard/reward
+    #   2 = reward done → /shop/onboard/theme
+    #   3 = theme done → /shop/onboard/done (final QR + finish)
+    # is_onboarded flips True on the /done POST; once that fires the
+    # column is essentially frozen and dashboard takes over.
+    onboarding_step: int = Field(default=0)
+
     credit_balance: int = Field(default=0)
     reward_threshold: int = Field(default=10)
     reward_description: str = Field(default="Free Coffee")

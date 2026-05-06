@@ -549,15 +549,24 @@ body {
   display: flex;
   flex-direction: column;
   flex: 1;
+  /* Reserve space for the fixed-position .s2-foot so the last form
+     field isn't hidden behind it on short viewports. ~76px foot
+     height + breathing room. */
+  padding-bottom: 96px;
 }
 
+/* Foot is fixed (was sticky — broke on iOS Safari with long forms +
+   any overflow ancestor). Pinning to the viewport keeps the back/
+   next buttons reachable regardless of scroll position. The
+   safe-area-inset-bottom padding handles the iPhone home-bar gap. */
 .s2-foot {
-  margin-top: auto;
-  position: sticky;
+  position: fixed;
+  left: 0;
+  right: 0;
   bottom: 0;
   z-index: 10;
   background: var(--bg);
-  padding: 16px 20px 24px;
+  padding: 16px 20px calc(20px + env(safe-area-inset-bottom));
   display: flex;
   align-items: stretch;
   gap: 12px;
@@ -6888,6 +6897,13 @@ form.s10-row { margin: 0 0 4px; }
 .s2-theme-preview.t-pastel .preview-stamps .ps.butter { background: #F4B583; }
 .s2-theme-preview.t-pastel .preview-reward { border-color: #E87A6A; color: #E87A6A; }
 
+.s2-theme-preview.t-sport { background: #F0FDF4; color: #052e16; }
+.s2-theme-preview.t-sport .preview-num { color: #15803D; }
+.s2-theme-preview.t-sport .preview-stamps .ps { background: rgba(21, 128, 61, 0.15); }
+.s2-theme-preview.t-sport .preview-stamps .ps.on { background: #15803D; }
+.s2-theme-preview.t-sport .preview-stamps .ps.butter { background: #BEF264; }
+.s2-theme-preview.t-sport .preview-reward { border-color: #15803D; color: #15803D; }
+
 /* ==========================================================
    S2.3 — Theme picker swatch row (lifted from the design's
    .s2-theme-swatches; the older .s2-themes / .s2-theme grid is
@@ -10089,6 +10105,22 @@ form.s10-row { margin: 0 0 4px; }
   --mint: #D6E5C7;
   --mint-ink: #4a6b3d;
   --line: rgba(58, 32, 28, 0.1);
+}
+
+.td.theme-sport,
+.s2-c1-preview.theme-sport {
+  --bg: #F0FDF4;
+  --surface: #FFFFFF;
+  --ink: #052e16;
+  --ink-soft: #4d7c5d;
+  --ink-softer: #94b59f;
+  --accent: #15803D;
+  --accent-soft: rgba(21, 128, 61, 0.13);
+  --butter: #BEF264;
+  --butter-soft: #E6F8B8;
+  --mint: #BBE3C8;
+  --mint-ink: #155f33;
+  --line: rgba(5, 46, 22, 0.1);
 }
 
 /* ==========================================================

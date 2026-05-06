@@ -72,8 +72,7 @@
       </a>
       {% endif %}
     </div>
-
-    <div style="padding: 8px 22px 16px; text-align: center;">
+    <div style="padding: 8px 22px 16px; text-align: center; margin-top: 20px;">
       {% set main_host = settings.main_domain if settings.environment == "production" else request.headers.get('host', '').replace('shop.', '') %}
       <a href="https://{{ main_host }}/customer/login" style="font-size: 14px; font-weight: 600; color: var(--ink-soft); text-decoration: none; display: inline-flex; align-items: center; gap: 6px;">
         <span>คุณคือลูกค้า?</span>
@@ -145,7 +144,7 @@
     </div>
 
     <div class="s1-foot">
-      ถือว่ายอมรับ <a href="#">ข้อตกลง</a> และ <a href="#">นโยบายความเป็นส่วนตัว</a>
+      ถือว่ายอมรับ <a href="/terms">ข้อตกลง</a> และ <a href="/privacy">นโยบายความเป็นส่วนตัว</a>
     </div>
 
     {% include "_partials/footer_mark.html" %}

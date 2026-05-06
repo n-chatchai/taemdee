@@ -370,7 +370,7 @@ async def skip_dashboard_item(
     return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
 
 
-VALID_THEMES = ("taemdee", "mono", "night", "pastel")
+VALID_THEMES = ("taemdee", "mono", "night", "pastel", "sport")
 # Bonus credits intentionally zeroed — pricing is 1 ฿ = 1 credit while we
 # settle on the long-term offer. Re-add bonus per-package later by setting
 # `bonus` here AND switching slip._credits_for_package() to add it.
@@ -387,10 +387,25 @@ VALID_REWARD_IMAGES = {"gift_box", "card", "star", "coffee_cup"}
 VALID_REWARD_GOALS = (5, 10, 20)
 
 
+_ONBOARD_STEP_URL = {
+    0: "/shop/onboard/identity",
+    1: "/shop/onboard/reward",
+    2: "/shop/onboard/theme",
+    3: "/shop/onboard/done",
+}
+
+
 @router.get("/onboard")
-async def onboard_redirect():
-    """Back-compat: legacy single-page onboard now redirects into the wizard."""
-    return RedirectResponse(url="/shop/onboard/identity", status_code=status.HTTP_303_SEE_OTHER)
+async def onboard_redirect(shop: Shop = Depends(get_current_shop)):
+    """Wizard entry point — bounces to the next-incomplete step based
+    on shop.onboarding_step instead of always restarting at identity.
+    Already-onboarded shops never reach here (dashboard route owns
+    that bounce), but defend with a fall-through to /shop/dashboard
+    just in case."""
+    if shop.is_onboarded:
+        return RedirectResponse(url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER)
+    target = _ONBOARD_STEP_URL.get(shop.onboarding_step or 0, "/shop/onboard/identity")
+    return RedirectResponse(url=target, status_code=status.HTTP_303_SEE_OTHER)
 
 
 # Legacy URLs from the previous wizard layout — redirect into the new flow.
@@ -631,6 +646,10 @@ async def onboard_identity_post(
         shop.location = cleaned_province
     if cleaned_district:
         shop.district = cleaned_district
+    # Bump the wizard cursor so a returning owner lands on /reward.
+    # max() so backtracking + re-saving step 1 doesn't yank them
+    # backwards if they'd already advanced past step 2.
+    shop.onboarding_step = max(shop.onboarding_step or 0, 1)
     db.add(shop)
     await db.commit()
     return RedirectResponse(url="/shop/onboard/reward", status_code=status.HTTP_303_SEE_OTHER)
@@ -664,6 +683,7 @@ async def onboard_reward_post(
     # Allow the canonical pills (5/10/20) plus any custom value 1–99.
     if 1 <= reward_threshold <= 99:
         shop.reward_threshold = reward_threshold
+    shop.onboarding_step = max(shop.onboarding_step or 0, 2)
     db.add(shop)
     await db.commit()
     return RedirectResponse(url="/shop/onboard/theme", status_code=status.HTTP_303_SEE_OTHER)
@@ -726,8 +746,9 @@ async def onboard_theme_post(
 ):
     if theme in VALID_THEMES:
         shop.theme_name = theme
-        db.add(shop)
-        await db.commit()
+    shop.onboarding_step = max(shop.onboarding_step or 0, 3)
+    db.add(shop)
+    await db.commit()
     return RedirectResponse(url="/shop/onboard/done", status_code=status.HTTP_303_SEE_OTHER)
 
 
