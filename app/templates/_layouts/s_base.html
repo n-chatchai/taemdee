@@ -53,16 +53,16 @@
       }
     }
   </script>
-  {# Speculation Rules — prefetch (not prerender) the dock targets on
-     hover/pointerdown so tab switches feel snappy. Prefetch warms the
-     HTTP cache; the navigation still goes through the normal cross-
-     document path, which is required for the View Transitions API to
-     run and for the dock's view-transition-name='bottom-nav' to keep
-     the glass nav visually stable across pages. Prerender activations
-     skip view transitions and make the dock flicker. #}
+  {# Speculation Rules — prerender the dock targets on hover/pointerdown
+     so tab switches activate instantly. Same pattern as c_base.html for
+     the customer dock. Prerender activations bypass cross-document View
+     Transitions, which is exactly what we want here: VT was snapshotting
+     the dock with backdrop-filter applied, and Chrome would render the
+     snapshot without the backdrop content for a frame, making the dock
+     look "blur and then show" on each tab switch. #}
   <script type="speculationrules">
     {
-      "prefetch": [
+      "prerender": [
         {
           "where": {
             "or": [
