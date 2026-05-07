@@ -1143,57 +1143,72 @@ def _set_session_cookie(response: Response, token: str) -> None:
     )
 
 
-@router.post("/pwa-claim")
+def _safe_next(next_path: Optional[str]) -> str:
+    """Allow only relative paths to guard against open-redirect via the
+    `?next=` parameter. Anything fishy (absolute URL, scheme, //) falls
+    back to /. The SubdomainRoutingMiddleware will route / to the right
+    dashboard for the current host."""
+    if not next_path:
+        return "/"
+    if not next_path.startswith("/") or next_path.startswith("//"):
+        return "/"
+    if ":" in next_path[:32]:  # quick scheme sniff
+        return "/"
+    return next_path
+
+
+@router.get("/pwa-claim")
 async def pwa_claim(
+    next: Optional[str] = None,
     anchor_cookie: Optional[str] = Cookie(None, alias=SHOP_PWA_ANCHOR_COOKIE),
     db: AsyncSession = Depends(get_session),
 ):
     """Bridge endpoint for iOS PWA shop sign-in. The PWA's
-    visibilitychange handler POSTs here after returning from Safari
-    OAuth. We read the anchor cookie that was set when /shop/login
-    rendered, redeem the matching pwa_login_anchors row (which the
-    OAuth callback claimed in Safari), mint a real session cookie,
-    and tell the page to reload.
+    visibilitychange handler navigates here after returning from
+    Safari OAuth (top-level nav, NOT XHR). We read the anchor cookie
+    that was set when /shop/login rendered, redeem the matching
+    pwa_login_anchors row (which the OAuth callback claimed in
+    Safari), mint a real session cookie, and 303-redirect to the
+    shop dashboard.
 
-    Returns an explicit JSONResponse so the Set-Cookie header is
-    attached to the same response object — relying on the injected
-    Response param + dict return turned out to drop cookies on some
-    FastAPI/Starlette code paths.
+    Why top-level nav instead of fetch+reload: iOS PWA standalone
+    WebKit accepts Set-Cookie reliably from navigation responses but
+    drops it (or defers commit past `window.location.reload()`) for
+    same-origin XHR responses. Verified in prod: server logs showed
+    the response ok with Set-Cookie attached, yet the next request
+    landed back on /shop/login because the PWA jar never received
+    the cookie.
 
-    Four terminal states:
-      - no_anchor — there was never an anchor cookie (browser-only
-        flow, customer flow, etc.). The caller can ignore.
-      - invalid — anchor cookie present but signature/uuid bad.
-      - pending — anchor exists but OAuth hasn't claimed it yet.
-        Caller should retry or wait.
-      - ok — session cookie was set; caller reloads.
-
-    Same-origin XHR; the Set-Cookie header lands in the PWA's cookie
-    jar regardless of what Safari has.
+    No-anchor / pending / bad-cookie cases redirect to the `next`
+    page (or / if the param is missing or fishy). Customer flows
+    pass through here too — they have no anchor cookie, so the
+    redirect just refreshes them on whatever page they were on.
     """
-    from fastapi.responses import JSONResponse
+    fallback = _safe_next(next)
 
     if not anchor_cookie:
         logger.info("🔑 /auth/pwa-claim: no_anchor (no cookie)")
-        return JSONResponse({"status": "no_anchor"})
+        return RedirectResponse(fallback, status_code=status.HTTP_303_SEE_OTHER)
 
     anchor_id = decode_pwa_anchor_token(anchor_cookie)
     if anchor_id is None:
         logger.info("🔑 /auth/pwa-claim: invalid (bad cookie)")
-        resp = JSONResponse({"status": "invalid"})
+        resp = RedirectResponse(fallback, status_code=status.HTTP_303_SEE_OTHER)
         clear_pwa_anchor_cookie(resp)
         return resp
 
     redeemed = await pwa_anchor.redeem_anchor(db, anchor_id)
     if redeemed is None:
         logger.info(f"🔑 /auth/pwa-claim: pending (anchor={anchor_id} not yet claimed)")
-        return JSONResponse({"status": "pending"})
+        return RedirectResponse(fallback, status_code=status.HTTP_303_SEE_OTHER)
 
     shop_id, staff_id, is_owner = redeemed
     logger.success(
         f"🔑 /auth/pwa-claim: ok (anchor={anchor_id} → shop={shop_id} staff={staff_id} owner={is_owner})"
     )
-    resp = JSONResponse({"status": "ok"})
+    resp = RedirectResponse(
+        "/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+    )
     _set_session_cookie(
         resp,
         issue_session_token(shop_id, staff_id=staff_id, is_owner=is_owner),

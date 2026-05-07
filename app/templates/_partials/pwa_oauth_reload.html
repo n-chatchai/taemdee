@@ -150,20 +150,17 @@
       if (p && p.t && Date.now() - p.t <= 10 * 60 * 1000) {
         clear(PENDING);
         writeJSON(DONE, p);
-        // Read the body fully (.text()) before reloading. Some iOS
-        // WebKit builds defer Set-Cookie commit until the response
-        // body stream finishes; reloading the page off the bare
-        // headers-received resolution would land before the new
-        // session cookie sticks in the PWA jar.
-        fetch('/auth/pwa-claim', {
-          method: 'POST',
-          credentials: 'same-origin',
-          cache: 'no-store',
-          headers: { 'Accept': 'application/json' },
-        })
-        .then(function (r) { return r.text(); })
-        .catch(function () { /* network blip — reload anyway */ })
-        .then(function () { softReload(); });
+        // iOS PWA standalone WebKit drops Set-Cookie from XHR but
+        // honours it on top-level navigation responses, so we
+        // navigate to /auth/pwa-claim instead of fetching it. The
+        // server 303-redirects to /shop/dashboard (shop OAuth path)
+        // or back to ?next= (customer / no-anchor path), and the new
+        // session cookie sticks in the PWA jar. The DONE flag has
+        // already been written, so the success toast fires after
+        // the redirect lands.
+        var here = window.location.pathname + window.location.search;
+        window.location.href =
+          '/auth/pwa-claim?next=' + encodeURIComponent(here);
         return;
       }
       if (p) clear(PENDING);  // stale > 10min, drop.
