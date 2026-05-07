@@ -11,12 +11,19 @@ from app.core.templates import templates
 from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.core.auth import get_current_shop, require_permission
+from app.core.auth import (
+    SHOP_PWA_ANCHOR_COOKIE,
+    decode_pwa_anchor_token,
+    get_current_shop,
+    require_permission,
+    set_pwa_anchor_cookie,
+)
 from app.core.database import get_session
 from app.core.urls import customer_base_url
 from app.models import Redemption, Shop, Point
 from app.models.util import utcnow
 from app.routes.auth import _set_session_cookie
+from app.services import pwa_anchor
 from app.services.auth import issue_session_token
 from app.services.branch import s3_top_context
 from app.services.deereach import compute_suggestions
@@ -115,22 +122,49 @@ def _bucket_index(
 async def login_page(
     request: Request,
     ref: Optional[str] = None,
+    anchor_cookie: Optional[str] = Cookie(None, alias=SHOP_PWA_ANCHOR_COOKIE),
     db: AsyncSession = Depends(get_session),
 ):
     """Shop login + first-time signup (same OTP/LINE form).
 
     `?ref=<code>` carries through the Shop→Shop referral grant.
+
+    iOS PWA bridge: every render mints (or re-uses) a `pwa_login_anchors`
+    row and sets a `shop_pwa_anchor` cookie. The OAuth links bake this
+    anchor id into their URL so the callback can claim the row, and a
+    POST /auth/pwa-claim from the returning PWA mints the real session
+    cookie.
     """
     referrer = None
     if ref:
         referral = await find_referral_by_code(db, ref)
         if referral and referral.referee_shop_id is None:
             referrer = await db.get(Shop, referral.referrer_shop_id)
-    return templates.TemplateResponse(
+
+    # Re-use an active, still-pending anchor if the cookie carries one;
+    # otherwise mint a fresh row + cookie. Already-claimed anchors are
+    # skipped so a second render after sign-in starts a clean lifecycle.
+    anchor = None
+    if anchor_cookie:
+        existing_id = decode_pwa_anchor_token(anchor_cookie)
+        if existing_id is not None:
+            existing = await pwa_anchor.get_active_anchor(db, existing_id)
+            if existing is not None and existing.shop_id is None:
+                anchor = existing
+    if anchor is None:
+        anchor = await pwa_anchor.create_anchor(db)
+
+    response = templates.TemplateResponse(
         request=request,
         name="shop/login.html",
-        context={"ref_code": ref, "referrer": referrer},
+        context={
+            "ref_code": ref,
+            "referrer": referrer,
+            "pwa_anchor_id": str(anchor.id),
+        },
     )
+    set_pwa_anchor_cookie(response, anchor.id)
+    return response
 
 
 @router.post("/login")

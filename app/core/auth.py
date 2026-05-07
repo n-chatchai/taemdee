@@ -6,15 +6,19 @@ use `require_owner` or `require_permission(...)`.
 """
 
 from dataclasses import dataclass
+from datetime import timedelta
 from typing import Callable, Optional
 from uuid import UUID
 
 from fastapi import Cookie, Depends, HTTPException, Response, status
+from jose import JWTError, jwt
 from sqlmodel.ext.asyncio.session import AsyncSession
 from loguru import logger
 
+from app.core.config import settings
 from app.core.database import get_session
 from app.models import Customer, Shop, StaffMember, User
+from app.models.util import utcnow
 from app.services.auth import (
     decode_customer_token,
     decode_session_token,
@@ -24,6 +28,54 @@ from app.services.auth import (
 SESSION_COOKIE_NAME = "session"
 CUSTOMER_COOKIE_NAME = "customer"
 CUSTOMER_COOKIE_MAX_AGE = 365 * 24 * 3600  # 1 year
+
+# PWA login anchor — see services/pwa_anchor.py + models/pwa_login_anchor.py.
+SHOP_PWA_ANCHOR_COOKIE = "shop_pwa_anchor"
+SHOP_PWA_ANCHOR_TTL_SECONDS = 60 * 60  # mirrors PwaLoginAnchor.expires_at default
+
+
+def issue_pwa_anchor_token(anchor_id: UUID) -> str:
+    """Sign a JWT carrying the anchor uuid. The cookie value MUST be
+    signed (not just the raw uuid) so that an attacker who guesses or
+    steals the value can't forge a stable identity — only the server
+    can mint."""
+    payload = {
+        "anchor_id": str(anchor_id),
+        "exp": utcnow() + timedelta(seconds=SHOP_PWA_ANCHOR_TTL_SECONDS),
+    }
+    return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
+
+
+def decode_pwa_anchor_token(token: str) -> Optional[UUID]:
+    try:
+        payload = jwt.decode(
+            token, settings.jwt_secret, algorithms=[settings.jwt_algorithm]
+        )
+    except JWTError:
+        return None
+    raw = payload.get("anchor_id")
+    if not raw:
+        return None
+    try:
+        return UUID(raw)
+    except (ValueError, TypeError):
+        return None
+
+
+def set_pwa_anchor_cookie(response: Response, anchor_id: UUID) -> None:
+    response.set_cookie(
+        key=SHOP_PWA_ANCHOR_COOKIE,
+        value=issue_pwa_anchor_token(anchor_id),
+        httponly=True,
+        secure=True,
+        samesite="lax",
+        max_age=SHOP_PWA_ANCHOR_TTL_SECONDS,
+        path="/",
+    )
+
+
+def clear_pwa_anchor_cookie(response: Response) -> None:
+    response.delete_cookie(SHOP_PWA_ANCHOR_COOKIE, path="/")
 
 
 class SessionAuthError(HTTPException):

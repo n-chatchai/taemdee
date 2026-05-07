@@ -33,13 +33,15 @@ def make_oauth_state(
     role: str = "shop",
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
+    pwa_anchor_id: Optional[str] = None,
 ) -> str:
     """Returns the signed JWT to pass as the OAuth `state` URL parameter.
 
     Carries role + optional next_redeem + optional connect_customer_id
     (the customer being connected, baked in at /start so the callback
     binds onto the SAME user no matter what cookie context the
-    redirect chain ends up in).
+    redirect chain ends up in) + optional pwa_anchor_id (the shop-side
+    equivalent — the anchor row to claim once the OAuth resolves).
     """
     payload = {
         "role": role,
@@ -49,6 +51,8 @@ def make_oauth_state(
         payload["next_redeem"] = next_redeem
     if connect_customer_id:
         payload["connect_customer_id"] = connect_customer_id
+    if pwa_anchor_id:
+        payload["pwa_anchor_id"] = pwa_anchor_id
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 

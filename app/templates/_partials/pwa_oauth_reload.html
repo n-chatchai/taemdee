@@ -137,12 +137,25 @@
 
       // 2b. OAuth handoff: if there's a fresh pending flag, the user
       // tapped a connect anchor and just came back from Safari /
-      // OAuth provider. Move to done and reload so the toast fires.
+      // OAuth provider. POST /auth/pwa-claim so the server can mint
+      // a session cookie INTO this PWA's cookie jar (iOS 16.4+
+      // standalone PWAs keep a jar separate from Safari, so the
+      // session set during OAuth in Safari doesn't reach us). Then
+      // reload so the toast fires + the page renders authenticated.
+      // Customer flows have no anchor cookie → server returns
+      // {status: "no_anchor"} and we still reload (matches the old
+      // behaviour where the customer cookie was already in the PWA
+      // jar with merged_into_id following).
       var p = readJSON(PENDING);
       if (p && p.t && Date.now() - p.t <= 10 * 60 * 1000) {
         clear(PENDING);
         writeJSON(DONE, p);
-        softReload();
+        fetch('/auth/pwa-claim', {
+          method: 'POST',
+          credentials: 'same-origin',
+          cache: 'no-store',
+        }).catch(function () { /* network blip — reload anyway */ })
+         .finally(function () { softReload(); });
         return;
       }
       if (p) clear(PENDING);  // stale > 10min, drop.

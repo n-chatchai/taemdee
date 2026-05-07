@@ -22,9 +22,13 @@ from sqlmodel.ext.asyncio.session import AsyncSession
 from app.core.auth import (
     CUSTOMER_COOKIE_NAME,
     SESSION_COOKIE_NAME,
+    SHOP_PWA_ANCHOR_COOKIE,
+    clear_pwa_anchor_cookie,
+    decode_pwa_anchor_token,
     find_or_create_customer,
     set_customer_cookie,
 )
+from app.services import pwa_anchor
 from app.core.config import settings
 from app.core.database import get_session
 from app.models.util import utcnow
@@ -271,6 +275,7 @@ def _start_line_oauth(
     role: str,
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
+    pwa_anchor_id: Optional[str] = None,
 ) -> RedirectResponse:
     """Build the LINE OAuth state JWT and redirect to LINE."""
     if not line_is_configured():
@@ -282,6 +287,7 @@ def _start_line_oauth(
     state_jwt = make_oauth_state(
         role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
+        pwa_anchor_id=pwa_anchor_id,
     )
     return RedirectResponse(
         url=build_authorize_url(state_jwt), status_code=status.HTTP_302_FOUND
@@ -289,11 +295,17 @@ def _start_line_oauth(
 
 
 @router.get("/line/start")
-async def line_start():
-    """Shop-side LINE Login: generate state, set cookie, redirect to LINE."""
+async def line_start(anchor_id: Optional[str] = None):
+    """Shop-side LINE Login: generate state, set cookie, redirect to LINE.
+
+    `anchor_id` is the PWA login anchor uuid passed in via URL query
+    (the link is on the shop subdomain, this endpoint is on the main
+    domain — anchor cookies don't cross origins, so the template
+    forwards the id explicitly).
+    """
     if not settings.is_login_enabled("shop", "line"):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for shops")
-    return _start_line_oauth(role="shop")
+    return _start_line_oauth(role="shop", pwa_anchor_id=anchor_id)
 
 
 @router.get("/line/customer/start")
@@ -424,8 +436,9 @@ async def line_callback(
                         refresh customer cookie, → /my-cards
                         (or /card/{shop}/claimed if next_redeem was set)
     """
-    # 1. Transfer Logic: If we received a transfer token from the main domain, 
+    # 1. Transfer Logic: If we received a transfer token from the main domain,
     # verify it and proceed directly to login (skipping state check).
+    pwa_anchor_id: Optional[str] = None
     if transfer:
         try:
             payload = jwt.decode(transfer, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
@@ -435,6 +448,7 @@ async def line_callback(
             display_name = payload.get("display_name")
             picture_url = payload.get("picture_url")
             role = payload.get("role", "shop")
+            pwa_anchor_id = payload.get("pwa_anchor_id")
             logger.success(f"✅ Transfer Token Verified | role={role}")
             connect_customer_id = None
             # Skip to the final login part
@@ -452,6 +466,7 @@ async def line_callback(
         role = payload["role"]
         next_redeem = payload.get("next_redeem")
         connect_customer_id = payload.get("connect_customer_id")
+        pwa_anchor_id = payload.get("pwa_anchor_id")
         goto_login = False
 
     # 2. Dispatcher Logic: If we are on the main domain but this is a shop login,
@@ -474,7 +489,9 @@ async def line_callback(
             logger.error(f"❌ Token Exchange Failed on Main: {e}")
             raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
-        # Step B: Create a Transfer Token (short-lived JWT)
+        # Step B: Create a Transfer Token (short-lived JWT). Forward the
+        # pwa_anchor_id through so the shop-domain callback can claim
+        # the anchor row right after resolve_shop_signin.
         transfer_payload = {
             "sub": "auth_transfer",
             "line_id": profile["userId"],
@@ -483,6 +500,8 @@ async def line_callback(
             "role": "shop",
             "exp": utcnow() + timedelta(minutes=2),
         }
+        if pwa_anchor_id:
+            transfer_payload["pwa_anchor_id"] = pwa_anchor_id
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         
         shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
@@ -568,6 +587,21 @@ async def line_callback(
         display_name=display_name, picture_url=picture_url,
     )
 
+    # If a PWA login anchor was forwarded through the OAuth round trip,
+    # claim it now so the returning PWA can mint a session via
+    # /auth/pwa-claim. The Safari-side cookie set below is for browser-
+    # only / non-PWA users; the anchor is the iOS-PWA bridge.
+    if pwa_anchor_id:
+        from uuid import UUID
+        try:
+            await pwa_anchor.claim_anchor(
+                db, UUID(pwa_anchor_id),
+                shop_id=shop.id, staff_id=staff_match.id,
+                is_owner=staff_match.is_owner,
+            )
+        except (ValueError, TypeError):
+            logger.warning(f"⚠️ Bad pwa_anchor_id in LINE callback: {pwa_anchor_id}")
+
     redirect = RedirectResponse(
         url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
     )
@@ -583,6 +617,7 @@ def _start_google_oauth(
     role: str,
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
+    pwa_anchor_id: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "google") or not google_login.is_configured():
         raise HTTPException(
@@ -592,6 +627,7 @@ def _start_google_oauth(
     state_jwt = make_oauth_state(
         role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
+        pwa_anchor_id=pwa_anchor_id,
     )
     return RedirectResponse(
         url=google_login.build_authorize_url(state_jwt),
@@ -603,6 +639,7 @@ def _start_facebook_oauth(
     role: str,
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
+    pwa_anchor_id: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "facebook") or not facebook_login.is_configured():
         raise HTTPException(
@@ -612,6 +649,7 @@ def _start_facebook_oauth(
     state_jwt = make_oauth_state(
         role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
+        pwa_anchor_id=pwa_anchor_id,
     )
     return RedirectResponse(
         url=facebook_login.build_authorize_url(state_jwt),
@@ -733,9 +771,10 @@ async def _resolve_customer_oauth(
 
 
 @router.get("/google/start")
-async def google_start():
-    """Shop-side Google Login."""
-    return _start_google_oauth(role="shop")
+async def google_start(anchor_id: Optional[str] = None):
+    """Shop-side Google Login. `anchor_id` is the PWA login anchor uuid
+    forwarded via URL query (cross-origin from the shop subdomain)."""
+    return _start_google_oauth(role="shop", pwa_anchor_id=anchor_id)
 
 
 @router.get("/google/customer/start")
@@ -752,9 +791,10 @@ async def google_customer_start(
 
 
 @router.get("/facebook/start")
-async def facebook_start():
-    """Shop-side Facebook Login."""
-    return _start_facebook_oauth(role="shop")
+async def facebook_start(anchor_id: Optional[str] = None):
+    """Shop-side Facebook Login. `anchor_id` is the PWA login anchor uuid
+    forwarded via URL query (cross-origin from the shop subdomain)."""
+    return _start_facebook_oauth(role="shop", pwa_anchor_id=anchor_id)
 
 
 @router.get("/facebook/customer/start")
@@ -796,6 +836,7 @@ async def google_callback(
             google_id = t["ext_id"]
             display_name = t.get("display_name")
             picture_url = t.get("picture_url")
+            pwa_anchor_id = t.get("pwa_anchor_id")
         except Exception as e:
             logger.error(f"❌ Google Transfer Token Failed: {e}")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
@@ -805,6 +846,16 @@ async def google_callback(
             db, "google", google_id,
             display_name=display_name, picture_url=picture_url,
         )
+        if pwa_anchor_id:
+            from uuid import UUID
+            try:
+                await pwa_anchor.claim_anchor(
+                    db, UUID(pwa_anchor_id),
+                    shop_id=shop.id, staff_id=staff_match.id,
+                    is_owner=staff_match.is_owner,
+                )
+            except (ValueError, TypeError):
+                logger.warning(f"⚠️ Bad pwa_anchor_id in Google callback: {pwa_anchor_id}")
         redirect = RedirectResponse(
             url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
         )
@@ -823,6 +874,7 @@ async def google_callback(
     role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
     connect_customer_id = payload.get("connect_customer_id")
+    pwa_anchor_id = payload.get("pwa_anchor_id")
 
     try:
         tokens = await google_login.exchange_code_for_token(code)
@@ -855,6 +907,8 @@ async def google_callback(
             "role": "shop",
             "exp": utcnow() + timedelta(minutes=2),
         }
+        if pwa_anchor_id:
+            transfer_payload["pwa_anchor_id"] = pwa_anchor_id
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         shop_host = (
             settings.shop_domain
@@ -917,6 +971,7 @@ async def facebook_callback(
             facebook_id = t["ext_id"]
             display_name = t.get("display_name")
             picture_url = t.get("picture_url")
+            pwa_anchor_id = t.get("pwa_anchor_id")
         except Exception as e:
             logger.error(f"❌ Facebook Transfer Token Failed: {e}")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
@@ -926,6 +981,16 @@ async def facebook_callback(
             db, "facebook", facebook_id,
             display_name=display_name, picture_url=picture_url,
         )
+        if pwa_anchor_id:
+            from uuid import UUID
+            try:
+                await pwa_anchor.claim_anchor(
+                    db, UUID(pwa_anchor_id),
+                    shop_id=shop.id, staff_id=staff_match.id,
+                    is_owner=staff_match.is_owner,
+                )
+            except (ValueError, TypeError):
+                logger.warning(f"⚠️ Bad pwa_anchor_id in Facebook callback: {pwa_anchor_id}")
         redirect = RedirectResponse(
             url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
         )
@@ -944,6 +1009,7 @@ async def facebook_callback(
     role = payload.get("role", "customer")
     next_redeem = payload.get("next_redeem")
     connect_customer_id = payload.get("connect_customer_id")
+    pwa_anchor_id = payload.get("pwa_anchor_id")
 
     try:
         tokens = await facebook_login.exchange_code_for_token(code)
@@ -975,6 +1041,8 @@ async def facebook_callback(
             "role": "shop",
             "exp": utcnow() + timedelta(minutes=2),
         }
+        if pwa_anchor_id:
+            transfer_payload["pwa_anchor_id"] = pwa_anchor_id
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         shop_host = (
             settings.shop_domain
@@ -1061,3 +1129,47 @@ def _set_session_cookie(response: Response, token: str) -> None:
         max_age=settings.session_expire_days * 24 * 3600,
         path="/",
     )
+
+
+@router.post("/pwa-claim")
+async def pwa_claim(
+    response: Response,
+    anchor_cookie: Optional[str] = Cookie(None, alias=SHOP_PWA_ANCHOR_COOKIE),
+    db: AsyncSession = Depends(get_session),
+):
+    """Bridge endpoint for iOS PWA shop sign-in. The PWA's
+    visibilitychange handler POSTs here after returning from Safari
+    OAuth. We read the anchor cookie that was set when /shop/login
+    rendered, redeem the matching pwa_login_anchors row (which the
+    OAuth callback claimed in Safari), mint a real session cookie,
+    and tell the page to reload.
+
+    Three terminal states:
+      - no_anchor — there was never an anchor cookie (browser-only
+        flow, customer flow, etc.). The caller can ignore.
+      - pending — anchor exists but OAuth hasn't claimed it yet.
+        Caller should retry or wait.
+      - ok — session cookie was set; caller reloads.
+
+    Same-origin XHR; the Set-Cookie header lands in the PWA's cookie
+    jar regardless of what Safari has.
+    """
+    if not anchor_cookie:
+        return {"status": "no_anchor"}
+
+    anchor_id = decode_pwa_anchor_token(anchor_cookie)
+    if anchor_id is None:
+        clear_pwa_anchor_cookie(response)
+        return {"status": "invalid"}
+
+    redeemed = await pwa_anchor.redeem_anchor(db, anchor_id)
+    if redeemed is None:
+        return {"status": "pending"}
+
+    shop_id, staff_id, is_owner = redeemed
+    _set_session_cookie(
+        response,
+        issue_session_token(shop_id, staff_id=staff_id, is_owner=is_owner),
+    )
+    clear_pwa_anchor_cookie(response)
+    return {"status": "ok"}

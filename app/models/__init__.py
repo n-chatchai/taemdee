@@ -8,6 +8,7 @@ from app.models.inbox import Inbox
 from app.models.offer import Offer, Referral
 from app.models.otp import OtpCode
 from app.models.point import Point
+from app.models.pwa_login_anchor import PwaLoginAnchor
 from app.models.redemption import Redemption
 from app.models.shop import Shop
 from app.models.shop_item import ShopItem
@@ -28,6 +29,7 @@ __all__ = [
     "Offer",
     "OtpCode",
     "Point",
+    "PwaLoginAnchor",
     "Redemption",
     "Referral",
     "Shop",
