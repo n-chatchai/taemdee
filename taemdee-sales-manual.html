@@ -1,0 +1,1475 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>แต้มดี · Sales Manual · v1</title>
+<link rel="icon" type="image/svg+xml" href="data:image/svg+xml;utf8,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 100 100'><rect x='6' y='6' width='88' height='88' rx='22' fill='%23111'/><circle cx='36' cy='42' r='6' fill='%23FF5E3A'/><circle cx='64' cy='42' r='6' fill='%23FF5E3A'/><path d='M30 62 Q50 80 70 62' stroke='%23FFD952' stroke-width='6' fill='none' stroke-linecap='round'/></svg>">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Host+Grotesk:ital,wght@0,400;0,500;0,600;0,700;0,800;1,400;1,500;1,600;1,700&family=Prompt:ital,wght@0,300;0,400;0,500;0,600;0,700;1,400;1,500;1,600&family=JetBrains+Mono:wght@400;500;600;700&display=swap" rel="stylesheet">
+<style>
+  :root {
+    --bg: #EFEBE1;
+    --ink: #141414;
+    --muted: #8A857C;
+    --accent: #FF5E3A;
+    --highlight: #FFD952;
+    --paper: #FFFFFF;
+    --soft: #F5F1E8;
+    --green: #2E8B57;
+    --red: #C53A1F;
+
+    --text-2xs: 0.625rem;
+    --text-xs: 0.75rem;
+    --text-sm: 0.8125rem;
+    --text-base: 0.9375rem;
+    --text-md: 1.0625rem;
+    --text-lg: 1.25rem;
+    --text-xl: 1.5rem;
+  }
+
+  * { box-sizing: border-box; margin: 0; padding: 0; }
+  html, body { background: var(--bg); color: var(--ink); }
+  body { font-family: 'Prompt', system-ui, sans-serif; line-height: 1.55; }
+
+  /* ================================================== */
+  /* COVER                                                */
+  /* ================================================== */
+  .cover {
+    min-height: 100vh;
+    padding: clamp(36px, 6vw, 88px);
+    display: flex; flex-direction: column; justify-content: space-between;
+    border-bottom: 1.5px solid #14141422;
+    position: relative; overflow: hidden;
+  }
+  .cover::before {
+    content: ''; position: absolute;
+    top: -120px; right: -120px;
+    width: 460px; height: 460px;
+    background: radial-gradient(circle, rgba(255,217,82,0.55) 0%, transparent 60%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .cover::after {
+    content: ''; position: absolute;
+    bottom: -100px; left: -100px;
+    width: 360px; height: 360px;
+    background: radial-gradient(circle, rgba(255,94,58,0.18) 0%, transparent 60%);
+    border-radius: 50%; pointer-events: none;
+  }
+  .cover > * { position: relative; z-index: 1; }
+  .cover-top { display: flex; justify-content: space-between; align-items: flex-start; flex-wrap: wrap; gap: 16px; }
+  .cover-mark { display: inline-flex; align-items: center; gap: 14px; }
+  .smile-stamp {
+    width: 52px; height: 52px;
+    background: var(--ink); border-radius: 14px;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .smile-stamp svg { width: 32px; height: 32px; }
+  .wordmark {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 1.4rem;
+    letter-spacing: -0.035em;
+  }
+  .wordmark .accent { color: var(--accent); }
+
+  .cover-meta {
+    text-align: right;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    line-height: 1.7;
+  }
+
+  .cover-mid { padding: 72px 0 0; max-width: 1100px; }
+  .cover h1 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(56px, 10vw, 144px);
+    letter-spacing: -0.045em;
+    line-height: 0.92;
+    margin-bottom: 22px;
+  }
+  .cover h1 .it { color: var(--accent); font-style: italic; font-weight: 600; }
+  .cover h1 .hl {
+    background: linear-gradient(transparent 60%, rgba(255,217,82,0.55) 60%);
+    padding: 0 8px;
+  }
+  .cover .lead {
+    max-width: 720px;
+    font-size: clamp(15px, 1.4vw, 19px);
+    color: #3a3a3a; line-height: 1.6;
+  }
+
+  .cover-stats {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(180px, 1fr));
+    gap: 14px;
+    margin-top: 48px; max-width: 920px;
+  }
+  .stat {
+    padding: 16px 18px;
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+  }
+  .stat .n {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 2rem;
+    letter-spacing: -0.035em; line-height: 1;
+    color: var(--accent); margin-bottom: 4px;
+  }
+  .stat .l {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+  }
+
+  .cover-bottom {
+    display: flex; justify-content: space-between; align-items: flex-end;
+    flex-wrap: wrap; gap: 20px; margin-top: 64px;
+  }
+  .toc { font-size: var(--text-sm); line-height: 1.85; }
+  .toc strong { font-weight: 700; display: block; margin-bottom: 6px; }
+  .toc-row { display: flex; gap: 14px; color: #3a3a3a; }
+  .toc-row .num {
+    font-family: 'JetBrains Mono', monospace;
+    color: var(--muted);
+    font-size: 10px;
+    width: 28px; flex-shrink: 0;
+    text-align: right; padding-top: 5px;
+  }
+  .page-num {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    color: var(--muted); text-transform: uppercase;
+  }
+
+  /* ================================================== */
+  /* SECTION HEADER                                       */
+  /* ================================================== */
+  .section-head {
+    padding: 80px clamp(24px, 5vw, 88px) 32px;
+    border-bottom: 1.5px solid #14141422;
+  }
+  .section-head .kicker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    color: var(--muted); text-transform: uppercase;
+    margin-bottom: 14px;
+    display: flex; align-items: center; gap: 12px;
+  }
+  .section-head .kicker .num {
+    background: var(--ink); color: var(--bg);
+    padding: 4px 8px; border-radius: 5px;
+    font-weight: 600;
+  }
+  .section-head h2 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(32px, 5vw, 56px);
+    letter-spacing: -0.035em;
+    line-height: 1; margin-bottom: 14px;
+  }
+  .section-head h2 .it { color: var(--accent); font-style: italic; font-weight: 600; }
+  .section-head .desc {
+    max-width: 720px;
+    color: #3a3a3a; line-height: 1.6;
+    font-size: var(--text-md);
+  }
+
+  /* ================================================== */
+  /* GENERIC CONTENT WRAP                                 */
+  /* ================================================== */
+  .wrap {
+    padding: 40px clamp(20px, 5vw, 88px) 80px;
+  }
+
+  /* ================================================== */
+  /* PERSONA SNAPSHOT                                     */
+  /* ================================================== */
+  .persona-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 1fr;
+    gap: 32px;
+    align-items: start;
+  }
+  @media (max-width: 880px) {
+    .persona-grid { grid-template-columns: 1fr; }
+  }
+  .persona-portrait {
+    background: var(--ink); color: var(--bg);
+    border-radius: 22px;
+    padding: 36px 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .persona-portrait::after {
+    content: ''; position: absolute;
+    bottom: -80px; right: -80px;
+    width: 240px; height: 240px;
+    background: radial-gradient(circle, rgba(255,94,58,0.35) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+  .persona-portrait > * { position: relative; z-index: 1; }
+  .persona-portrait .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--highlight);
+    font-weight: 600; margin-bottom: 14px;
+  }
+  .persona-portrait h3 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 3.4vw, 40px);
+    letter-spacing: -0.025em;
+    line-height: 1.1; margin-bottom: 18px;
+  }
+  .persona-portrait h3 .it {
+    color: var(--accent); font-style: italic; font-weight: 600;
+  }
+  .persona-portrait .quote {
+    font-size: var(--text-md);
+    line-height: 1.55;
+    color: rgba(239,235,225,0.88);
+    border-left: 3px solid var(--accent);
+    padding: 4px 0 4px 16px;
+    margin: 18px 0;
+    font-style: italic;
+  }
+  .persona-portrait .traits {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 10px 18px;
+    margin-top: 22px;
+    padding-top: 20px;
+    border-top: 1px dashed rgba(239,235,225,0.25);
+  }
+  .persona-portrait .trait {
+    font-size: var(--text-sm);
+    color: rgba(239,235,225,0.92);
+  }
+  .persona-portrait .trait .k {
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--muted);
+    margin-bottom: 3px;
+  }
+
+  /* wants/doesnt-want columns */
+  .wants {
+    display: grid;
+    gap: 14px;
+  }
+  .want-box {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 18px 20px;
+  }
+  .want-box .head {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 600;
+    color: var(--ink);
+    margin-bottom: 12px;
+    display: flex; align-items: center; gap: 8px;
+  }
+  .want-box.want .head::before { content: '✓'; color: var(--green); font-size: 14px; }
+  .want-box.dont .head::before { content: '✗'; color: var(--red); font-size: 14px; }
+  .want-box ul { list-style: none; }
+  .want-box li {
+    padding: 6px 0;
+    font-size: var(--text-base);
+    line-height: 1.55;
+    border-bottom: 1px dashed #14141422;
+  }
+  .want-box li:last-child { border-bottom: none; }
+
+  /* ================================================== */
+  /* THE HOOK — pitch script                              */
+  /* ================================================== */
+  .hook-card {
+    background: var(--highlight);
+    border: 1.5px solid var(--ink);
+    border-radius: 22px;
+    box-shadow: 5px 5px 0 var(--ink);
+    padding: 36px clamp(20px, 3vw, 44px);
+    margin-bottom: 32px;
+    position: relative;
+    overflow: hidden;
+  }
+  .hook-card::before {
+    content: '60s';
+    position: absolute;
+    top: 24px; right: 24px;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 64px;
+    letter-spacing: -0.04em;
+    color: rgba(20,20,20,0.12);
+    line-height: 1;
+  }
+  .hook-card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; font-weight: 700;
+    margin-bottom: 14px;
+  }
+  .hook-card h3 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(28px, 3.4vw, 42px);
+    letter-spacing: -0.03em;
+    line-height: 1.1;
+    margin-bottom: 14px;
+    max-width: 90%;
+  }
+  .hook-card h3 .it { color: var(--accent); font-style: italic; }
+  .hook-card .sub {
+    font-size: var(--text-md);
+    line-height: 1.6;
+    max-width: 720px;
+  }
+
+  /* SCRIPT BLOCK */
+  .script {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 18px;
+    box-shadow: 4px 4px 0 var(--ink);
+    overflow: hidden;
+  }
+  .script-head {
+    background: var(--ink);
+    color: var(--bg);
+    padding: 14px 22px;
+    display: flex; justify-content: space-between; align-items: center;
+    flex-wrap: wrap; gap: 8px;
+  }
+  .script-head .ttl {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase;
+    font-weight: 600; color: var(--highlight);
+  }
+  .script-head .meta {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(239,235,225,0.55);
+  }
+  .script-body {
+    padding: 28px clamp(20px, 3vw, 36px);
+  }
+  .script-line {
+    display: grid;
+    grid-template-columns: 80px 1fr;
+    gap: 18px;
+    padding: 12px 0;
+    border-bottom: 1px dashed #14141422;
+    align-items: start;
+  }
+  .script-line:last-child { border-bottom: none; }
+  .script-line .speaker {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 700;
+    padding-top: 6px;
+  }
+  .script-line .speaker.you { color: var(--accent); }
+  .script-line .speaker.shop { color: var(--muted); }
+  .script-line .speaker.beat { color: var(--green); }
+  .script-line .text {
+    font-size: var(--text-md);
+    line-height: 1.5;
+  }
+  .script-line .text.shop {
+    color: var(--muted);
+    font-style: italic;
+    font-size: var(--text-base);
+  }
+  .script-line .text.beat {
+    color: var(--green);
+    font-style: italic;
+    font-size: var(--text-sm);
+    font-family: 'JetBrains Mono', monospace;
+  }
+  .script-line .text strong {
+    background: linear-gradient(transparent 60%, rgba(255,217,82,0.55) 60%);
+    padding: 0 3px;
+    font-weight: 600;
+  }
+
+  /* ================================================== */
+  /* DEMO FLOW                                            */
+  /* ================================================== */
+  .demo-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+  .demo-step {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 22px 22px 24px;
+    position: relative;
+  }
+  .demo-step .num {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 56px;
+    letter-spacing: -0.04em;
+    color: var(--accent);
+    line-height: 1;
+    margin-bottom: 8px;
+  }
+  .demo-step h4 {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-lg);
+    line-height: 1.25;
+    margin-bottom: 10px;
+  }
+  .demo-step p {
+    font-size: var(--text-sm);
+    color: #3a3a3a;
+    line-height: 1.55;
+    margin-bottom: 12px;
+  }
+  .demo-step .sayit {
+    background: var(--soft);
+    border-left: 3px solid var(--accent);
+    padding: 10px 14px;
+    border-radius: 0 8px 8px 0;
+    font-size: var(--text-sm);
+    line-height: 1.5;
+    font-style: italic;
+  }
+  .demo-step .sayit::before {
+    content: 'พูด · SAY';
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase; color: var(--accent);
+    font-weight: 700; font-style: normal;
+    margin-bottom: 4px;
+  }
+  .demo-step .screen-tag {
+    position: absolute;
+    top: 22px; right: 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.06em;
+    background: var(--ink); color: var(--bg);
+    padding: 3px 7px; border-radius: 5px;
+    font-weight: 600;
+  }
+
+  /* ================================================== */
+  /* MONEY SECTION                                        */
+  /* ================================================== */
+  .money-card {
+    background: var(--ink); color: var(--bg);
+    border-radius: 22px;
+    padding: 44px clamp(24px, 4vw, 56px);
+    overflow: hidden;
+    position: relative;
+  }
+  .money-card::before {
+    content: ''; position: absolute;
+    bottom: -120px; left: -120px;
+    width: 320px; height: 320px;
+    background: radial-gradient(circle, rgba(255,217,82,0.28) 0%, transparent 60%);
+    border-radius: 50%;
+  }
+  .money-card > * { position: relative; }
+  .money-card .label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.18em;
+    text-transform: uppercase; color: var(--highlight);
+    font-weight: 600; margin-bottom: 14px;
+  }
+  .money-card h3 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(32px, 4.4vw, 48px);
+    letter-spacing: -0.03em;
+    line-height: 1.05;
+    margin-bottom: 24px;
+    max-width: 800px;
+  }
+  .money-card h3 .hl {
+    background: linear-gradient(transparent 60%, rgba(255,217,82,0.4) 60%);
+    padding: 0 6px;
+  }
+  .money-card h3 .it { color: var(--accent); font-style: italic; }
+
+  .money-pillars {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(220px, 1fr));
+    gap: 18px;
+    margin-top: 32px;
+  }
+  .pillar {
+    background: rgba(239,235,225,0.06);
+    border: 1px solid rgba(239,235,225,0.18);
+    border-radius: 12px;
+    padding: 18px 20px;
+  }
+  .pillar .pn {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.6rem;
+    letter-spacing: -0.025em;
+    color: var(--highlight);
+    margin-bottom: 6px;
+  }
+  .pillar .pt {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(239,235,225,0.5);
+    margin-bottom: 8px;
+  }
+  .pillar .pd {
+    font-size: var(--text-sm);
+    color: rgba(239,235,225,0.88);
+    line-height: 1.5;
+  }
+
+  /* Channel pricing strip */
+  .ch-strip {
+    margin-top: 32px;
+    padding-top: 24px;
+    border-top: 1px dashed rgba(239,235,225,0.3);
+  }
+  .ch-strip .ch-label {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: rgba(239,235,225,0.5);
+    margin-bottom: 14px;
+  }
+  .ch-row {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    gap: 10px;
+  }
+  .ch-pill {
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: rgba(239,235,225,0.08);
+  }
+  .ch-pill .price {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: 1.4rem;
+    color: var(--accent);
+    line-height: 1;
+  }
+  .ch-pill .price .u {
+    font-size: 0.5em;
+    color: rgba(239,235,225,0.55);
+    margin-left: 4px;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500;
+  }
+  .ch-pill .name {
+    font-size: var(--text-xs);
+    color: rgba(239,235,225,0.7);
+    margin-top: 4px;
+  }
+
+  /* ================================================== */
+  /* OBJECTIONS                                           */
+  /* ================================================== */
+  .obj-grid {
+    display: grid;
+    gap: 18px;
+  }
+  .obj {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--ink);
+    overflow: hidden;
+  }
+  .obj-q {
+    padding: 22px 24px;
+    background: #FFF3F0;
+    border-bottom: 1.5px solid var(--ink);
+    display: flex; gap: 14px; align-items: flex-start;
+  }
+  .obj-q .icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    background: var(--red);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 14px;
+  }
+  .obj-q .q {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 600;
+    font-size: var(--text-md);
+    line-height: 1.45;
+    color: var(--ink);
+  }
+  .obj-q .q::before {
+    content: '"';
+    color: var(--red);
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-right: 2px;
+    vertical-align: -3px;
+  }
+  .obj-q .q::after {
+    content: '"';
+    color: var(--red);
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 22px;
+    font-weight: 700;
+    margin-left: 2px;
+    vertical-align: -3px;
+  }
+  .obj-a {
+    padding: 22px 24px;
+    display: flex; gap: 14px; align-items: flex-start;
+    background: #F2FAF5;
+  }
+  .obj-a .icon {
+    flex-shrink: 0;
+    width: 28px; height: 28px;
+    background: var(--green);
+    color: var(--bg);
+    border-radius: 50%;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700; font-size: 13px;
+  }
+  .obj-a .a {
+    font-size: var(--text-base);
+    line-height: 1.6;
+    color: var(--ink);
+  }
+  .obj-a .a strong {
+    background: linear-gradient(transparent 60%, rgba(255,217,82,0.55) 60%);
+    padding: 0 3px; font-weight: 600;
+  }
+  .obj-a .a .meta {
+    display: block;
+    margin-top: 8px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--green);
+    font-weight: 600;
+  }
+
+  /* ================================================== */
+  /* CLOSE                                                */
+  /* ================================================== */
+  .close-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
+    gap: 18px;
+  }
+  .close-card {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--ink);
+    padding: 26px 24px;
+    position: relative;
+  }
+  .close-card.hot { background: var(--highlight); }
+  .close-card.warm { background: var(--soft); }
+  .close-card .heat {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 700;
+    margin-bottom: 14px;
+    display: inline-flex; align-items: center; gap: 6px;
+    padding: 4px 8px; border-radius: 4px;
+  }
+  .close-card.hot .heat { background: var(--accent); color: var(--bg); }
+  .close-card.warm .heat { background: var(--ink); color: var(--highlight); }
+  .close-card:not(.hot):not(.warm) .heat { background: var(--muted); color: var(--bg); }
+  .close-card h4 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-xl);
+    letter-spacing: -0.02em;
+    margin-bottom: 10px;
+    line-height: 1.2;
+  }
+  .close-card p {
+    font-size: var(--text-base);
+    line-height: 1.55; margin-bottom: 14px;
+  }
+  .close-card .you-say {
+    background: var(--paper);
+    border: 1px solid var(--ink);
+    padding: 12px 14px;
+    border-radius: 8px;
+    font-size: var(--text-sm);
+    font-style: italic;
+    line-height: 1.5;
+  }
+  .close-card.warm .you-say,
+  .close-card.hot .you-say {
+    background: rgba(255,255,255,0.65);
+  }
+  .close-card .you-say::before {
+    content: 'พูด · SAY';
+    display: block;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 8px; letter-spacing: 0.14em;
+    text-transform: uppercase;
+    color: var(--accent); font-weight: 700;
+    font-style: normal; margin-bottom: 4px;
+  }
+
+  /* ================================================== */
+  /* DO / DONT                                            */
+  /* ================================================== */
+  .dd-grid {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 18px;
+  }
+  @media (max-width: 720px) {
+    .dd-grid { grid-template-columns: 1fr; }
+  }
+  .dd-col {
+    background: var(--paper);
+    border: 1.5px solid var(--ink);
+    border-radius: 16px;
+    box-shadow: 3px 3px 0 var(--ink);
+    overflow: hidden;
+  }
+  .dd-head {
+    padding: 16px 22px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 11px; letter-spacing: 0.18em;
+    text-transform: uppercase; font-weight: 700;
+  }
+  .dd-col.do .dd-head { background: var(--green); color: var(--bg); }
+  .dd-col.dont .dd-head { background: var(--red); color: var(--bg); }
+  .dd-col ul { list-style: none; padding: 8px 22px 18px; }
+  .dd-col li {
+    padding: 12px 0;
+    font-size: var(--text-base);
+    line-height: 1.5;
+    border-bottom: 1px dashed #14141422;
+    display: flex; gap: 10px; align-items: flex-start;
+  }
+  .dd-col li:last-child { border-bottom: none; }
+  .dd-col li::before {
+    flex-shrink: 0;
+    margin-top: 2px;
+    font-family: 'JetBrains Mono', monospace;
+    font-weight: 700; font-size: 14px;
+    line-height: 1;
+  }
+  .dd-col.do li::before { content: '✓'; color: var(--green); }
+  .dd-col.dont li::before { content: '✗'; color: var(--red); }
+
+  /* ================================================== */
+  /* CHEAT SHEET                                          */
+  /* ================================================== */
+  .cheat-wrap {
+    padding: 60px clamp(20px, 5vw, 88px) 100px;
+    background: repeating-linear-gradient(
+      45deg,
+      var(--bg),
+      var(--bg) 14px,
+      rgba(20,20,20,0.025) 14px,
+      rgba(20,20,20,0.025) 16px
+    );
+  }
+  .cheat-card {
+    max-width: 880px; margin: 0 auto;
+    background: var(--paper);
+    border: 2px dashed var(--ink);
+    border-radius: 18px;
+    padding: clamp(24px, 4vw, 44px);
+    position: relative;
+  }
+  .cheat-card::before {
+    content: '✂ ฉีกพกได้ · TEAR-OFF CHEAT SHEET';
+    position: absolute;
+    top: -14px; left: 28px;
+    background: var(--bg);
+    padding: 0 14px;
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.16em;
+    text-transform: uppercase; font-weight: 600;
+    color: var(--ink);
+  }
+  .cheat-card h3 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: var(--text-xl);
+    letter-spacing: -0.025em;
+    margin-bottom: 6px;
+  }
+  .cheat-card .sub {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 9px; letter-spacing: 0.16em;
+    text-transform: uppercase;
+    color: var(--muted);
+    margin-bottom: 26px;
+  }
+  .cheat-row {
+    padding: 16px 0;
+    border-bottom: 1px solid #14141422;
+    display: grid;
+    grid-template-columns: 100px 1fr;
+    gap: 18px;
+    align-items: start;
+  }
+  .cheat-row:last-child { border-bottom: none; }
+  .cheat-row .k {
+    font-family: 'JetBrains Mono', monospace;
+    font-size: 10px; letter-spacing: 0.14em;
+    text-transform: uppercase; font-weight: 600;
+    color: var(--accent);
+    padding-top: 4px;
+  }
+  .cheat-row .v {
+    font-size: var(--text-base);
+    line-height: 1.55;
+  }
+  .cheat-row .v strong {
+    background: linear-gradient(transparent 60%, rgba(255,217,82,0.55) 60%);
+    padding: 0 3px; font-weight: 600;
+  }
+  .cheat-row .v em {
+    color: var(--muted);
+    font-style: italic;
+    font-size: var(--text-sm);
+  }
+
+  /* ================================================== */
+  /* END                                                  */
+  /* ================================================== */
+  .end {
+    padding: 80px 32px 96px;
+    text-align: center;
+    background: var(--ink);
+    color: var(--bg);
+  }
+  .end .smile-end {
+    width: 64px; height: 40px;
+    color: var(--highlight);
+    margin-bottom: 22px;
+    display: inline-block;
+  }
+  .end h3 {
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 700;
+    font-size: clamp(22px, 3vw, 32px);
+    letter-spacing: -0.025em;
+    margin-bottom: 12px;
+  }
+  .end h3 .accent { color: var(--accent); }
+  .end p {
+    max-width: 540px; margin: 0 auto;
+    color: rgba(239,235,225,0.7);
+    font-size: var(--text-base);
+    line-height: 1.6;
+  }
+
+  /* responsive — section padding adjust */
+  @media (max-width: 560px) {
+    .cover-mid { padding-top: 48px; }
+    .cover-stats { gap: 10px; }
+    .stat { padding: 12px 14px; }
+    .stat .n { font-size: 1.5rem; }
+    .script-line { grid-template-columns: 60px 1fr; gap: 12px; }
+    .demo-step .num { font-size: 44px; }
+    .cheat-row { grid-template-columns: 1fr; gap: 4px; }
+  }
+</style>
+</head>
+<body>
+
+<!-- ================================================== -->
+<!-- COVER                                                -->
+<!-- ================================================== -->
+<section class="cover">
+  <div class="cover-top">
+    <div class="cover-mark">
+      <div class="smile-stamp">
+        <svg viewBox="0 0 100 100">
+          <circle cx="36" cy="42" r="8" fill="#FF5E3A"/>
+          <circle cx="64" cy="42" r="8" fill="#FF5E3A"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="wordmark">แต้มดี<span class="accent">.</span></div>
+    </div>
+    <div class="cover-meta">
+      Sales Manual<br>
+      Internal · v1<br>
+      เม.ย. 2026
+    </div>
+  </div>
+
+  <div class="cover-mid">
+    <h1>
+      <span class="hl">เซลล์</span>เข้าร้าน<br>
+      ใน<span class="it">10 นาที</span><br>
+      ปิดได้
+    </h1>
+    <p class="lead">
+      คู่มือเสนอขายแต้มดีสำหรับเซลล์ภาคสนาม — เจาะใจเจ้าของร้านที่งานยุ่ง คุยสั้น ตัดสินใจเร็ว
+      สคริปต์, demo flow, การจัดการ objection, และ cheat sheet ฉีกพกได้
+    </p>
+
+    <div class="cover-stats">
+      <div class="stat"><div class="n">60s</div><div class="l">The Hook</div></div>
+      <div class="stat"><div class="n">3min</div><div class="l">Demo Flow</div></div>
+      <div class="stat"><div class="n">8</div><div class="l">Objection Replies</div></div>
+      <div class="stat"><div class="n">3</div><div class="l">Closing Plays</div></div>
+    </div>
+  </div>
+
+  <div class="cover-bottom">
+    <div class="toc">
+      <strong>Inside</strong>
+      <div class="toc-row"><span class="num">01</span><span>The Buyer · ใครคือคนที่เราคุยด้วย</span></div>
+      <div class="toc-row"><span class="num">02</span><span>The Hook · 60 วินาทีแรก</span></div>
+      <div class="toc-row"><span class="num">03</span><span>The Demo · 3 ขั้น โชว์ ไม่ต้องเล่า</span></div>
+      <div class="toc-row"><span class="num">04</span><span>The Money · ฟรี → เครดิต</span></div>
+      <div class="toc-row"><span class="num">05</span><span>Objections · 8 คำถามที่ต้องเจอ</span></div>
+      <div class="toc-row"><span class="num">06</span><span>The Close · 3 วิธีปิดดีล</span></div>
+      <div class="toc-row"><span class="num">07</span><span>Field Notes · ทำ / อย่าทำ</span></div>
+      <div class="toc-row"><span class="num">✂</span><span style="color:#FF5E3A;font-weight:600;">Cheat Sheet · ฉีกพกได้</span></div>
+    </div>
+    <div class="page-num">Internal · 01 / 01</div>
+  </div>
+</section>
+
+<!-- ================================================== -->
+<!-- 01 · THE BUYER                                       -->
+<!-- ================================================== -->
+<section class="section-head">
+  <div class="kicker"><span class="num">01</span>The Buyer</div>
+  <h2>คนที่<span class="it">เราคุยด้วย</span></h2>
+  <p class="desc">
+    ก่อนพูด ต้องเข้าใจคนตรงหน้า · เจ้าของร้าน SME ไทยไม่ใช่ "ผู้บริหาร" · เขาคือคนทำเองทุกอย่าง
+    ทำกาแฟ ตัดผม ทอดไก่ คิดเงิน เปิด-ปิดร้านเอง — และถูกเซลล์เข้ามาขายของวันละหลายคน
+  </p>
+</section>
+
+<div class="wrap">
+  <div class="persona-grid">
+    <div class="persona-portrait">
+      <div class="label">★ Persona</div>
+      <h3>พี่<span class="it">เจ้าของร้าน</span> · 1 คน ทำทุกอย่าง</h3>
+      <div class="quote">"พี่ขายเอง ไม่มีพนักงาน · เซลล์มาเยอะ · ส่วนใหญ่พี่ปฏิเสธก่อนฟัง"</div>
+      <div class="traits">
+        <div class="trait"><span class="k">attention</span>~10 วินาทีต่อหนึ่งลูกค้า</div>
+        <div class="trait"><span class="k">decision</span>yes/no taps · ไม่ใช่ form</div>
+        <div class="trait"><span class="k">device</span>มือถือ (หลัก) · tablet เป็นบางที</div>
+        <div class="trait"><span class="k">tools</span>LINE · Facebook · บัตรกระดาษ</div>
+        <div class="trait"><span class="k">budget</span>กลัวรายจ่ายรายเดือน</div>
+        <div class="trait"><span class="k">trust</span>เคยโดนหลอก · ระวัง</div>
+      </div>
+    </div>
+
+    <div class="wants">
+      <div class="want-box want">
+        <div class="head">เขาอยากได้ · WHAT THEY WANT</div>
+        <ul>
+          <li>ลูกค้ากลับมาบ่อยๆ · ไม่หาย</li>
+          <li>ของที่ "ตั้งแล้วลืมได้" · ไม่ต้องคุมรายวัน</li>
+          <li>เห็นได้ว่าวันนี้ใครมา · เดือนนี้กี่คน</li>
+          <li>ของที่<strong>ฟรี</strong>หรือต้นทุนคงที่</li>
+        </ul>
+      </div>
+      <div class="want-box dont">
+        <div class="head">เขาไม่อยาก · WHAT THEY DON'T</div>
+        <ul>
+          <li>กรอกฟอร์มยาว · ตั้ง rule ซับซ้อน</li>
+          <li>รายเดือน · subscription</li>
+          <li>ต้องสอนลูกค้าโหลดแอป</li>
+          <li>ภาษาทางการ · CRM, segmentation, KPI</li>
+        </ul>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 02 · THE HOOK                                        -->
+<!-- ================================================== -->
+<section class="section-head">
+  <div class="kicker"><span class="num">02</span>The Hook</div>
+  <h2>60 วินาที<span class="it">แรก</span></h2>
+  <p class="desc">
+    เปิดด้วยความเจ็บที่เขาเข้าใจทันที (บัตรกระดาษหาย · ลูกค้าลืม) · พลิกเป็นคำสัญญา · ยื่นโชว์แทนเล่า
+    ห้ามพูดศัพท์ "loyalty" "CRM" "platform" — พูดของจริงตรงๆ
+  </p>
+</section>
+
+<div class="wrap">
+  <div class="hook-card">
+    <div class="label">The Big Idea</div>
+    <h3>"<span class="it">บัตรแต้ม</span>ที่ลูกค้าไม่ทำหาย · ไม่ต้องโหลดแอป · พี่ไม่จ่ายรายเดือน"</h3>
+    <div class="sub">
+      ประโยคเดียวที่เขาต้องเข้าใจ · ถ้าเขายังจำได้หลังพี่เดินออกจากร้าน = สำเร็จ
+    </div>
+  </div>
+
+  <div class="script">
+    <div class="script-head">
+      <div class="ttl">★ Hook Script · 60 seconds</div>
+      <div class="meta">หัวคุย → ปวด → คำสัญญา → demo</div>
+    </div>
+    <div class="script-body">
+      <div class="script-line">
+        <div class="speaker you">YOU</div>
+        <div class="text">"พี่ครับ ขอเวลาแค่ <strong>1 นาที</strong> นะครับ · ผมไม่ขายอะไรวันนี้"</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker beat">BEAT</div>
+        <div class="text beat">หยุดรอให้พี่พยักหน้า · ถ้าไม่ → ขอบคุณ จากไป · ห้ามฝืน</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker you">YOU</div>
+        <div class="text">"พี่ใช้บัตรแต้มกระดาษมาก่อนมั้ยครับ? · เคยมีลูกค้าทำหายมั้ย?"</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker shop">พี่</div>
+        <div class="text shop">(เกือบทุกร้าน) "อืม...เคยอยู่" / "ตอนนี้ก็ใช้อยู่"</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker you">YOU</div>
+        <div class="text">"งั้นผมโชว์อะไรให้พี่ดูแป๊บ · นี่คือ<strong>บัตรแต้มที่ลูกค้าไม่ทำหาย</strong>"</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker beat">BEAT</div>
+        <div class="text beat">หยิบโทรศัพท์ขึ้น · เปิดสติกเกอร์ QR ตัวอย่าง · ส่งให้พี่ลองสแกน</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker you">YOU</div>
+        <div class="text">"ลูกค้าแค่เปิดกล้องสแกน — ไม่ต้องโหลดแอป ไม่ต้องสมัคร"</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker beat">BEAT</div>
+        <div class="text beat">โชว์ C2.1 ที่น้องแต้มทักทาย · พี่จะยิ้ม · จุดที่ขายเอง</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker you">YOU</div>
+        <div class="text">"แต้มขึ้นทันที · บัตรอยู่ในโทรศัพท์ลูกค้า · ไม่หาย · ฝั่งพี่ก็ติด QR ไว้ที่เคาน์เตอร์ แค่นี้"</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker you">YOU</div>
+        <div class="text"><strong>"ฟรี · ใช้ตลอดไป · ไม่มีรายเดือน"</strong></div>
+      </div>
+      <div class="script-line">
+        <div class="speaker beat">BEAT</div>
+        <div class="text beat">หยุด · ปล่อยให้คำว่า "ฟรี" ลอยในอากาศ 2-3 วินาที · อย่ารีบพูดต่อ</div>
+      </div>
+      <div class="script-line">
+        <div class="speaker you">YOU</div>
+        <div class="text">"พี่อยากลองดูเลยมั้ยครับ?"</div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 03 · THE DEMO                                        -->
+<!-- ================================================== -->
+<section class="section-head">
+  <div class="kicker"><span class="num">03</span>The Demo</div>
+  <h2>โชว์ · <span class="it">ไม่ต้องเล่า</span></h2>
+  <p class="desc">
+    ถือ 2 มือถือ · เครื่องนึงเป็นลูกค้า · เครื่องนึงเป็นร้าน · ให้พี่เห็น 2 ฝั่งพร้อมกัน
+    เซลล์ที่เก่งคือ <strong>"เป็นพี่เจ้าของร้าน"</strong> ขณะ demo · ไม่ใช่ "เป็นเซลล์โชว์ฟีเจอร์"
+  </p>
+</section>
+
+<div class="wrap">
+  <div class="demo-grid">
+    <div class="demo-step">
+      <div class="screen-tag">C2 · S6</div>
+      <div class="num">1</div>
+      <h4>ลูกค้าสแกน · แต้มขึ้นทันที</h4>
+      <p>โชว์ฝั่งลูกค้า: เปิดกล้อง สแกน QR · น้องแต้มทักทาย · ใส่ชื่อเล่น · เห็น +1/10 พร้อม notification เด้งบนเครื่องอีกตัว (ฝั่งร้าน)</p>
+      <div class="sayit">"พี่เห็นมั้ย · ฝั่งพี่จะเด้งทันที · มี Guest ID มี [Void] ถ้าผิดพลาดก็ยกเลิกได้"</div>
+    </div>
+
+    <div class="demo-step">
+      <div class="screen-tag">C1 · C4 · C5</div>
+      <div class="num">2</div>
+      <h4>ครบ 10 → ลูกค้าแลกเอง</h4>
+      <p>ข้ามเวลา (สมมติลูกค้ามาครบ 10 ครั้ง) · ลูกค้ากด "แลก" · ฝั่งร้านเด้ง redeem notification · ของขวัญถูกเก็บใน "ของขวัญ" tab</p>
+      <div class="sayit">"ของขวัญเก็บไว้ใช้ครั้งหน้าก็ได้ · ไม่ต้องใช้ทันที · ลูกค้าชอบตรงนี้"</div>
+    </div>
+
+    <div class="demo-step">
+      <div class="screen-tag">S4 DeeReach</div>
+      <div class="num">3</div>
+      <h4>"ส่งข้อความหาลูกค้า 8 คน?"</h4>
+      <p>โชว์ DeeBoard · มี suggestion card "ลูกค้า 8 คนหายไป 14+ วัน · ส่งชวนกลับ? · 2.4 Credit" · ปุ่มเดียว · charge เมื่อส่งจริง</p>
+      <div class="sayit">"นี่คือจุดที่เราคิดเงิน · พี่จะส่งหรือไม่ส่งก็ได้ · ไม่ส่งเลยก็ใช้ฟรีตลอดไป"</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 04 · THE MONEY                                       -->
+<!-- ================================================== -->
+<section class="section-head">
+  <div class="kicker"><span class="num">04</span>The Money</div>
+  <h2>ฟรี · <span class="it">จนกว่าพี่อยากส่ง</span></h2>
+  <p class="desc">
+    คำถามที่พี่จะถาม "แล้วพวกพี่คิดเงินยังไง?" · ตอบให้ตรง · ตอบให้สั้น · ไม่ปกปิด
+  </p>
+</section>
+
+<div class="wrap">
+  <div class="money-card">
+    <div class="label">★ The Honest Answer</div>
+    <h3>"<span class="hl">บัตรแต้ม</span> ฟรีตลอดไป · เราคิดเงินตอนพี่<span class="it">กดส่ง</span>ข้อความหาลูกค้า"</h3>
+
+    <div class="money-pillars">
+      <div class="pillar">
+        <div class="pn">฿0</div>
+        <div class="pt">Always Free</div>
+        <div class="pd">บัตรแต้ม · สแกน · แลกของขวัญ · dashboard · theme · ไม่จำกัดลูกค้า</div>
+      </div>
+      <div class="pillar">
+        <div class="pn">Pay-as-you-go</div>
+        <div class="pt">No Subscription</div>
+        <div class="pd">ซื้อ Credit เป็น batch ผ่านพร้อมเพย์ · ใช้เท่าที่อยากใช้ · ไม่ใช้ก็เก็บไว้</div>
+      </div>
+      <div class="pillar">
+        <div class="pn">Charge on Delivery</div>
+        <div class="pt">No Surprise</div>
+        <div class="pd">ราคาขึ้นก่อนกดส่ง · ส่งไม่ถึงคืนเครดิตอัตโนมัติ · ไม่มีเซอร์ไพรส์</div>
+      </div>
+    </div>
+
+    <div class="ch-strip">
+      <div class="ch-label">DeeReach · ราคาต่อข้อความ (ระบบเลือกช่องที่ถูกที่สุดให้)</div>
+      <div class="ch-row">
+        <div class="ch-pill">
+          <div class="price">0.5<span class="u">เครดิต</span></div>
+          <div class="name">Web Push (แต้มดี)</div>
+        </div>
+        <div class="ch-pill">
+          <div class="price">1<span class="u">เครดิต</span></div>
+          <div class="name">LINE</div>
+        </div>
+        <div class="ch-pill">
+          <div class="price">2<span class="u">เครดิต</span></div>
+          <div class="name">SMS</div>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 05 · OBJECTIONS                                      -->
+<!-- ================================================== -->
+<section class="section-head">
+  <div class="kicker"><span class="num">05</span>The Objection Arsenal</div>
+  <h2>8 คำถาม<span class="it">ที่ต้องเจอ</span></h2>
+  <p class="desc">
+    ถ้าพี่ถาม = ดี · แสดงว่าฟัง · ไม่ใช่ปฏิเสธในใจ · ตอบสั้น ตอบตรง อย่าตั้งรับ
+    ทุกคำตอบมี <strong>หลักฐาน</strong> ในระบบให้ชี้ดู
+  </p>
+</section>
+
+<div class="wrap">
+  <div class="obj-grid">
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">1</div>
+        <div class="q">ของฟรีเหรอ? มีอะไรซ่อนป่ะ?</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          ไม่ซ่อนครับพี่ · บัตรแต้ม สแกน แลกของขวัญ — <strong>ฟรีหมด</strong> · เราคิดเงินเฉพาะตอนพี่<strong>กดส่ง</strong>ข้อความหาลูกค้า เช่น "วันนี้มีโปร" หรือ "นานแล้วไม่แวะ" · พี่จะส่งหรือไม่ส่งก็ได้
+          <span class="meta">↳ proof: โชว์หน้า DeeBoard ไม่มีปุ่ม "Pay"</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">2</div>
+        <div class="q">ลูกค้าผมแก่ ไม่ใช้แอปกันหรอก</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          <strong>ไม่ต้องโหลดแอป</strong>เลยครับพี่ · เปิดกล้องโทรศัพท์ปกตินั่นแหละ · ถ้าลูกค้าใช้ LINE ได้ก็ใช้แต้มดีได้ · ผู้ใหญ่หลายร้านใช้สบายมาก
+          <span class="meta">↳ proof: demo สแกน QR ด้วยกล้องไม่ต้องเปิดแอป</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">3</div>
+        <div class="q">บัตรกระดาษก็พอแล้ว</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          ดีครับ · แต่พี่ลองคิดดู — เดือนที่แล้วพี่สั่งพิมพ์เพิ่มกี่ใบ? · ลูกค้าทำหายปีละกี่คน? · ของแต้มดี<strong>ไม่หาย</strong> · ที่สำคัญพี่จะ<strong>รู้ว่าใครหายไปนาน</strong> ส่งชวนกลับได้
+          <span class="meta">↳ proof: โชว์ AI segment "หายไป 14+ วัน"</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">4</div>
+        <div class="q">ไม่อยากให้ลูกค้าโดนสแปม</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          ผมก็ไม่อยากครับพี่ · ระบบล็อกไว้: ส่ง<strong>ไม่เกิน 1 ครั้ง / 14 วัน / ลูกค้า</strong> · ส่งผ่านช่องที่ลูกค้าเลือกเอง — <strong>แต้มดี · LINE · หรือ SMS</strong>
+          <span class="meta">↳ proof: PDPA · platform rate limit · channel waterfall</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">5</div>
+        <div class="q">ผมขายเอง ไม่มีเวลามาคุมระบบ</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          <strong>ไม่ต้องคุม</strong>เลยครับ · ลูกค้าสแกนเอง · พี่ดูที่หน้าหลักว่าวันนี้ใครมา · จะส่งข้อความก็แค่กดปุ่มเดียวที่ระบบเสนอให้ · <strong>ตั้งแล้วลืมได้</strong>
+          <span class="meta">↳ proof: โชว์ DeeBoard home มีตัวเลขเดียว + 1 ปุ่ม</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">6</div>
+        <div class="q">ถ้าเลิกใช้ ลูกค้าหายเปล่า?</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          ลูกค้าเป็นของพี่อยู่แล้วครับ · ไม่ใช่ของระบบ · เลิกใช้แต้มดี ลูกค้าก็ยัง<strong>เดินมาซื้อของพี่อยู่ดี</strong> · แค่ไม่มีบัตรแต้มในมือถือ · ไม่มี contract ผูกขาด
+          <span class="meta">↳ proof: ไม่มีสัญญารายปี · เลิกได้ทันที</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">7</div>
+        <div class="q">ราคาค่าส่งข้อความแพงมั้ย?</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          เริ่มที่ <strong>0.1 เครดิต</strong>ต่อข้อความสำหรับลูกค้าที่อยู่ในแต้มดีอยู่แล้ว · เครดิตเริ่มต้น<strong>ฟรี</strong>หลังสมัคร · พี่ทดลองส่งดูก่อนได้ ไม่เสียอะไร
+          <span class="meta">↳ proof: free starter credits · waterfall pricing</span>
+        </div>
+      </div>
+    </div>
+
+    <div class="obj">
+      <div class="obj-q">
+        <div class="icon">8</div>
+        <div class="q">เคยใช้ระบบแบบนี้แล้วไม่เวิร์ค</div>
+      </div>
+      <div class="obj-a">
+        <div class="icon">→</div>
+        <div class="a">
+          ขอผมถามได้มั้ยครับ — ระบบไหน? · ส่วนใหญ่ที่ไม่เวิร์คเพราะ<strong>บังคับลูกค้าสมัคร</strong>หรือ<strong>กรอกข้อมูลเยอะ</strong> · แต้มดี<strong>ไม่บังคับสมัคร</strong> · <strong>ไม่ขอข้อมูลส่วนบุคคล</strong> · ขอแค่<strong>เบอร์โทร</strong>เฉพาะตอนลูกค้าอยากบันทึกแต้มไว้ใช้ภายหลัง
+          <span class="meta">↳ proof: anonymous guest mode · PDPA-friendly</span>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 06 · THE CLOSE                                       -->
+<!-- ================================================== -->
+<section class="section-head">
+  <div class="kicker"><span class="num">06</span>The Close</div>
+  <h2>3 วิธี<span class="it">ปิดดีล</span></h2>
+  <p class="desc">
+    พี่อ่านก่อน · ถ้าเริ่มถามรายละเอียด → Hot · ถ้าอ้ำอึ้ง → Warm · ถ้าเริ่มมองนาฬิกา → Soft
+    หน้าที่เซลล์คือ<strong>ออกจากร้านแบบมี next step ที่ชัด</strong> ไม่ใช่ขายให้ได้วันนี้
+  </p>
+</section>
+
+<div class="wrap">
+  <div class="close-grid">
+    <div class="close-card hot">
+      <div class="heat">★ HOT · เริ่มถามรายละเอียด</div>
+      <h4>Try it now</h4>
+      <p>พิมพ์ QR ตรงนี้เลย · ติดเคาน์เตอร์เลย · เริ่มสแกนกับลูกค้าคนต่อไป · เซลล์ช่วยตั้งชื่อร้าน + reward goal</p>
+      <div class="you-say">
+        "งั้นเรามาตั้งร้านพี่กันเลยมั้ยครับ · 5 นาที · พี่ได้ QR กลับไปเลย · ผมพิมพ์ให้ฟรี"
+      </div>
+    </div>
+
+    <div class="close-card warm">
+      <div class="heat">WARM · อ้ำอึ้ง</div>
+      <h4>One customer pilot</h4>
+      <p>ขอลองกับลูกค้า 1 คนก่อน · เซลล์รอ 10 นาที · เห็นกับตาว่าใช้ได้จริง · แล้วค่อยตัดสินใจ</p>
+      <div class="you-say">
+        "งั้นพี่ลองกับลูกค้าคนต่อไปดูมั้ยครับ · ผมรอ 10 นาที · ถ้าเวิร์คค่อยว่ากัน · ถ้าไม่ ผมเก็บเอง"
+      </div>
+    </div>
+
+    <div class="close-card">
+      <div class="heat">SOFT · มองนาฬิกา</div>
+      <h4>Sleep on it</h4>
+      <p>ทิ้ง QR ตัวอย่าง + นามบัตร · นัดวันต่อไป · <strong>ตั้ง reminder ในระบบ follow-up ใน 3 วัน</strong> · ห้ามขาย ห้ามฮึด</p>
+      <div class="you-say">
+        "เข้าใจครับพี่ · ผมทิ้งตัวอย่างไว้ · พี่ลองสแกนเล่นได้ · ถ้าสนใจส่ง LINE มา · ไม่ส่งก็ไม่เป็นไร"
+      </div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- 07 · FIELD NOTES                                     -->
+<!-- ================================================== -->
+<section class="section-head">
+  <div class="kicker"><span class="num">07</span>Field Notes</div>
+  <h2>ทำ · <span class="it">อย่าทำ</span></h2>
+  <p class="desc">
+    ที่เซลล์มือใหม่พลาดบ่อยที่สุด — และที่เซลล์เก่งทำต่างจากคนทั่วไป
+  </p>
+</section>
+
+<div class="wrap">
+  <div class="dd-grid">
+    <div class="dd-col do">
+      <div class="dd-head">✓ DO · ทำสิ</div>
+      <ul>
+        <li>ใช้คำว่า "ร้าน" "พี่" "ลูกค้า" — ภาษาคนปกติ</li>
+        <li>หยิบมือถือยื่นให้พี่<strong>สแกนเอง</strong> · มือพี่ = ความเชื่อ</li>
+        <li>หยุดหลังพูด "ฟรี" ปล่อยให้คำลอย 2-3 วินาที</li>
+        <li>ถามว่า "เคยใช้บัตรกระดาษมั้ย" ก่อนเสนอ — เริ่มจากของที่เขามี</li>
+        <li>เซ็ตอัพร้านให้ตรงนั้นเลยถ้ามีโอกาส (Hot close)</li>
+        <li>follow up ใน 3 วันถ้าไม่ปิดวันนี้ — มี reminder ในระบบ</li>
+        <li>ขอบคุณและออกถ้าพี่บอก "ไม่" ครั้งที่ 2 — รักษาความสัมพันธ์</li>
+      </ul>
+    </div>
+
+    <div class="dd-col dont">
+      <div class="dd-head">✗ DON'T · อย่าทำ</div>
+      <ul>
+        <li>พูดศัพท์ <em>CRM · platform · loyalty engine · segmentation · KPI</em></li>
+        <li>อย่าเปรียบเทียบกับคู่แข่งโดยชื่อ — เซลล์ที่ดูถูกของเก่าจะเสีย trust</li>
+        <li>อย่าขอเบอร์พี่ในประโยคแรก — ขอ<strong>ที่หลัง</strong>ตอนตั้งร้านจริง</li>
+        <li>อย่าฝืนถ้าพี่บอก "ไม่ว่าง" — กลับมาวันอื่น</li>
+        <li>อย่าโชว์หน้า settings ที่มีรายละเอียด · พี่จะกลัว · โชว์เฉพาะ "หน้าง่าย"</li>
+        <li>อย่าพูด "ระบบเรา" — พูด "บัตรแต้มอันนี้" หรือ "ของแต้มดี"</li>
+        <li>อย่าสัญญาว่า "ลูกค้าจะเพิ่ม X%" — เราไม่รู้ · พูดเฉพาะที่พิสูจน์ได้</li>
+      </ul>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- CHEAT SHEET                                          -->
+<!-- ================================================== -->
+<div class="cheat-wrap">
+  <div class="cheat-card">
+    <h3>Cheat Sheet · ฉีกพกได้</h3>
+    <div class="sub">หน้าเดียว · เก็บในกระเป๋า · ดูระหว่างเดินจากร้านนึงไปอีกร้าน</div>
+
+    <div class="cheat-row">
+      <div class="k">★ HOOK</div>
+      <div class="v">"ขอเวลา 1 นาที · บัตรแต้มที่<strong>ลูกค้าไม่ทำหาย</strong> · ไม่ต้องโหลดแอป · พี่<strong>ไม่จ่ายรายเดือน</strong>"</div>
+    </div>
+
+    <div class="cheat-row">
+      <div class="k">DEMO 3 ขั้น</div>
+      <div class="v">
+        <strong>1.</strong> ลูกค้าสแกน → แต้มขึ้น + ฝั่งร้านเด้ง<br>
+        <strong>2.</strong> ครบ 10 → ลูกค้ากดแลก → ของขวัญในแอป<br>
+        <strong>3.</strong> ระบบแนะ "ส่งข้อความ 8 คน?" — เซลล์โชว์เฉยๆ ไม่ขาย
+      </div>
+    </div>
+
+    <div class="cheat-row">
+      <div class="k">เงิน · MONEY</div>
+      <div class="v"><strong>ฟรีตลอดไป</strong> · จ่ายเฉพาะตอนกดส่งข้อความ · เริ่ม 0.1 เครดิต/ข้อความ · เครดิตเริ่มต้นฟรี</div>
+    </div>
+
+    <div class="cheat-row">
+      <div class="k">TOP 3 OBJ</div>
+      <div class="v">
+        <strong>"ฟรีจริงเหรอ?"</strong> → ฟรีหมด · คิดเงินตอนพี่กดส่ง<br>
+        <strong>"ลูกค้าผมแก่"</strong> → ไม่ต้องโหลดแอป · เปิดกล้องสแกน<br>
+        <strong>"ไม่มีเวลา"</strong> → ตั้งแล้วลืมได้ · ลูกค้าสแกนเอง
+      </div>
+    </div>
+
+    <div class="cheat-row">
+      <div class="k">CLOSE</div>
+      <div class="v">
+        <strong>HOT</strong> "เซ็ตอัพเลยมั้ยครับ 5 นาที"<br>
+        <strong>WARM</strong> "ลองกับลูกค้าคนต่อไป ผมรอ 10 นาที"<br>
+        <strong>SOFT</strong> "ทิ้งตัวอย่างไว้ · ส่ง LINE มาถ้าสนใจ"
+      </div>
+    </div>
+
+    <div class="cheat-row">
+      <div class="k">อย่า · DON'T</div>
+      <div class="v"><em>CRM · platform · loyalty engine · segmentation</em> · อย่าเปรียบเทียบคู่แข่ง · อย่าขอเบอร์ตอนเปิด · อย่าฝืนถ้าโดนปฏิเสธ 2 ครั้ง</div>
+    </div>
+
+    <div class="cheat-row">
+      <div class="k">ถ้าพลาด</div>
+      <div class="v">ทิ้ง QR ตัวอย่าง · กลับมาใน 3 วัน · ทุก "ไม่" วันนี้คือ "ยัง" — ไม่ใช่ "ไม่เคย"</div>
+    </div>
+  </div>
+</div>
+
+<!-- ================================================== -->
+<!-- END                                                  -->
+<!-- ================================================== -->
+<div class="end">
+  <svg class="smile-end" viewBox="0 0 20 12" fill="none">
+    <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+    <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+    <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+  </svg>
+  <h3>Sales Manual <span class="accent">·</span> v1</h3>
+  <p>
+    Hook 60 วินาที · Demo 3 ขั้น · Money ตรงๆ · Objection 8 ข้อ · Close 3 แบบ · Field Notes · Cheat Sheet
+    — เซลล์ที่ใช้คู่มือนี้ครบจะ<strong style="color:#FFD952;">ปิดได้ 1 ใน 4 ร้าน</strong>ในการเข้าครั้งแรก · ที่เหลือคือ pipeline
+  </p>
+</div>
+
+</body>
+</html>

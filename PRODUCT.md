@@ -79,8 +79,8 @@ A digital point-card platform for Thai SME shops (cafés, salons, food stalls). 
 
 | Channel | Cost | Notes |
 |---|---|---|
-| `inbox` | 0 Cr | Always reachable. Free fallback. |
-| `web_push` | 0.5 Cr | PWA installed + permission granted |
+| `inbox` | 0 Cr | Always reachable. Free fallback. Should not mention to customer, it is basic feature.|
+| `web_push` | 0.5 Cr | PWA installed + permission granted. Also call แต้มดี |
 | `line` | 1.0 Cr | LINE OA push (customer must be friended) |
 | `sms` | 2.0 Cr | Phone-only customers |
 
