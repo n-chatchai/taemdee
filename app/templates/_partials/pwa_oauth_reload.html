@@ -99,6 +99,20 @@
       });
     }
 
+    // Same mask treatment as softReload, but for top-level navigation
+    // (e.g. nav to /auth/pwa-claim). iOS PWA flashes the bg colour
+    // briefly on cross-document navigation; the mask hides that with
+    // the brand bg until the new page paints.
+    function softNav(url) {
+      var mask = document.createElement('div');
+      mask.className = 'td-reload-mask';
+      document.body.appendChild(mask);
+      requestAnimationFrame(function () {
+        mask.classList.add('show');
+        setTimeout(function () { window.location.href = url; }, 140);
+      });
+    }
+
     function readJSON(key) {
       try {
         var v = localStorage.getItem(key);
@@ -193,8 +207,7 @@
         // already been written, so the success toast fires after
         // the redirect lands.
         var here = window.location.pathname + window.location.search;
-        window.location.href =
-          '/auth/pwa-claim?next=' + encodeURIComponent(here);
+        softNav('/auth/pwa-claim?next=' + encodeURIComponent(here));
         return;
       }
       if (p) clear(PENDING);  // stale > 10min, drop.
@@ -243,6 +256,17 @@
     function checkDone() {
       var d = readJSON(DONE);
       if (!d) return;
+      // Suppress the success toast on login pages — landing on
+      // /shop/login or /customer/login means OAuth didn't actually
+      // produce a session (cancellation, race, or anchor still pending
+      // when /auth/pwa-claim 303'd to the next= fallback). The DONE
+      // flag was written optimistically at click time, before we knew
+      // the outcome, so trust the destination instead.
+      var path = window.location.pathname;
+      if (path === '/shop/login' || path === '/customer/login') {
+        clear(DONE);
+        return;
+      }
       clear(DONE);
       showToast(d.provider);
     }
@@ -252,13 +276,19 @@
       checkDone();
     }
 
-    // Stale-pending hygiene: clear pending older than 10 min on
-    // any fresh page load so a forgotten click doesn't fire later.
+    // Stale-flag hygiene on every fresh page load: drop PENDING after
+    // 10 minutes (forgotten click) and DONE after 60 seconds (the user
+    // closed the tab before the toast fired and we don't want a
+    // delayed false positive next time the PWA opens).
     window.addEventListener('pageshow', function (e) {
       if (e.persisted) return;
       var p = readJSON(PENDING);
       if (p && p.t && Date.now() - p.t > 10 * 60 * 1000) {
         clear(PENDING);
+      }
+      var d = readJSON(DONE);
+      if (d && d.t && Date.now() - d.t > 60 * 1000) {
+        clear(DONE);
       }
     });
   })();

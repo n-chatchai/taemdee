@@ -243,6 +243,28 @@ async def oauth_customer_confirm_save(
     return response
 
 
+@router.get("/oauth-error")
+async def oauth_error(
+    request: Request,
+    provider: Optional[str] = None,
+    reason: Optional[str] = None,
+):
+    """Friendly stand-in for the raw 409 page raised on
+    IdentityConflict (the user tried to bind a provider already
+    linked to a different customer). The CTA bounces to
+    /customer/login so they can sign in to the existing identity
+    instead of looping back to a stuck claim attempt."""
+    return templates.TemplateResponse(
+        request=request,
+        name="auth/oauth_error.html",
+        context={
+            "provider_label": _PROVIDER_LABELS.get(provider or "", "บัญชี"),
+            "provider": provider or "",
+            "reason": reason or "conflict",
+        },
+    )
+
+
 @router.get("/connect-complete")
 async def connect_complete(
     request: Request,
@@ -618,7 +640,11 @@ async def line_callback(
                     display_name=display_name, picture_url=picture_url,
                 )
             except IdentityConflict as e:
-                raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+                logger.warning(f"⚠️ LINE link conflict for anon={anon.id}: {e}")
+                return RedirectResponse(
+                    url="/auth/oauth-error?provider=line&reason=conflict",
+                    status_code=status.HTTP_303_SEE_OTHER,
+                )
 
         # Persist the standalone-mode flag from the OAuth state into
         # User.is_pwa so subsequent renders (e.g. /auth/connect-complete
@@ -859,9 +885,10 @@ async def _resolve_customer_oauth(
 ):
     """Customer-side OAuth finalizer — shared by /auth/{line,google,
     facebook}/callback. Returns the claimed customer; caller sets the
-    cookie and picks the redirect target."""
+    cookie and picks the redirect target. Re-raises IdentityConflict
+    so callers can render the friendly /auth/oauth-error page instead
+    of getting back a generic 409."""
     from app.services.soft_wall import (
-        IdentityConflict,
         claim_by_provider,
         link_to_claimed,
     )
@@ -874,14 +901,11 @@ async def _resolve_customer_oauth(
             db, anon, provider, ext_id,
             display_name=display_name, picture_url=picture_url,
         )
-    try:
-        return await link_to_claimed(
-            db, anon,
-            provider=provider, ext_id=ext_id,
-            display_name=display_name, picture_url=picture_url,
-        )
-    except IdentityConflict as e:
-        raise HTTPException(status.HTTP_409_CONFLICT, str(e))
+    return await link_to_claimed(
+        db, anon,
+        provider=provider, ext_id=ext_id,
+        display_name=display_name, picture_url=picture_url,
+    )
 
 
 @router.get("/google/start")
@@ -1079,12 +1103,20 @@ async def google_callback(
     )
     onboard_name = prior_anon.display_name if prior_anon else None
 
-    claimed = await _resolve_customer_oauth(
-        db, customer_cookie,
-        "google", google_id,
-        display_name=display_name, picture_url=picture_url,
-        connect_customer_id=connect_customer_id,
-    )
+    from app.services.soft_wall import IdentityConflict
+    try:
+        claimed = await _resolve_customer_oauth(
+            db, customer_cookie,
+            "google", google_id,
+            display_name=display_name, picture_url=picture_url,
+            connect_customer_id=connect_customer_id,
+        )
+    except IdentityConflict as e:
+        logger.warning(f"⚠️ Google link conflict: {e}")
+        return RedirectResponse(
+            url="/auth/oauth-error?provider=google&reason=conflict",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
 
     if is_pwa and claimed.user and not claimed.user.is_pwa:
         claimed.user.is_pwa = True
@@ -1238,12 +1270,20 @@ async def facebook_callback(
     )
     onboard_name = prior_anon.display_name if prior_anon else None
 
-    claimed = await _resolve_customer_oauth(
-        db, customer_cookie,
-        "facebook", facebook_id,
-        display_name=display_name, picture_url=picture_url,
-        connect_customer_id=connect_customer_id,
-    )
+    from app.services.soft_wall import IdentityConflict
+    try:
+        claimed = await _resolve_customer_oauth(
+            db, customer_cookie,
+            "facebook", facebook_id,
+            display_name=display_name, picture_url=picture_url,
+            connect_customer_id=connect_customer_id,
+        )
+    except IdentityConflict as e:
+        logger.warning(f"⚠️ Facebook link conflict: {e}")
+        return RedirectResponse(
+            url="/auth/oauth-error?provider=facebook&reason=conflict",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
 
     if is_pwa and claimed.user and not claimed.user.is_pwa:
         claimed.user.is_pwa = True
@@ -1382,6 +1422,17 @@ async def pwa_claim(
     logger.success(
         f"🔑 /auth/pwa-claim: ok (anchor={anchor_id} → shop={shop_id} staff={staff_id} owner={is_owner})"
     )
+    # Opportunistic GC of expired anchor rows. Cheap (indexed
+    # WHERE expires_at < now()) and only fires on /auth/pwa-claim,
+    # which is low-traffic — no cron job needed for the table to
+    # stay tidy.
+    try:
+        n = await pwa_anchor.cleanup_expired(db)
+        if n:
+            logger.info(f"🧹 cleaned {n} expired pwa_login_anchors rows")
+    except Exception as e:
+        logger.warning(f"⚠️ pwa_login_anchors cleanup failed: {e}")
+
     resp = RedirectResponse(
         "/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
     )

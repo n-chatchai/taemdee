@@ -1,0 +1,94 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>เชื่อมบัญชีไม่สำเร็จ · TaemDee</title>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  {# Friendly stand-in for the raw 409 page that an IdentityConflict
+     used to surface. Reached when the user tries to link a provider
+     (e.g. LINE) that's already bound to a *different* customer row —
+     usually because they had two anonymous customer rows and tried
+     to claim both with the same LINE id. The "ใช้บัญชีอื่น" path
+     drops the current customer cookie and bounces to /customer/login
+     so the user can sign in to the existing identity instead of
+     getting stuck on the second row. #}
+  <div class="td td-connect-complete">
+    <div class="connect-complete-card">
+      <div class="cc-icon err">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="8" x2="12" y2="12"/>
+          <line x1="12" y1="16" x2="12.01" y2="16"/>
+          <circle cx="12" cy="12" r="10"/>
+        </svg>
+      </div>
+      <h1>เชื่อม{{ provider_label }}ไม่สำเร็จ</h1>
+      <p class="cc-sub">
+        บัญชี {{ provider_label }} นี้ถูกใช้กับลูกค้าคนอื่นในระบบแล้ว
+        คุณสามารถเข้าสู่ระบบบัญชีเดิม หรือลองด้วยบัญชี {{ provider_label }} อื่น
+      </p>
+
+      <a href="/customer/login" class="cc-cta-primary">
+        เข้าสู่ระบบบัญชีเดิม
+      </a>
+
+      <a href="/my-cards" class="cc-cta-secondary">
+        ใช้ต่อแบบไม่ผูกบัญชี
+      </a>
+
+      <div class="cc-icon-hint">
+        <svg class="smile-stamp" viewBox="0 0 100 100" width="56" height="56">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+          <circle cx="36" cy="42" r="9" fill="#FFD952"/>
+          <circle cx="64" cy="42" r="9" fill="#FFD952"/>
+          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+    </div>
+  </div>
+  <style>
+    .td-connect-complete {
+      min-height: 100vh;
+      display: flex; align-items: center; justify-content: center;
+      padding: 32px 24px;
+    }
+    .connect-complete-card {
+      max-width: 380px; width: 100%;
+      text-align: center;
+    }
+    .cc-icon {
+      width: 72px; height: 72px;
+      border-radius: 50%;
+      display: inline-flex; align-items: center; justify-content: center;
+      margin-bottom: 20px;
+    }
+    .cc-icon.err {
+      background: #FCE8E5; color: #C53A1F;
+    }
+    .cc-icon svg { width: 36px; height: 36px; }
+    .td-connect-complete h1 {
+      font-size: 22px; font-weight: 700; margin: 0 0 12px;
+    }
+    .cc-sub {
+      font-size: 15px; color: var(--ink-soft);
+      margin: 0 0 24px; line-height: 1.55;
+    }
+    .cc-cta-primary {
+      display: inline-flex; align-items: center; justify-content: center; gap: 8px;
+      padding: 14px 28px; border-radius: 999px;
+      background: var(--accent); color: #fff; font-weight: 600;
+      text-decoration: none; min-width: 220px;
+      margin-bottom: 10px;
+    }
+    .cc-cta-secondary {
+      display: inline-block; padding: 10px 18px;
+      color: var(--ink-soft); text-decoration: underline;
+      font-size: 14px;
+    }
+    .cc-icon-hint { margin-top: 32px; opacity: 0.6; }
+  </style>
+</body>
+</html>
