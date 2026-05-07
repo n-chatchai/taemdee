@@ -69,15 +69,14 @@ async def team_add_post(
     if not name:
         raise HTTPException(status.HTTP_400_BAD_REQUEST, "ใส่ชื่อเล่นพนักงานก่อนนะครับ")
 
-    # Pending invite needs a User row even with no provider id yet — the
-    # invitee will fold this row in when they sign in via OAuth or set
-    # their own username + PIN at /shop/account afterwards.
-    user = User(display_name=name)
-    db.add(user)
-    await db.flush()
+    # Open-seat invite: no User pre-bound, just permissions + a label
+    # for /staff/join to show. The token claim at OAuth/PIN sign-in
+    # fills user_id with whoever scans the QR and signs in. Owners
+    # don't have to know the staff's LINE id or phone in advance.
     staff = StaffMember(
         shop_id=shop.id,
-        user_id=user.id,
+        user_id=None,
+        display_name_hint=name,
         can_void=bool(can_void),
         can_deereach=bool(can_deereach),
         can_topup=bool(can_topup),

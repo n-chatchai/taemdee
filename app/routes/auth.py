@@ -83,6 +83,7 @@ async def verify_and_login(
     code: str = Form(...),
     name: str = Form("New Shop"),
     ref: Optional[str] = Form(None),
+    staff_token: Optional[str] = Form(None),
     db: AsyncSession = Depends(get_session),
 ):
     # In simulate mode the server already gave the client the real code,
@@ -91,12 +92,42 @@ async def verify_and_login(
         if not await verify_otp(db, phone, code):
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid or expired code")
 
+    from app.services.team import (
+        claim_invite_token,
+        ensure_user_for_provider,
+        resolve_shop_signin,
+    )
+
+    # Open-seat invite via phone OTP — bind the unclaimed StaffMember
+    # row to the user behind this phone number, skipping the generic
+    # resolver (which would create a new shop if no Shop has matching
+    # phone).
+    if staff_token:
+        display_name = name if name and name != "New Shop" else None
+        invitee_user = await ensure_user_for_provider(
+            db, "phone", phone, display_name=display_name,
+        )
+        claimed = await claim_invite_token(db, staff_token, invitee_user)
+        if claimed is None:
+            logger.warning(
+                f"⚠️ Phone staff_token claim failed (token={staff_token[:8]}…)"
+            )
+            raise HTTPException(
+                status.HTTP_400_BAD_REQUEST, "Invite expired or invalid",
+            )
+        _set_session_cookie(
+            response,
+            issue_session_token(
+                claimed.shop_id, staff_id=claimed.id,
+                is_owner=claimed.is_owner,
+            ),
+        )
+        return {"ok": True, "shop_id": str(claimed.shop_id)}
+
     # Detect "fresh signup" before the resolver runs — referral
     # binding fires only on first new shop. resolve_shop_signin is
     # idempotent for existing rows but also creates the Shop on first
     # signup, so we record the pre-state to know which side ran.
-    from app.services.team import resolve_shop_signin
-
     pre_existing = (
         await db.exec(select(Shop).where(Shop.phone == phone))
     ).first()
@@ -351,6 +382,7 @@ def _start_line_oauth(
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
     is_pwa: bool = False,
+    staff_token: Optional[str] = None,
 ) -> RedirectResponse:
     """Build the LINE OAuth state JWT and redirect to LINE."""
     if not line_is_configured():
@@ -364,6 +396,7 @@ def _start_line_oauth(
         connect_customer_id=connect_customer_id,
         pwa_anchor_id=pwa_anchor_id,
         is_pwa=is_pwa,
+        staff_token=staff_token,
     )
     return RedirectResponse(
         url=build_authorize_url(state_jwt), status_code=status.HTTP_302_FOUND
@@ -374,6 +407,7 @@ def _start_line_oauth(
 async def line_start(
     anchor_id: Optional[str] = None,
     is_pwa: Optional[int] = None,
+    staff_token: Optional[str] = None,
 ):
     """Shop-side LINE Login: generate state, set cookie, redirect to LINE.
 
@@ -383,11 +417,16 @@ async def line_start(
     forwards the id explicitly). `is_pwa=1` flags that the originating
     page was running standalone — the completion page renders the
     "กลับไปเปิดแอป" variant instead of the Safari /shop/dashboard.
+    `staff_token` (from /staff/join?t=...) flags this OAuth round-trip
+    as an open-seat invite claim — the callback binds the resolved
+    User to the unclaimed StaffMember row instead of going through
+    resolve_shop_signin's create-or-match logic.
     """
     if not settings.is_login_enabled("shop", "line"):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for shops")
     return _start_line_oauth(
         role="shop", pwa_anchor_id=anchor_id, is_pwa=bool(is_pwa),
+        staff_token=staff_token,
     )
 
 
@@ -529,6 +568,7 @@ async def line_callback(
     # verify it and proceed directly to login (skipping state check).
     pwa_anchor_id: Optional[str] = None
     is_pwa: bool = False
+    staff_token: Optional[str] = None
     if transfer:
         try:
             payload = jwt.decode(transfer, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
@@ -540,6 +580,7 @@ async def line_callback(
             role = payload.get("role", "shop")
             pwa_anchor_id = payload.get("pwa_anchor_id")
             is_pwa = bool(payload.get("is_pwa"))
+            staff_token = payload.get("staff_token")
             logger.success(f"✅ Transfer Token Verified | role={role}")
             connect_customer_id = None
             # Skip to the final login part
@@ -559,6 +600,7 @@ async def line_callback(
         connect_customer_id = payload.get("connect_customer_id")
         pwa_anchor_id = payload.get("pwa_anchor_id")
         is_pwa = bool(payload.get("is_pwa"))
+        staff_token = payload.get("staff_token")
         goto_login = False
 
     # 2. Dispatcher Logic: If we are on the main domain but this is a shop login,
@@ -598,8 +640,10 @@ async def line_callback(
             transfer_payload["pwa_anchor_id"] = pwa_anchor_id
         if is_pwa:
             transfer_payload["is_pwa"] = True
+        if staff_token:
+            transfer_payload["staff_token"] = staff_token
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
-        
+
         shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
         target_url = f"https://{shop_host}/auth/line/callback?transfer={token}"
         logger.warning(f"↪️ Bouncing Shop Owner to: https://{shop_host}/auth/line/callback?transfer=...")
@@ -690,16 +734,41 @@ async def line_callback(
         redirect.delete_cookie(LINE_STATE_COOKIE, path="/auth/line")
         return redirect
 
-    # role == "shop". Generic resolver handles: existing owner-staff
-    # match → just sign in; pending invite → accept_invite + sign in;
-    # no staff but Shop has matching line_id (pre-unification) → lazy-
-    # create owner-staff; fully new → create Shop + owner-staff.
-    from app.services.team import resolve_shop_signin
-
-    shop, staff_match = await resolve_shop_signin(
-        db, "line", line_id,
-        display_name=display_name, picture_url=picture_url,
+    # role == "shop". Two paths:
+    #   - staff_token in state → open-seat invite claim. Resolve a
+    #     User by line_id (find-or-create), bind it onto the unclaimed
+    #     pending StaffMember. Bypass resolve_shop_signin so we don't
+    #     accidentally spawn a fresh shop when the invitee's LINE id
+    #     doesn't match an existing Shop or staff.
+    #   - no token → generic resolver (existing owner sign-in, lazy
+    #     pre-unification path, or fresh shop signup).
+    from app.services.team import (
+        claim_invite_token,
+        ensure_user_for_provider,
+        resolve_shop_signin,
     )
+
+    if staff_token:
+        invitee_user = await ensure_user_for_provider(
+            db, "line", line_id,
+            display_name=display_name, picture_url=picture_url,
+        )
+        claimed = await claim_invite_token(db, staff_token, invitee_user)
+        if claimed is None:
+            logger.warning(
+                f"⚠️ LINE staff_token claim failed (token={staff_token[:8]}…)"
+            )
+            return RedirectResponse(
+                url="/auth/oauth-error?provider=line&reason=expired_invite",
+                status_code=status.HTTP_303_SEE_OTHER,
+            )
+        shop = await db.get(Shop, claimed.shop_id)
+        staff_match = claimed
+    else:
+        shop, staff_match = await resolve_shop_signin(
+            db, "line", line_id,
+            display_name=display_name, picture_url=picture_url,
+        )
 
     # If a PWA login anchor was forwarded through the OAuth round trip,
     # claim it now so the returning PWA can mint a session via
@@ -755,6 +824,7 @@ def _start_google_oauth(
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
     is_pwa: bool = False,
+    staff_token: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "google") or not google_login.is_configured():
         raise HTTPException(
@@ -766,6 +836,7 @@ def _start_google_oauth(
         connect_customer_id=connect_customer_id,
         pwa_anchor_id=pwa_anchor_id,
         is_pwa=is_pwa,
+        staff_token=staff_token,
     )
     return RedirectResponse(
         url=google_login.build_authorize_url(state_jwt),
@@ -779,6 +850,7 @@ def _start_facebook_oauth(
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
     is_pwa: bool = False,
+    staff_token: Optional[str] = None,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "facebook") or not facebook_login.is_configured():
         raise HTTPException(
@@ -790,6 +862,7 @@ def _start_facebook_oauth(
         connect_customer_id=connect_customer_id,
         pwa_anchor_id=pwa_anchor_id,
         is_pwa=is_pwa,
+        staff_token=staff_token,
     )
     return RedirectResponse(
         url=facebook_login.build_authorize_url(state_jwt),
@@ -912,12 +985,15 @@ async def _resolve_customer_oauth(
 async def google_start(
     anchor_id: Optional[str] = None,
     is_pwa: Optional[int] = None,
+    staff_token: Optional[str] = None,
 ):
     """Shop-side Google Login. `anchor_id` is the PWA login anchor uuid
     forwarded via URL query (cross-origin from the shop subdomain).
-    `is_pwa=1` flags the originating page was standalone."""
+    `is_pwa=1` flags the originating page was standalone. `staff_token`
+    is forwarded from /staff/join for open-seat invite claims."""
     return _start_google_oauth(
         role="shop", pwa_anchor_id=anchor_id, is_pwa=bool(is_pwa),
+        staff_token=staff_token,
     )
 
 
@@ -940,12 +1016,15 @@ async def google_customer_start(
 async def facebook_start(
     anchor_id: Optional[str] = None,
     is_pwa: Optional[int] = None,
+    staff_token: Optional[str] = None,
 ):
     """Shop-side Facebook Login. `anchor_id` is the PWA login anchor uuid
     forwarded via URL query (cross-origin from the shop subdomain).
-    `is_pwa=1` flags the originating page was standalone."""
+    `is_pwa=1` flags the originating page was standalone. `staff_token`
+    is forwarded from /staff/join for open-seat invite claims."""
     return _start_facebook_oauth(
         role="shop", pwa_anchor_id=anchor_id, is_pwa=bool(is_pwa),
+        staff_token=staff_token,
     )
 
 
@@ -992,15 +1071,37 @@ async def google_callback(
             picture_url = t.get("picture_url")
             pwa_anchor_id = t.get("pwa_anchor_id")
             is_pwa = bool(t.get("is_pwa"))
+            staff_token = t.get("staff_token")
         except Exception as e:
             logger.error(f"❌ Google Transfer Token Failed: {e}")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
 
-        from app.services.team import resolve_shop_signin
-        shop, staff_match = await resolve_shop_signin(
-            db, "google", google_id,
-            display_name=display_name, picture_url=picture_url,
+        from app.services.team import (
+            claim_invite_token,
+            ensure_user_for_provider,
+            resolve_shop_signin,
         )
+        if staff_token:
+            invitee_user = await ensure_user_for_provider(
+                db, "google", google_id,
+                display_name=display_name, picture_url=picture_url,
+            )
+            claimed = await claim_invite_token(db, staff_token, invitee_user)
+            if claimed is None:
+                logger.warning(
+                    f"⚠️ Google staff_token claim failed (token={staff_token[:8]}…)"
+                )
+                return RedirectResponse(
+                    url="/auth/oauth-error?provider=google&reason=expired_invite",
+                    status_code=status.HTTP_303_SEE_OTHER,
+                )
+            shop = await db.get(Shop, claimed.shop_id)
+            staff_match = claimed
+        else:
+            shop, staff_match = await resolve_shop_signin(
+                db, "google", google_id,
+                display_name=display_name, picture_url=picture_url,
+            )
         if pwa_anchor_id:
             from uuid import UUID
             try:
@@ -1046,6 +1147,7 @@ async def google_callback(
     connect_customer_id = payload.get("connect_customer_id")
     pwa_anchor_id = payload.get("pwa_anchor_id")
     is_pwa = bool(payload.get("is_pwa"))
+    staff_token = payload.get("staff_token")
 
     try:
         tokens = await google_login.exchange_code_for_token(code)
@@ -1082,6 +1184,8 @@ async def google_callback(
             transfer_payload["pwa_anchor_id"] = pwa_anchor_id
         if is_pwa:
             transfer_payload["is_pwa"] = True
+        if staff_token:
+            transfer_payload["staff_token"] = staff_token
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         shop_host = (
             settings.shop_domain
@@ -1164,15 +1268,37 @@ async def facebook_callback(
             picture_url = t.get("picture_url")
             pwa_anchor_id = t.get("pwa_anchor_id")
             is_pwa = bool(t.get("is_pwa"))
+            staff_token = t.get("staff_token")
         except Exception as e:
             logger.error(f"❌ Facebook Transfer Token Failed: {e}")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
 
-        from app.services.team import resolve_shop_signin
-        shop, staff_match = await resolve_shop_signin(
-            db, "facebook", facebook_id,
-            display_name=display_name, picture_url=picture_url,
+        from app.services.team import (
+            claim_invite_token,
+            ensure_user_for_provider,
+            resolve_shop_signin,
         )
+        if staff_token:
+            invitee_user = await ensure_user_for_provider(
+                db, "facebook", facebook_id,
+                display_name=display_name, picture_url=picture_url,
+            )
+            claimed = await claim_invite_token(db, staff_token, invitee_user)
+            if claimed is None:
+                logger.warning(
+                    f"⚠️ Facebook staff_token claim failed (token={staff_token[:8]}…)"
+                )
+                return RedirectResponse(
+                    url="/auth/oauth-error?provider=facebook&reason=expired_invite",
+                    status_code=status.HTTP_303_SEE_OTHER,
+                )
+            shop = await db.get(Shop, claimed.shop_id)
+            staff_match = claimed
+        else:
+            shop, staff_match = await resolve_shop_signin(
+                db, "facebook", facebook_id,
+                display_name=display_name, picture_url=picture_url,
+            )
         if pwa_anchor_id:
             from uuid import UUID
             try:
@@ -1218,6 +1344,7 @@ async def facebook_callback(
     connect_customer_id = payload.get("connect_customer_id")
     pwa_anchor_id = payload.get("pwa_anchor_id")
     is_pwa = bool(payload.get("is_pwa"))
+    staff_token = payload.get("staff_token")
 
     try:
         tokens = await facebook_login.exchange_code_for_token(code)
@@ -1253,6 +1380,8 @@ async def facebook_callback(
             transfer_payload["pwa_anchor_id"] = pwa_anchor_id
         if is_pwa:
             transfer_payload["is_pwa"] = True
+        if staff_token:
+            transfer_payload["staff_token"] = staff_token
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         shop_host = (
             settings.shop_domain

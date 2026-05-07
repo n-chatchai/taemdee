@@ -25,19 +25,30 @@
           <circle cx="12" cy="12" r="10"/>
         </svg>
       </div>
-      <h1>เชื่อม{{ provider_label }}ไม่สำเร็จ</h1>
-      <p class="cc-sub">
-        บัญชี {{ provider_label }} นี้ถูกใช้กับลูกค้าคนอื่นในระบบแล้ว
-        คุณสามารถเข้าสู่ระบบบัญชีเดิม หรือลองด้วยบัญชี {{ provider_label }} อื่น
-      </p>
+      {% if reason == 'expired_invite' %}
+        <h1>Invite หมดอายุ</h1>
+        <p class="cc-sub">
+          ลิงก์เชิญพนักงานนี้หมดอายุหรือถูกใช้ไปแล้ว
+          ขอ QR ใหม่จากเจ้าของร้านนะครับ — ลิงก์มีอายุ 24 ชั่วโมง · ใช้ได้ครั้งเดียว
+        </p>
+        <a href="/" class="cc-cta-primary">
+          กลับหน้าหลัก
+        </a>
+      {% else %}
+        <h1>เชื่อม{{ provider_label }}ไม่สำเร็จ</h1>
+        <p class="cc-sub">
+          บัญชี {{ provider_label }} นี้ถูกใช้กับลูกค้าคนอื่นในระบบแล้ว
+          คุณสามารถเข้าสู่ระบบบัญชีเดิม หรือลองด้วยบัญชี {{ provider_label }} อื่น
+        </p>
 
-      <a href="/customer/login" class="cc-cta-primary">
-        เข้าสู่ระบบบัญชีเดิม
-      </a>
+        <a href="/customer/login" class="cc-cta-primary">
+          เข้าสู่ระบบบัญชีเดิม
+        </a>
 
-      <a href="/my-cards" class="cc-cta-secondary">
-        ใช้ต่อแบบไม่ผูกบัญชี
-      </a>
+        <a href="/my-cards" class="cc-cta-secondary">
+          ใช้ต่อแบบไม่ผูกบัญชี
+        </a>
+      {% endif %}
 
       <div class="cc-icon-hint">
         <svg class="smile-stamp" viewBox="0 0 100 100" width="56" height="56">

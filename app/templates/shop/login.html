@@ -9,7 +9,7 @@
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
 </head>
 <body>
-  <div class="td" x-data="{ step: 'choose', phone: '', name: '', code: '', error: '', simulatedCode: '', ref: '{{ ref_code|default('') }}' }">
+  <div class="td" x-data="{ step: 'choose', phone: '', name: '', code: '', error: '', simulatedCode: '', ref: '{{ ref_code|default('') }}', staffToken: '{{ staff_token|default('') }}' }">
     <div class="topbar"><span></span><span></span></div>
 
     <div class="s1-hero" style="padding: 56px 30px 16px;">
@@ -30,8 +30,12 @@
       {% set main_host = settings.main_domain if settings.environment == "production" else request.headers.get('host', '').replace('shop.', '') %}
       {# pwa_anchor_id is the iOS-PWA bridge — see services/pwa_anchor.py.
          Forwarded as URL query (cross-origin from this subdomain to main),
-         the OAuth state JWT carries it through, the callback claims it. #}
+         the OAuth state JWT carries it through, the callback claims it.
+         staff_token (from /staff/join) tells the callback this OAuth is
+         an open-seat invite claim — bind the freshly-resolved User to
+         the unclaimed StaffMember row instead of resolve_shop_signin. #}
       {% set anchor_q = '?anchor_id=' + pwa_anchor_id if pwa_anchor_id else '' %}
+      {% if staff_token %}{% set anchor_q = anchor_q + ('&' if anchor_q else '?') + 'staff_token=' + staff_token %}{% endif %}
       {% if settings.is_login_enabled('shop', 'line') %}
       <a href="https://{{ main_host }}/auth/line/start{{ anchor_q }}" class="s1-btn s1-btn-line">
         <svg viewBox="0 0 24 24" fill="currentColor">
@@ -115,6 +119,7 @@
             fd.append('code', code);
             fd.append('name', 'ร้านใหม่');
             if (ref) { fd.append('ref', ref); }
+            if (staffToken) { fd.append('staff_token', staffToken); }
             const r = await fetch('/auth/otp/verify', { method: 'POST', body: fd });
             if (r.ok) { window.location.href = '/shop/dashboard'; }
             else {

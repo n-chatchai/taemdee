@@ -124,6 +124,7 @@ def _bucket_index(
 async def login_page(
     request: Request,
     ref: Optional[str] = None,
+    staff_token: Optional[str] = None,
     session_cookie: Optional[str] = Cookie(None, alias=SESSION_COOKIE_NAME),
     anchor_cookie: Optional[str] = Cookie(None, alias=SHOP_PWA_ANCHOR_COOKIE),
     db: AsyncSession = Depends(get_session),
@@ -152,8 +153,11 @@ async def login_page(
          anchor id into the URL so the callback can claim it; the
          returning PWA hits /auth/pwa-claim to mint the session.
     """
-    # 1. Already logged in — skip the form.
-    if session_cookie:
+    # 1. Already logged in — skip the form. Exception: when staff_token
+    # is present the visitor is following an invite QR and we must let
+    # them re-authenticate as the invitee (otherwise they'd silently
+    # land on their existing shop's dashboard and lose the invite).
+    if session_cookie and not staff_token:
         payload = decode_session_token(session_cookie)
         if payload and payload.get("shop_id"):
             return RedirectResponse(
@@ -162,8 +166,10 @@ async def login_page(
 
     # 2. PWA-killed recovery — anchor in the cookie was already claimed
     # in the OAuth callback, so spend it now and land on the dashboard
-    # instead of re-rendering the login form.
-    if anchor_cookie:
+    # instead of re-rendering the login form. Skipped when staff_token
+    # is present so an invitee returning to /shop/login isn't silently
+    # rerouted to a stale prior-session shop.
+    if anchor_cookie and not staff_token:
         existing_id = decode_pwa_anchor_token(anchor_cookie)
         if existing_id is not None:
             redeemed = await pwa_anchor.redeem_anchor(db, existing_id)
@@ -209,6 +215,7 @@ async def login_page(
             "ref_code": ref,
             "referrer": referrer,
             "pwa_anchor_id": str(anchor.id),
+            "staff_token": staff_token or "",
         },
     )
     set_pwa_anchor_cookie(response, anchor.id)

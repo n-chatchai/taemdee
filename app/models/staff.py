@@ -16,12 +16,25 @@ class StaffMember(SQLModel, table=True):
     templates + services. Role-specific bits stay here: shop FK, owner
     flag, the four `can_*` permissions, and the invite lifecycle
     (invited_at / accepted_at / revoked_at + token).
+
+    `user_id` is nullable so an "open seat" invite — token + permissions,
+    no pre-bound identity — can live in the same table. The token claim
+    at OAuth/PIN login fills user_id with whoever signed in. The
+    `display_name_hint` slot lets the owner label the invite (e.g.
+    "พนักงานกะเช้า") for the staff_join page before the staff has
+    arrived; once claimed, the @property accessors prefer
+    user.display_name.
     """
 
     __tablename__ = "staff_members"
     id: UUID = Field(default_factory=uuid4, primary_key=True)
     shop_id: UUID = Field(foreign_key="shops.id", index=True)
-    user_id: UUID = Field(foreign_key="users.id", index=True)
+    user_id: Optional[UUID] = Field(
+        default=None, foreign_key="users.id", index=True, nullable=True,
+    )
+
+    # Owner-set label shown on /staff/join before the invite is claimed.
+    display_name_hint: Optional[str] = Field(default=None)
 
     # Owner is modelled as a StaffMember with is_owner=True. One owner
     # row per Shop, created at signup. Owners have all permissions
@@ -49,7 +62,9 @@ class StaffMember(SQLModel, table=True):
     shop: "Shop" = Relationship(back_populates="staff_members")
     # lazy='joined' so the @property accessors below stay sync-safe in
     # Jinja templates — see the same rationale on Customer.user.
-    user: "User" = Relationship(
+    # Optional because an open-seat invite has user_id = NULL until the
+    # token is claimed at sign-in time.
+    user: Optional["User"] = Relationship(
         back_populates="staff_members",
         sa_relationship_kwargs={"lazy": "joined"},
     )
@@ -73,7 +88,11 @@ class StaffMember(SQLModel, table=True):
 
     @property
     def display_name(self) -> Optional[str]:
-        return self.user.display_name if self.user else None
+        # Prefer the bound user's name once claimed; before that, the
+        # owner's hint is what /staff/join renders.
+        if self.user and self.user.display_name:
+            return self.user.display_name
+        return self.display_name_hint
 
     @property
     def picture_url(self) -> Optional[str]:

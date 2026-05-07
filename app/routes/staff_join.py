@@ -1,14 +1,19 @@
 """Staff.join — public landing page reached from the invite QR/link.
 
 Auth-free (the visitor is a new staff member, no session yet). Renders
-the shop name + LINE/phone login buttons. Login flows hand off to the
-existing /auth/line and /auth/otp endpoints; the staff record is matched
-on the post-login callback (TODO: wire token into the callback so we can
-flip accepted_at + bind line_id/phone).
+the shop name + LINE/phone login buttons.
+
+Token plumbing (open-seat invite): the QR points here with `?t=<token>`
+and we pass the token through to the LINE / Google / Facebook OAuth
+start endpoints (and the phone-OTP form on /shop/login) as
+`?staff_token=`. The state JWT carries it across the OAuth round-trip;
+the callback resolves the User by the OAuth provider id and calls
+`claim_invite_token` to bind that User onto the unclaimed StaffMember
+row + flip accepted_at. See app.services.team.claim_invite_token.
 
 Also hosts the username/PIN login at /staff/pin-login. Shop owners
-set username + 6-digit PIN at staff creation; staff signs in here
-with those credentials. No OAuth/SMS round-trip needed."""
+can pre-create staff with username + 6-digit PIN; that flow stays
+pre-bound (no token round-trip needed)."""
 
 from typing import Optional
 

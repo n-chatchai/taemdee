@@ -124,7 +124,7 @@ def _generate_invite_token() -> str:
     return secrets.token_urlsafe(18)
 
 
-async def _ensure_user_for_provider(
+async def ensure_user_for_provider(
     db: AsyncSession,
     provider: str,
     ext_id: str,
@@ -193,6 +193,52 @@ async def find_pending_by_token(db: AsyncSession, token: str) -> Optional[StaffM
     return row
 
 
+async def claim_invite_token(
+    db: AsyncSession,
+    token: str,
+    user: User,
+) -> Optional[StaffMember]:
+    """Bind an unclaimed open-seat invite to the user who just signed in.
+
+    The owner generated `token` + permissions without knowing the
+    invitee's identity. Now `user` is the resolved `User` row from the
+    OAuth/PIN/OTP login that carried `staff_token`. Set user_id +
+    accepted_at and return the now-active staff. Returns None when the
+    token is unknown / expired / revoked / already claimed so the
+    caller can render a friendly invite-expired error.
+
+    If the invite already had user_id assigned (legacy phone/line_id
+    pre-bound flow) and it matches `user`, just flip accepted_at and
+    return — keeps the existing pre-bound semantics working for the
+    rare case of phone-bound invites the owner does configure.
+    """
+    if not token:
+        return None
+    row = (await db.exec(
+        select(StaffMember).where(StaffMember.invite_token == token)
+    )).first()
+    if row is None:
+        return None
+    if row.revoked_at is not None:
+        return None
+    if row.invite_token_expires_at and row.invite_token_expires_at < utcnow():
+        return None
+
+    if row.user_id is None:
+        # Open-seat path — bind to the freshly-resolved user.
+        row.user_id = user.id
+    elif row.user_id != user.id:
+        # Pre-bound to a different user. Don't silently override; treat
+        # as a token mismatch so the caller can surface a clear error.
+        return None
+
+    row.accepted_at = utcnow()
+    db.add(row)
+    await db.commit()
+    await db.refresh(row)
+    return row
+
+
 async def invite_staff(
     db: AsyncSession,
     shop: Shop,
@@ -215,7 +261,7 @@ async def invite_staff(
 
     provider = "phone" if phone else "line"
     ext_id = phone or line_id
-    user = await _ensure_user_for_provider(
+    user = await ensure_user_for_provider(
         db, provider, ext_id, display_name=display_name,
     )
 
@@ -450,7 +496,7 @@ async def resolve_shop_signin(
         await db.commit()
         await db.refresh(shop)
 
-    user = matched_user or await _ensure_user_for_provider(
+    user = matched_user or await ensure_user_for_provider(
         db, provider, ext_id,
         display_name=display_name, picture_url=picture_url,
     )
@@ -516,11 +562,11 @@ async def ensure_owner_staff(db: AsyncSession, shop: Shop) -> StaffMember:
     # will bind the ext_id afterwards.
     user: Optional[User] = None
     if shop.line_id:
-        user = await _ensure_user_for_provider(
+        user = await ensure_user_for_provider(
             db, "line", shop.line_id, display_name=shop.name,
         )
     elif shop.phone:
-        user = await _ensure_user_for_provider(
+        user = await ensure_user_for_provider(
             db, "phone", shop.phone, display_name=shop.name,
         )
     if user is None:

@@ -35,6 +35,7 @@ def make_oauth_state(
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
     is_pwa: bool = False,
+    staff_token: Optional[str] = None,
 ) -> str:
     """Returns the signed JWT to pass as the OAuth `state` URL parameter.
 
@@ -59,6 +60,8 @@ def make_oauth_state(
         payload["pwa_anchor_id"] = pwa_anchor_id
     if is_pwa:
         payload["is_pwa"] = True
+    if staff_token:
+        payload["staff_token"] = staff_token
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 
