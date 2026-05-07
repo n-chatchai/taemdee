@@ -17,7 +17,7 @@ from app.core.auth import (
 from app.core.database import get_session
 from app.models import Branch, Customer, Inbox, Redemption, Shop, Point
 from app.models.util import BKK, bkk_feed_time, utcnow
-from app.services.auth import verify_otp
+from app.services.auth import decode_customer_token, verify_otp
 from app.services.events import feed_row_html, publish
 from app.services.issuance import IssuanceError, issue_point
 from app.services.pdpa import delete_customer_account
@@ -132,8 +132,26 @@ async def _active_gifts_count(db: AsyncSession, customer_id: uuid.UUID) -> int:
 
 
 @router.get("/customer/login", response_class=HTMLResponse)
-async def customer_login_page(request: Request):
-    """Standalone customer login page based on the shop's S1 design."""
+async def customer_login_page(
+    request: Request,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Standalone customer login page based on the shop's S1 design.
+
+    If the visitor already has a valid, non-anonymous customer cookie,
+    bounce them to /my-cards rather than render the login form — same
+    pattern as /shop/login for owners. Anonymous cookies (set on every
+    QR scan) still see the form so they can deliberately log in to
+    bind the bare anon row to a real identity."""
+    if customer_cookie:
+        cid = decode_customer_token(customer_cookie)
+        if cid:
+            existing = await db.get(Customer, cid)
+            if existing and not existing.is_anonymous:
+                return RedirectResponse(
+                    url="/my-cards", status_code=status.HTTP_303_SEE_OTHER,
+                )
     return templates.TemplateResponse(
         request=request,
         name="customer_login.html",
@@ -482,15 +500,18 @@ async def card_account_text_size(
 
 @router.post("/card/account/logout")
 async def customer_logout():
-    """Clear the customer cookie and bounce to /my-cards.
+    """Clear the customer cookie and bounce to /customer/login.
 
-    /my-cards' find_or_create_customer mints a fresh anon + sets the
-    cookie, so the user lands as a clean anonymous customer inside
-    the PWA. We don't bounce to / — that's the marketing page (with a
-    login modal), which would look like a login wall in the PWA's
-    standalone view."""
+    Earlier this redirected to /my-cards, which would immediately
+    mint a fresh anonymous customer via find_or_create_customer — so
+    the user never actually saw a logged-out state, and "log out"
+    felt like a no-op. Now we send them to /customer/login (mirrors
+    /shop/login on the owner side) which renders the login form
+    without spawning a customer row. /customer/login itself bounces
+    already-logged-in customers back to /my-cards so a stale tap
+    doesn't trap a real user on the form."""
     response = RedirectResponse(
-        url="/my-cards", status_code=status.HTTP_303_SEE_OTHER,
+        url="/customer/login", status_code=status.HTTP_303_SEE_OTHER,
     )
     response.delete_cookie(CUSTOMER_COOKIE_NAME, path="/")
     return response

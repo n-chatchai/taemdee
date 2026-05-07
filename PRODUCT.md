@@ -91,7 +91,7 @@ Trigger kinds the platform suggests today: `almost_there`, `win_back`, `unredeem
 - **Speed.** Issuance and redemption flows must complete in under 3 seconds.
 - **One tap, one cost.** Every paid action shows the credit cost on the same button that approves it. No surprise modals.
 - **Bookmarkable URLs.** A customer can pin their DeeCard.
-- **No login wall on PWA.** The customer side is connect-only. Logout returns to `/my-cards`, never to a marketing page.
+- **No login wall on PWA.** The customer side is connect-only — every QR scan mints a fresh anonymous customer if the cookie isn't already there. Logout (`/card/account/logout`) clears the cookie and returns to `/customer/login`, mirroring the shop's `/shop/login` so the user actually sees a logged-out state instead of being silently re-auto-anon-ed.
 
 ## 8. Trust & PDPA
 
