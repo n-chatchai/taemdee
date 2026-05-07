@@ -34,7 +34,7 @@ from app.core.database import get_session
 from app.models.util import utcnow
 from app.core.templates import templates
 from app.models import Customer, CustomerShopMute, Shop
-from app.services.auth import decode_customer_token, generate_and_send_otp, issue_session_token, verify_otp
+from app.services.auth import decode_customer_token, decode_session_token, generate_and_send_otp, issue_session_token, verify_otp
 from app.services.soft_wall import claim_by_facebook, claim_by_google, claim_by_line
 from app.services.referrals import consume_referral_on_signup, find_referral_by_code
 from app.services.line_login import (
@@ -163,6 +163,7 @@ def _set_c3_oauth_ctx(
 async def oauth_customer_confirm_page(
     request: Request,
     next_redeem: Optional[str] = None,
+    is_pwa: Optional[int] = None,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     c3_oauth_ctx: Optional[str] = Cookie(None, alias=_C3_OAUTH_COOKIE),
     db: AsyncSession = Depends(get_session),
@@ -197,6 +198,7 @@ async def oauth_customer_confirm_page(
             "onboard_name": onboard_name,
             "picture_url": picture_url,
             "next_redeem": next_redeem,
+            "is_pwa": bool(is_pwa),
         },
     )
 
@@ -205,6 +207,7 @@ async def oauth_customer_confirm_page(
 async def oauth_customer_confirm_save(
     next_redeem: Optional[str] = Form(None),
     display_name: Optional[str] = Form(None),
+    is_pwa: Optional[str] = Form(None),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     c3_oauth_ctx: Optional[str] = Cookie(None, alias=_C3_OAUTH_COOKIE),
     db: AsyncSession = Depends(get_session),
@@ -232,7 +235,8 @@ async def oauth_customer_confirm_save(
 
     target_url = (
         await _redeem_after_claim(db, customer, next_redeem)
-        or f"/auth/connect-complete?provider={provider}"
+        or (f"/auth/connect-complete?provider={provider}"
+            + ("&is_pwa=1" if is_pwa else ""))
     )
     response = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie(_C3_OAUTH_COOKIE, path="/")
@@ -243,17 +247,65 @@ async def oauth_customer_confirm_save(
 async def connect_complete(
     request: Request,
     provider: Optional[str] = None,
+    role: Optional[str] = None,
+    is_pwa: Optional[int] = None,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    session_cookie: Optional[str] = Cookie(None, alias=SESSION_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
 ):
-    """Success page rendered after a customer-side OAuth bind. iOS PWA
-    pops cross-origin OAuth to Safari, so this page typically renders
-    in Safari (not the PWA). Tells the user to return to the PWA;
-    the PWA's foreground-reload handler in c_base.html surfaces the
-    new state + a toast there. Browser-only users tap "Continue"."""
+    """Post-OAuth completion page. iOS PWA pops cross-origin OAuth to
+    Safari, so this page typically renders in Safari (not the PWA).
+
+    Two variants:
+      - PWA: hide the "go to /my-cards" / "/shop/dashboard" CTA and
+        the auto-redirect — they'd open the destination in Safari and
+        confuse a user whose PWA is the canonical interface. Show
+        "กลับไปเปิดแอป" copy with a home-screen icon hint.
+      - Browser: keep the auto-redirect / CTA so a user without a PWA
+        installed lands directly on their dashboard.
+
+    `is_pwa` source-of-truth is the URL param (rides through the OAuth
+    state JWT from the original click), with User.is_pwa from the DB
+    as a fallback for users who already proved they have the PWA on
+    a previous visit (set by /track/pwa or by an earlier OAuth bind)."""
+    is_pwa_signal = bool(is_pwa)
+    if not is_pwa_signal:
+        # Fallback to the persisted flag — covers users who installed
+        # the PWA on a prior visit, did /track/pwa once, then lost the
+        # JS detection on a fresh tab (e.g. after rebooting their phone
+        # and re-entering Safari without going through the PWA first).
+        if role == "shop" and session_cookie:
+            payload = decode_session_token(session_cookie)
+            if payload and payload.get("staff_id"):
+                from uuid import UUID
+                try:
+                    staff_id = UUID(payload["staff_id"])
+                    from app.models import StaffMember
+                    staff = await db.get(StaffMember, staff_id)
+                    if staff and staff.user and staff.user.is_pwa:
+                        is_pwa_signal = True
+                except (ValueError, TypeError):
+                    pass
+        elif customer_cookie:
+            from uuid import UUID
+            try:
+                cid = decode_customer_token(customer_cookie)
+                if cid:
+                    from app.models import Customer
+                    customer_row = await db.get(Customer, cid)
+                    if customer_row and customer_row.user and customer_row.user.is_pwa:
+                        is_pwa_signal = True
+            except (ValueError, TypeError):
+                pass
+
     return templates.TemplateResponse(
         request=request,
         name="auth/connect_complete.html",
         context={
+            "provider": provider or "",
             "provider_label": _PROVIDER_LABELS.get(provider or "", "บัญชี"),
+            "role": role or "customer",
+            "is_pwa": is_pwa_signal,
         },
     )
 
@@ -276,6 +328,7 @@ def _start_line_oauth(
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
+    is_pwa: bool = False,
 ) -> RedirectResponse:
     """Build the LINE OAuth state JWT and redirect to LINE."""
     if not line_is_configured():
@@ -288,6 +341,7 @@ def _start_line_oauth(
         role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
         pwa_anchor_id=pwa_anchor_id,
+        is_pwa=is_pwa,
     )
     return RedirectResponse(
         url=build_authorize_url(state_jwt), status_code=status.HTTP_302_FOUND
@@ -295,22 +349,30 @@ def _start_line_oauth(
 
 
 @router.get("/line/start")
-async def line_start(anchor_id: Optional[str] = None):
+async def line_start(
+    anchor_id: Optional[str] = None,
+    is_pwa: Optional[int] = None,
+):
     """Shop-side LINE Login: generate state, set cookie, redirect to LINE.
 
     `anchor_id` is the PWA login anchor uuid passed in via URL query
     (the link is on the shop subdomain, this endpoint is on the main
     domain — anchor cookies don't cross origins, so the template
-    forwards the id explicitly).
+    forwards the id explicitly). `is_pwa=1` flags that the originating
+    page was running standalone — the completion page renders the
+    "กลับไปเปิดแอป" variant instead of the Safari /shop/dashboard.
     """
     if not settings.is_login_enabled("shop", "line"):
         raise HTTPException(status.HTTP_503_SERVICE_UNAVAILABLE, "LINE login disabled for shops")
-    return _start_line_oauth(role="shop", pwa_anchor_id=anchor_id)
+    return _start_line_oauth(
+        role="shop", pwa_anchor_id=anchor_id, is_pwa=bool(is_pwa),
+    )
 
 
 @router.get("/line/customer/start")
 async def line_customer_start(
     next_redeem: Optional[str] = None,
+    is_pwa: Optional[int] = None,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
 ):
     """Customer-side LINE OAuth kickoff. Reads the customer cookie that
@@ -321,6 +383,7 @@ async def line_customer_start(
     return _start_line_oauth(
         role="customer", next_redeem=next_redeem,
         connect_customer_id=_connect_customer_id_from_cookie(customer_cookie),
+        is_pwa=bool(is_pwa),
     )
 
 
@@ -328,6 +391,7 @@ async def line_customer_start(
 async def line_customer_confirm(
     request: Request,
     next_redeem: Optional[str] = None,
+    is_pwa: Optional[int] = None,
     c3_line_ctx: Optional[str] = Cookie(None, alias="c3_line_ctx"),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
@@ -361,6 +425,7 @@ async def line_customer_confirm(
             "onboard_name": onboard_name,
             "picture_url": picture_url,
             "next_redeem": next_redeem,
+            "is_pwa": bool(is_pwa),
         },
     )
 
@@ -370,6 +435,7 @@ async def line_customer_confirm_save(
     next_redeem: Optional[str] = Form(None),
     display_name: Optional[str] = Form(None),
     dr_consent: Optional[str] = Form("on"),
+    is_pwa: Optional[str] = Form(None),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
@@ -412,7 +478,8 @@ async def line_customer_confirm_save(
 
     target_url = (
         await _redeem_after_claim(db, customer, next_redeem)
-        or "/auth/connect-complete?provider=line"
+        or ("/auth/connect-complete?provider=line"
+            + ("&is_pwa=1" if is_pwa else ""))
     )
     response = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     response.delete_cookie("c3_line_ctx", path="/")
@@ -439,6 +506,7 @@ async def line_callback(
     # 1. Transfer Logic: If we received a transfer token from the main domain,
     # verify it and proceed directly to login (skipping state check).
     pwa_anchor_id: Optional[str] = None
+    is_pwa: bool = False
     if transfer:
         try:
             payload = jwt.decode(transfer, settings.jwt_secret, algorithms=[settings.jwt_algorithm])
@@ -449,6 +517,7 @@ async def line_callback(
             picture_url = payload.get("picture_url")
             role = payload.get("role", "shop")
             pwa_anchor_id = payload.get("pwa_anchor_id")
+            is_pwa = bool(payload.get("is_pwa"))
             logger.success(f"✅ Transfer Token Verified | role={role}")
             connect_customer_id = None
             # Skip to the final login part
@@ -467,6 +536,7 @@ async def line_callback(
         next_redeem = payload.get("next_redeem")
         connect_customer_id = payload.get("connect_customer_id")
         pwa_anchor_id = payload.get("pwa_anchor_id")
+        is_pwa = bool(payload.get("is_pwa"))
         goto_login = False
 
     # 2. Dispatcher Logic: If we are on the main domain but this is a shop login,
@@ -490,8 +560,10 @@ async def line_callback(
             raise HTTPException(status.HTTP_502_BAD_GATEWAY, str(e))
 
         # Step B: Create a Transfer Token (short-lived JWT). Forward the
-        # pwa_anchor_id through so the shop-domain callback can claim
-        # the anchor row right after resolve_shop_signin.
+        # pwa_anchor_id + is_pwa flag through so the shop-domain
+        # callback can claim the anchor and decide which completion
+        # page to land on (Safari /shop/dashboard for non-PWA, or
+        # /auth/connect-complete with the "go back to PWA" copy).
         transfer_payload = {
             "sub": "auth_transfer",
             "line_id": profile["userId"],
@@ -502,6 +574,8 @@ async def line_callback(
         }
         if pwa_anchor_id:
             transfer_payload["pwa_anchor_id"] = pwa_anchor_id
+        if is_pwa:
+            transfer_payload["is_pwa"] = True
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         
         shop_host = settings.shop_domain if settings.environment == "production" else f"shop.{host}"
@@ -546,6 +620,15 @@ async def line_callback(
             except IdentityConflict as e:
                 raise HTTPException(status.HTTP_409_CONFLICT, str(e))
 
+        # Persist the standalone-mode flag from the OAuth state into
+        # User.is_pwa so subsequent renders (e.g. /auth/connect-complete
+        # opened in a fresh Safari tab) can branch on a stable signal
+        # without depending on URL-param plumbing surviving every hop.
+        if is_pwa and claimed.user and not claimed.user.is_pwa:
+            claimed.user.is_pwa = True
+            db.add(claimed.user)
+            await db.commit()
+
         # Hand off to C3.line — design splits "LINE OAuth came back" from
         # "decide DeeReach consent". Carry next_redeem through as a query
         # arg so the confirm POST can still auto-resume the redeem flow.
@@ -554,8 +637,13 @@ async def line_callback(
         # id), and without the new cookie subsequent requests would land
         # on a phantom anon.
         target_url = "/auth/line/customer/confirm"
+        params = []
         if next_redeem:
-            target_url += f"?next_redeem={next_redeem}"
+            params.append(f"next_redeem={next_redeem}")
+        if is_pwa:
+            params.append("is_pwa=1")
+        if params:
+            target_url += "?" + "&".join(params)
         redirect = RedirectResponse(
             url=target_url, status_code=status.HTTP_303_SEE_OTHER
         )
@@ -606,8 +694,26 @@ async def line_callback(
         except (ValueError, TypeError):
             logger.warning(f"⚠️ Bad pwa_anchor_id in LINE callback: {pwa_anchor_id}")
 
+    # Persist standalone-mode signal on the owner User. PWA presence is
+    # also implied by pwa_anchor_id (only PWA flow sets that), so treat
+    # either as enough.
+    pwa_signal = is_pwa or bool(pwa_anchor_id)
+    if pwa_signal and staff_match.user and not staff_match.user.is_pwa:
+        staff_match.user.is_pwa = True
+        db.add(staff_match.user)
+        await db.commit()
+
+    # PWA users: land on /auth/connect-complete in Safari with the
+    # "go back to PWA" copy — opening /shop/dashboard in Safari would
+    # show a logged-in dashboard there while the PWA itself is still
+    # on /shop/login, which confuses users. Non-PWA users keep the
+    # direct dashboard landing.
+    if pwa_signal:
+        target = "/auth/connect-complete?provider=line&role=shop&is_pwa=1"
+    else:
+        target = "/shop/dashboard"
     redirect = RedirectResponse(
-        url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+        url=target, status_code=status.HTTP_303_SEE_OTHER
     )
     _set_session_cookie(
         redirect,
@@ -622,6 +728,7 @@ def _start_google_oauth(
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
+    is_pwa: bool = False,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "google") or not google_login.is_configured():
         raise HTTPException(
@@ -632,6 +739,7 @@ def _start_google_oauth(
         role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
         pwa_anchor_id=pwa_anchor_id,
+        is_pwa=is_pwa,
     )
     return RedirectResponse(
         url=google_login.build_authorize_url(state_jwt),
@@ -644,6 +752,7 @@ def _start_facebook_oauth(
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
+    is_pwa: bool = False,
 ) -> RedirectResponse:
     if not settings.is_login_enabled(role, "facebook") or not facebook_login.is_configured():
         raise HTTPException(
@@ -654,6 +763,7 @@ def _start_facebook_oauth(
         role=role, next_redeem=next_redeem,
         connect_customer_id=connect_customer_id,
         pwa_anchor_id=pwa_anchor_id,
+        is_pwa=is_pwa,
     )
     return RedirectResponse(
         url=facebook_login.build_authorize_url(state_jwt),
@@ -775,15 +885,22 @@ async def _resolve_customer_oauth(
 
 
 @router.get("/google/start")
-async def google_start(anchor_id: Optional[str] = None):
+async def google_start(
+    anchor_id: Optional[str] = None,
+    is_pwa: Optional[int] = None,
+):
     """Shop-side Google Login. `anchor_id` is the PWA login anchor uuid
-    forwarded via URL query (cross-origin from the shop subdomain)."""
-    return _start_google_oauth(role="shop", pwa_anchor_id=anchor_id)
+    forwarded via URL query (cross-origin from the shop subdomain).
+    `is_pwa=1` flags the originating page was standalone."""
+    return _start_google_oauth(
+        role="shop", pwa_anchor_id=anchor_id, is_pwa=bool(is_pwa),
+    )
 
 
 @router.get("/google/customer/start")
 async def google_customer_start(
     next_redeem: Optional[str] = None,
+    is_pwa: Optional[int] = None,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
 ):
     """Customer-side Google Sign-In. Bakes the customer cookie's id
@@ -791,19 +908,27 @@ async def google_customer_start(
     return _start_google_oauth(
         role="customer", next_redeem=next_redeem,
         connect_customer_id=_connect_customer_id_from_cookie(customer_cookie),
+        is_pwa=bool(is_pwa),
     )
 
 
 @router.get("/facebook/start")
-async def facebook_start(anchor_id: Optional[str] = None):
+async def facebook_start(
+    anchor_id: Optional[str] = None,
+    is_pwa: Optional[int] = None,
+):
     """Shop-side Facebook Login. `anchor_id` is the PWA login anchor uuid
-    forwarded via URL query (cross-origin from the shop subdomain)."""
-    return _start_facebook_oauth(role="shop", pwa_anchor_id=anchor_id)
+    forwarded via URL query (cross-origin from the shop subdomain).
+    `is_pwa=1` flags the originating page was standalone."""
+    return _start_facebook_oauth(
+        role="shop", pwa_anchor_id=anchor_id, is_pwa=bool(is_pwa),
+    )
 
 
 @router.get("/facebook/customer/start")
 async def facebook_customer_start(
     next_redeem: Optional[str] = None,
+    is_pwa: Optional[int] = None,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
 ):
     """Customer-side Facebook Login. Bakes the customer cookie's id
@@ -811,6 +936,7 @@ async def facebook_customer_start(
     return _start_facebook_oauth(
         role="customer", next_redeem=next_redeem,
         connect_customer_id=_connect_customer_id_from_cookie(customer_cookie),
+        is_pwa=bool(is_pwa),
     )
 
 
@@ -841,6 +967,7 @@ async def google_callback(
             display_name = t.get("display_name")
             picture_url = t.get("picture_url")
             pwa_anchor_id = t.get("pwa_anchor_id")
+            is_pwa = bool(t.get("is_pwa"))
         except Exception as e:
             logger.error(f"❌ Google Transfer Token Failed: {e}")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
@@ -864,8 +991,19 @@ async def google_callback(
                 )
             except (ValueError, TypeError):
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Google callback: {pwa_anchor_id}")
+
+        pwa_signal = is_pwa or bool(pwa_anchor_id)
+        if pwa_signal and staff_match.user and not staff_match.user.is_pwa:
+            staff_match.user.is_pwa = True
+            db.add(staff_match.user)
+            await db.commit()
+
+        if pwa_signal:
+            target = "/auth/connect-complete?provider=google&role=shop&is_pwa=1"
+        else:
+            target = "/shop/dashboard"
         redirect = RedirectResponse(
-            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+            url=target, status_code=status.HTTP_303_SEE_OTHER
         )
         _set_session_cookie(
             redirect,
@@ -883,6 +1021,7 @@ async def google_callback(
     next_redeem = payload.get("next_redeem")
     connect_customer_id = payload.get("connect_customer_id")
     pwa_anchor_id = payload.get("pwa_anchor_id")
+    is_pwa = bool(payload.get("is_pwa"))
 
     try:
         tokens = await google_login.exchange_code_for_token(code)
@@ -917,6 +1056,8 @@ async def google_callback(
         }
         if pwa_anchor_id:
             transfer_payload["pwa_anchor_id"] = pwa_anchor_id
+        if is_pwa:
+            transfer_payload["is_pwa"] = True
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         shop_host = (
             settings.shop_domain
@@ -945,9 +1086,19 @@ async def google_callback(
         connect_customer_id=connect_customer_id,
     )
 
+    if is_pwa and claimed.user and not claimed.user.is_pwa:
+        claimed.user.is_pwa = True
+        db.add(claimed.user)
+        await db.commit()
+
     target_url = "/auth/oauth/customer/confirm"
+    params = []
     if next_redeem:
-        target_url += f"?next_redeem={next_redeem}"
+        params.append(f"next_redeem={next_redeem}")
+    if is_pwa:
+        params.append("is_pwa=1")
+    if params:
+        target_url += "?" + "&".join(params)
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     _set_c3_oauth_ctx(
         redirect, "google", display_name, onboard_name, picture_url,
@@ -980,6 +1131,7 @@ async def facebook_callback(
             display_name = t.get("display_name")
             picture_url = t.get("picture_url")
             pwa_anchor_id = t.get("pwa_anchor_id")
+            is_pwa = bool(t.get("is_pwa"))
         except Exception as e:
             logger.error(f"❌ Facebook Transfer Token Failed: {e}")
             raise HTTPException(status.HTTP_400_BAD_REQUEST, "Invalid transfer token")
@@ -1003,8 +1155,19 @@ async def facebook_callback(
                 )
             except (ValueError, TypeError):
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Facebook callback: {pwa_anchor_id}")
+
+        pwa_signal = is_pwa or bool(pwa_anchor_id)
+        if pwa_signal and staff_match.user and not staff_match.user.is_pwa:
+            staff_match.user.is_pwa = True
+            db.add(staff_match.user)
+            await db.commit()
+
+        if pwa_signal:
+            target = "/auth/connect-complete?provider=facebook&role=shop&is_pwa=1"
+        else:
+            target = "/shop/dashboard"
         redirect = RedirectResponse(
-            url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER
+            url=target, status_code=status.HTTP_303_SEE_OTHER
         )
         _set_session_cookie(
             redirect,
@@ -1022,6 +1185,7 @@ async def facebook_callback(
     next_redeem = payload.get("next_redeem")
     connect_customer_id = payload.get("connect_customer_id")
     pwa_anchor_id = payload.get("pwa_anchor_id")
+    is_pwa = bool(payload.get("is_pwa"))
 
     try:
         tokens = await facebook_login.exchange_code_for_token(code)
@@ -1055,6 +1219,8 @@ async def facebook_callback(
         }
         if pwa_anchor_id:
             transfer_payload["pwa_anchor_id"] = pwa_anchor_id
+        if is_pwa:
+            transfer_payload["is_pwa"] = True
         token = jwt.encode(transfer_payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
         shop_host = (
             settings.shop_domain
@@ -1079,9 +1245,19 @@ async def facebook_callback(
         connect_customer_id=connect_customer_id,
     )
 
+    if is_pwa and claimed.user and not claimed.user.is_pwa:
+        claimed.user.is_pwa = True
+        db.add(claimed.user)
+        await db.commit()
+
     target_url = "/auth/oauth/customer/confirm"
+    params = []
     if next_redeem:
-        target_url += f"?next_redeem={next_redeem}"
+        params.append(f"next_redeem={next_redeem}")
+    if is_pwa:
+        params.append("is_pwa=1")
+    if params:
+        target_url += "?" + "&".join(params)
     redirect = RedirectResponse(url=target_url, status_code=status.HTTP_303_SEE_OTHER)
     _set_c3_oauth_ctx(
         redirect, "facebook", display_name, onboard_name, picture_url,

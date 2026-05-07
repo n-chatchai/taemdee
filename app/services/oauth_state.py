@@ -34,6 +34,7 @@ def make_oauth_state(
     next_redeem: Optional[str] = None,
     connect_customer_id: Optional[str] = None,
     pwa_anchor_id: Optional[str] = None,
+    is_pwa: bool = False,
 ) -> str:
     """Returns the signed JWT to pass as the OAuth `state` URL parameter.
 
@@ -41,7 +42,10 @@ def make_oauth_state(
     (the customer being connected, baked in at /start so the callback
     binds onto the SAME user no matter what cookie context the
     redirect chain ends up in) + optional pwa_anchor_id (the shop-side
-    equivalent — the anchor row to claim once the OAuth resolves).
+    equivalent — the anchor row to claim once the OAuth resolves) +
+    optional is_pwa flag (originating page was running standalone, so
+    the completion page should render the "go back to PWA" variant
+    instead of a Safari-side dashboard landing).
     """
     payload = {
         "role": role,
@@ -53,6 +57,8 @@ def make_oauth_state(
         payload["connect_customer_id"] = connect_customer_id
     if pwa_anchor_id:
         payload["pwa_anchor_id"] = pwa_anchor_id
+    if is_pwa:
+        payload["is_pwa"] = True
     return jwt.encode(payload, settings.jwt_secret, algorithm=settings.jwt_algorithm)
 
 

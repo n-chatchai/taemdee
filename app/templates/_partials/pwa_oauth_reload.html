@@ -112,6 +112,40 @@
       try { localStorage.removeItem(key); } catch (_) {}
     }
 
+    // PWA-mode detection — used to flag OAuth start URLs so the
+    // server-side completion page knows to render the "กลับไปเปิดแอป"
+    // variant instead of a "/my-cards" / "/shop/dashboard" landing
+    // (which would open in Safari and confuse a user who's clearly
+    // installed the PWA). The flag rides through the OAuth state JWT
+    // and out the other side; iOS PWA / Safari cookie-jar isolation
+    // means we can't just read this on the completion page.
+    var IS_PWA =
+      (window.matchMedia && window.matchMedia('(display-mode: standalone)').matches) ||
+      window.navigator.standalone === true;
+
+    // 0. On every load + on Alpine x-show toggles: rewrite OAuth
+    // anchor hrefs to carry is_pwa=1 when we're standalone. Run once
+    // on DOMContentLoaded; the relevant pages are server-rendered so
+    // the links exist immediately. Idempotent — re-running adds
+    // nothing if the flag is already on the URL.
+    function tagOAuthLinks() {
+      if (!IS_PWA) return;
+      var anchors = document.querySelectorAll('a');
+      for (var i = 0; i < anchors.length; i++) {
+        var a = anchors[i];
+        var href = a.getAttribute('href') || '';
+        if (!/\/auth\/(line|google|facebook)\/(?:customer\/)?start/.test(href)) continue;
+        if (/[?&]is_pwa=1\b/.test(href)) continue;
+        var sep = href.indexOf('?') >= 0 ? '&' : '?';
+        a.setAttribute('href', href + sep + 'is_pwa=1');
+      }
+    }
+    if (document.readyState === 'loading') {
+      document.addEventListener('DOMContentLoaded', tagOAuthLinks);
+    } else {
+      tagOAuthLinks();
+    }
+
     // 1. Click on a connect anchor → flag pending. Anchorless regex
     // so absolute shop URLs (https://main.tld/auth/line/start) match
     // the same as relative customer paths (/auth/line/customer/start).

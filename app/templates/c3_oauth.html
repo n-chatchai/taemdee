@@ -73,6 +73,7 @@
 
       <form method="POST" action="/auth/oauth/customer/confirm">
         {% if next_redeem %}<input type="hidden" name="next_redeem" value="{{ next_redeem }}">{% endif %}
+        {% if is_pwa %}<input type="hidden" name="is_pwa" value="1">{% endif %}
         <input type="hidden" name="display_name" :value="finalName()">
 
         <button type="submit" class="btn-line">
