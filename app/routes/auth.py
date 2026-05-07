@@ -594,10 +594,14 @@ async def line_callback(
     if pwa_anchor_id:
         from uuid import UUID
         try:
-            await pwa_anchor.claim_anchor(
+            ok = await pwa_anchor.claim_anchor(
                 db, UUID(pwa_anchor_id),
                 shop_id=shop.id, staff_id=staff_match.id,
                 is_owner=staff_match.is_owner,
+            )
+            logger.success(
+                f"🔑 LINE callback claimed anchor={pwa_anchor_id} ok={ok} "
+                f"shop={shop.id} staff={staff_match.id}"
             )
         except (ValueError, TypeError):
             logger.warning(f"⚠️ Bad pwa_anchor_id in LINE callback: {pwa_anchor_id}")
@@ -849,10 +853,14 @@ async def google_callback(
         if pwa_anchor_id:
             from uuid import UUID
             try:
-                await pwa_anchor.claim_anchor(
+                ok = await pwa_anchor.claim_anchor(
                     db, UUID(pwa_anchor_id),
                     shop_id=shop.id, staff_id=staff_match.id,
                     is_owner=staff_match.is_owner,
+                )
+                logger.success(
+                    f"🔑 Google callback claimed anchor={pwa_anchor_id} ok={ok} "
+                    f"shop={shop.id} staff={staff_match.id}"
                 )
             except (ValueError, TypeError):
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Google callback: {pwa_anchor_id}")
@@ -984,10 +992,14 @@ async def facebook_callback(
         if pwa_anchor_id:
             from uuid import UUID
             try:
-                await pwa_anchor.claim_anchor(
+                ok = await pwa_anchor.claim_anchor(
                     db, UUID(pwa_anchor_id),
                     shop_id=shop.id, staff_id=staff_match.id,
                     is_owner=staff_match.is_owner,
+                )
+                logger.success(
+                    f"🔑 Facebook callback claimed anchor={pwa_anchor_id} ok={ok} "
+                    f"shop={shop.id} staff={staff_match.id}"
                 )
             except (ValueError, TypeError):
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Facebook callback: {pwa_anchor_id}")
@@ -1133,7 +1145,6 @@ def _set_session_cookie(response: Response, token: str) -> None:
 
 @router.post("/pwa-claim")
 async def pwa_claim(
-    response: Response,
     anchor_cookie: Optional[str] = Cookie(None, alias=SHOP_PWA_ANCHOR_COOKIE),
     db: AsyncSession = Depends(get_session),
 ):
@@ -1144,9 +1155,15 @@ async def pwa_claim(
     OAuth callback claimed in Safari), mint a real session cookie,
     and tell the page to reload.
 
-    Three terminal states:
+    Returns an explicit JSONResponse so the Set-Cookie header is
+    attached to the same response object — relying on the injected
+    Response param + dict return turned out to drop cookies on some
+    FastAPI/Starlette code paths.
+
+    Four terminal states:
       - no_anchor — there was never an anchor cookie (browser-only
         flow, customer flow, etc.). The caller can ignore.
+      - invalid — anchor cookie present but signature/uuid bad.
       - pending — anchor exists but OAuth hasn't claimed it yet.
         Caller should retry or wait.
       - ok — session cookie was set; caller reloads.
@@ -1154,22 +1171,32 @@ async def pwa_claim(
     Same-origin XHR; the Set-Cookie header lands in the PWA's cookie
     jar regardless of what Safari has.
     """
+    from fastapi.responses import JSONResponse
+
     if not anchor_cookie:
-        return {"status": "no_anchor"}
+        logger.info("🔑 /auth/pwa-claim: no_anchor (no cookie)")
+        return JSONResponse({"status": "no_anchor"})
 
     anchor_id = decode_pwa_anchor_token(anchor_cookie)
     if anchor_id is None:
-        clear_pwa_anchor_cookie(response)
-        return {"status": "invalid"}
+        logger.info("🔑 /auth/pwa-claim: invalid (bad cookie)")
+        resp = JSONResponse({"status": "invalid"})
+        clear_pwa_anchor_cookie(resp)
+        return resp
 
     redeemed = await pwa_anchor.redeem_anchor(db, anchor_id)
     if redeemed is None:
-        return {"status": "pending"}
+        logger.info(f"🔑 /auth/pwa-claim: pending (anchor={anchor_id} not yet claimed)")
+        return JSONResponse({"status": "pending"})
 
     shop_id, staff_id, is_owner = redeemed
+    logger.success(
+        f"🔑 /auth/pwa-claim: ok (anchor={anchor_id} → shop={shop_id} staff={staff_id} owner={is_owner})"
+    )
+    resp = JSONResponse({"status": "ok"})
     _set_session_cookie(
-        response,
+        resp,
         issue_session_token(shop_id, staff_id=staff_id, is_owner=is_owner),
     )
-    clear_pwa_anchor_cookie(response)
-    return {"status": "ok"}
+    clear_pwa_anchor_cookie(resp)
+    return resp

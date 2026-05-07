@@ -150,12 +150,20 @@
       if (p && p.t && Date.now() - p.t <= 10 * 60 * 1000) {
         clear(PENDING);
         writeJSON(DONE, p);
+        // Read the body fully (.text()) before reloading. Some iOS
+        // WebKit builds defer Set-Cookie commit until the response
+        // body stream finishes; reloading the page off the bare
+        // headers-received resolution would land before the new
+        // session cookie sticks in the PWA jar.
         fetch('/auth/pwa-claim', {
           method: 'POST',
           credentials: 'same-origin',
           cache: 'no-store',
-        }).catch(function () { /* network blip — reload anyway */ })
-         .finally(function () { softReload(); });
+          headers: { 'Accept': 'application/json' },
+        })
+        .then(function (r) { return r.text(); })
+        .catch(function () { /* network blip — reload anyway */ })
+        .then(function () { softReload(); });
         return;
       }
       if (p) clear(PENDING);  // stale > 10min, drop.
