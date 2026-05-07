@@ -12,7 +12,9 @@ from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import (
+    SESSION_COOKIE_NAME,
     SHOP_PWA_ANCHOR_COOKIE,
+    clear_pwa_anchor_cookie,
     decode_pwa_anchor_token,
     get_current_shop,
     require_permission,
@@ -24,7 +26,7 @@ from app.models import Redemption, Shop, Point
 from app.models.util import utcnow
 from app.routes.auth import _set_session_cookie
 from app.services import pwa_anchor
-from app.services.auth import issue_session_token
+from app.services.auth import decode_session_token, issue_session_token
 from app.services.branch import s3_top_context
 from app.services.deereach import compute_suggestions
 from app.services.events import stream as event_stream
@@ -122,6 +124,7 @@ def _bucket_index(
 async def login_page(
     request: Request,
     ref: Optional[str] = None,
+    session_cookie: Optional[str] = Cookie(None, alias=SESSION_COOKIE_NAME),
     anchor_cookie: Optional[str] = Cookie(None, alias=SHOP_PWA_ANCHOR_COOKIE),
     db: AsyncSession = Depends(get_session),
 ):
@@ -129,21 +132,66 @@ async def login_page(
 
     `?ref=<code>` carries through the Shop→Shop referral grant.
 
-    iOS PWA bridge: every render mints (or re-uses) a `pwa_login_anchors`
-    row and sets a `shop_pwa_anchor` cookie. The OAuth links bake this
-    anchor id into their URL so the callback can claim the row, and a
-    POST /auth/pwa-claim from the returning PWA mints the real session
-    cookie.
+    Three short-circuits before rendering the form:
+
+      1. Already logged in → bounce to /shop/dashboard. Mirrors how
+         /customer/login bounces non-anonymous customers, so a tap
+         from the navbar after sign-in doesn't trap the user on a
+         login form they don't need.
+
+      2. PWA-killed-mid-OAuth recovery — the user tapped LINE in the
+         PWA, Safari completed OAuth (so the anchor row was claimed),
+         iOS killed the PWA before the visibilitychange handler
+         could navigate to /auth/pwa-claim, and the user reopened the
+         PWA fresh. Detect the claimed anchor here, redeem it, mint a
+         session cookie, and 303 to /shop/dashboard so they don't sit
+         on the login page despite the OAuth having succeeded.
+
+      3. iOS PWA bridge — every render mints (or re-uses) a still-
+         pending anchor and sets the cookie. OAuth links bake the
+         anchor id into the URL so the callback can claim it; the
+         returning PWA hits /auth/pwa-claim to mint the session.
     """
+    # 1. Already logged in — skip the form.
+    if session_cookie:
+        payload = decode_session_token(session_cookie)
+        if payload and payload.get("shop_id"):
+            return RedirectResponse(
+                url="/shop/dashboard", status_code=status.HTTP_303_SEE_OTHER,
+            )
+
+    # 2. PWA-killed recovery — anchor in the cookie was already claimed
+    # in the OAuth callback, so spend it now and land on the dashboard
+    # instead of re-rendering the login form.
+    if anchor_cookie:
+        existing_id = decode_pwa_anchor_token(anchor_cookie)
+        if existing_id is not None:
+            redeemed = await pwa_anchor.redeem_anchor(db, existing_id)
+            if redeemed is not None:
+                shop_id, staff_id, is_owner = redeemed
+                redirect = RedirectResponse(
+                    url="/shop/dashboard",
+                    status_code=status.HTTP_303_SEE_OTHER,
+                )
+                _set_session_cookie(
+                    redirect,
+                    issue_session_token(
+                        shop_id, staff_id=staff_id, is_owner=is_owner,
+                    ),
+                )
+                clear_pwa_anchor_cookie(redirect)
+                return redirect
+
     referrer = None
     if ref:
         referral = await find_referral_by_code(db, ref)
         if referral and referral.referee_shop_id is None:
             referrer = await db.get(Shop, referral.referrer_shop_id)
 
-    # Re-use an active, still-pending anchor if the cookie carries one;
-    # otherwise mint a fresh row + cookie. Already-claimed anchors are
-    # skipped so a second render after sign-in starts a clean lifecycle.
+    # 3. Re-use an active, still-pending anchor if the cookie carries
+    # one; otherwise mint a fresh row + cookie. Already-claimed anchors
+    # would have been redeemed above; here we know any remaining anchor
+    # is unclaimed and reusable.
     anchor = None
     if anchor_cookie:
         existing_id = decode_pwa_anchor_token(anchor_cookie)
