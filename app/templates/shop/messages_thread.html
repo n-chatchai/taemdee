@@ -25,7 +25,7 @@
 </div>
 
 <style>
-  .s-thread { padding: 8px 16px 120px; }
+  .s-thread { padding: 8px 16px 200px; }
   .s-msg-stream {
     display: flex; flex-direction: column; gap: 8px;
     margin-bottom: 16px;
@@ -45,11 +45,17 @@
   .msg-customer .msg-meta { text-align: left; }
   .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
   .s-compose {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    padding: 10px 14px env(safe-area-inset-bottom, 12px);
+    /* Sit ABOVE the glass-nav — same offset logic as the customer
+       thread compose (see customer/messages_thread.html). */
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 12px) + 64px);
+    left: 0; right: 0;
+    padding: 10px 14px;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
     border-top: 1px solid #e5e0d4;
+    border-bottom: 1px solid #e5e0d4;
     display: flex; gap: 8px; align-items: flex-end;
+    z-index: 10;
   }
   .s-compose textarea {
     flex: 1; padding: 10px 12px; border-radius: 14px;
@@ -65,4 +71,9 @@
 <script>
   (function () { window.scrollTo(0, document.body.scrollHeight); })();
 </script>
+{% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'messages' %}
+  {% include "_partials/glass_nav.html" %}
 {% endblock %}

@@ -1,10 +1,6 @@
 {% extends "_layouts/c_base.html" %}
 {% block title %}ข้อความถึง {{ shop.name }} · TaemDee{% endblock %}
-
-{# No dock on the thread page — the compose box sits at bottom: 0
-   and would overlap with c_dock's fixed bar otherwise. Back link
-   in the header is the navigation out. #}
-{% block nav %}{% endblock %}
+{% set nav_active = 'inbox' %}
 
 {% block content %}
 <div class="td-page td-thread">
@@ -37,7 +33,10 @@
 </div>
 
 <style>
-  .td-thread { padding: 16px 18px 120px; }
+  /* Bottom padding leaves room for compose (~62px) + dock (~72px)
+     stacked, so the last message in the stream isn't hidden under
+     either bar. */
+  .td-thread { padding: 16px 18px 200px; }
   .td-page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
   .td-page-header h1 { font-size: 18px; font-weight: 700; margin: 0; flex: 1; }
   .td-back {
@@ -68,11 +67,19 @@
     font-size: 13px; text-align: center;
   }
   .td-compose {
-    position: fixed; bottom: 0; left: 0; right: 0;
-    padding: 10px 14px env(safe-area-inset-bottom, 12px);
+    /* Sit ABOVE the c_dock — the dock is roughly 64-72px tall
+       counting the safe-area bottom, so we offset the compose by
+       that much instead of stacking at bottom: 0 (which would hide
+       the textarea behind the dock's blurred surface). */
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 12px) + 64px);
+    left: 0; right: 0;
+    padding: 10px 14px;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
     border-top: 1px solid #e5e0d4;
+    border-bottom: 1px solid #e5e0d4;
     display: flex; gap: 8px; align-items: flex-end;
+    z-index: 10;
   }
   .td-compose textarea {
     flex: 1; padding: 10px 12px; border-radius: 14px;
