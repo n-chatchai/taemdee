@@ -3,8 +3,8 @@
 {% block title %}ตั้งค่า · {{ shop.name }}{% endblock %}
 
 {% block content %}
-{% set app_bar_title = 'ตั้งค่า' %}
-{% include "_partials/app_bar.html" %}
+{% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
+{% include "_partials/s3_top.html" %}
 
 <div class="page-scroll">
   {# Shop identity card removed — the avatar in s3_top action row now
