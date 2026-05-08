@@ -1,0 +1,54 @@
+{# Shared shop-side top nav — same chassis on every dock page so
+   the static header reads as one consistent column with the cards
+   below + the dock at the bottom. Markup is the dashboard's s3_top
+   verbatim ("สวัสดี ร้านนาม" greeting + bell + avatar + optional
+   weekday/branch caption row).
+
+   Caller may set:
+     weekday_th   — string like 'วันศุกร์'; omit to hide the day row.
+     branch_label — string; only renders when multi-branch.
+     bell_unread  — truthy to show the pulsing badge on the bell. #}
+{% set _pt_staff = request.state.staff %}
+<div class="s3-top page-top">
+  <div class="hi">
+    <div class="hi-greet">
+      <span class="td-greet">สวัสดี <span class="td-brand">{{ shop.name }}<span class="dot">.</span></span></span>
+    </div>
+    {% if weekday_th or branch_label %}
+      <div class="hi-sub">
+        {% if weekday_th %}
+          <span class="dc-text">
+            สวัสดี{{ weekday_th }} · เริ่มต้นวันได้ดี
+            <svg class="smile-inline" viewBox="0 0 20 12" fill="none">
+              <circle cx="5" cy="3" r="1.5" fill="currentColor"/>
+              <circle cx="15" cy="3" r="1.5" fill="currentColor"/>
+              <path d="M4 7 Q10 11 16 7" stroke="currentColor" stroke-width="2" stroke-linecap="round" fill="none"/>
+            </svg>
+          </span>
+        {% endif %}
+        {% if branch_label %}
+          <a class="branch-pill" href="/shop/branches" title="เลือกสาขา">{{ branch_label }}</a>
+        {% endif %}
+      </div>
+    {% endif %}
+  </div>
+  <div class="actions">
+    <a class="bell-btn" href="#" title="แจ้งเตือน" aria-label="แจ้งเตือน">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+        <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
+        <path d="M13.73 21a2 2 0 01-3.46 0"/>
+      </svg>
+      {% if bell_unread %}<span class="bell-badge"></span>{% endif %}
+    </a>
+    {% if _pt_staff %}
+      <button type="button" class="s3-avatar" data-open="staff-profile-edit"
+              title="แก้ไขโปรไฟล์" aria-label="แก้ไขโปรไฟล์">
+        {% if _pt_staff.picture_url %}
+          <img src="{{ _pt_staff.picture_url }}" alt="">
+        {% else %}
+          <span>{{ (_pt_staff.display_name[0]|upper) if _pt_staff.display_name else 'พ' }}</span>
+        {% endif %}
+      </button>
+    {% endif %}
+  </div>
+</div>

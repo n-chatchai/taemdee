@@ -2,8 +2,7 @@
 {% block title %}ลูกค้า · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-  {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
-  {% include "_partials/s3_top.html" %}
+  {% include "_partials/page_top.html" %}
 
 <div class="page-scroll">
   {# 4-up stats band — shop-wide totals, not affected by the active
