@@ -139,9 +139,7 @@
 
 {% block head_extra %}
   <style>
-    /* Compact metric card on the dashboard — slimmer padding, smaller
-       big-number, tighter row gaps so the chart stops dominating
-       the home page now that the issuance hub sits above it. */
+    /* Compact metric card on the dashboard. */
     .s3-metrics {
       margin: 8px 20px 12px;
       padding: 12px 16px 12px;
@@ -155,6 +153,25 @@
     .s3-metrics .met-delta .delta-num { font-size: 14px; }
     .s3-metrics .met-trend { padding-top: 4px; }
     .s3-metrics .met-sub { margin-top: 6px; font-size: 12px; }
+
+    /* Issue hub pinned to the bottom of the viewport, just above the
+       glass-nav, so the operator's primary action surface is always
+       reachable as they scroll metrics + todos. Hub itself can scroll
+       internally when feed rows pile up; max-height caps it at half
+       the viewport so the chart above stays visible. */
+    .s3-issue-hub {
+      position: fixed;
+      left: 0; right: 0;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+      margin: 0 12px;
+      max-height: 50vh;
+      overflow-y: auto;
+      z-index: 5;
+      box-shadow: 0 -8px 24px -10px rgba(17, 17, 17, 0.18);
+    }
+    /* Reserve room at the bottom of the dashboard so the metric +
+       todos stack doesn't sit underneath the pinned hub + dock. */
+    body .td { padding-bottom: 360px; }
   </style>
 {% endblock %}
 
