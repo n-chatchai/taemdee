@@ -618,6 +618,17 @@
     const cancelBtn = document.getElementById('vc-cancel');
     if (!overlay || !form) return;
 
+    function open() {
+      overlay.removeAttribute('hidden');
+      overlay.classList.add('is-open');
+      document.body.style.overflow = 'hidden';
+    }
+    function close() {
+      overlay.setAttribute('hidden', '');
+      overlay.classList.remove('is-open');
+      document.body.style.overflow = '';
+    }
+
     document.addEventListener('click', (e) => {
       const card = e.target.closest('.gl-hero[data-voucher-id], .gl-mini[data-voucher-id]');
       if (!card) return;
@@ -631,14 +642,9 @@
       if (logoSrc) logoEl.innerHTML = card.querySelector('.gh-logo')?.innerHTML || '';
       shopEl.textContent = card.dataset.shopName || '';
       rewardEl.textContent = card.dataset.reward || '';
-      overlay.hidden = false;
-      document.body.style.overflow = 'hidden';
+      open();
     });
 
-    function close() {
-      overlay.hidden = true;
-      document.body.style.overflow = '';
-    }
     cancelBtn.addEventListener('click', close);
     overlay.addEventListener('click', (e) => { if (e.target === overlay) close(); });
   })();

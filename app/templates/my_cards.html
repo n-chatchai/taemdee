@@ -837,6 +837,17 @@
       const cancelBtn = document.getElementById('vc-cancel');
       if (!overlay || !form) return;
 
+      function open() {
+        overlay.removeAttribute('hidden');
+        overlay.classList.add('is-open');
+        document.body.style.overflow = 'hidden';
+      }
+      function close() {
+        overlay.setAttribute('hidden', '');
+        overlay.classList.remove('is-open');
+        document.body.style.overflow = '';
+      }
+
       document.addEventListener('click', (e) => {
         const cta = e.target.closest('.cl-voucher-cta[data-redeem]');
         if (!cta) return;
@@ -853,14 +864,9 @@
         if (logoSrc) logoEl.innerHTML = logoSrc.innerHTML;
         shopEl.textContent = cta.dataset.shopName || '';
         rewardEl.textContent = cta.dataset.reward || '';
-        overlay.hidden = false;
-        document.body.style.overflow = 'hidden';
+        open();
       });
 
-      function close() {
-        overlay.hidden = true;
-        document.body.style.overflow = '';
-      }
       cancelBtn.addEventListener('click', close);
       overlay.addEventListener('click', (e) => {
         if (e.target === overlay) close();
