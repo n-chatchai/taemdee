@@ -8,7 +8,6 @@
      weekday_th   — string like 'วันศุกร์'; omit to hide the day row.
      branch_label — string; only renders when multi-branch.
      bell_unread  — truthy to show the pulsing badge on the bell. #}
-{% set _pt_staff = request.state.staff %}
 <div class="s3-top page-top">
   <div class="hi">
     <div class="hi-greet">
@@ -40,15 +39,5 @@
       </svg>
       {% if bell_unread %}<span class="bell-badge"></span>{% endif %}
     </a>
-    {% if _pt_staff %}
-      <button type="button" class="s3-avatar" data-open="staff-profile-edit"
-              title="แก้ไขโปรไฟล์" aria-label="แก้ไขโปรไฟล์">
-        {% if _pt_staff.picture_url %}
-          <img src="{{ _pt_staff.picture_url }}" alt="">
-        {% else %}
-          <span>{{ (_pt_staff.display_name[0]|upper) if _pt_staff.display_name else 'พ' }}</span>
-        {% endif %}
-      </button>
-    {% endif %}
   </div>
 </div>

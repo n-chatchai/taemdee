@@ -7,9 +7,44 @@
 
 <div class="page-scroll">
 <div class="page-container">
-  {# Shop identity card removed — the avatar in s3_top action row now
-     owns "tap to edit shop logo + name" and routes to the existing
-     full editor at /shop/settings/identity. #}
+  {% if request.state.staff %}
+    {% set _staff = request.state.staff %}
+    {# Profile edit section — wrapped in a plain <div> so it picks up
+       the same .page-container > div card chrome as the labelled
+       sections below. Display name + profile picture for the active
+       staff session, posting to /shop/team/profile. #}
+    <div>
+      <div class="label">โปรไฟล์</div>
+      <form action="/shop/team/profile" method="POST" enctype="multipart/form-data"
+            class="profile-edit-form profile-edit-inline" id="settings-profile-form">
+        <input type="hidden" name="next_url" value="/shop/settings">
+        <div class="pe-avatar-wrap">
+          <label for="settings-pe-file" class="pe-avatar" id="settings-pe-avatar">
+            {% if _staff.picture_url %}
+              <img id="settings-pe-preview" src="{{ _staff.picture_url }}" alt="">
+            {% else %}
+              <span id="settings-pe-fallback">{{ (_staff.display_name[0]|upper) if _staff.display_name else 'พ' }}</span>
+            {% endif %}
+            <span class="pe-edit-badge" aria-hidden="true">
+              <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+                <circle cx="12" cy="13" r="4"/>
+              </svg>
+            </span>
+          </label>
+          <input type="file" id="settings-pe-file" name="picture" accept="image/*" hidden>
+          <button type="button" id="settings-pe-default" class="pe-default-btn">ใช้ค่าเริ่มต้น</button>
+        </div>
+        <input type="text" id="settings-pe-name" name="display_name" required
+               value="{{ _staff.display_name or '' }}" maxlength="40"
+               placeholder="ชื่อที่อยากให้เรียก">
+        <input type="hidden" name="use_default" id="settings-pe-use-default" value="">
+        <div class="pe-actions">
+          <button type="submit" class="pe-save">บันทึก</button>
+        </div>
+      </form>
+    </div>
+  {% endif %}
 
   <div class="s10-section">
     <div class="label">แต้ม</div>
@@ -358,7 +393,94 @@
     width: 16px;
     height: 16px;
   }
+
+  /* Inline staff profile edit form at the top of /shop/settings.
+     The wrapper <div> picks up the .page-container > div card
+     chrome (bg + border + radius + 14px padding), so the form
+     itself just lays out the avatar + input + button centred. */
+  .profile-edit-inline {
+    padding: 0;
+    text-align: center;
+  }
+  .profile-edit-inline .pe-avatar-wrap {
+    margin: 0 0 14px;
+  }
+  .profile-edit-inline .pe-avatar {
+    width: 64px;
+    height: 64px;
+    font-size: 26px;
+  }
+  .profile-edit-inline .pe-avatar .pe-edit-badge {
+    width: 22px;
+    height: 22px;
+  }
+  .profile-edit-inline .pe-avatar .pe-edit-badge svg {
+    width: 11px;
+    height: 11px;
+  }
+  .profile-edit-inline input[type="text"] {
+    max-width: 220px;
+    margin: 0 auto;
+    padding: 9px 12px;
+    font-size: var(--text-sm);
+    text-align: center;
+  }
+  .profile-edit-inline .pe-actions {
+    grid-template-columns: 1fr;
+    justify-items: center;
+    margin-top: 12px;
+  }
+  .profile-edit-inline .pe-save {
+    min-width: 120px;
+    padding: 9px 18px;
+    font-size: var(--text-sm);
+  }
 </style>
+
+<script>
+  (function () {
+    const fileInput = document.getElementById('settings-pe-file');
+    if (!fileInput) return;
+    const avatarBox = document.getElementById('settings-pe-avatar');
+    const useDefault = document.getElementById('settings-pe-use-default');
+    const defaultBtn = document.getElementById('settings-pe-default');
+    const nameInput = document.getElementById('settings-pe-name');
+
+    fileInput.addEventListener('change', () => {
+      const file = fileInput.files && fileInput.files[0];
+      if (!file) return;
+      const r = new FileReader();
+      r.onload = () => {
+        useDefault.value = '';
+        const cur = avatarBox.querySelector('img');
+        if (cur) {
+          cur.src = r.result;
+        } else {
+          const span = avatarBox.querySelector('#settings-pe-fallback');
+          const img = document.createElement('img');
+          img.id = 'settings-pe-preview';
+          img.alt = '';
+          img.src = r.result;
+          if (span) span.replaceWith(img);
+        }
+      };
+      r.readAsDataURL(file);
+    });
+
+    defaultBtn.addEventListener('click', () => {
+      useDefault.value = '1';
+      fileInput.value = '';
+      const img = avatarBox.querySelector('img');
+      if (img) {
+        const span = document.createElement('span');
+        span.id = 'settings-pe-fallback';
+        const name = (nameInput.value || 'พ').trim();
+        span.textContent = (name[0] || 'พ').toUpperCase();
+        img.replaceWith(span);
+      }
+    });
+  })();
+</script>
 {% endblock %}
 
 {% block td_class %} td-tabbed td-pinned{% endblock %}
