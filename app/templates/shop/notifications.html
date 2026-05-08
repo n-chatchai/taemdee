@@ -2,63 +2,65 @@
 {% block title %}แจ้งเตือน · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-  {% include "_partials/page_top.html" %}
+{% set app_bar_title = 'แจ้งเตือน' %}
+{% set app_bar_back = '/shop/dashboard' %}
+{% include "_partials/app_bar.html" %}
 
-  <div class="page-scroll">
-  <div class="page-container">
-    <div>
-      <div class="label">รายการที่ต้องทำ</div>
-      {% if items %}
-        {% for it in items %}
-          {# Two flavors of main action: review-style todos that link
-             to a page (claim is marked when the destination saves) vs.
-             side-effect todos that POST /shop/items/<kind>/claim. The
-             skip row beneath always POSTs /skip — dismisses the todo
-             without running the handler. #}
-          <div class="s3-todo-wrap">
-            {% if it.link %}
-              <a href="{{ it.link }}" class="s3-todo"
-                 data-claim-kind="{{ it.kind }}">
-                <div class="td-info">
-                  <div class="td-h">{{ it.label|safe }}</div>
-                  <div class="td-s">{{ it.sub }}</div>
-                </div>
-                <span class="td-cta">{{ it.cta }}</span>
-              </a>
-            {% else %}
-              <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
-                <button type="submit" class="s3-todo">
-                  <div class="td-info">
-                    <div class="td-h">{{ it.label|safe }}</div>
-                    <div class="td-s">{{ it.sub }}</div>
-                  </div>
-                  <span class="td-cta">{{ it.cta }}</span>
-                </button>
-              </form>
-            {% endif %}
-            <form method="POST" action="/shop/items/{{ it.kind }}/skip" class="s3-todo-skip">
-              <button type="submit" class="s3-skip-btn">ข้าม</button>
-              <span class="s3-skip-explain">{{ it.skip_explain }}</span>
-            </form>
-          </div>
-        {% endfor %}
-      {% else %}
-        <div class="notif-empty">ยังไม่มีรายการที่ต้องทำ ✓</div>
-      {% endif %}
-    </div>
-  </div>
-  </div>
-{% endblock %}
-
-{% block td_class %} td-tabbed td-pinned{% endblock %}
-
-{% block nav %}
-  {% set nav_active = 'home' %}
-  {% include "_partials/glass_nav.html" %}
+<div class="notif-page">
+  <div class="notif-section-label">รายการที่ต้องทำ</div>
+  {% if items %}
+    {% for it in items %}
+      {# Two flavors of main action: review-style todos that link to a
+         page (claim is marked when the destination saves) vs. side-
+         effect todos that POST /shop/items/<kind>/claim. The skip row
+         beneath always POSTs /skip — dismisses the todo without
+         running the handler. #}
+      <div class="s3-todo-wrap">
+        {% if it.link %}
+          <a href="{{ it.link }}" class="s3-todo"
+             data-claim-kind="{{ it.kind }}">
+            <div class="td-info">
+              <div class="td-h">{{ it.label|safe }}</div>
+              <div class="td-s">{{ it.sub }}</div>
+            </div>
+            <span class="td-cta">{{ it.cta }}</span>
+          </a>
+        {% else %}
+          <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
+            <button type="submit" class="s3-todo">
+              <div class="td-info">
+                <div class="td-h">{{ it.label|safe }}</div>
+                <div class="td-s">{{ it.sub }}</div>
+              </div>
+              <span class="td-cta">{{ it.cta }}</span>
+            </button>
+          </form>
+        {% endif %}
+        <form method="POST" action="/shop/items/{{ it.kind }}/skip" class="s3-todo-skip">
+          <button type="submit" class="s3-skip-btn">ข้าม</button>
+          <span class="s3-skip-explain">{{ it.skip_explain }}</span>
+        </form>
+      </div>
+    {% endfor %}
+  {% else %}
+    <div class="notif-empty">ยังไม่มีรายการที่ต้องทำ ✓</div>
+  {% endif %}
+</div>
 {% endblock %}
 
 {% block head_extra %}
   <style>
+    .notif-page {
+      padding: 8px 12px 32px;
+    }
+    .notif-section-label {
+      font-family: 'Prompt', sans-serif;
+      font-size: 13px;
+      font-weight: 600;
+      color: var(--ink-soft);
+      letter-spacing: 0.04em;
+      margin: 22px;
+    }
     .notif-empty {
       padding: 28px 12px;
       text-align: center;
@@ -70,9 +72,9 @@
 {% endblock %}
 
 {% block body_end %}
-  {# Same eager-claim + bfcache-reload trick as the dashboard so taps
-     on todo links record the claim before navigating, and a back-tap
-     re-renders the now-shorter list. #}
+  {# Same eager-claim + bfcache-reload trick as the old dashboard
+     todos so taps on link-style items record the claim before
+     navigating, and a back-tap re-renders the now-shorter list. #}
   <script>
     (function () {
       function dismiss(wrap) {
