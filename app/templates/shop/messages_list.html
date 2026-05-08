@@ -29,8 +29,8 @@
             <div class="st-info">
               <div class="st-name-row">
                 <div class="st-name">{{ it.name }}</div>
-                {% if it.kind == 'campaign' %}
-                  <span class="st-tag-reach">ส่งหาทุกคน</span>
+                {% if it.kind == 'thread' %}
+                  <span class="st-tag-chat">แชท</span>
                 {% endif %}
               </div>
               <div class="st-preview">
@@ -77,8 +77,10 @@
   .st-info { flex: 1; min-width: 0; }
   .st-name-row { display: flex; align-items: center; gap: 6px; }
   .st-name { font-weight: 600; font-size: 15px; }
-  .st-tag-reach {
-    background: var(--butter-soft, #FFF1B8); color: var(--ink);
+  /* "แชท" pill — matches the customer-side /my-inbox treatment so a
+     thread row reads consistently across both surfaces. */
+  .st-tag-chat {
+    background: var(--accent-soft, #FFD9CD); color: var(--accent);
     border-radius: 999px; padding: 1px 8px;
     font-size: 11px; font-weight: 700;
   }
