@@ -5,8 +5,21 @@
 // push-subscribe.js / push-prompt.js reuse the same registration.
 
 const OFFLINE_CACHE = 'td-offline-v3';
+const ASSET_CACHE = 'td-assets-v1';
 const OFFLINE_URL = '/static/offline.html';
 const NAV_TIMEOUT_MS = 6000;
+// URL prefixes / paths to cache stale-while-revalidate. Pages already
+// pin asset versions via ?v=ASSET_VERSION in templates, so each
+// version-bumped URL is a fresh cache key — old entries fall out
+// naturally when the cache hits its quota and are also pruned by the
+// activate handler when a new ASSET_CACHE version ships.
+const STATIC_PREFIXES = [
+  '/static/css/',
+  '/static/js/',
+  '/static/taemdee-icons/',
+  '/static/apps/',
+];
+const STATIC_EXACT = new Set(['/manifest.json', '/manifest_shop.json']);
 // Statuses that indicate the origin is unreachable / proxy errors rather
 // than a genuine app error. Covers the Cloudflare 5xx family (520-530)
 // plus the standard 502/503/504. We swap these for the offline page so
@@ -36,15 +49,45 @@ self.addEventListener('install', (event) => {
 
 self.addEventListener('activate', (event) => {
   event.waitUntil((async () => {
-    // Drop any old offline caches from previous SW versions.
+    // Drop any old offline / asset caches from previous SW versions.
     const keys = await caches.keys();
     await Promise.all(
-      keys.filter((k) => k.startsWith('td-offline-') && k !== OFFLINE_CACHE)
-          .map((k) => caches.delete(k))
+      keys.filter((k) =>
+        (k.startsWith('td-offline-') && k !== OFFLINE_CACHE) ||
+        (k.startsWith('td-assets-') && k !== ASSET_CACHE)
+      ).map((k) => caches.delete(k))
     );
     await self.clients.claim();
   })());
 });
+
+function isStaticAsset(url) {
+  if (url.origin !== self.location.origin) return false;
+  if (STATIC_EXACT.has(url.pathname)) return true;
+  for (const prefix of STATIC_PREFIXES) {
+    if (url.pathname.startsWith(prefix)) return true;
+  }
+  return false;
+}
+
+async function staleWhileRevalidate(req) {
+  // Serve cached immediately, revalidate in background. The next
+  // request gets the fresh copy. Only successful (200-ish) responses
+  // are written back so we don't poison the cache with a 404 / 500.
+  const cache = await caches.open(ASSET_CACHE);
+  const cached = await cache.match(req);
+  const fetchPromise = fetch(req).then((res) => {
+    if (res && res.ok && res.type !== 'opaque') {
+      cache.put(req, res.clone()).catch(() => {});
+    }
+    return res;
+  }).catch(() => null);
+  // Cached hit → return now and let the background fetch update for
+  // next time. Cache miss → wait for the network and store on the way
+  // through. If both fail, fall back to whatever fetch returned (incl.
+  // a network error) so callers see a proper failure.
+  return cached || fetchPromise;
+}
 
 async function getOfflineResponse() {
   const cache = await caches.open(OFFLINE_CACHE);
@@ -66,9 +109,26 @@ function fetchWithTimeout(req, ms) {
 
 self.addEventListener('fetch', (event) => {
   const req = event.request;
-  // Only intercept top-level page navigations. Static assets, API calls, and
-  // cross-origin requests pass through untouched so we don't accidentally
-  // serve stale CSS or break POSTs.
+
+  // Static asset stale-while-revalidate — the templates pin
+  // ?v=ASSET_VERSION on every static URL, so a version bump on the
+  // server-side hands us a brand-new cache key automatically and we
+  // never serve genuinely stale CSS/JS. The win is the FOUC-free
+  // first paint when the SW is warm: app.css comes from cache before
+  // the network round-trip finishes, and the dock + page chrome
+  // hydrate without the white-flash a cold-launch would otherwise
+  // show.
+  if (req.method === 'GET') {
+    let url;
+    try { url = new URL(req.url); } catch (_) { url = null; }
+    if (url && isStaticAsset(url)) {
+      event.respondWith(staleWhileRevalidate(req));
+      return;
+    }
+  }
+
+  // Only intercept top-level page navigations beyond this point.
+  // API calls, POSTs, cross-origin requests pass through untouched.
   if (req.mode !== 'navigate') return;
 
   event.respondWith((async () => {
