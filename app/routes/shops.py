@@ -496,6 +496,16 @@ async def dashboard(
         db, shop, is_owner=bool(_ds_staff and _ds_staff.is_owner),
     )
 
+    # Recent activity feed embedded above the metric chart on the
+    # dashboard — same data + shape as /shop/issue's feed table so
+    # the issuance home view shows live customer activity without a
+    # tab switch.
+    from app.services.issuance import build_recent_feed
+    recent_feed = await build_recent_feed(
+        db, shop,
+        feed_cap=app_settings.shop_customer_last_scan_display_number,
+    )
+
     return templates.TemplateResponse(
         request=request,
         name="shop/dashboard.html",
@@ -520,6 +530,7 @@ async def dashboard(
             "points_total": points_total,
             "redemptions_total": redemptions_total,
             "feed_cap": app_settings.shop_customer_last_scan_display_number,
+            "feed": recent_feed,
             "attn_cards": attn_cards,
             "items": items,
             **s3_top,

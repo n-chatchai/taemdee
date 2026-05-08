@@ -145,3 +145,102 @@ async def void_point(
     await db.commit()
     await db.refresh(stamp)
     return stamp
+
+
+# ---------------------------------------------------------------------------
+# Recent activity feed used by /shop/issue (full-page) AND embedded on
+# /shop/dashboard. Single helper so both surfaces always produce the
+# same feed shape — no drift between the two callsites.
+# ---------------------------------------------------------------------------
+
+async def build_recent_feed(db, shop, *, feed_cap: int):
+    """Returns the grouped (point + redemption) feed list of tuples
+    (kind, item, customer_name, amount, method_th, staff_name) the
+    issue.html / dashboard.html templates render. Kept minimal — no
+    template knowledge here, just the data."""
+    from sqlmodel import select
+    from app.models import Customer, Point, Redemption, StaffMember
+
+    recent_points = (await db.exec(
+        select(Point)
+        .where(Point.shop_id == shop.id)
+        .order_by(Point.created_at.desc())
+        .limit(feed_cap)
+    )).all()
+    recent_redemptions = (await db.exec(
+        select(Redemption)
+        .where(Redemption.shop_id == shop.id)
+        .order_by(Redemption.created_at.desc())
+        .limit(feed_cap)
+    )).all()
+
+    customer_ids = {p.customer_id for p in recent_points} | {
+        r.customer_id for r in recent_redemptions
+    }
+    staff_ids = {p.issued_by_staff_id for p in recent_points if p.issued_by_staff_id} | {
+        r.served_by_staff_id for r in recent_redemptions if r.served_by_staff_id
+    }
+
+    customers_by_id = {}
+    if customer_ids:
+        rows = (await db.exec(
+            select(Customer).where(Customer.id.in_(customer_ids))
+        )).all()
+        customers_by_id = {c.id: (c.display_name or "ลูกค้า") for c in rows}
+
+    staff_by_id = {}
+    if staff_ids:
+        rows = (await db.exec(
+            select(StaffMember).where(StaffMember.id.in_(staff_ids))
+        )).all()
+        staff_by_id = {s.id: (s.name or "พนักงาน") for s in rows}
+
+    method_th_map = {
+        "customer_scan": "ลูกค้าสแกน",
+        "shop_scan": "ร้านสแกน",
+        "phone_entry": "กรอกเบอร์",
+        "system": "ค้นชื่อ",
+    }
+
+    raw = []
+    for p in recent_points:
+        raw.append((
+            "point", p,
+            customers_by_id.get(p.customer_id, "ลูกค้า"),
+            method_th_map.get(getattr(p, "issuance_method", ""), "ไม่ระบุ"),
+            staff_by_id.get(p.issued_by_staff_id, "—"),
+        ))
+    for r in recent_redemptions:
+        raw.append((
+            "redemption", r,
+            customers_by_id.get(r.customer_id, "ลูกค้า"),
+            "แลกรางวัล",
+            staff_by_id.get(r.served_by_staff_id, "—"),
+        ))
+    raw.sort(key=lambda x: x[1].created_at, reverse=True)
+
+    feed = []
+    for kind, item, customer_name, method_th, staff_name in raw:
+        # Group same-grant point bursts (or 10s legacy fallback) under
+        # one row so a multi-stamp purchase shows as "+5 แต้ม" rather
+        # than five identical rows.
+        can_group = False
+        if (
+            feed and kind == "point"
+            and feed[-1][0] == "point"
+            and feed[-1][2] == customer_name
+        ):
+            prev_item = feed[-1][1]
+            if item.grant_id and prev_item.grant_id == item.grant_id:
+                can_group = True
+            elif not item.grant_id and not prev_item.grant_id:
+                if abs((prev_item.created_at - item.created_at).total_seconds()) < 10:
+                    can_group = True
+        if can_group:
+            feed[-1] = (
+                feed[-1][0], feed[-1][1], feed[-1][2],
+                feed[-1][3] + 1, feed[-1][4], feed[-1][5],
+            )
+        else:
+            feed.append((kind, item, customer_name, 1, method_th, staff_name))
+    return feed[:feed_cap]

@@ -34,132 +34,14 @@ async def issue_page(
     shop: Shop = Depends(get_current_shop),
     db: AsyncSession = Depends(get_session),
 ):
-    """S3.issue — full-page ออกแต้ม hub: recent feed + 3 method buttons.
-    Replaces the old /shop/issue page (which was the methods toggle config).
-    The toggle settings now live at /shop/issue/methods."""
-    from app.models import Customer, Redemption
+    """S3.issue — full-page ออกแต้ม hub: recent feed + 4 method buttons.
+    Same blocks render embedded on /shop/dashboard via the issue_feed
+    + issue_actions partials; this route is the deep-link version."""
     from app.core.config import settings as app_settings
+    from app.services.issuance import build_recent_feed
 
     feed_cap = app_settings.shop_customer_last_scan_display_number
-
-    recent_points = (
-        await db.exec(
-            select(Point)
-            .where(Point.shop_id == shop.id)
-            .order_by(Point.created_at.desc())
-            .limit(feed_cap)
-        )
-    ).all()
-    recent_redemptions = (
-        await db.exec(
-            select(Redemption)
-            .where(Redemption.shop_id == shop.id)
-            .order_by(Redemption.created_at.desc())
-            .limit(feed_cap)
-        )
-    ).all()
-
-    customer_ids = {p.customer_id for p in recent_points} | {
-        r.customer_id for r in recent_redemptions
-    }
-    staff_ids = {p.issued_by_staff_id for p in recent_points if p.issued_by_staff_id} | {
-        r.served_by_staff_id for r in recent_redemptions if r.served_by_staff_id
-    }
-
-    customers_by_id = {}
-    if customer_ids:
-        rows = (
-            await db.exec(select(Customer).where(Customer.id.in_(customer_ids)))
-        ).all()
-        customers_by_id = {c.id: (c.display_name or "ลูกค้า") for c in rows}
-
-    staff_by_id = {}
-    if staff_ids:
-        rows = (
-            await db.exec(select(StaffMember).where(StaffMember.id.in_(staff_ids)))
-        ).all()
-        staff_by_id = {s.id: (s.name or "พนักงาน") for s in rows}
-
-    def get_method_th(kind, item):
-        if kind == "redemption":
-            return "แลกรางวัล"
-        m = getattr(item, "issuance_method", "")
-        mapping = {
-            "customer_scan": "ลูกค้าสแกน",
-            "shop_scan": "ร้านสแกน",
-            "phone_entry": "กรอกเบอร์",
-            "system": "ค้นชื่อ",
-        }
-        return mapping.get(m, "ไม่ระบุ")
-
-    def get_staff_name(kind, item):
-        sid = (
-            item.issued_by_staff_id
-            if kind == "point"
-            else item.served_by_staff_id
-        )
-        return staff_by_id.get(sid, "—")
-
-    raw_feed = sorted(
-        [
-            (
-                "point",
-                p,
-                customers_by_id.get(p.customer_id, "ลูกค้า"),
-                get_method_th("point", p),
-                get_staff_name("point", p),
-            )
-            for p in recent_points
-        ]
-        + [
-            (
-                "redemption",
-                r,
-                customers_by_id.get(r.customer_id, "ลูกค้า"),
-                get_method_th("redemption", r),
-                get_staff_name("redemption", r),
-            )
-            for r in recent_redemptions
-        ],
-        key=lambda x: x[1].created_at,
-        reverse=True,
-    )
-
-    feed = []
-    for kind, item, customer_name, method_th, staff_name in raw_feed:
-        # Group points if they have the same grant_id (Perfect grouping)
-        # OR if they are within 10s of each other (Legacy fallback)
-        can_group = False
-        if (
-            feed
-            and kind == "point"
-            and feed[-1][0] == "point"
-            and feed[-1][2] == customer_name
-        ):
-            if item.grant_id and feed[-1][1].grant_id == item.grant_id:
-                can_group = True
-            elif not item.grant_id and not feed[-1][1].grant_id:
-                # Legacy fallback
-                if abs((feed[-1][1].created_at - item.created_at).total_seconds()) < 10:
-                    can_group = True
-
-        if can_group:
-            # Update the existing entry's amount (amount is at index 3 in our tuple)
-            feed[-1] = (
-                feed[-1][0],
-                feed[-1][1],
-                feed[-1][2],
-                feed[-1][3] + 1,
-                feed[-1][4],
-                feed[-1][5],
-            )
-        else:
-            # Add new entry with initial amount of 1:
-            # (kind, item, customer_name, amount, method_th, staff_name)
-            feed.append((kind, item, customer_name, 1, method_th, staff_name))
-
-    # Apply the display limit after grouping
-    feed = feed[:feed_cap]
+    feed = await build_recent_feed(db, shop, feed_cap=feed_cap)
 
     s3_top = await s3_top_context(db, shop)
     return templates.TemplateResponse(

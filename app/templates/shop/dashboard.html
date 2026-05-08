@@ -11,8 +11,12 @@
 
   {# Issuance UI embedded as the home page's primary action — replaces
      the standalone /shop/issue route as the canonical entry point.
-     Same partial powers /shop/issue (kept as a fallback URL). #}
+     Same partials power /shop/issue (kept as a fallback URL). The
+     feed table comes first (live customer activity), then the
+     4-method actions (the single most-used buttons on this surface). #}
+  {% include "_partials/issue_feed.html" %}
   {% include "_partials/issue_actions.html" %}
+  {% include "_partials/feed_detail_sheet.html" %}
 
   {# Merged metrics card per design rev — replaces the three separate
      cards (time-pills, snapshot, trend) with one rounded surface that
