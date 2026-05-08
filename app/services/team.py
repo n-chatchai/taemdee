@@ -315,10 +315,16 @@ async def list_staff(
     db: AsyncSession,
     shop_id: UUID,
     include_revoked: bool = False,
+    include_owner: bool = False,
 ) -> List[StaffMember]:
+    """List staff for the shop. Owner is excluded by default — the
+    /shop/team UI renders the owner row separately at the top and
+    would otherwise show them twice."""
     query = select(StaffMember).where(StaffMember.shop_id == shop_id)
     if not include_revoked:
         query = query.where(StaffMember.revoked_at.is_(None))
+    if not include_owner:
+        query = query.where(StaffMember.is_owner.is_(False))
     query = query.order_by(StaffMember.invited_at)
     result = await db.exec(query)
     return list(result.all())

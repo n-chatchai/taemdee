@@ -158,6 +158,15 @@ async def update_perms(
     staff = await db.get(StaffMember, staff_id)
     if not staff or staff.shop_id != shop.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Staff member not found")
+    # Owner permissions short-circuit through is_owner everywhere, so
+    # toggling can_* on the owner row is a no-op at best and confusing
+    # at worst. Refuse so the only place owner perms can change is via
+    # is_owner itself, which the team UI doesn't expose.
+    if staff.is_owner:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "เปลี่ยนสิทธิ์ของเจ้าของร้านไม่ได้",
+        )
     flags = {
         k: v for k, v in {
             "can_void": can_void,
@@ -180,6 +189,16 @@ async def revoke(
     staff = await db.get(StaffMember, staff_id)
     if not staff or staff.shop_id != shop.id:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "Staff member not found")
+    # Revoking the owner would brick the shop — no other staff has
+    # is_owner=True, the session resolver would refuse to sign anyone
+    # in, and the dashboard becomes unreachable. The team UI hides the
+    # remove button on the owner row, but a crafted POST could still
+    # land here, hence the explicit guard.
+    if staff.is_owner:
+        raise HTTPException(
+            status.HTTP_403_FORBIDDEN,
+            "ลบเจ้าของร้านไม่ได้",
+        )
     await revoke_staff(db, staff)
     return RedirectResponse(url="/shop/team", status_code=status.HTTP_303_SEE_OTHER)
 
