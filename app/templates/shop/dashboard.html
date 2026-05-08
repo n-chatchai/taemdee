@@ -131,43 +131,9 @@
       </table>
     </div>
 
-    {% if items %}
-      <div class="ph-section-h" style="margin-top:8px;">
-        <div class="label">รายการที่ต้องทำ</div>
-        <span class="todo-count">{{ items|length }}</span>
-      </div>
-      {% for it in items %}
-        {# Two flavors of main action: review-style todos that link to a
-           page (claim is marked when the destination saves) vs. side-
-           effect todos that POST /shop/items/<kind>/claim. #}
-        <div class="s3-todo-wrap">
-          {% if it.link %}
-            <a href="{{ it.link }}" class="s3-todo"
-               data-claim-kind="{{ it.kind }}">
-              <div class="td-info">
-                <div class="td-h">{{ it.label|safe }}</div>
-                <div class="td-s">{{ it.sub }}</div>
-              </div>
-              <span class="td-cta">{{ it.cta }}</span>
-            </a>
-          {% else %}
-            <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
-              <button type="submit" class="s3-todo">
-                <div class="td-info">
-                  <div class="td-h">{{ it.label|safe }}</div>
-                  <div class="td-s">{{ it.sub }}</div>
-                </div>
-                <span class="td-cta">{{ it.cta }}</span>
-              </button>
-            </form>
-          {% endif %}
-          <form method="POST" action="/shop/items/{{ it.kind }}/skip" class="s3-todo-skip">
-            <button type="submit" class="s3-skip-btn">ข้าม</button>
-            <span class="s3-skip-explain">{{ it.skip_explain }}</span>
-          </form>
-        </div>
-      {% endfor %}
-    {% endif %}
+    {# Todos moved to /shop/notifications (opened from the bell icon
+       in page_top). The bell badge surfaces the unread count, so the
+       dashboard stays focused on the metric snapshot + activity feed. #}
 
   </div> {# /.page-scroll #}
 
@@ -242,49 +208,6 @@
 {% endblock %}
 
 {% block body_end %}
-  {# Collapse the .s3-todo-wrap on click of either the main action
-     (link / claim button) or the skip button so the owner sees the
-     todo disappear immediately while the underlying navigation /
-     form POST runs in parallel. For link-style todos we also fire a
-     sendBeacon to /shop/items/<kind>/claim because the destination
-     page doesn't POST that claim itself. #}
-  <script>
-    (function () {
-      function dismiss(wrap) {
-        if (!wrap || wrap.classList.contains('s3-todo-wrap--out')) return;
-        wrap.classList.add('s3-todo-wrap--out');
-      }
-      function eagerClaim(kind) {
-        if (!kind) return;
-        const url = '/shop/items/' + encodeURIComponent(kind) + '/claim';
-        try {
-          if (navigator.sendBeacon) {
-            navigator.sendBeacon(url, new FormData());
-          } else {
-            fetch(url, { method: 'POST', credentials: 'same-origin', keepalive: true })
-              .catch(() => {});
-          }
-        } catch (_) {}
-      }
-      document.addEventListener('click', (e) => {
-        const trigger = e.target.closest('.s3-todo, .s3-skip-btn');
-        if (!trigger) return;
-        dismiss(trigger.closest('.s3-todo-wrap'));
-        eagerClaim(trigger.dataset.claimKind);
-      });
-
-      // Tap "เปิดดู" → navigate → tap back. Without this, Safari /
-      // Chrome restores the dashboard from bfcache so the just-
-      // claimed todo still appears. Reload to pick up the fresh
-      // todo list.
-      window.addEventListener('pageshow', function (e) {
-        if (e.persisted) {
-          window.location.reload();
-        }
-      });
-    })();
-  </script>
-
   {# Filter pills above the activity feed — toggles row visibility
      by data-kind without a network round-trip. #}
   <script>

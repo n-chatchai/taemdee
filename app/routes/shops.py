@@ -489,13 +489,8 @@ async def dashboard(
 
     from app.core.config import settings as app_settings
 
-    # Generic claim cards (welcome credit, future onboarding nudges, etc.)
-    # Pass is_owner so owner-only todos (e.g. invite_staff → /shop/team)
-    # don't surface to staff sessions that would 403 on the link.
-    _ds_staff = request.state.staff
-    items = await list_available_items(
-        db, shop, is_owner=bool(_ds_staff and _ds_staff.is_owner),
-    )
+    # Todo items moved to /shop/notifications (opened from the bell
+    # badge in page_top); bell_unread comes back from s3_top_context.
 
     # Recent activity feed embedded above the metric chart on the
     # dashboard — same data + shape as /shop/issue's feed table so
@@ -533,7 +528,6 @@ async def dashboard(
             "feed_cap": app_settings.shop_customer_last_scan_display_number,
             "feed": recent_feed,
             "attn_cards": attn_cards,
-            "items": items,
             **s3_top,
         },
     )
