@@ -95,6 +95,13 @@ class Shop(SQLModel, table=True):
     thanks_message: Optional[str] = Field(default=None)
     story_text: Optional[str] = Field(default=None)
 
+    # Owner toggle — default True so the customer-side "ส่งข้อความ"
+    # flow on shop.story works out of the box. Flipping False hides
+    # the compose CTA on /story/{shop_id} and locks /messages/{shop_id}
+    # POST with a friendly notice. Existing threads stay readable
+    # either way; this only gates new outbound from the customer side.
+    allow_customer_messages: bool = Field(default=True)
+
     created_at: datetime = Field(default_factory=utcnow)
 
     points: List["Point"] = Relationship(back_populates="shop")

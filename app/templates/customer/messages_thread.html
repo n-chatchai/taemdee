@@ -26,10 +26,16 @@
     </div>
   {% endif %}
 
-  <form class="td-compose" method="POST" action="/messages/{{ shop.id }}">
-    <textarea name="body" rows="2" placeholder="พิมพ์ข้อความ..." required></textarea>
-    <button type="submit">ส่ง</button>
-  </form>
+  {% if shop.allow_customer_messages %}
+    <form class="td-compose" method="POST" action="/messages/{{ shop.id }}">
+      <textarea name="body" rows="2" placeholder="พิมพ์ข้อความ..." required></textarea>
+      <button type="submit">ส่ง</button>
+    </form>
+  {% else %}
+    <div class="td-locked">
+      ร้านนี้ปิดรับข้อความจากลูกค้าอยู่
+    </div>
+  {% endif %}
 </div>
 
 <style>
@@ -65,6 +71,18 @@
     padding: 10px 14px; margin-bottom: 10px;
     background: #fff3cd; color: #855; border-radius: 10px;
     font-size: 13px; text-align: center;
+  }
+  .td-locked {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 12px) + 64px);
+    left: 0; right: 0;
+    padding: 14px 16px;
+    background: rgba(245,241,232,0.96); backdrop-filter: blur(12px);
+    border-top: 1px solid #e5e0d4;
+    border-bottom: 1px solid #e5e0d4;
+    text-align: center; color: var(--ink-soft);
+    font-size: 13px;
+    z-index: 10;
   }
   .td-compose {
     /* Sit ABOVE the c_dock — the dock is roughly 64-72px tall

@@ -1891,6 +1891,26 @@ async def settings_contact_get(request: Request, shop: Shop = Depends(get_curren
 
 
 @router.post(
+    "/settings/messaging",
+    dependencies=[Depends(require_permission("can_settings"))],
+)
+async def settings_messaging_post(
+    allow: Optional[str] = Form(None),
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Toggle whether customers can send DMs to this shop. The form on
+    /shop/settings auto-submits on switch change — checked → "on" /
+    unchecked → field omitted. Existing threads stay readable even
+    when this is off; the gate only blocks new outbound from the
+    customer side and hides the compose CTA on shop.story."""
+    shop.allow_customer_messages = bool(allow)
+    db.add(shop)
+    await db.commit()
+    return RedirectResponse(url="/shop/settings", status_code=status.HTTP_303_SEE_OTHER)
+
+
+@router.post(
     "/settings/contact",
     dependencies=[Depends(require_permission("can_settings"))],
 )

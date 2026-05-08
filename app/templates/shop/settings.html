@@ -172,6 +172,52 @@
     {# เมนูเด็ด moved into /shop/settings/story — both feed the customer's
        "ทำความรู้จัก" page so they live together as one entry. #}
 
+    {# Customer chat toggle — owner can disable inbound DMs. Inline
+       form (no sub-page) with a single switch + auto-submit so a tap
+       saves immediately. Default is ON; flip OFF and the customer-
+       side compose CTA on shop.story disappears. #}
+    <form method="POST" action="/shop/settings/messaging" class="s10-row" style="border:0;">
+      <div class="row-icon">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
+        </svg>
+      </div>
+      <div class="row-info">
+        <div class="row-name">รับข้อความจากลูกค้า</div>
+        <div class="row-meta">
+          {% if shop.allow_customer_messages %}เปิดอยู่ · ลูกค้าทักร้านได้ผ่านหน้า "ทำความรู้จัก"
+          {% else %}ปิดอยู่ · ลูกค้าจะไม่เห็นปุ่มส่งข้อความ
+          {% endif %}
+        </div>
+      </div>
+      <label class="s10-switch">
+        <input type="checkbox" name="allow"
+               {% if shop.allow_customer_messages %}checked{% endif %}
+               onchange="this.form.submit()">
+        <span class="s10-switch-track"></span>
+      </label>
+    </form>
+    <style>
+      /* iOS-style toggle switch — pure CSS, no Alpine. */
+      .s10-switch { position: relative; display: inline-block; width: 50px; height: 30px; flex-shrink: 0; }
+      .s10-switch input { opacity: 0; width: 0; height: 0; }
+      .s10-switch-track {
+        position: absolute; cursor: pointer; inset: 0;
+        background: #d4cdbc; border-radius: 999px;
+        transition: background 160ms ease;
+      }
+      .s10-switch-track::before {
+        content: ''; position: absolute;
+        top: 3px; left: 3px;
+        width: 24px; height: 24px;
+        background: #fff; border-radius: 50%;
+        box-shadow: 0 2px 4px rgba(0,0,0,0.18);
+        transition: transform 160ms ease;
+      }
+      .s10-switch input:checked + .s10-switch-track { background: var(--accent); }
+      .s10-switch input:checked + .s10-switch-track::before { transform: translateX(20px); }
+    </style>
+
     {# Team is owner-only — same reasoning as the branches row. #}
     {% if request.state.staff and request.state.staff.is_owner %}
     <a href="/shop/team" class="s10-row">

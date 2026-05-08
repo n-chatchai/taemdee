@@ -131,6 +131,17 @@ async def send_to_shop(
     if shop is None:
         raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบร้านนี้")
 
+    # Owner can disable inbound chat at /shop/settings. The
+    # customer-side compose CTA on shop.story is hidden in that case,
+    # but a hand-crafted POST could still land here, so refuse
+    # explicitly with a redirect that re-renders the thread page
+    # (which itself reads shop.allow_customer_messages and shows the
+    # locked notice instead of the compose box).
+    if not shop.allow_customer_messages:
+        return RedirectResponse(
+            url=f"/messages/{shop_id}", status_code=status.HTTP_303_SEE_OTHER,
+        )
+
     text = (body or "").strip()
     if not text:
         return RedirectResponse(
