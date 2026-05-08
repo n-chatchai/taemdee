@@ -8063,12 +8063,12 @@ body:has(.td-pinned) {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
 }
 /* Dashboard / issue page: the .s3-issue-actions card is fixed at
-   bottom: 104px above the dock, so we need an extra ~98px on top
-   of the standard dock zone to keep .page-scroll's bottom edge
-   above the actions card too. Otherwise the activity feed can
-   scroll up under the sticky actions. */
+   bottom: 104px above the dock. On wide phones the card is ~106px
+   (4-col grid); on narrow phones (<=380px) it falls back to a 2x2
+   grid and grows to ~160px. Reserve enough room for the worst case
+   so .page-scroll always ends visibly above the actions stack. */
 .td.td-pinned.td-tabbed.td-issue {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 210px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 280px);
 }
 .td.td-pinned .page-scroll {
   flex: 1 1 0;
