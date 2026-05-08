@@ -32,6 +32,7 @@
                 {% if it.kind == 'thread' %}
                   <span class="st-tag-chat">แชท</span>
                 {% endif %}
+                <span class="st-time">{{ it.sort_at.strftime('%d/%m %H:%M') }}</span>
               </div>
               <div class="st-preview">
                 {% if it.kind == 'campaign' %}
@@ -40,7 +41,6 @@
                   {{ it.preview or 'แตะเพื่อดูบทสนทนา' }}
                 {% endif %}
               </div>
-              <div class="st-time">{{ it.sort_at.strftime('%d/%m %H:%M') }}</div>
             </div>
             {% if it.unread %}
               <span class="st-badge">{{ it.unread }}</span>
@@ -54,7 +54,6 @@
 </div> {# /.page-scroll #}
 
 <style>
-  .s-msgs { padding: 8px 16px; }
   .s-msgs-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
   .s-msgs-empty a { color: var(--accent); font-weight: 600; }
   .s-thread-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -77,20 +76,31 @@
   .st-avatar svg { width: 18px; height: 18px; }
   .st-info { flex: 1; min-width: 0; }
   .st-name-row { display: flex; align-items: center; gap: 6px; }
-  .st-name { font-weight: 600; font-size: 15px; }
+  .st-name {
+    font-weight: 600; font-size: 15px;
+    min-width: 0;
+    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  }
   /* "แชท" pill — matches the customer-side /my-inbox treatment so a
      thread row reads consistently across both surfaces. */
   .st-tag-chat {
     background: var(--accent-soft, #FFD9CD); color: var(--accent);
     border-radius: 999px; padding: 1px 8px;
     font-size: 11px; font-weight: 700;
+    flex-shrink: 0;
+  }
+  /* Time pinned to the right of the name row (top-right of the
+     thread card) so the preview line below has the full row width. */
+  .st-time {
+    font-size: 11px; color: var(--ink-softer, #A39D92);
+    margin-left: auto;
+    flex-shrink: 0;
   }
   .st-preview {
     font-size: 13px; color: var(--ink-soft);
     overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
     margin-top: 2px;
   }
-  .st-time { font-size: 11px; color: var(--ink-softer, #A39D92); margin-top: 2px; }
   .st-badge {
     background: var(--accent); color: #fff; border-radius: 999px;
     padding: 2px 9px; font-size: 12px; font-weight: 700;
