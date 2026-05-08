@@ -210,7 +210,12 @@
   stroke-linecap: round; stroke-linejoin: round;
 }
 
-/* ── voucher.confirm bottom sheet ───────────────────────────────── */
+/* ── voucher.confirm bottom sheet ─────────────────────────────────
+   The global .rc-overlay rule defaults to opacity:0 + pointer-events:none
+   so it can fade in via .is-open. This page uses the older [hidden]
+   attribute model, so we explicitly opt back into opacity:1 +
+   pointer-events:auto here — without these the sheet "opens" but stays
+   invisible and non-interactive (the bug that broke แลกของขวัญ). */
 .rc-overlay {
   position: fixed;
   inset: 0;
@@ -219,6 +224,8 @@
   display: flex;
   align-items: flex-end;
   justify-content: center;
+  opacity: 1;
+  pointer-events: auto;
 }
 .rc-overlay[hidden] { display: none; }
 .rc-sheet {

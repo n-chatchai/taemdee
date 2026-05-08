@@ -328,12 +328,19 @@
   stroke-linecap: round; stroke-linejoin: round;
 }
 
-/* voucher.confirm bottom sheet (same shape as cards.list) */
+/* voucher.confirm bottom sheet (same shape as cards.list)
+   The global .rc-overlay rule defaults to opacity:0 +
+   pointer-events:none so it can fade in via .is-open. This page
+   uses the older [hidden] attribute model, so we explicitly opt
+   back into opacity:1 + pointer-events:auto — otherwise the sheet
+   "opens" invisible and non-interactive. */
 .rc-overlay {
   position: fixed; inset: 0;
   background: rgba(17,17,17,0.5);
   z-index: 9000;
   display: flex; align-items: flex-end; justify-content: center;
+  opacity: 1;
+  pointer-events: auto;
 }
 .rc-overlay[hidden] { display: none; }
 .rc-sheet {
