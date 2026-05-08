@@ -7,12 +7,11 @@
    and `ph_sub` to override.
 
    `ph_action_kind` controls the icon row in the right slot:
-     'qr' / 'qr_gear' (default) → QR-of-me button → /my-id
-   The 'gear' option is gone — settings now lives in the dock as a
-   primary tab (commit 4dff748). Keeping qr_gear as the default keeps
-   the existing call sites working without per-page edits. The profile
-   avatar is appended unconditionally when a customer is in scope —
-   tap opens the profile edit sheet (mounted in c_base).
+     'qr' (default) → just the QR-of-me button
+     'qr_search'    → QR + search-shops (used on /my-cards)
+     'qr_gear'      → legacy alias kept for back-compat
+   The profile avatar is appended unconditionally when a customer is
+   in scope — tap opens the profile edit sheet (mounted in c_base).
 
    Pages with an .app-bar back-arrow (story / my-id / inbox detail /
    notifications) intentionally skip this partial — the back nav owns
@@ -36,6 +35,14 @@
             <rect x="14" y="3" width="7" height="7" rx="1"/>
             <rect x="3" y="14" width="7" height="7" rx="1"/>
             <rect x="14" y="14" width="7" height="7" rx="1"/>
+          </svg>
+        </a>
+      {% endif %}
+      {% if 'search' in _ph_kinds %}
+        <a href="/find-shops" class="ph-icon-btn" title="ค้นหาร้าน" aria-label="ค้นหาร้าน">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <circle cx="11" cy="11" r="7"/>
+            <path d="M21 21l-4.35-4.35"/>
           </svg>
         </a>
       {% endif %}

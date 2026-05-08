@@ -506,51 +506,8 @@
 
 {% block content %}
   {% set is_guest = customer and customer.is_anonymous %}
+  {% set ph_action_kind = 'qr_search' %}
   {% include "_partials/page_head.html" %}
-
-  {# Discovery + chat entry — split into find-shops (search any shop in
-     the system) and messages (existing conversations). The unread
-     badge on "บทสนทนา" reads from request.state.customer_unread set
-     by the customer-context middleware. #}
-  <div class="cl-chat-entry">
-    <a class="cce-btn" href="/find-shops">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <circle cx="11" cy="11" r="7"/>
-        <path d="M21 21l-4.35-4.35"/>
-      </svg>
-      <span>ค้นหาร้าน</span>
-    </a>
-    <a class="cce-btn" href="/messages">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
-      </svg>
-      <span>บทสนทนา</span>
-      {% if request.state.customer_unread %}
-        <span class="cce-badge">{{ request.state.customer_unread }}</span>
-      {% endif %}
-    </a>
-  </div>
-  <style>
-    .cl-chat-entry {
-      display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
-      padding: 0 14px; margin: 6px 0 14px;
-    }
-    .cce-btn {
-      display: flex; align-items: center; justify-content: center; gap: 8px;
-      padding: 12px; border-radius: 14px;
-      background: var(--surface, #fff); color: var(--ink);
-      text-decoration: none; font-weight: 600; font-size: 14px;
-      border: 1px solid #e5e0d4;
-      position: relative;
-    }
-    .cce-btn svg { width: 18px; height: 18px; }
-    .cce-badge {
-      position: absolute; top: 6px; right: 8px;
-      background: var(--accent); color: #fff;
-      border-radius: 999px; padding: 1px 7px;
-      font-size: 11px; font-weight: 700;
-    }
-  </style>
   {# line_friend_prompt was the green banner asking the customer to add
      @taemdee on LINE; the customer todo block below now carries the
      same prompt with claim/skip/auto-fulfill semantics, so the banner

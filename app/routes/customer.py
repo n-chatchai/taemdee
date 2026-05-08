@@ -1842,9 +1842,11 @@ async def my_inbox(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """List of DeeReach messages this customer has received via the inbox
-    channel. Each row carries the shop's name + body; tap to open it
-    (POST mark-read endpoint flips read_at)."""
+    """Unified inbox — DeeReach broadcast messages and Customer↔Shop
+    chat threads in one list, sorted by most-recent activity. Tapping
+    a DeeReach row opens /my-inbox/{id} (read-only detail with the
+    shop's body); tapping a thread row opens /messages/{shop_id}
+    (compose + reply view)."""
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     rows = (await db.exec(
         select(Inbox).where(Inbox.customer_id == customer.id)
@@ -1852,7 +1854,16 @@ async def my_inbox(
         .limit(50)
     )).all()
 
-    shop_ids = {r.shop_id for r in rows}
+    # Customer ↔ Shop threads (Phase 1 chat).
+    from app.models import CustomerThread, CustomerMessage
+    threads = (await db.exec(
+        select(CustomerThread)
+        .where(CustomerThread.customer_id == customer.id)
+        .order_by(CustomerThread.last_at.desc())
+        .limit(50)
+    )).all()
+
+    shop_ids = {r.shop_id for r in rows} | {t.shop_id for t in threads}
     shops_by_id = {}
     if shop_ids:
         shop_rows = (await db.exec(select(Shop).where(Shop.id.in_(shop_ids)))).all()
@@ -1865,14 +1876,52 @@ async def my_inbox(
         select(CustomerShopMute.shop_id).where(CustomerShopMute.customer_id == customer.id)
     )).all())
 
-    items = [
-        {
+    # Last-message preview per thread — single batched query keyed by
+    # thread_id. Empty threads (no messages yet) get "ยังไม่มีข้อความ"
+    # so they still render and the customer can re-enter to compose.
+    last_msg_by_thread = {}
+    if threads:
+        thread_ids = [t.id for t in threads]
+        msg_rows = (await db.exec(
+            select(CustomerMessage)
+            .where(CustomerMessage.thread_id.in_(thread_ids))
+            .order_by(CustomerMessage.thread_id, CustomerMessage.created_at.desc())
+        )).all()
+        for m in msg_rows:
+            last_msg_by_thread.setdefault(m.thread_id, m)
+
+    items = []
+    for r in rows:
+        items.append({
+            "kind": "reach",
             "row": r,
             "shop": shops_by_id.get(r.shop_id),
             "muted": r.shop_id in muted_shop_ids,
-        }
-        for r in rows
-    ]
+            "sort_at": r.created_at,
+            "unread": r.read_at is None,
+            "href": f"/my-inbox/{r.id}",
+            "preview": r.body,
+        })
+    for t in threads:
+        last = last_msg_by_thread.get(t.id)
+        sender_prefix = ""
+        preview = "ยังไม่มีข้อความ · พิมพ์ส่งร้านได้เลย"
+        if last is not None:
+            if last.sender == "customer":
+                sender_prefix = "พี่: "
+            preview = sender_prefix + (last.body or "[แนบไฟล์]")
+        items.append({
+            "kind": "thread",
+            "thread": t,
+            "shop": shops_by_id.get(t.shop_id),
+            "muted": t.shop_id in muted_shop_ids,
+            "sort_at": t.last_at,
+            "unread": bool(t.customer_unread),
+            "unread_count": int(t.customer_unread or 0),
+            "href": f"/messages/{t.shop_id}",
+            "preview": preview,
+        })
+    items.sort(key=lambda it: it["sort_at"], reverse=True)
 
     # Greeting context for the page-head ("สวัสดีครับพี่X · วันศุกร์ ขอให้
     # เป็นวันที่ดี"). Same shape as /my-cards for consistency.
@@ -1882,7 +1931,9 @@ async def my_inbox(
         datetime.now(timezone.utc).astimezone(BKK).weekday()
     ]
 
-    unread_count = sum(1 for it in items if it["row"].read_at is None)
+    reach_unread = sum(1 for it in items if it["kind"] == "reach" and it["unread"])
+    thread_unread = sum(int(it.get("unread_count") or 0) for it in items if it["kind"] == "thread")
+    unread_count = reach_unread + thread_unread
 
     response = templates.TemplateResponse(
         request=request,

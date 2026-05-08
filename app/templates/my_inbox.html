@@ -18,24 +18,39 @@
 
     <div class="inbox-list">
       {% for it in items %}
-        {% set unread = it.row.read_at is none %}
-        <a class="inbox-card{% if not unread %} read{% endif %}"
-           href="/my-inbox/{{ it.row.id }}"
-           data-unread="{{ '1' if unread else '0' }}">
-          {% if unread %}<span class="ic-unread-dot"></span>{% endif %}
+        <a class="inbox-card{% if not it.unread %} read{% endif %}"
+           href="{{ it.href }}"
+           data-unread="{{ '1' if it.unread else '0' }}"
+           data-kind="{{ it.kind }}">
+          {% if it.unread %}<span class="ic-unread-dot"></span>{% endif %}
           <div class="ic-logo">
             {% with shop = it.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
           </div>
           <div class="ic-body">
             <div class="ic-row">
-              <div class="ic-shop">{{ it.shop.name if it.shop else 'TaemDee' }}</div>
-              <div class="ic-time">{{ it.row.created_at|bkk_feed_time }}</div>
+              <div class="ic-shop">
+                {{ it.shop.name if it.shop else 'TaemDee' }}
+                {% if it.kind == 'thread' %}<span class="ic-tag-chat">แชท</span>{% endif %}
+              </div>
+              <div class="ic-time">{{ it.sort_at|bkk_feed_time }}</div>
             </div>
-            <div class="ic-preview">{{ it.row.body }}</div>
+            <div class="ic-preview">{{ it.preview }}</div>
           </div>
         </a>
       {% endfor %}
     </div>
+
+    <style>
+      /* "แชท" pill — distinguishes a 2-way customer-thread row from a
+         1-way DeeReach broadcast in the unified inbox list. */
+      .ic-tag-chat {
+        display: inline-block; margin-left: 6px;
+        padding: 1px 7px; border-radius: 999px;
+        background: var(--accent-soft, #FFD9CD); color: var(--accent);
+        font-size: 11px; font-weight: 700;
+        vertical-align: middle;
+      }
+    </style>
   {% else %}
     <div class="inbox-empty">
       <div class="ie-avatar">
