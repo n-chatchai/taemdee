@@ -239,27 +239,29 @@
       flex-direction: column;
       overflow: hidden;
     }
-    /* Override the default .td-tabbed padding-bottom (112px) — the
-       dock-clearance reservation now lives on .page-scroll so the
-       fixed-height scroll container ends exactly at the dock's top
-       edge, never behind it. */
+    /* Dock zone lives on .td (not on .page-scroll) — flex children
+       sit in the content box above this padding, so .page-scroll's
+       bottom edge stops well above the floating glass-nav. Content
+       scrolling inside .page-scroll therefore can never visually
+       cross or sit behind the dock. iOS PWA safe-area added on top
+       of the standard 112px so the home indicator is also clear. */
     body .td.td-tabbed {
-      padding-bottom: 0;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
     }
     /* Scroll container for everything between the top nav and the
        dock. Flex column so the bottom-pin (order: 99) can grow to
-       fill any unused space; padding-bottom reserves the dock zone
-       + iOS PWA home indicator so scrolled content stops above the
-       floating glass-nav and never grows behind it. */
+       fill any unused space; .td's padding-bottom is what reserves
+       the dock zone, not this element, so .page-scroll's bottom
+       edge naturally lands above the dock with no padding hack of
+       its own. */
     .page-scroll {
-      flex: 1 1 auto;
+      flex: 1 1 0;
       min-height: 0;
       display: flex;
       flex-direction: column;
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
     }
 
     /* Pinned bottom stack — metrics card sits directly on top of the
