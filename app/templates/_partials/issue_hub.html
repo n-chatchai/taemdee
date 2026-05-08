@@ -1,0 +1,159 @@
+{# Combined ออกแต้ม hub — recent activity feed + 4-method actions
+   inside one shared card so the dashboard reads as one issuance
+   surface instead of two stacked panels. Used by /shop/dashboard
+   and /shop/issue (both now share this block). #}
+<div class="s3-issue-hub">
+  {# Feed section — slimmed down (no outer card border, partial owns
+     the chrome). filterFeed() inline JS toggles row visibility. #}
+  <div class="ih-feed">
+    <div class="ih-head">
+      <div class="ih-label">ลูกค้าล่าสุด</div>
+      <span class="met-pills issue-feed-pills">
+        <a class="mp active" onclick="filterFeed('all', this)">ทั้งหมด</a>
+        <a class="mp" onclick="filterFeed('point', this)">สแกน</a>
+        <a class="mp" onclick="filterFeed('redemption', this)">แลก</a>
+      </span>
+    </div>
+    <table class="sap-table" id="sap-table">
+      <thead>
+        <tr>
+          <th class="t">เวลา</th>
+          <th class="n">ลูกค้า</th>
+          <th class="m">วิธีรับ</th>
+          <th class="s">โดย</th>
+          <th class="a">จำนวน</th>
+        </tr>
+      </thead>
+      <tbody id="sap-tbody">
+        {% for kind, item, customer_name, amount, method_th, staff_name in feed %}
+          <tr class="feed-row{% if loop.first %} latest{% endif %}"
+              id="row-{{ item.id }}"
+              data-kind="{{ kind }}"
+              data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
+            <td class="t">{{ item.created_at|bkk_feed_time_short }}</td>
+            <td class="n">{{ customer_name }}</td>
+            <td class="m">{{ method_th }}</td>
+            <td class="s">{{ staff_name }}</td>
+            <td class="a">
+              {% if kind == 'point' %}
+                <span class="icon-mini">+</span> <strong>{{ amount }} แต้ม</strong>
+              {% else %}
+                <strong>รับรางวัล</strong>
+              {% endif %}
+            </td>
+          </tr>
+        {% else %}
+          <tr><td colspan="5" style="text-align:center; padding:14px 0; color:var(--ink-softer); font-style:italic; font-size:12px;">ยังไม่มีกิจกรรมวันนี้</td></tr>
+        {% endfor %}
+      </tbody>
+    </table>
+  </div>
+
+  {# Actions section — divider above, then the 4-method 2x2 grid. #}
+  <div class="ih-actions">
+    <div class="sap-actions-h">ออกแต้มให้ลูกค้า</div>
+    <div class="sap-actions">
+      <a class="sap-action primary" href="/shop/qr/live">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="3" y="3" width="7" height="7" rx="1"/>
+          <rect x="14" y="3" width="7" height="7" rx="1"/>
+          <rect x="3" y="14" width="7" height="7" rx="1"/>
+          <rect x="14" y="14" width="7" height="7" rx="1"/>
+        </svg>
+        <span>ลูกค้าสแกน</span>
+      </a>
+      <a class="sap-action" href="/shop/issue/scan">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <path d="M23 19a2 2 0 01-2 2H3a2 2 0 01-2-2V8a2 2 0 012-2h4l2-3h6l2 3h4a2 2 0 012 2z"/>
+          <circle cx="12" cy="13" r="4"/>
+        </svg>
+        <span>ร้านสแกน</span>
+      </a>
+      <a class="sap-action" href="/shop/issue/phone">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <rect x="5" y="2" width="14" height="20" rx="2"/>
+          <line x1="12" y1="18" x2="12.01" y2="18"/>
+        </svg>
+        <span>กรอกเบอร์</span>
+      </a>
+      <a class="sap-action" href="/shop/issue/grant">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="8"/>
+          <line x1="21" y1="21" x2="16.65" y2="16.65"/>
+        </svg>
+        <span>ค้นชื่อ</span>
+      </a>
+    </div>
+  </div>
+</div>
+
+<style>
+  /* Single combined card — feed table at top, actions at bottom,
+     a 1px divider between them instead of two separately bordered
+     cards stacking. */
+  .s3-issue-hub {
+    margin: 8px 20px 14px;
+    padding: 14px 16px 14px;
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 18px;
+  }
+  .s3-issue-hub .ih-head {
+    display: flex; align-items: center; justify-content: space-between;
+    gap: 10px; margin-bottom: 10px;
+  }
+  .s3-issue-hub .ih-label {
+    font-family: 'Prompt', sans-serif; font-size: 13px;
+    font-weight: 500; color: var(--ink-soft);
+  }
+  .s3-issue-hub .sap-table {
+    width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .s3-issue-hub .sap-table th {
+    text-align: left; padding: 4px 6px;
+    color: var(--ink-softer); font-weight: 500; font-size: 11px;
+    border-bottom: 1px solid var(--line);
+  }
+  .s3-issue-hub .sap-table td {
+    padding: 6px 6px;
+    border-bottom: 1px solid rgba(17,17,17,0.04);
+  }
+  .s3-issue-hub .sap-table tr:last-child td { border-bottom: none; }
+  .s3-issue-hub .ih-actions {
+    margin-top: 14px;
+    padding-top: 14px;
+    border-top: 1px dashed var(--line);
+  }
+  .s3-issue-hub .sap-actions-h {
+    font-family: 'Prompt', sans-serif; font-size: 13px;
+    font-weight: 500; color: var(--ink-soft);
+    margin-bottom: 10px;
+  }
+  .s3-issue-hub .sap-actions {
+    display: grid; grid-template-columns: 1fr 1fr; gap: 8px;
+  }
+  .s3-issue-hub .sap-action {
+    display: flex; align-items: center; gap: 8px;
+    padding: 12px 14px; border-radius: 14px;
+    background: var(--bg, #F6F1E5);
+    color: var(--ink); text-decoration: none;
+    font-weight: 600; font-size: 14px;
+    border: 1px solid var(--line);
+  }
+  .s3-issue-hub .sap-action.primary {
+    background: var(--accent); color: #fff;
+    border-color: var(--accent);
+  }
+  .s3-issue-hub .sap-action svg { width: 18px; height: 18px; flex-shrink: 0; }
+</style>
+
+<script>
+  function filterFeed(kind, el) {
+    document.querySelectorAll('.issue-feed-pills .mp').forEach(p => p.classList.remove('active'));
+    el.classList.add('active');
+    const rows = document.querySelectorAll('#sap-tbody .feed-row');
+    rows.forEach(row => {
+      row.style.display = (kind === 'all' || row.dataset.kind === kind) ? '' : 'none';
+    });
+  }
+</script>

@@ -5,9 +5,7 @@
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
-  {% include "_partials/issue_feed.html" %}
-
-  {% include "_partials/issue_actions.html" %}
+  {% include "_partials/issue_hub.html" %}
 
   {% include "_partials/feed_detail_sheet.html" %}
 {% endblock %}
