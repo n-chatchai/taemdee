@@ -129,5 +129,8 @@
       </form>
     </div>
   </div>
+  {# Tag the customer-side OAuth links with ?is_pwa=1 when standalone
+     so /auth/connect-complete renders the "open PWA" variant. #}
+  {% include "_partials/pwa_oauth_reload.html" %}
 </body>
 </html>

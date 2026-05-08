@@ -143,5 +143,12 @@
 
     {% include "_partials/footer_mark.html" %}
   </div>
+  {# Tag the social-login anchors with ?is_pwa=1 when running standalone
+     so the post-OAuth /auth/connect-complete page renders the
+     "กลับไปเปิดแอปแต้มดี" variant instead of auto-redirecting into
+     Safari. Without this include the customer-side OAuth buttons here
+     never carry the flag and the completion page falls back to the
+     browser path. #}
+  {% include "_partials/pwa_oauth_reload.html" %}
 </body>
 </html>
