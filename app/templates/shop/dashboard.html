@@ -206,31 +206,17 @@
     .s3-issue-hub .sap-action svg { width: 16px; height: 16px; }
 
     /* Issue hub pinned to the bottom of the viewport above the
-       glass-nav. To guarantee the metric card never visually
-       overlaps the hub mid-scroll, we:
-         · cap the hub at 40vh (was 50vh) so it leaves more room
-           for the chart above,
-         · use --hub-h as the single source of truth for the hub's
-           outer height so the body padding-bottom reservation
-           matches exactly,
-         · paint a fully opaque background + harder upward shadow
-           so any content scrolling behind the hub is masked
-           cleanly instead of bleeding through.
-
-       --hub-h breakdown:
-         dock zone   = env(safe-area-inset-bottom) + ~94px (dock
-                       sits 14px from screen edge + ~80px tall)
-         hub offset  = +6px gap above dock
-         hub max     = 40vh
-         total slack = +20px safety so the last metric/todo row
-                       doesn't kiss the hub border. */
+       glass-nav. The hub itself is now fixed-height (no max-height
+       / overflow on the outer container) — only the feed table
+       inside .ih-feed-scroll scrolls. Action grid stays pinned
+       directly above the dock no matter how many feed rows pile
+       up. Opaque bg + hard top line + halo shadow mask any content
+       that scrolls behind the hub mid-page. */
     .s3-issue-hub {
       position: fixed;
       left: 0; right: 0;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
       margin: 0 12px;
-      max-height: 40vh;
-      overflow-y: auto;
       z-index: 5;
       background: var(--surface);
       box-shadow:
@@ -238,9 +224,11 @@
         0 -16px 32px -10px rgba(17, 17, 17, 0.22);
     }
     /* Reserve room so scrollable content can fully reveal above the
-       hub. 40vh + dock + safe-area + slack. */
+       hub. Hub height ≈ 140 (table) + 14 (header) + 8 (gap) + 30
+       (actions header) + 100 (2x2 actions) + 16 (padding) ≈ 310px;
+       round up + safe-area + dock zone for safety. */
     body .td {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40vh + 120px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 410px);
     }
   </style>
 {% endblock %}

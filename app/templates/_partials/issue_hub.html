@@ -14,39 +14,44 @@
         <a class="mp" onclick="filterFeed('redemption', this)">แลก</a>
       </span>
     </div>
-    <table class="sap-table" id="sap-table">
-      <thead>
-        <tr>
-          <th class="t">เวลา</th>
-          <th class="n">ลูกค้า</th>
-          <th class="m">วิธีรับ</th>
-          <th class="s">โดย</th>
-          <th class="a">จำนวน</th>
-        </tr>
-      </thead>
-      <tbody id="sap-tbody">
-        {% for kind, item, customer_name, amount, method_th, staff_name in feed %}
-          <tr class="feed-row{% if loop.first %} latest{% endif %}"
-              id="row-{{ item.id }}"
-              data-kind="{{ kind }}"
-              data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
-            <td class="t">{{ item.created_at|bkk_feed_time_short }}</td>
-            <td class="n">{{ customer_name }}</td>
-            <td class="m">{{ method_th }}</td>
-            <td class="s">{{ staff_name }}</td>
-            <td class="a">
-              {% if kind == 'point' %}
-                <span class="icon-mini">+</span> <strong>{{ amount }} แต้ม</strong>
-              {% else %}
-                <strong>รับรางวัล</strong>
-              {% endif %}
-            </td>
+    {# Wrap the table in a fixed-height scroll container so the
+       feed scrolls vertically inside the hub while the actions
+       block below stays pinned in view. #}
+    <div class="ih-feed-scroll">
+      <table class="sap-table" id="sap-table">
+        <thead>
+          <tr>
+            <th class="t">เวลา</th>
+            <th class="n">ลูกค้า</th>
+            <th class="m">วิธีรับ</th>
+            <th class="s">โดย</th>
+            <th class="a">จำนวน</th>
           </tr>
-        {% else %}
-          <tr><td colspan="5" style="text-align:center; padding:14px 0; color:var(--ink-softer); font-style:italic; font-size:12px;">ยังไม่มีกิจกรรมวันนี้</td></tr>
-        {% endfor %}
-      </tbody>
-    </table>
+        </thead>
+        <tbody id="sap-tbody">
+          {% for kind, item, customer_name, amount, method_th, staff_name in feed %}
+            <tr class="feed-row{% if loop.first %} latest{% endif %}"
+                id="row-{{ item.id }}"
+                data-kind="{{ kind }}"
+                data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
+              <td class="t">{{ item.created_at|bkk_feed_time_short }}</td>
+              <td class="n">{{ customer_name }}</td>
+              <td class="m">{{ method_th }}</td>
+              <td class="s">{{ staff_name }}</td>
+              <td class="a">
+                {% if kind == 'point' %}
+                  <span class="icon-mini">+</span> <strong>{{ amount }} แต้ม</strong>
+                {% else %}
+                  <strong>รับรางวัล</strong>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" style="text-align:center; padding:14px 0; color:var(--ink-softer); font-style:italic; font-size:12px;">ยังไม่มีกิจกรรมวันนี้</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
+    </div>
   </div>
 
   {# Actions section — divider above, then the 4-method 2x2 grid. #}
@@ -105,8 +110,22 @@
     font-family: 'Prompt', sans-serif; font-size: 13px;
     font-weight: 500; color: var(--ink-soft);
   }
+  /* Feed table sits inside .ih-feed-scroll — fixed-height
+     container so only the rows scroll while the action grid below
+     stays pinned in view. Sticky thead so the column headers
+     remain readable as the operator scrolls older rows. */
+  .s3-issue-hub .ih-feed-scroll {
+    max-height: 140px;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+  }
   .s3-issue-hub .sap-table {
     width: 100%; border-collapse: collapse; font-size: 13px;
+  }
+  .s3-issue-hub .sap-table thead th {
+    position: sticky; top: 0;
+    background: var(--surface);
+    z-index: 1;
   }
   .s3-issue-hub .sap-table th {
     text-align: left; padding: 4px 6px;
