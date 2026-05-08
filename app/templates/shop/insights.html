@@ -8,6 +8,7 @@
   {% if view == 'history' %}{% set weekday_th = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
+<div class="page-scroll">
   {% if view == 'history' %}
     <div class="s3-day-caption">
       <a class="dc-back" href="/shop/insights">
@@ -164,9 +165,10 @@
       </div>
     {% endif %}
   {% endif %}
+</div> {# /.page-scroll #}
 {% endblock %}
 
-{% block td_class %} td-tabbed{% endblock %}
+{% block td_class %} td-tabbed td-pinned{% endblock %}
 
 {% block nav %}
   {% set nav_active = 'insights' %}

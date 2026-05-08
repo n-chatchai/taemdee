@@ -5,6 +5,7 @@
 {% set app_bar_title = 'แต้มดีแนะนำ' %}
 {% include "_partials/app_bar.html" %}
 
+<div class="page-scroll">
   <div class="s13-intro">
     <div class="ask">แต้มดี<em>แนะนำ.</em></div>
     <div class="ask-th">คัดสรรกลยุทธ์เพื่อร้านคุณโดยเฉพาะ · ส่งหาลูกค้าได้ทันที</div>
@@ -38,11 +39,15 @@
     <div class="s10-empty" style="margin: 18px 20px;">ยังไม่มีคำแนะนำ</div>
   {% endif %}
 
+</div> {# /.page-scroll #}
+
   <a class="s13-create" href="/shop/deereach/manual">
     <span class="plus">+</span>
     สร้างแคมเปญเอง
   </a>
 {% endblock %}
+
+{% block td_class %} td-tabbed td-pinned{% endblock %}
 
 {% block nav %}
   {% set nav_active = 'insights' %}

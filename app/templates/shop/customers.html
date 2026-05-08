@@ -5,6 +5,7 @@
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
+<div class="page-scroll">
   {# 4-up stats band — shop-wide totals, not affected by the active
      filter chip. Gives the owner a glance at the customer base shape
      before they drill into a specific bucket. #}
@@ -131,9 +132,10 @@
       </div>
     {% endif %}
   </div>
+</div> {# /.page-scroll #}
 {% endblock %}
 
-{% block td_class %} td-tabbed{% endblock %}
+{% block td_class %} td-tabbed td-pinned{% endblock %}
 
 {% block nav %}
   {% set nav_active = 'customers' %}
