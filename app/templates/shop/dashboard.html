@@ -232,13 +232,6 @@
       overflow: hidden;
       margin: 0;
     }
-    /* Kill the .td::before radial gradient on this page — its peak
-       sits at 12% down (right inside the s3-top area), which made
-       the top read yellow while the .page-scroll below read cream.
-       Drop it so the whole .td shows one uniform bg colour + the
-       dot texture from .td::after, with no visual seam between the
-       top nav and the scroll area. */
-    body .td::before { display: none; }
     body .td {
       height: 100dvh;
       max-height: 100dvh;
@@ -294,9 +287,7 @@
       border-bottom-left-radius: 0;
       border-bottom-right-radius: 0;
       border-bottom: 0;
-      box-shadow:
-        0 -1px 0 var(--line),
-        0 -16px 32px -10px rgba(17, 17, 17, 0.22);
+      box-shadow: none;
       flex: 0 0 auto;
     }
     /* Hub fills the remainder of the bottom-pin via flex column —
