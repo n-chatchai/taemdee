@@ -95,12 +95,13 @@ class Shop(SQLModel, table=True):
     thanks_message: Optional[str] = Field(default=None)
     story_text: Optional[str] = Field(default=None)
 
-    # Owner toggle — default True so the customer-side "ส่งข้อความ"
-    # flow on shop.story works out of the box. Flipping False hides
-    # the compose CTA on /story/{shop_id} and locks /messages/{shop_id}
-    # POST with a friendly notice. Existing threads stay readable
-    # either way; this only gates new outbound from the customer side.
-    allow_customer_messages: bool = Field(default=True)
+    # Owner toggle — default False so chat is opt-in. Owners flip it
+    # on at /shop/settings; until they do, the customer-side
+    # "ส่งข้อความถึงร้าน" CTA on shop.story stays hidden and POST
+    # /messages/{shop_id} refuses with a "ร้านนี้ปิดรับข้อความ" notice.
+    # Existing threads stay readable either way; the gate only blocks
+    # new outbound from the customer side.
+    allow_customer_messages: bool = Field(default=False)
 
     created_at: datetime = Field(default_factory=utcnow)
 

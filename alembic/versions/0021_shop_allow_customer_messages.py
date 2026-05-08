@@ -4,10 +4,11 @@ Revision ID: 0021
 Revises: 0020
 Create Date: 2026-05-08 17:00:00.000000
 
-Lets the owner gate the new customer→shop chat. Default TRUE so
-existing shops keep working; an owner who'd rather not be DMed flips
-it off in /shop/settings and the customer-side compose CTA on
-shop.story disappears (and /messages/{shop_id} POST refuses).
+Lets the owner gate the new customer→shop chat. Default FALSE so
+chat is opt-in — owners flip it on at /shop/settings when they're
+ready to receive DMs. Existing rows fill with FALSE on backfill so
+no shop starts accepting messages without the owner explicitly
+turning it on.
 """
 
 from typing import Sequence, Union
@@ -24,7 +25,7 @@ depends_on: Union[str, Sequence[str], None] = None
 def upgrade() -> None:
     op.execute(
         "ALTER TABLE shops "
-        "ADD COLUMN IF NOT EXISTS allow_customer_messages BOOLEAN NOT NULL DEFAULT TRUE"
+        "ADD COLUMN IF NOT EXISTS allow_customer_messages BOOLEAN NOT NULL DEFAULT FALSE"
     )
 
 
