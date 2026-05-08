@@ -1,0 +1,65 @@
+{% extends "_layouts/s_base.html" %}
+{% block title %}ข้อความ · {{ shop.name }} · TaemDee{% endblock %}
+
+{% block content %}
+{% set app_bar_title = 'ข้อความ' %}
+{% include "_partials/app_bar.html" %}
+
+<div class="s-msgs">
+  {% if not threads %}
+    <div class="s-msgs-empty">
+      ยังไม่มีบทสนทนา · ลูกค้าจะติดต่อมาผ่านปุ่ม "ส่งข้อความ" หลังจากค้นหาร้านเจอ
+    </div>
+  {% else %}
+    <ul class="s-thread-list">
+      {% for t in threads %}
+        {% set c = customer_by_id.get(t.customer_id) %}
+        <li>
+          <a href="/shop/messages/{{ t.id }}">
+            <div class="st-avatar">
+              {% if c and c.display_name %}{{ c.display_name[0]|upper }}{% else %}?{% endif %}
+            </div>
+            <div class="st-info">
+              <div class="st-name">{{ (c and c.display_name) or 'ลูกค้า' }}</div>
+              <div class="st-time">{{ t.last_at.strftime('%d/%m %H:%M') }}</div>
+            </div>
+            {% if t.shop_unread %}
+              <span class="st-badge">{{ t.shop_unread }}</span>
+            {% endif %}
+          </a>
+        </li>
+      {% endfor %}
+    </ul>
+  {% endif %}
+</div>
+
+<style>
+  .s-msgs { padding: 8px 16px 100px; }
+  .s-msgs-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
+  .s-thread-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
+  .s-thread-list a {
+    display: flex; align-items: center; gap: 12px;
+    padding: 12px 14px; border-radius: 14px;
+    background: var(--surface, #fff); text-decoration: none; color: var(--ink);
+    border: 1px solid #e5e0d4;
+  }
+  .st-avatar {
+    width: 40px; height: 40px; border-radius: 50%;
+    background: var(--accent); color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-weight: 600;
+  }
+  .st-info { flex: 1; }
+  .st-name { font-weight: 600; font-size: 15px; }
+  .st-time { font-size: 12px; color: var(--ink-soft); }
+  .st-badge {
+    background: var(--accent); color: #fff; border-radius: 999px;
+    padding: 2px 9px; font-size: 12px; font-weight: 700;
+  }
+</style>
+{% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'messages' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}

@@ -23,8 +23,10 @@ from app.routes import (
     auth,
     branches,
     customer,
+    customer_chat,
     deereach,
     issuance,
+    shop_chat,
     shops,
     staff_join,
     team,
@@ -125,9 +127,21 @@ class CustomerContextMiddleware:
                     async with SessionFactory() as db:
                         customer = await db.get(Customer, customer_id)
 
+        # Pre-compute the customer-side messages-tab unread count so
+        # /my-cards (and any other customer page) can render the badge
+        # without each route having to fetch it.
+        customer_unread = 0
+        if customer is not None:
+            from app.services.customer_chat import customer_unread_total
+            from app.core.database import SessionFactory as _SF
+            async with _SF() as db:
+                customer_unread = await customer_unread_total(db, customer.id)
+
         # State is the canonical request-scoped dict — c_base.html reads
         # request.state.customer which proxies to scope["state"]["customer"].
-        scope.setdefault("state", {})["customer"] = customer
+        state = scope.setdefault("state", {})
+        state["customer"] = customer
+        state["customer_unread"] = customer_unread
         await self.app(scope, receive, send)
 
 
@@ -195,9 +209,21 @@ class ShopContextMiddleware:
                                 from app.services.team import ensure_owner_staff
                                 staff = await ensure_owner_staff(db, shop)
 
+        # Pre-compute the messages-tab unread count for the dock badge.
+        # Single sum aggregate, only fired on shop pages where `shop` is
+        # actually set, so the cost is one cheap query per authenticated
+        # shop request.
+        shop_unread = 0
+        if shop is not None:
+            from app.services.customer_chat import shop_unread_total
+            from app.core.database import SessionFactory as _SF
+            async with _SF() as db:
+                shop_unread = await shop_unread_total(db, shop.id)
+
         state = scope.setdefault("state", {})
         state["shop"] = shop
         state["staff"] = staff
+        state["shop_unread"] = shop_unread
         await self.app(scope, receive, send)
 
 
@@ -460,7 +486,9 @@ async def version():
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(customer.router, tags=["customer"])
+app.include_router(customer_chat.router, tags=["customer-chat"])
 app.include_router(shops.router, prefix="/shop", tags=["shops"])
+app.include_router(shop_chat.router, prefix="/shop", tags=["shop-chat"])
 app.include_router(issuance.router, prefix="/shop", tags=["issuance"])
 app.include_router(branches.router, prefix="/shop/branches", tags=["branches"])
 app.include_router(team.router, prefix="/shop/team", tags=["team"])

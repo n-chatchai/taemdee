@@ -1,0 +1,68 @@
+{% extends "_layouts/s_base.html" %}
+{% block title %}{{ customer.display_name or 'ลูกค้า' }} · ข้อความ · TaemDee{% endblock %}
+
+{% block content %}
+{% set app_bar_title = customer.display_name or 'ลูกค้า' %}
+{% set app_bar_back = '/shop/messages' %}
+{% include "_partials/app_bar.html" %}
+
+<div class="s-thread">
+  <div class="s-msg-stream">
+    {% for m in messages %}
+      <div class="msg msg-{{ m.sender }}">
+        <div class="msg-body">{{ m.body }}</div>
+        <div class="msg-meta">{{ m.created_at.strftime('%H:%M') }}</div>
+      </div>
+    {% else %}
+      <div class="td-empty">ยังไม่มีข้อความ</div>
+    {% endfor %}
+  </div>
+
+  <form class="s-compose" method="POST" action="/shop/messages/{{ thread.id }}/reply">
+    <textarea name="body" rows="2" placeholder="ตอบกลับ..." required></textarea>
+    <button type="submit">ส่ง</button>
+  </form>
+</div>
+
+<style>
+  .s-thread { padding: 8px 16px 120px; }
+  .s-msg-stream {
+    display: flex; flex-direction: column; gap: 8px;
+    margin-bottom: 16px;
+  }
+  .msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; }
+  /* Shop view: SHOP messages on the right (we are the shop), customer on the left. */
+  .msg-shop {
+    align-self: flex-end; background: var(--accent); color: #fff;
+    border-bottom-right-radius: 4px;
+  }
+  .msg-customer {
+    align-self: flex-start; background: var(--surface, #fff); color: var(--ink);
+    border: 1px solid #e5e0d4; border-bottom-left-radius: 4px;
+  }
+  .msg-body { font-size: 15px; line-height: 1.45; white-space: pre-wrap; }
+  .msg-meta { font-size: 11px; opacity: 0.6; margin-top: 4px; text-align: right; }
+  .msg-customer .msg-meta { text-align: left; }
+  .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
+  .s-compose {
+    position: fixed; bottom: 0; left: 0; right: 0;
+    padding: 10px 14px env(safe-area-inset-bottom, 12px);
+    background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
+    border-top: 1px solid #e5e0d4;
+    display: flex; gap: 8px; align-items: flex-end;
+  }
+  .s-compose textarea {
+    flex: 1; padding: 10px 12px; border-radius: 14px;
+    border: 1px solid #d4cdbc; resize: none; font-size: 15px;
+    font-family: inherit;
+  }
+  .s-compose button {
+    padding: 0 18px; height: 42px; border-radius: 14px; border: 0;
+    background: var(--accent); color: #fff; font-weight: 600;
+  }
+</style>
+
+<script>
+  (function () { window.scrollTo(0, document.body.scrollHeight); })();
+</script>
+{% endblock %}

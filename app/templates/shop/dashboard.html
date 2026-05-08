@@ -9,6 +9,28 @@
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
+  {# Issue CTA moved here from the dock — issuance is the single most-
+     used shop action, so the home page now hosts a prominent
+     "ออกแต้ม" button while the dock 2nd slot becomes "ข้อความ". #}
+  <a href="/shop/issue" class="s3-issue-cta">
+    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+      <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
+    </svg>
+    <span>ออกแต้ม</span>
+  </a>
+  <style>
+    .s3-issue-cta {
+      display: flex; align-items: center; justify-content: center; gap: 10px;
+      padding: 16px; margin: 12px 0;
+      border-radius: 18px;
+      background: var(--accent); color: #fff;
+      text-decoration: none; font-weight: 700; font-size: 17px;
+      box-shadow: 0 6px 16px rgba(255,94,58,0.25);
+    }
+    .s3-issue-cta svg { width: 22px; height: 22px; }
+    .s3-issue-cta:active { transform: translateY(1px); }
+  </style>
+
   {# Merged metrics card per design rev — replaces the three separate
      cards (time-pills, snapshot, trend) with one rounded surface that
      holds the period tabs (underline style), big customer count + delta,

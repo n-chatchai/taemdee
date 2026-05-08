@@ -1,7 +1,11 @@
-{# Shop liquid-glass dock — up to 5 tabs (dashboard / issue / customers
+{# Shop liquid-glass dock — up to 5 tabs (dashboard / messages / customers
    / insights / settings). Caller passes `nav_active` = one of "home" /
-   "issue" / "customers" / "insights" / "settings" to highlight the
-   current tab. Optional `nav_issue_badge=True` for the activity dot.
+   "messages" / "customers" / "insights" / "settings" to highlight the
+   current tab. Optional `nav_messages_badge=<int>` for the unread count.
+
+   The "ออกแต้ม" tab moved out of the dock and onto the home page —
+   issuance is the single most-used action so a prominent CTA on
+   /shop/dashboard is closer to thumb than a dock tab anyway.
 
    The settings tab hides for staff without can_settings (see has_perm
    in core/templates.py). The grid uses --tab-count to size columns
@@ -11,6 +15,7 @@
    separate file because the destinations and labels differ. #}
 {% set _gn_show_settings = has_perm(request.state.staff, 'can_settings') %}
 {% set _gn_tab_count = 5 if _gn_show_settings else 4 %}
+{% set nav_messages_badge = nav_messages_badge or request.state.shop_unread or 0 %}
 <nav class="s3-glass-nav" aria-label="Main navigation" style="--tab-count: {{ _gn_tab_count }}">
   <a class="gn-tab{% if nav_active == 'home' %} active{% endif %}" href="/shop/dashboard" aria-label="หน้าแรก">
     <span class="gn-icon">
@@ -21,14 +26,14 @@
     </span>
     <span class="gn-label">หน้าแรก</span>
   </a>
-  <a class="gn-tab{% if nav_active == 'issue' %} active{% endif %}" href="/shop/issue" aria-label="ออกแต้ม">
+  <a class="gn-tab{% if nav_active == 'messages' %} active{% endif %}" href="/shop/messages" aria-label="ข้อความ">
     <span class="gn-icon">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-        <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
+        <path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/>
       </svg>
-      {% if nav_issue_badge %}<span class="gn-badge"></span>{% endif %}
+      {% if nav_messages_badge %}<span class="gn-badge count">{{ nav_messages_badge }}</span>{% endif %}
     </span>
-    <span class="gn-label">ออกแต้ม</span>
+    <span class="gn-label">ข้อความ</span>
   </a>
   <a class="gn-tab{% if nav_active == 'customers' %} active{% endif %}" href="/shop/customers" aria-label="ลูกค้า">
     <span class="gn-icon">
