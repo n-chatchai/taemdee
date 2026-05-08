@@ -9,10 +9,14 @@
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
-  {# Issuance hub — feed + 4-method actions in one combined card.
-     Same partial powers /shop/issue. #}
-  {% include "_partials/issue_hub.html" %}
   {% include "_partials/feed_detail_sheet.html" %}
+
+  {# Pinned bottom stack — metric on top of issue hub, joined into one
+     visual card (rounded corners only on the outer edges, no gap
+     between them) and floated above the glass-nav. Keeps the
+     analytics + the primary actions both reachable no matter how
+     far the operator has scrolled the todos list above. #}
+  <div class="bottom-pin">
 
   {# Merged metrics card per design rev — replaces the three separate
      cards (time-pills, snapshot, trend) with one rounded surface that
@@ -89,6 +93,10 @@
     </div>
   </div>
 
+  {% include "_partials/issue_hub.html" %}
+
+  </div> {# /.bottom-pin #}
+
   {% if items %}
     <div class="ph-section-h" style="margin-top:8px;">
       <div class="label">รายการที่ต้องทำ</div>
@@ -141,12 +149,10 @@
 
 {% block head_extra %}
   <style>
-    /* Align s3-top, s3-metrics, s3-issue-hub to the same horizontal
+    /* Align s3-top + the bottom-pin stack to the same horizontal
        gutter as the glass-nav (12px each side, since the dock uses
-       max-width: calc(100% - 24px) + margin: 0 auto). All four
-       surfaces now line up cleanly on the home page. */
+       max-width: calc(100% - 24px) + margin: 0 auto). */
     .s3-top { padding-left: 12px; padding-right: 12px; }
-    .s3-metrics { margin-left: 12px; margin-right: 12px; }
 
     /* Compact metric card — pulled in tighter so it pairs with the
        slimmer pinned issue hub at the bottom. Half the original
@@ -205,30 +211,38 @@
     }
     .s3-issue-hub .sap-action svg { width: 16px; height: 16px; }
 
-    /* Issue hub pinned to the bottom of the viewport above the
-       glass-nav. The hub itself is now fixed-height (no max-height
-       / overflow on the outer container) — only the feed table
-       inside .ih-feed-scroll scrolls. Action grid stays pinned
-       directly above the dock no matter how many feed rows pile
-       up. Opaque bg + hard top line + halo shadow mask any content
-       that scrolls behind the hub mid-page. */
-    .s3-issue-hub {
+    /* Pinned bottom stack — metrics card sits directly on top of the
+       issue hub with zero gap, joined into one visual surface. Outer
+       corners stay rounded; the inner edge between them is squared
+       and shares a single 1px line. Halo shadow on the top edge of
+       the metrics card masks any page content that scrolls behind. */
+    .bottom-pin {
       position: fixed;
       left: 0; right: 0;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
       margin: 0 12px;
       z-index: 5;
-      background: var(--surface);
+    }
+    .bottom-pin .s3-metrics {
+      margin: 0;
+      border-bottom-left-radius: 0;
+      border-bottom-right-radius: 0;
+      border-bottom: 0;
       box-shadow:
         0 -1px 0 var(--line),
         0 -16px 32px -10px rgba(17, 17, 17, 0.22);
     }
+    .bottom-pin .s3-issue-hub {
+      margin: 0;
+      border-top-left-radius: 0;
+      border-top-right-radius: 0;
+      border-top: 0;
+    }
     /* Reserve room so scrollable content can fully reveal above the
-       hub. Hub height ≈ 140 (table) + 14 (header) + 8 (gap) + 30
-       (actions header) + 100 (2x2 actions) + 16 (padding) ≈ 310px;
-       round up + safe-area + dock zone for safety. */
+       pinned stack. Combined height ≈ metrics (~170) + hub (~310)
+       ≈ 480px; round up + safe-area + dock zone for safety. */
     body .td {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 410px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 560px);
     }
   </style>
 {% endblock %}
