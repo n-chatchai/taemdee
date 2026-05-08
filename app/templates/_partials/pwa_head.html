@@ -15,6 +15,14 @@
 <meta name="apple-mobile-web-app-capable" content="yes">
 <meta name="apple-mobile-web-app-status-bar-style" content="default">
 <meta name="apple-mobile-web-app-title" content="{{ 'ร้านแต้มดี' if _pwa_is_shop else 'แต้มดี' }}">
+{# iOS Safari only honours apple-touch-startup-image with EXACT-pixel
+   PNGs per device. Without them, cold-launches flash white before the
+   first paint. The link below is a single best-effort fallback using
+   the maskable icon — Safari will ignore it on devices whose native
+   resolution doesn't match. To actually beat the white flash on every
+   iPhone, generate per-device splash PNGs (PWA Builder / Maskable.app)
+   and add a link tag per (size, orientation, device-pixel-ratio). #}
+<link rel="apple-touch-startup-image" href="/static/taemdee-icons/taemdee-icon-maskable-512.png?v={{ asset_version }}">
 <link rel="manifest" href="/manifest.json?v={{ asset_version }}">
 <link rel="icon" type="image/png" sizes="32x32" href="/static/taemdee-icons/taemdee-icon-32.png?v={{ asset_version }}">
 <link rel="icon" type="image/png" sizes="192x192" href="/static/taemdee-icons/taemdee-icon-192.png?v={{ asset_version }}">
