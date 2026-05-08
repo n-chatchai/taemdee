@@ -759,10 +759,13 @@ async def line_callback(
         except (ValueError, TypeError):
             logger.warning(f"⚠️ Bad pwa_anchor_id in LINE callback: {pwa_anchor_id}")
 
-    # Persist standalone-mode signal on the owner User. PWA presence is
-    # also implied by pwa_anchor_id (only PWA flow sets that), so treat
-    # either as enough.
-    pwa_signal = is_pwa or bool(pwa_anchor_id)
+    # PWA detection trusts the URL is_pwa flag exclusively — the
+    # client confirmed display-mode: standalone before adding it.
+    # NOT inferred from anchor presence: /shop/login mints an anchor
+    # row + cookie on every render (PWA or desktop browser), so
+    # `bool(pwa_anchor_id)` is True even for desktop sessions and would
+    # falsely route them to the "กลับไปเปิดแอป" completion variant.
+    pwa_signal = is_pwa
     if pwa_signal and staff_match.user and not staff_match.user.is_pwa_shop:
         staff_match.user.is_pwa_shop = True
         db.add(staff_match.user)
@@ -1087,7 +1090,9 @@ async def google_callback(
             except (ValueError, TypeError):
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Google callback: {pwa_anchor_id}")
 
-        pwa_signal = is_pwa or bool(pwa_anchor_id)
+        # See LINE callback: trust the URL is_pwa flag, not anchor
+        # presence (anchor cookie is set on every /shop/login render).
+        pwa_signal = is_pwa
         if pwa_signal and staff_match.user and not staff_match.user.is_pwa_shop:
             staff_match.user.is_pwa_shop = True
             db.add(staff_match.user)
@@ -1284,7 +1289,9 @@ async def facebook_callback(
             except (ValueError, TypeError):
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Facebook callback: {pwa_anchor_id}")
 
-        pwa_signal = is_pwa or bool(pwa_anchor_id)
+        # See LINE callback: trust the URL is_pwa flag, not anchor
+        # presence (anchor cookie is set on every /shop/login render).
+        pwa_signal = is_pwa
         if pwa_signal and staff_match.user and not staff_match.user.is_pwa_shop:
             staff_match.user.is_pwa_shop = True
             db.add(staff_match.user)
