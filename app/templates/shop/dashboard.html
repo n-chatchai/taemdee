@@ -193,6 +193,39 @@
       margin-left: 12px;
       margin-right: 12px;
     }
+
+    /* Pull .met-sub left so it reads right after the big number
+       instead of being pushed to the centre by the row's
+       justify-content: space-between. Nudge .met-sub and .met-delta
+       up a few px so they sit a touch above the big number's
+       baseline, not flush with it. */
+    .s3-metrics .met-num-row .met-sub {
+      margin-right: auto;
+      text-align: left;
+    }
+    .s3-metrics .met-num-row .met-sub,
+    .s3-metrics .met-num-row .met-delta {
+      margin-bottom: 3px;
+    }
+
+    /* Drop the inner border + padding + bg around the trend chart
+       so the bars sit directly on the metric card surface instead
+       of inside a nested rounded box. */
+    .s3-metrics .met-trend {
+      padding: 0;
+      background: transparent;
+      border: 0;
+    }
+
+    /* The .td-pinned default reserves only the dock zone (112px),
+       but on dashboard the .s3-issue-actions glass card sits ~98px
+       above the dock at bottom: 104px — without extra room the
+       activity feed scrolls up under the actions card. Bump
+       padding-bottom to 210px + safe-area so .page-scroll terminates
+       above both the dock and the sticky actions stack. */
+    body .td.td-pinned.td-tabbed.td-issue {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 210px);
+    }
   </style>
 {% endblock %}
 
