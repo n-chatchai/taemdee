@@ -192,26 +192,43 @@
     }
     .s3-issue-hub .sap-action svg { width: 16px; height: 16px; }
 
-    /* Issue hub pinned to the bottom of the viewport, just above the
-       glass-nav, so the operator's primary action surface is always
-       reachable as they scroll metrics + todos. Hub itself can scroll
-       internally when feed rows pile up; max-height caps it at half
-       the viewport so the chart above stays visible. */
+    /* Issue hub pinned to the bottom of the viewport above the
+       glass-nav. To guarantee the metric card never visually
+       overlaps the hub mid-scroll, we:
+         · cap the hub at 40vh (was 50vh) so it leaves more room
+           for the chart above,
+         · use --hub-h as the single source of truth for the hub's
+           outer height so the body padding-bottom reservation
+           matches exactly,
+         · paint a fully opaque background + harder upward shadow
+           so any content scrolling behind the hub is masked
+           cleanly instead of bleeding through.
+
+       --hub-h breakdown:
+         dock zone   = env(safe-area-inset-bottom) + ~94px (dock
+                       sits 14px from screen edge + ~80px tall)
+         hub offset  = +6px gap above dock
+         hub max     = 40vh
+         total slack = +20px safety so the last metric/todo row
+                       doesn't kiss the hub border. */
     .s3-issue-hub {
       position: fixed;
       left: 0; right: 0;
       bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
       margin: 0 12px;
-      max-height: 50vh;
+      max-height: 40vh;
       overflow-y: auto;
       z-index: 5;
-      box-shadow: 0 -8px 24px -10px rgba(17, 17, 17, 0.18);
+      background: var(--surface);
+      box-shadow:
+        0 -1px 0 var(--line),
+        0 -16px 32px -10px rgba(17, 17, 17, 0.22);
     }
-    /* Reserve room at the bottom of the dashboard so the metric +
-       todos stack doesn't sit underneath the pinned hub + dock.
-       Compact hub is ~250px tall now, dock is ~80px, leave a little
-       slack so the last item isn't flush against the hub border. */
-    body .td { padding-bottom: 300px; }
+    /* Reserve room so scrollable content can fully reveal above the
+       hub. 40vh + dock + safe-area + slack. */
+    body .td {
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 40vh + 120px);
+    }
   </style>
 {% endblock %}
 
