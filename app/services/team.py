@@ -111,6 +111,30 @@ async def register_shop_with_pin(
     staff = await create_owner_staff(db, shop, user=user)
     return shop, staff
 
+
+async def register_user_with_pin(
+    db: AsyncSession,
+    *,
+    username: str,
+    pin: str,
+    display_name: Optional[str] = None,
+) -> User:
+    """Bootstrap a brand-new User with username + PIN — no Shop, no
+    StaffMember. Used by the staff-invite + register flow where the
+    invitee is creating a fresh identity but joining an existing shop
+    (the StaffMember row is the unclaimed open-seat invite, bound onto
+    this user via claim_invite_token afterwards). Caller validated
+    shape + uniqueness."""
+    user = User(
+        username=username,
+        pin_hash=hash_pin(pin),
+        display_name=display_name,
+    )
+    db.add(user)
+    await db.commit()
+    await db.refresh(user)
+    return user
+
 # Staff identity field set — no recovery_code (staff don't use the
 # anonymous-claim flow), so the four social/phone columns are it.
 _STAFF_IDENTITY_FIELDS = ("line_id", "google_id", "facebook_id", "phone")

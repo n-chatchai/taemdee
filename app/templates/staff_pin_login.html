@@ -20,11 +20,19 @@
           <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="6" fill="none" stroke-linecap="round"/>
         </svg>
       </div>
+      {% if staff_token %}
+      <div class="s1-name">เข้าร่วมร้าน</div>
+      <div class="s1-tag">
+        <span x-show="step === 'login'">มีชื่อผู้ใช้อยู่แล้ว · เข้าสู่ระบบเพื่อเข้าร่วม</span>
+        <span x-show="step === 'register'" x-cloak>สร้างชื่อผู้ใช้ + รหัส / พิน เพื่อเข้าร่วม</span>
+      </div>
+      {% else %}
       <div class="s1-name" x-text="step === 'register' ? 'สมัครร้านใหม่' : 'เข้าสู่ระบบ'"></div>
       <div class="s1-tag">
         <span x-show="step === 'login'">ใส่ชื่อผู้ใช้ · รหัส / พิน ที่ตั้งไว้</span>
         <span x-show="step === 'register'" x-cloak>สร้างร้านใหม่ด้วย ชื่อผู้ใช้ + รหัส / พิน</span>
       </div>
+      {% endif %}
     </div>
 
     {# === Login form === #}
@@ -33,6 +41,8 @@
       {% if error and initial_step != 'register' %}
       <div class="err" style="margin-bottom: 12px;">{{ error }}</div>
       {% endif %}
+
+      {% if staff_token %}<input type="hidden" name="staff_token" value="{{ staff_token }}">{% endif %}
 
       <label for="login-username">ชื่อผู้ใช้</label>
       <input id="login-username" type="text" name="username"
@@ -47,10 +57,10 @@
              placeholder="••••••" required>
 
       <button type="submit" class="s1-btn s1-btn-phone" style="margin-top: 16px;">
-        เข้าสู่ระบบ
+        {% if staff_token %}เข้าสู่ระบบ &amp; เข้าร่วมร้าน{% else %}เข้าสู่ระบบ{% endif %}
       </button>
       <button type="button" class="back" @click="step = 'register'">
-        ยังไม่มีบัญชี? สร้างร้านใหม่
+        {% if staff_token %}ยังไม่มีบัญชี · สร้างใหม่{% else %}ยังไม่มีบัญชี? สร้างร้านใหม่{% endif %}
       </button>
     </form>
 
@@ -61,12 +71,18 @@
       <div class="err" style="margin-bottom: 12px;">{{ error }}</div>
       {% endif %}
 
+      {% if staff_token %}<input type="hidden" name="staff_token" value="{{ staff_token }}">{% endif %}
+
+      {# Shop-name field is owner-bootstrap only — invitees are joining
+         an existing shop, no new Shop row created. #}
+      {% if not staff_token %}
       <label for="reg-shop-name">ชื่อร้าน</label>
       <input id="reg-shop-name" type="text" name="shop_name"
              value="{{ shop_name_value|default('') }}"
              placeholder="เช่น ร้านกาแฟลุงหมี" required>
+      {% endif %}
 
-      <label for="reg-username" style="margin-top: 12px;">ชื่อผู้ใช้</label>
+      <label for="reg-username" {% if not staff_token %}style="margin-top: 12px;"{% endif %}>ชื่อผู้ใช้</label>
       <input id="reg-username" type="text" name="username"
              autocapitalize="none" autocorrect="off" autocomplete="username"
              value="{{ username_value|default('') }}"
@@ -79,7 +95,7 @@
              placeholder="ตัวเลข 6 หลัก" required>
 
       <button type="submit" class="s1-btn s1-btn-phone" style="margin-top: 16px;">
-        สร้างร้าน &amp; เข้าสู่ระบบ
+        {% if staff_token %}สร้างบัญชี &amp; เข้าร่วมร้าน{% else %}สร้างร้าน &amp; เข้าสู่ระบบ{% endif %}
       </button>
       <button type="button" class="back" @click="step = 'login'">
         มีบัญชีอยู่แล้ว · เข้าสู่ระบบ

@@ -53,6 +53,13 @@
         </a>
         {% endif %}
 
+        {% if settings.is_login_enabled('shop', 'username') %}
+        <a class="sj-login-btn phone" href="/staff/pin-login?staff_token={{ token }}" style="background: var(--ink); color: var(--bg);">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M20 21v-2a4 4 0 0 0-4-4H8a4 4 0 0 0-4 4v2"/><circle cx="12" cy="7" r="4"/></svg>
+          เข้าด้วยชื่อผู้ใช้
+        </a>
+        {% endif %}
+
         <a class="sj-cta-cancel" href="/">ไม่ใช่ฉัน</a>
       </div>
     {% else %}
