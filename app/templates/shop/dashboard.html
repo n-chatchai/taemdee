@@ -139,9 +139,15 @@
 
 {% block head_extra %}
   <style>
+    /* Align s3-top, s3-metrics, s3-issue-hub to the same horizontal
+       gutter as the glass-nav (12px each side, since the dock uses
+       max-width: calc(100% - 24px) + margin: 0 auto). All four
+       surfaces now line up cleanly on the home page. */
+    .s3-top { padding-left: 12px; padding-right: 12px; }
+    .s3-metrics { margin-left: 12px; margin-right: 12px; }
+
     /* Compact metric card on the dashboard. */
     .s3-metrics {
-      margin: 8px 20px 12px;
       padding: 12px 16px 12px;
       border-radius: 16px;
     }
