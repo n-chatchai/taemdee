@@ -5,33 +5,35 @@
 {% set valid_images = ['gift_box', 'card', 'star', 'coffee_cup'] %}
 {% set picked_image = shop.reward_image if shop.reward_image in valid_images else 'gift_box' %}
 {% set picked_desc = shop.reward_description if shop.reward_description != 'Free Coffee' else '' %}
-x-data="{
-rewardImage: '{{ picked_image }}',
-rewardDescription: {{ picked_desc|tojson }},
-goal: {{ shop.reward_threshold }},
-customOpen: {{ 'true' if shop.reward_threshold not in goals else 'false' }},
+{% set picked_url = shop.reward_image if (shop.reward_image and shop.reward_image.startswith('http')) else '' %}
+{% set picked_threshold = shop.reward_threshold or 10 %}
+x-data='{
+rewardImage: {{ picked_image | tojson }},
+rewardDescription: {{ picked_desc | tojson }},
+goal: {{ picked_threshold }},
+customOpen: {{ "true" if picked_threshold not in goals else "false" }},
 isUploading: false,
-customRewardUrl: '{{ shop.reward_image if shop.reward_image.startswith('http') else '' }}',
+customRewardUrl: {{ picked_url | tojson }},
 async handleFileUpload(e) {
 const file = e.target.files[0];
 if (!file) return;
 this.isUploading = true;
 const formData = new FormData();
-formData.append('file', file);
+formData.append("file", file);
 try {
-const res = await fetch('/shop/upload/reward', { method: 'POST', body: formData });
+const res = await fetch("/shop/upload/reward", { method: "POST", body: formData });
 const data = await res.json();
 if (data.url) {
 this.customRewardUrl = data.url;
 this.rewardImage = data.url;
 }
 } catch (err) {
-console.error('Upload failed', err);
+console.error("Upload failed", err);
 } finally {
 this.isUploading = false;
 }
 }
-}"
+}'
 {% endblock %}
 
 {% block content %}
