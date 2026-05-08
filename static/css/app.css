@@ -57,6 +57,84 @@ body:has(.td) {
   -webkit-touch-callout: default;
 }
 
+/* Press feedback — quick scale(0.97) on :active for the common
+   tappable surfaces so taps feel like presses, not link clicks.
+   Per-element :active rules elsewhere in this file (e.g. .gl-hero,
+   .pe-save, .sap-action) override or stack as the cascade allows.
+   Inputs / textareas and the floating glass-nav are deliberately
+   left out — text fields shouldn't deform, and the dock has its
+   own gn-tab:active opacity tint. */
+.td .s1-btn,
+.td .s10-row,
+.td .s10-logout,
+.td .cust-row,
+.td .cl-mini,
+.td .cl-other-row,
+.td .cl-add,
+.td .cl-todo,
+.td .cl-todo-cta,
+.td .cl-todo-skip-x,
+.td .cl-voucher-card,
+.td .cl-voucher-cta,
+.td .cce-btn,
+.td .gl-hero,
+.td .gl-mini,
+.td .gl-used-toggle,
+.td .gl-used-row,
+.td .s2-cta,
+.td .s2-cta-final,
+.td .s2-goal-pill,
+.td .s2-reward,
+.td .s3-cust-stat,
+.td .s3-todo,
+.td .s3-skip-btn,
+.td .sap-action,
+.td .fc,
+.td .mp,
+.td .pe-save,
+.td .pe-cancel,
+.td .pe-default-btn,
+.td .pe-avatar,
+.td .send,
+.td .cancel,
+.td .vc-card,
+.td button[type="submit"]:not(:disabled),
+.td button[type="button"]:not(:disabled) {
+  transition: transform 0.08s ease;
+}
+.td .s1-btn:active,
+.td .s10-row:active,
+.td .s10-logout:active,
+.td .cust-row:active,
+.td .cl-mini:active,
+.td .cl-other-row:active,
+.td .cl-add:active,
+.td .cl-todo:active,
+.td .cl-todo-cta:active,
+.td .cl-todo-skip-x:active,
+.td .cl-voucher-card:active,
+.td .cl-voucher-cta:active,
+.td .cce-btn:active,
+.td .gl-used-toggle:active,
+.td .gl-used-row:active,
+.td .s2-cta:active,
+.td .s2-goal-pill:active,
+.td .s2-reward:active,
+.td .s3-cust-stat:active,
+.td .s3-todo:active,
+.td .s3-skip-btn:active,
+.td .fc:active,
+.td .mp:active,
+.td .pe-default-btn:active,
+.td .pe-avatar:active,
+.td .send:active,
+.td .cancel:active,
+.td .vc-card:active,
+.td button[type="submit"]:not(:disabled):active,
+.td button[type="button"]:not(:disabled):active {
+  transform: scale(0.97);
+}
+
 /* Reserve the scrollbar gutter so switching between tabs of different
    heights doesn't shift content horizontally when the vertical
    scrollbar appears or disappears. `stable` keeps the gutter present
