@@ -618,14 +618,50 @@ def _set_flash(response: Response, message: str) -> None:
 @router.post("/track/pwa")
 async def track_pwa(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    session_cookie: Optional[str] = Cookie(None, alias="session"),
     db: AsyncSession = Depends(get_session),
 ):
-    """Record that customer is using PWA (installed to home screen)."""
-    from app.core.auth import find_or_create_customer
-    customer, _ = await find_or_create_customer(customer_cookie, db)
-    if not customer.is_pwa:
-        customer.user.is_pwa = True
-        db.add(customer.user)
+    """Record that the visitor is using a standalone PWA. Called from
+    pwa_head.html (included by both c_base + s_base) when display-mode
+    is standalone, once per session.
+
+    Role-aware: customer cookie → User.is_pwa_customer (drives the
+    "เพิ่มลงหน้าจอ" todo + customer-side gift fulfillment); shop
+    session cookie → User.is_pwa_shop (telemetry — % of owners running
+    the standalone install). Set-once each, never cleared.
+    """
+    changed = False
+
+    if customer_cookie:
+        from app.core.auth import find_or_create_customer
+        try:
+            customer, _ = await find_or_create_customer(customer_cookie, db)
+        except Exception:
+            customer = None
+        if customer and customer.user and not customer.user.is_pwa_customer:
+            customer.user.is_pwa_customer = True
+            db.add(customer.user)
+            changed = True
+
+    if session_cookie:
+        from app.services.auth import decode_session_token
+        from app.models import StaffMember
+        payload = decode_session_token(session_cookie)
+        staff_id_raw = payload.get("staff_id") if payload else None
+        if staff_id_raw:
+            from uuid import UUID
+            try:
+                staff_id = UUID(staff_id_raw)
+            except (ValueError, TypeError):
+                staff_id = None
+            if staff_id:
+                staff = await db.get(StaffMember, staff_id)
+                if staff and staff.user and not staff.user.is_pwa_shop:
+                    staff.user.is_pwa_shop = True
+                    db.add(staff.user)
+                    changed = True
+
+    if changed:
         await db.commit()
     return JSONResponse(status_code=204, content=None)
 

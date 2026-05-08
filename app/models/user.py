@@ -58,7 +58,15 @@ class User(SQLModel, table=True):
     # ── Person-level UX state ──────────────────────────────────────────────
     # Same person, same answer everywhere — these belong on the
     # identity, not a per-role profile.
-    is_pwa: bool = Field(default=False)
+    #
+    # PWA install flags are tracked per-role because the customer and
+    # shop manifests are separate subdomains / scopes — a person can
+    # have one installed without the other. Customer flag drives the
+    # "เพิ่มลงหน้าจอ" todo + gift fulfillment; shop flag is mostly
+    # telemetry today (% of owners on the standalone install). Both
+    # are set-once via /track/pwa, never cleared.
+    is_pwa_customer: bool = Field(default=False)
+    is_pwa_shop: bool = Field(default=False)
     text_size: Optional[str] = Field(default=None)
     notifications_enabled: bool = Field(default=True)
 

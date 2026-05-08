@@ -104,7 +104,10 @@ class Customer(SQLModel, table=True):
 
     @property
     def is_pwa(self) -> bool:
-        return bool(self.user and self.user.is_pwa)
+        # Customer-only flag — shop-side install lives on
+        # User.is_pwa_shop and doesn't fulfil the customer
+        # "เพิ่มลงหน้าจอ" todo.
+        return bool(self.user and self.user.is_pwa_customer)
 
     @property
     def text_size(self) -> Optional[str]:

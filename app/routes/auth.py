@@ -302,9 +302,6 @@ async def connect_complete(
     provider: Optional[str] = None,
     role: Optional[str] = None,
     is_pwa: Optional[int] = None,
-    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
-    session_cookie: Optional[str] = Cookie(None, alias=SESSION_COOKIE_NAME),
-    db: AsyncSession = Depends(get_session),
 ):
     """Post-OAuth completion page. iOS PWA pops cross-origin OAuth to
     Safari, so this page typically renders in Safari (not the PWA).
@@ -317,40 +314,15 @@ async def connect_complete(
       - Browser: keep the auto-redirect / CTA so a user without a PWA
         installed lands directly on their dashboard.
 
-    `is_pwa` source-of-truth is the URL param (rides through the OAuth
-    state JWT from the original click), with User.is_pwa from the DB
-    as a fallback for users who already proved they have the PWA on
-    a previous visit (set by /track/pwa or by an earlier OAuth bind)."""
-    is_pwa_signal = bool(is_pwa)
-    if not is_pwa_signal:
-        # Fallback to the persisted flag — covers users who installed
-        # the PWA on a prior visit, did /track/pwa once, then lost the
-        # JS detection on a fresh tab (e.g. after rebooting their phone
-        # and re-entering Safari without going through the PWA first).
-        if role == "shop" and session_cookie:
-            payload = decode_session_token(session_cookie)
-            if payload and payload.get("staff_id"):
-                from uuid import UUID
-                try:
-                    staff_id = UUID(payload["staff_id"])
-                    from app.models import StaffMember
-                    staff = await db.get(StaffMember, staff_id)
-                    if staff and staff.user and staff.user.is_pwa:
-                        is_pwa_signal = True
-                except (ValueError, TypeError):
-                    pass
-        elif customer_cookie:
-            from uuid import UUID
-            try:
-                cid = decode_customer_token(customer_cookie)
-                if cid:
-                    from app.models import Customer
-                    customer_row = await db.get(Customer, cid)
-                    if customer_row and customer_row.user and customer_row.user.is_pwa:
-                        is_pwa_signal = True
-            except (ValueError, TypeError):
-                pass
-
+    Trust the URL `is_pwa` flag exclusively — it rides through the
+    OAuth state JWT from the original click, where JS verified the
+    page was actually running display-mode: standalone. The persisted
+    User.is_pwa_* flags are set-once and don't clear if the user
+    uninstalls the PWA, so falling back to them here would render the
+    "go back to PWA" copy on a desktop browser session for any user
+    who'd previously installed the app on a phone — exactly the bug
+    the URL flag is supposed to solve.
+    """
     return templates.TemplateResponse(
         request=request,
         name="auth/connect_complete.html",
@@ -358,7 +330,7 @@ async def connect_complete(
             "provider": provider or "",
             "provider_label": _PROVIDER_LABELS.get(provider or "", "บัญชี"),
             "role": role or "customer",
-            "is_pwa": is_pwa_signal,
+            "is_pwa": bool(is_pwa),
         },
     )
 
@@ -690,12 +662,10 @@ async def line_callback(
                     status_code=status.HTTP_303_SEE_OTHER,
                 )
 
-        # Persist the standalone-mode flag from the OAuth state into
-        # User.is_pwa so subsequent renders (e.g. /auth/connect-complete
-        # opened in a fresh Safari tab) can branch on a stable signal
-        # without depending on URL-param plumbing surviving every hop.
-        if is_pwa and claimed.user and not claimed.user.is_pwa:
-            claimed.user.is_pwa = True
+        # Persist the customer-side standalone install flag for
+        # telemetry + the "เพิ่มลงหน้าจอ" todo. Set-once, never cleared.
+        if is_pwa and claimed.user and not claimed.user.is_pwa_customer:
+            claimed.user.is_pwa_customer = True
             db.add(claimed.user)
             await db.commit()
 
@@ -793,8 +763,8 @@ async def line_callback(
     # also implied by pwa_anchor_id (only PWA flow sets that), so treat
     # either as enough.
     pwa_signal = is_pwa or bool(pwa_anchor_id)
-    if pwa_signal and staff_match.user and not staff_match.user.is_pwa:
-        staff_match.user.is_pwa = True
+    if pwa_signal and staff_match.user and not staff_match.user.is_pwa_shop:
+        staff_match.user.is_pwa_shop = True
         db.add(staff_match.user)
         await db.commit()
 
@@ -1118,8 +1088,8 @@ async def google_callback(
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Google callback: {pwa_anchor_id}")
 
         pwa_signal = is_pwa or bool(pwa_anchor_id)
-        if pwa_signal and staff_match.user and not staff_match.user.is_pwa:
-            staff_match.user.is_pwa = True
+        if pwa_signal and staff_match.user and not staff_match.user.is_pwa_shop:
+            staff_match.user.is_pwa_shop = True
             db.add(staff_match.user)
             await db.commit()
 
@@ -1222,8 +1192,8 @@ async def google_callback(
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    if is_pwa and claimed.user and not claimed.user.is_pwa:
-        claimed.user.is_pwa = True
+    if is_pwa and claimed.user and not claimed.user.is_pwa_customer:
+        claimed.user.is_pwa_customer = True
         db.add(claimed.user)
         await db.commit()
 
@@ -1315,8 +1285,8 @@ async def facebook_callback(
                 logger.warning(f"⚠️ Bad pwa_anchor_id in Facebook callback: {pwa_anchor_id}")
 
         pwa_signal = is_pwa or bool(pwa_anchor_id)
-        if pwa_signal and staff_match.user and not staff_match.user.is_pwa:
-            staff_match.user.is_pwa = True
+        if pwa_signal and staff_match.user and not staff_match.user.is_pwa_shop:
+            staff_match.user.is_pwa_shop = True
             db.add(staff_match.user)
             await db.commit()
 
@@ -1414,8 +1384,8 @@ async def facebook_callback(
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    if is_pwa and claimed.user and not claimed.user.is_pwa:
-        claimed.user.is_pwa = True
+    if is_pwa and claimed.user and not claimed.user.is_pwa_customer:
+        claimed.user.is_pwa_customer = True
         db.add(claimed.user)
         await db.commit()
 

@@ -175,7 +175,8 @@ async def merge_users(
     # Booleans we OR rather than copy — if either side ever installed
     # the PWA / accepted notifications, the merged identity should
     # remember.
-    target.is_pwa = bool(target.is_pwa or source.is_pwa)
+    target.is_pwa_customer = bool(target.is_pwa_customer or source.is_pwa_customer)
+    target.is_pwa_shop = bool(target.is_pwa_shop or source.is_pwa_shop)
     target.notifications_enabled = bool(
         target.notifications_enabled and source.notifications_enabled
     )
