@@ -66,7 +66,10 @@ Child templates fill these blocks:
       <div class="topbar"><span></span><span></span></div>
       {% block content %}{% endblock %}
       {% include "_partials/footer_mark.html" %}
-      {% include "_partials/c_dock.html" %}
+      {# c_dock wraps in {% block nav %} so chat / focused pages can
+         override with an empty block. Mirrors how s_base lets shop
+         pages opt out of the glass dock. #}
+      {% block nav %}{% include "_partials/c_dock.html" %}{% endblock %}
 
       {# Mandatory nickname collection sheet — slides up over any page if
       the customer is still using the default "คุณลูกค้า" nickname. #}

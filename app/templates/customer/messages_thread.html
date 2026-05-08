@@ -1,6 +1,11 @@
 {% extends "_layouts/c_base.html" %}
 {% block title %}ข้อความถึง {{ shop.name }} · TaemDee{% endblock %}
 
+{# No dock on the thread page — the compose box sits at bottom: 0
+   and would overlap with c_dock's fixed bar otherwise. Back link
+   in the header is the navigation out. #}
+{% block nav %}{% endblock %}
+
 {% block content %}
 <div class="td-page td-thread">
   <div class="td-page-header">
