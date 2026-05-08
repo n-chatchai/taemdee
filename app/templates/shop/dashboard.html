@@ -232,6 +232,13 @@
       overflow: hidden;
       margin: 0;
     }
+    /* Kill the .td::before radial gradient on this page — its peak
+       sits at 12% down (right inside the s3-top area), which made
+       the top read yellow while the .page-scroll below read cream.
+       Drop it so the whole .td shows one uniform bg colour + the
+       dot texture from .td::after, with no visual seam between the
+       top nav and the scroll area. */
+    body .td::before { display: none; }
     body .td {
       height: 100dvh;
       max-height: 100dvh;
@@ -262,6 +269,10 @@
       overflow-y: auto;
       overflow-x: hidden;
       -webkit-overflow-scrolling: touch;
+      /* Transparent so .td's background gradient + dot pattern
+         (painted by .td::before / .td::after) show through the
+         scroll area instead of being masked by an opaque box. */
+      background: transparent;
     }
 
     /* Pinned bottom stack — metrics card sits directly on top of the
