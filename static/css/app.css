@@ -8071,6 +8071,25 @@ body:has(.td-pinned) {
   overflow-x: hidden;
   -webkit-overflow-scrolling: touch;
   background: transparent;
+  /* 12px each side mirrors the dock's max-width: calc(100% - 24px)
+     + margin: 0 auto, so every direct child's outer edge lines up
+     with the floating glass-nav below. */
+  padding-left: 12px;
+  padding-right: 12px;
+}
+/* Reset any per-card horizontal margin so the .page-scroll padding
+   above is what defines the gutter — keeps every direct child's
+   outer edge flush at 12px from the viewport. */
+.td.td-pinned .page-scroll > * {
+  margin-left: 0;
+  margin-right: 0;
+}
+/* Top nav (s3_top) sits outside .page-scroll but should match the
+   same 12px gutter so the header reads as part of the same column
+   as the cards below + the dock at the bottom. */
+.td.td-pinned .s3-top {
+  padding-left: 12px;
+  padding-right: 12px;
 }
 
 /* ==========================================================
