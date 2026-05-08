@@ -142,6 +142,21 @@
     window.scrollTo(0, document.body.scrollHeight);
   })();
 
+  // Enter to send, Shift+Enter for newline — standard messenger
+  // keyboard contract. Form submit goes through the existing POST.
+  (function () {
+    var form = document.querySelector('.td-compose');
+    if (!form) return;
+    var ta = form.querySelector('textarea');
+    if (!ta) return;
+    ta.addEventListener('keydown', function (e) {
+      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+        e.preventDefault();
+        if (ta.value.trim()) form.requestSubmit();
+      }
+    });
+  })();
+
   // Live SSE — append the shop's reply as it lands. /sse/me is the
   // customer's per-tab event stream (see services/events.py); the
   // server pushes 'chat-message-in' with {shop_id, html} on every
@@ -172,18 +187,27 @@
     function open() {
       try {
         es = new EventSource('/sse/me');
+        es.addEventListener('open', function () {
+          console.info('[chat] SSE connected (customer thread, shop=' + SHOP_ID + ')');
+        });
         es.addEventListener('chat-message-in', function (ev) {
+          console.info('[chat] event chat-message-in:', ev.data);
           try {
             var data = JSON.parse(ev.data);
             if (data.shop_id !== SHOP_ID) return;
             appendBubble(data.html);
-          } catch (_) {}
+          } catch (err) {
+            console.warn('[chat] parse failed', err);
+          }
         });
-        es.onerror = function () {
+        es.onerror = function (e) {
+          console.warn('[chat] SSE error, retry in 30s', e);
           try { es.close(); } catch (_) {}
           setTimeout(open, 30000);
         };
-      } catch (_) {}
+      } catch (e) {
+        console.warn('[chat] EventSource open failed', e);
+      }
     }
     if (!document.hidden) open();
     document.addEventListener('visibilitychange', function () {

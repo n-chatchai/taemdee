@@ -144,6 +144,7 @@ async def _publish_chat_events(
 ) -> None:
     """Fire the SSE events for the side that DIDN'T just send (the
     sender's own page already redirects to the fresh thread state)."""
+    from loguru import logger
     from app.services.events import publish, publish_customer
 
     bubble = _bubble_html(sender, msg)
@@ -156,6 +157,10 @@ async def _publish_chat_events(
         }))
         new_total = await shop_unread_total(db, thread.shop_id)
         publish(thread.shop_id, "messages-update", str(new_total))
+        logger.info(
+            f"💬 chat publish (customer→shop): shop={thread.shop_id} "
+            f"thread={thread.id} msg={msg.id} new_unread={new_total}"
+        )
     else:
         # Notify the customer's open thread page + bump the dock
         # badge. The dock counter merges DeeReach unread with chat
@@ -173,6 +178,10 @@ async def _publish_chat_events(
         )).one()
         merged = int(chat_total or 0) + int(deereach_total or 0)
         publish_customer(thread.customer_id, "inbox-update", str(merged))
+        logger.info(
+            f"💬 chat publish (shop→customer): customer={thread.customer_id} "
+            f"shop={thread.shop_id} msg={msg.id} merged_unread={merged}"
+        )
 
 
 async def list_messages(

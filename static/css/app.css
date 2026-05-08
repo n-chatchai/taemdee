@@ -9358,7 +9358,8 @@ form.s10-row { margin: 0 0 4px; }
   color: #fff;
   line-height: 1;
 }
-.c-glass-nav .gn-badge.has-count {
+.c-glass-nav .gn-badge.has-count,
+.s3-glass-nav .gn-badge.has-count {
   min-width: 16px; height: 16px;
   padding: 0 4px;
   top: -4px; right: -8px;

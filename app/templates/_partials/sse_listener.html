@@ -128,8 +128,10 @@
       if (n > 0) {
         if (!badge) {
           badge = document.createElement('span');
-          badge.className = 'gn-badge count';
+          badge.className = 'gn-badge has-count';
           messagesTabIcon.appendChild(badge);
+        } else {
+          badge.classList.add('has-count');
         }
         badge.textContent = String(n);
       } else if (badge) {
