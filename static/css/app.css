@@ -7600,11 +7600,11 @@ form.s10-row { margin: 0 0 4px; }
   /* 8px top margin matches .s3-metrics on the dashboard so the
      first content block sits at the same y-coordinate across all
      dock tabs — no vertical jump when navigating between pages. */
-  margin: 8px 20px 14px;
+  margin: 0px 20px 14px;
 }
 .s3-cust-stat {
   background: var(--surface);
-  border: 1px solid var(--ink);
+  border: 1px solid var(--line);
   border-radius: 12px;
   padding: 12px 8px 10px;
   text-align: center;
@@ -9057,7 +9057,7 @@ body:has(.td-pinned) {
   display: block;
   /* 8px top matches the other tab roots so the insights first card
      lines up with dashboard/issue/customers. */
-  margin: 8px 20px 16px;
+  margin: 0px 20px 16px;
   padding: 14px 16px;
   background: var(--surface);
   border: 1px solid rgba(17, 17, 17, 0.12);
