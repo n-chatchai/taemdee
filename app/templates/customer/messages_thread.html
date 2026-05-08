@@ -39,10 +39,10 @@
 </div>
 
 <style>
-  /* Bottom padding leaves room for compose (~62px) + dock (~72px)
-     stacked, so the last message in the stream isn't hidden under
-     either bar. */
-  .td-thread { padding: 16px 18px 200px; }
+  /* Bottom padding leaves room for compose (~62px) + dock (~86px)
+     + safe-area inset (~34px on notched iPhones), so the last
+     message in the stream isn't hidden under either bar. */
+  .td-thread { padding: 16px 18px 240px; }
   .td-page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
   .td-page-header h1 { font-size: 18px; font-weight: 700; margin: 0; flex: 1; }
   .td-back {
@@ -74,7 +74,7 @@
   }
   .td-locked {
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 12px) + 64px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     left: 0; right: 0;
     padding: 14px 16px;
     background: rgba(245,241,232,0.96); backdrop-filter: blur(12px);
@@ -85,12 +85,15 @@
     z-index: 10;
   }
   .td-compose {
-    /* Sit ABOVE the c_dock — the dock is roughly 64-72px tall
-       counting the safe-area bottom, so we offset the compose by
-       that much instead of stacking at bottom: 0 (which would hide
-       the textarea behind the dock's blurred surface). */
+    /* Sit ABOVE the c_dock. The dock is positioned with bottom: 14px
+       and is ~76-86px tall counting the icon + label + 10px padding,
+       so its top edge lands ~90-100px up on a no-safe-area screen and
+       even higher on a notched iPhone where the home indicator pushes
+       the dock visually further up. Use 110px as the floor with
+       safe-area-inset-bottom added on top so the compose clears the
+       dock on every device we've seen. */
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 12px) + 64px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     left: 0; right: 0;
     padding: 10px 14px;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);

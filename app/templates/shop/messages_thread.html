@@ -25,7 +25,7 @@
 </div>
 
 <style>
-  .s-thread { padding: 8px 16px 200px; }
+  .s-thread { padding: 8px 16px 240px; }
   .s-msg-stream {
     display: flex; flex-direction: column; gap: 8px;
     margin-bottom: 16px;
@@ -46,9 +46,10 @@
   .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
   .s-compose {
     /* Sit ABOVE the glass-nav — same offset logic as the customer
-       thread compose (see customer/messages_thread.html). */
+       thread compose. Dock is bottom: 14px + ~76-86px tall + safe
+       area on notched devices, so 110px + safe area clears it. */
     position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 12px) + 64px);
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     left: 0; right: 0;
     padding: 10px 14px;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
