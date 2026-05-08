@@ -224,14 +224,19 @@
       padding: 6px 0;
     }
 
-    /* The .td-pinned default reserves only the dock zone (112px),
-       but on dashboard the .s3-issue-actions glass card sits ~106px
-       above the dock at bottom: 104px (4-col grid); on screens
-       <=380px it falls back to a 2x2 grid and grows to ~160px.
-       Reserve 280px + safe-area so .page-scroll terminates visibly
-       above the actions stack on both phone widths. */
+    /* On wide phones (>=381px) the .s3-issue-actions card is a
+       4-col single-row grid (~99px tall, top ~203px from viewport
+       bottom) — reserve 215px so .page-scroll ends just above it
+       without leaving a huge empty gap that eats the feed. On
+       narrow phones (<=380px) it falls back to 2x2 (~160px tall,
+       top ~264px) so we bump to 280px there. */
     body .td.td-pinned.td-tabbed.td-issue {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 280px);
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 215px);
+    }
+    @media (max-width: 380px) {
+      body .td.td-pinned.td-tabbed.td-issue {
+        padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 280px);
+      }
     }
   </style>
 {% endblock %}

@@ -8063,12 +8063,18 @@ body:has(.td-pinned) {
   padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
 }
 /* Dashboard / issue page: the .s3-issue-actions card is fixed at
-   bottom: 104px above the dock. On wide phones the card is ~106px
-   (4-col grid); on narrow phones (<=380px) it falls back to a 2x2
-   grid and grows to ~160px. Reserve enough room for the worst case
-   so .page-scroll always ends visibly above the actions stack. */
+   bottom: 104px above the dock. On wide phones it's a single-row
+   4-col grid (~99px tall, top at ~203px from viewport bottom). On
+   narrow phones (<=380px) it falls back to 2x2 and grows to ~160px
+   (top at ~264px). Reserve enough room for each width — too much
+   padding eats the activity feed's scroll area. */
 .td.td-pinned.td-tabbed.td-issue {
-  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 280px);
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 215px);
+}
+@media (max-width: 380px) {
+  .td.td-pinned.td-tabbed.td-issue {
+    padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 280px);
+  }
 }
 .td.td-pinned .page-scroll {
   flex: 1 1 0;
@@ -8105,7 +8111,7 @@ body:has(.td-pinned) {
    + sub) per design rev — replaces 3 separate cards with one container.
    ========================================================== */
 .s3-metrics {
-  padding: 18px 20px 16px;
+  padding: 10px 20px 0px;
   background: var(--surface);
   border: 1px solid var(--line);
   border-radius: 18px;
@@ -8223,7 +8229,7 @@ body:has(.td-pinned) {
 .s3-metrics .met-trend .trend-legend {
   display: flex;
   gap: 14px;
-  margin-bottom: 10px;
+  margin-bottom: 30px;
 }
 .s3-metrics .met-trend .trend-legend .lg-item {
   display: inline-flex;
@@ -8927,7 +8933,7 @@ body:has(.td-pinned) {
 }
 .s3-issue-feed .sap-table td.a {
   text-align: right;
-  font-size: 13px;
+  font-size: 12px;
   color: var(--ink-soft);
 }
 .s3-issue-feed .sap-table tr.latest td { color: var(--accent); }
