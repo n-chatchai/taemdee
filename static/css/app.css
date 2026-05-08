@@ -8043,7 +8043,6 @@ form.s10-row { margin: 0 0 4px; }
    + sub) per design rev — replaces 3 separate cards with one container.
    ========================================================== */
 .s3-metrics {
-  margin: 8px 20px 14px;
   padding: 18px 20px 16px;
   background: var(--surface);
   border: 1px solid var(--line);
