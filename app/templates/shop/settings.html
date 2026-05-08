@@ -331,7 +331,6 @@
      (แต้ม, บัญชี, etc.) read as distinct sections instead of one
      undifferentiated list. Selector targets > div so we don't have
      to name the legacy section class explicitly. */
-  .page-container { padding: 8px 0 0; }
   .page-container > div {
     background: var(--surface);
     border: 1px solid var(--line);
@@ -347,6 +346,17 @@
     text-transform: none;
     color: var(--ink);
     margin: 0 0 8px;
+  }
+  /* Round social provider icons (LINE / Google / Facebook / Phone)
+     so the brand colour reads as a chip, not a flat 24px tile. */
+  .page-container .connect-row .row-icon {
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+  }
+  .page-container .connect-row .row-icon svg {
+    width: 16px;
+    height: 16px;
   }
 </style>
 {% endblock %}
