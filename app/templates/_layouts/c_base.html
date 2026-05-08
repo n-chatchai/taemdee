@@ -71,12 +71,11 @@ Child templates fill these blocks:
          pages opt out of the glass dock. #}
       {% block nav %}{% include "_partials/c_dock.html" %}{% endblock %}
 
-      {# Mandatory nickname collection sheet — slides up over any page if
-      the customer is still using the default "คุณลูกค้า" nickname. #}
+      {# Mandatory nickname collection sheet retired — the slide-up
+      was disruptive on every navigation; the inline profile edit
+      sheet (opened from the page-head avatar) is the canonical way
+      to set a display name. #}
       {% set customer = request.state.customer %}
-      {% if customer and not customer.display_name %}
-      {% include "_partials/nickname_sheet.html" %}
-      {% endif %}
 
       {# Profile edit sheet — opened by the page-head avatar. Mounted
       once at layout level so any page that includes page_head gets the
