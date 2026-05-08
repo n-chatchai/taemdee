@@ -6,6 +6,7 @@
 {% include "_partials/page_top.html" %}
 
 <div class="page-scroll">
+<div class="page-container">
   {# Shop identity card removed — the avatar in s3_top action row now
      owns "tap to edit shop logo + name" and routes to the existing
      full editor at /shop/settings/identity. #}
@@ -315,11 +316,39 @@
   </div>
   {% endif %}
 
+</div> {# /.page-container #}
+
   <form action="/auth/logout" method="POST" style="margin:0;"
         onsubmit="event.preventDefault(); fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/shop/login');">
     <button type="submit" class="s10-logout">ออกจากระบบ</button>
   </form>
 </div> {# /.page-scroll #}
+
+<style>
+  /* Settings split into labelled cards — every direct child of
+     .page-container becomes its own surface (bg + border + radius)
+     with a 16px / weight 700 label above the rows so the groups
+     (แต้ม, บัญชี, etc.) read as distinct sections instead of one
+     undifferentiated list. Selector targets > div so we don't have
+     to name the legacy section class explicitly. */
+  .page-container { padding: 8px 0 0; }
+  .page-container > div {
+    background: var(--surface);
+    border: 1px solid var(--line);
+    border-radius: 16px;
+    padding: 14px;
+    margin: 12px 0 0;
+  }
+  .page-container > div:first-of-type { margin-top: 4px; }
+  .page-container > div > .label {
+    font-size: 16px;
+    font-weight: 700;
+    letter-spacing: 0;
+    text-transform: none;
+    color: var(--ink);
+    margin: 0 0 8px;
+  }
+</style>
 {% endblock %}
 
 {% block td_class %} td-tabbed td-pinned{% endblock %}
