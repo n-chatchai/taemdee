@@ -221,13 +221,20 @@
     }
     .s3-issue-hub .sap-action svg { width: 16px; height: 16px; }
 
-    /* Lock the whole page to viewport height — .td becomes a flex
-       column with overflow: hidden so nothing scrolls at the body
-       level. The middle area (.page-scroll) then carries all
-       scrolling behaviour bounded by its own height, which means
-       page content can never grow into the area behind the dock. */
+    /* Lock the whole page to viewport height — html/body sealed
+       so nothing scrolls at the document level, and .td matches the
+       dynamic viewport with overflow: hidden as a backstop. The
+       middle area (.page-scroll) then carries all scrolling bounded
+       by its own height, so content cannot grow into the area
+       behind the dock. */
+    html, body {
+      height: 100dvh;
+      overflow: hidden;
+      margin: 0;
+    }
     body .td {
       height: 100dvh;
+      max-height: 100dvh;
       display: flex;
       flex-direction: column;
       overflow: hidden;
