@@ -9,9 +9,11 @@
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
-  {# Issue CTA moved here from the dock — issuance is the single most-
-     used shop action, so the home page now hosts a prominent
-     "ออกแต้ม" button while the dock 2nd slot becomes "ข้อความ". #}
+  {# Issue CTA — moved out of the dock when "ข้อความ" took the 2nd
+     slot. Renders sticky above the glass-nav so it's always reachable
+     no matter where the owner has scrolled on the dashboard. The
+     extra bottom padding on .td (added below) leaves room so the
+     last metric card isn't hidden under the CTA. #}
   <a href="/shop/issue" class="s3-issue-cta">
     <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
       <polygon points="12 2 15 8 22 9 17 14 18 21 12 18 6 21 7 14 2 9 9 8"/>
@@ -20,15 +22,22 @@
   </a>
   <style>
     .s3-issue-cta {
+      position: fixed;
+      bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
+      left: 16px; right: 16px;
       display: flex; align-items: center; justify-content: center; gap: 10px;
-      padding: 16px; margin: 12px 0;
+      padding: 14px 16px;
       border-radius: 18px;
       background: var(--accent); color: #fff;
       text-decoration: none; font-weight: 700; font-size: 17px;
-      box-shadow: 0 6px 16px rgba(255,94,58,0.25);
+      box-shadow: 0 8px 24px -6px rgba(255,94,58,0.40);
+      z-index: 5;
     }
     .s3-issue-cta svg { width: 22px; height: 22px; }
     .s3-issue-cta:active { transform: translateY(1px); }
+    /* Reserve room at the bottom of the dashboard content so the
+       sticky CTA + dock stack don't sit over the last metric card. */
+    body .td { padding-bottom: 200px; }
   </style>
 
   {# Merged metrics card per design rev — replaces the three separate
