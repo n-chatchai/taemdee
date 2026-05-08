@@ -447,14 +447,23 @@ async def _run(campaign_id: UUID) -> None:
         # and-forget) so the NOTIFY actually flushes before the worker's
         # asyncio.run loop tears down at function exit.
         from sqlalchemy import func as _func
+        from app.services.customer_chat import customer_unread_total
         for cid in inbox_recipient_ids:
             unread = (await db.exec(
                 select(_func.count())
                 .select_from(Inbox)
                 .where(Inbox.customer_id == cid, Inbox.read_at.is_(None))
             )).one()
+            # The customer dock badge merges DeeReach unread with the
+            # customer ↔ shop chat unread (both surface in /my-inbox),
+            # so include both in the broadcast total.
             try:
-                await events.publish_customer_async(cid, "inbox-update", str(unread))
+                chat_unread = await customer_unread_total(db, cid)
+            except Exception:
+                chat_unread = 0
+            merged = int(unread or 0) + int(chat_unread or 0)
+            try:
+                await events.publish_customer_async(cid, "inbox-update", str(merged))
             except Exception:
                 log.exception("events: failed to publish inbox-update for customer=%s", cid)
 

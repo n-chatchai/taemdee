@@ -141,5 +141,61 @@
     if (stream) stream.scrollIntoView({ block: 'end' });
     window.scrollTo(0, document.body.scrollHeight);
   })();
+
+  // Live SSE — append the shop's reply as it lands. /sse/me is the
+  // customer's per-tab event stream (see services/events.py); the
+  // server pushes 'chat-message-in' with {shop_id, html} on every
+  // shop reply. Filter by shop_id since /sse/me carries every shop's
+  // chat events for this customer; ignore re-deliveries via
+  // data-msg-id so a fast reload doesn't double-render.
+  (function () {
+    if (!('EventSource' in window)) return;
+    var SHOP_ID = "{{ shop.id }}";
+    var stream = document.querySelector('.td-msg-stream');
+    if (!stream) return;
+
+    function appendBubble(html) {
+      var tmp = document.createElement('div');
+      tmp.innerHTML = html;
+      var node = tmp.firstElementChild;
+      if (!node) return;
+      var id = node.getAttribute('data-msg-id');
+      if (id && stream.querySelector('[data-msg-id="' + id + '"]')) return;
+      // Drop the empty-state placeholder once a real message lands.
+      var empty = stream.querySelector('.td-empty');
+      if (empty) empty.remove();
+      stream.appendChild(node);
+      window.scrollTo(0, document.body.scrollHeight);
+    }
+
+    var es;
+    function open() {
+      try {
+        es = new EventSource('/sse/me');
+        es.addEventListener('chat-message-in', function (ev) {
+          try {
+            var data = JSON.parse(ev.data);
+            if (data.shop_id !== SHOP_ID) return;
+            appendBubble(data.html);
+          } catch (_) {}
+        });
+        es.onerror = function () {
+          try { es.close(); } catch (_) {}
+          setTimeout(open, 30000);
+        };
+      } catch (_) {}
+    }
+    if (!document.hidden) open();
+    document.addEventListener('visibilitychange', function () {
+      if (document.hidden) {
+        if (es) { try { es.close(); } catch (_) {} es = null; }
+      } else if (!es) {
+        open();
+      }
+    });
+    window.addEventListener('pagehide', function () {
+      if (es) { try { es.close(); } catch (_) {} }
+    });
+  })();
 </script>
 {% endblock %}

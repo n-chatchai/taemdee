@@ -5,14 +5,16 @@ One CustomerThread per (customer, shop) pair (UNIQUE in the DB).
 shop side has no rate limit (replying is the desired behaviour).
 """
 
+import html as _html
+import json
 from datetime import timedelta
 from typing import List, Optional, Tuple
 from uuid import UUID
 
-from sqlmodel import select
+from sqlmodel import func, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
-from app.models import CustomerMessage, CustomerThread
+from app.models import CustomerMessage, CustomerThread, Inbox
 from app.models.util import utcnow
 
 
@@ -109,7 +111,68 @@ async def send_message(
     await db.commit()
     await db.refresh(msg)
     await db.refresh(thread)
+
+    # Live SSE — push the new bubble + bumped badge to the OTHER side
+    # so an open thread page appends in real time and the dock badge
+    # ticks without a full reload.
+    await _publish_chat_events(db, thread, msg, sender)
+
     return msg
+
+
+def _bubble_html(sender: str, msg: CustomerMessage) -> str:
+    """Render the message bubble that the SSE listener appends to the
+    open thread page. Mirrors the .msg / .msg-customer / .msg-shop
+    markup the templates render server-side so the appended bubble
+    looks identical. data-msg-id lets the listener skip duplicate
+    appends (e.g. the sender's own optimistic add)."""
+    body_html = _html.escape(msg.body or "")
+    time_str = msg.created_at.strftime("%H:%M")
+    return (
+        f'<div class="msg msg-{sender}" data-msg-id="{msg.id}">'
+        f'<div class="msg-body">{body_html}</div>'
+        f'<div class="msg-meta">{time_str}</div>'
+        f"</div>"
+    )
+
+
+async def _publish_chat_events(
+    db: AsyncSession,
+    thread: CustomerThread,
+    msg: CustomerMessage,
+    sender: str,
+) -> None:
+    """Fire the SSE events for the side that DIDN'T just send (the
+    sender's own page already redirects to the fresh thread state)."""
+    from app.services.events import publish, publish_customer
+
+    bubble = _bubble_html(sender, msg)
+
+    if sender == "customer":
+        # Notify the shop's open thread page + bump the dock badge.
+        publish(thread.shop_id, "chat-message-in", json.dumps({
+            "thread_id": str(thread.id),
+            "html": bubble,
+        }))
+        new_total = await shop_unread_total(db, thread.shop_id)
+        publish(thread.shop_id, "messages-update", str(new_total))
+    else:
+        # Notify the customer's open thread page + bump the dock
+        # badge. The dock counter merges DeeReach unread with chat
+        # unread (single inbox surface), so add both before publish.
+        publish_customer(thread.customer_id, "chat-message-in", json.dumps({
+            "shop_id": str(thread.shop_id),
+            "html": bubble,
+        }))
+        chat_total = await customer_unread_total(db, thread.customer_id)
+        deereach_total = (await db.exec(
+            select(func.count()).select_from(Inbox).where(
+                Inbox.customer_id == thread.customer_id,
+                Inbox.read_at.is_(None),
+            )
+        )).one()
+        merged = int(chat_total or 0) + int(deereach_total or 0)
+        publish_customer(thread.customer_id, "inbox-update", str(merged))
 
 
 async def list_messages(
@@ -155,15 +218,30 @@ async def mark_read(
     db: AsyncSession, thread: CustomerThread, *, by: str
 ) -> None:
     """Zero the corresponding unread counter when a side opens the
-    thread. `by` = 'customer' or 'shop'."""
+    thread. `by` = 'customer' or 'shop'. Also re-publishes the dock
+    badge so the badge dropping is reflected in real time on every
+    other tab the user has open."""
+    from app.services.events import publish, publish_customer
+
     if by == "customer" and thread.customer_unread:
         thread.customer_unread = 0
         db.add(thread)
         await db.commit()
+        chat_total = await customer_unread_total(db, thread.customer_id)
+        deereach_total = (await db.exec(
+            select(func.count()).select_from(Inbox).where(
+                Inbox.customer_id == thread.customer_id,
+                Inbox.read_at.is_(None),
+            )
+        )).one()
+        merged = int(chat_total or 0) + int(deereach_total or 0)
+        publish_customer(thread.customer_id, "inbox-update", str(merged))
     elif by == "shop" and thread.shop_unread:
         thread.shop_unread = 0
         db.add(thread)
         await db.commit()
+        new_total = await shop_unread_total(db, thread.shop_id)
+        publish(thread.shop_id, "messages-update", str(new_total))
 
 
 async def shop_unread_total(db: AsyncSession, shop_id: UUID) -> int:

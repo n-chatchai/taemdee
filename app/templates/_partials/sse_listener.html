@@ -16,6 +16,7 @@
       evt = new EventSource('/shop/events');
       evt.addEventListener('feed-row', onFeedRow);
       evt.addEventListener('void', onVoid);
+      evt.addEventListener('messages-update', onMessagesUpdate);
     }
     function closeStream() {
       if (!evt) return;
@@ -113,6 +114,27 @@
       tmp.innerHTML = e.data;
       const rowId = tmp.firstElementChild?.dataset.row;
       if (rowId) document.getElementById(rowId)?.classList.add('voided');
+    }
+
+    // Live "ข้อความ" tab badge — fired by customer_chat.send_message
+    // (customer→shop) and mark_read (zeroing on shop open). Keeps the
+    // dock counter in sync without a full page reload.
+    const messagesTabIcon = document.querySelector('.s3-glass-nav .gn-tab[href="/shop/messages"] .gn-icon');
+    function onMessagesUpdate(e) {
+      if (!messagesTabIcon) return;
+      const n = parseInt(e.data, 10);
+      if (isNaN(n)) return;
+      let badge = messagesTabIcon.querySelector('.gn-badge');
+      if (n > 0) {
+        if (!badge) {
+          badge = document.createElement('span');
+          badge.className = 'gn-badge count';
+          messagesTabIcon.appendChild(badge);
+        }
+        badge.textContent = String(n);
+      } else if (badge) {
+        badge.remove();
+      }
     }
 
     // Initial connect when the page first becomes visible.
