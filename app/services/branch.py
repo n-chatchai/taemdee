@@ -25,12 +25,16 @@ _WEEKDAYS_TH = (
 async def s3_top_context(
     db: AsyncSession,
     shop: Shop,
+    *,
+    is_owner: bool = True,
     now: Optional[datetime] = None,
 ) -> dict:
     """Common context for the S3.* shared topbar partial — weekday string
-    + branch count + active branch label (only when multi-branch). Used by
-    every full-page S3 route (dashboard / issue / customers / insights) so
-    the day-caption row + branch pill render consistently."""
+    + branch count + active branch label (only when multi-branch) +
+    notification count for the bell badge. Used by every full-page dock
+    route so the day-caption row + branch pill + bell badge render
+    consistently. Pass is_owner=False for staff sessions so owner-only
+    todos (e.g. invite_staff) aren't counted toward the staff bell."""
     if now is None:
         now = utcnow()
     branch_row = (await db.exec(
@@ -48,10 +52,19 @@ async def s3_top_context(
     else:
         branches_count = branch_row[0]
         branch_label = branch_row[1] if branches_count > 1 else None
+
+    # Bell badge — count unclaimed todo items the operator can act on.
+    # /shop/notifications surfaces the same list. Imported lazily to
+    # avoid a circular import (items module does not depend on branch).
+    from app.services.items import list_available as _list_items
+    items = await _list_items(db, shop, is_owner=is_owner)
+    bell_unread = len(items)
+
     return {
         "weekday_th": _WEEKDAYS_TH[now.weekday()],
         "branches_count": branches_count,
         "branch_label": branch_label,
+        "bell_unread": bell_unread,
     }
 
 VALID_REWARD_MODES = {"shared", "separate"}

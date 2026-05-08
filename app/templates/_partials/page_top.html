@@ -32,12 +32,12 @@
     {% endif %}
   </div>
   <div class="actions">
-    <a class="bell-btn" href="#" title="แจ้งเตือน" aria-label="แจ้งเตือน">
+    <a class="bell-btn" href="/shop/notifications" title="แจ้งเตือน" aria-label="แจ้งเตือน">
       <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
         <path d="M18 8A6 6 0 006 8c0 7-3 9-3 9h18s-3-2-3-9"/>
         <path d="M13.73 21a2 2 0 01-3.46 0"/>
       </svg>
-      {% if bell_unread %}<span class="bell-badge"></span>{% endif %}
+      {% if bell_unread %}<span class="bell-badge has-count">{{ bell_unread }}</span>{% endif %}
     </a>
   </div>
 </div>

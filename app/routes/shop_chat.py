@@ -122,7 +122,8 @@ async def shop_messages_page(
         })
     items.sort(key=lambda it: it["sort_at"], reverse=True)
 
-    s3_top = await s3_top_context(db, shop)
+    _is_owner = bool(request.state.staff and request.state.staff.is_owner)
+    s3_top = await s3_top_context(db, shop, is_owner=_is_owner)
     return templates.TemplateResponse(
         request=request,
         name="shop/messages_list.html",

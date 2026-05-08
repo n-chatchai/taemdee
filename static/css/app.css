@@ -8624,6 +8624,24 @@ body:has(.td-pinned) {
   background: var(--accent);
   box-shadow: 0 0 0 2px var(--bg);
 }
+/* Numeric variant — when the badge has a count to show, expand to a
+   pill shape with the number centred. The dot styling above stays as
+   a fallback for callers that just want unread-yes/no. */
+.s3-top .bell-btn .bell-badge.has-count {
+  top: 4px; right: 4px;
+  min-width: 16px; height: 16px;
+  width: auto;
+  border-radius: 999px;
+  padding: 0 4px;
+  color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  line-height: 1;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
 /* Shop-side avatar in the s3-top action row — mirrors .page-head
    .ph-avatar from the customer side. Image variant of the shop logo
    if uploaded, otherwise the shop's first character on accent. Tap

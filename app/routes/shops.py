@@ -440,7 +440,8 @@ async def dashboard(
     # Branches count + first branch name in a single roundtrip via window
     # function. Most shops have 1 branch — `branch_label` only shows on
     # the day-caption row when count > 1.
-    s3_top = await s3_top_context(db, shop, now=now)
+    _is_owner = bool(request.state.staff and request.state.staff.is_owner)
+    s3_top = await s3_top_context(db, shop, is_owner=_is_owner, now=now)
 
     # Cheap "near reward" count for the dashboard attention card. Matches
     # the semantics of /shop/customers?filter=near (anyone with active
@@ -532,6 +533,30 @@ async def dashboard(
             "feed_cap": app_settings.shop_customer_last_scan_display_number,
             "feed": recent_feed,
             "attn_cards": attn_cards,
+            "items": items,
+            **s3_top,
+        },
+    )
+
+
+@router.get("/notifications", response_class=HTMLResponse)
+async def notifications_page(
+    request: Request,
+    shop: Shop = Depends(get_current_shop),
+    db: AsyncSession = Depends(get_session),
+):
+    """Notifications hub — opened from the bell icon in the page top.
+    First content is the unclaimed todo list (same items the dashboard
+    used to show inline). Future categories (campaign updates, system
+    alerts) will land here too, sharing the same bell-badge counter."""
+    _is_owner = bool(request.state.staff and request.state.staff.is_owner)
+    items = await list_available_items(db, shop, is_owner=_is_owner)
+    s3_top = await s3_top_context(db, shop, is_owner=_is_owner)
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/notifications.html",
+        context={
+            "shop": shop,
             "items": items,
             **s3_top,
         },
@@ -1271,7 +1296,8 @@ async def settings_page(
         },
     ]
 
-    s3_top = await s3_top_context(db, shop)
+    _is_owner = bool(request.state.staff and request.state.staff.is_owner)
+    s3_top = await s3_top_context(db, shop, is_owner=_is_owner)
     return templates.TemplateResponse(
         request=request,
         name="shop/settings.html",
@@ -1360,7 +1386,8 @@ async def insights_page(
     if view == "suggestions":
         suggestions = await compute_suggestions(db, shop)
 
-    s3_top = await s3_top_context(db, shop)
+    _is_owner = bool(request.state.staff and request.state.staff.is_owner)
+    s3_top = await s3_top_context(db, shop, is_owner=_is_owner)
     return templates.TemplateResponse(
         request=request,
         name="shop/insights.html",
@@ -1579,7 +1606,8 @@ async def customers_page(
     has_prev = page > 1
     has_next = p_end < total_filtered
 
-    s3_top = await s3_top_context(db, shop, now=now)
+    _is_owner = bool(request.state.staff and request.state.staff.is_owner)
+    s3_top = await s3_top_context(db, shop, is_owner=_is_owner, now=now)
     return templates.TemplateResponse(
         request=request,
         name="shop/customers.html",
