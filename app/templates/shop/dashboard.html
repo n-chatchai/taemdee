@@ -28,10 +28,20 @@
       </span>
     </div>
 
+    {# met-sub sits inline inside met-num-row (between the big number
+       and the delta) so the headline + supporting figures read as one
+       horizontal line. Wraps onto the same row, no new vertical
+       space taken up. #}
     <div class="met-num-row">
       <div class="met-num">
         <span class="num-big">{{ period_count }}</span>
         <span class="num-unit">คน</span>
+      </div>
+      <div class="met-sub">
+        ออกแต้ม <strong>{{ points_today }}</strong> · แลก <strong>{{ redemptions_today }}</strong>
+        {% if wow_pct is not none %}
+          · <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
+        {% endif %}
       </div>
       {# Always render the delta block — when delta is zero we hide it
          with visibility:hidden via the .met-delta--empty class so the
@@ -43,17 +53,6 @@
         <span class="delta-num">{% if period_delta > 0 %}+{% endif %}{{ period_delta }}</span>
         <span class="delta-from">{{ period_delta_label }}</span>
       </div>
-    </div>
-
-    {# Sub-stats line moved up under met-num-row per operator —
-       keeps the headline + supporting numbers visually grouped
-       before the chart starts. #}
-    <div class="met-sub">
-      ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
-      {% if wow_pct is not none %}
-        · สัปดาห์นี้
-        <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
-      {% endif %}
     </div>
 
     <div class="met-trend">
@@ -168,7 +167,18 @@
     .s3-metrics .met-trend { padding-top: 2px; }
     .s3-metrics .met-trend .trend-bars { height: 84px; }
     .s3-metrics .met-trend .trend-legend { font-size: 11px; }
-    .s3-metrics .met-sub { margin-top: 4px; font-size: 11px; }
+    /* met-sub now lives inside met-num-row — flex it to fill the
+       middle so the big number stays left, sub-stats sit baseline-
+       aligned in the middle, delta stays right. */
+    .s3-metrics .met-num-row .met-sub {
+      flex: 1;
+      margin: 0 10px;
+      font-size: 11px;
+      color: var(--ink-soft);
+      align-self: flex-end;
+      padding-bottom: 4px;
+      line-height: 1.35;
+    }
 
     /* Compact pinned issue hub — smaller padding + denser table rows
        so the feed + actions stack fits without dominating the
