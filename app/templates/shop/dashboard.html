@@ -211,16 +211,31 @@
     }
     .s3-issue-hub .sap-action svg { width: 16px; height: 16px; }
 
+    /* Make the page body a flex column at least viewport-tall so the
+       bottom-pin can flex-grow to fill any unused vertical space.
+       Drop the old fixed-position + padding-bottom hack — bottom-pin
+       now lives in flow at the end (CSS order: 99) and reaches up
+       under the todos list whenever the page is short, so there is
+       never an empty gap between the todos and the pinned stack. */
+    body .td {
+      display: flex;
+      flex-direction: column;
+      min-height: 100dvh;
+      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+    }
+
     /* Pinned bottom stack — metrics card sits directly on top of the
        issue hub with zero gap, joined into one visual surface. Outer
        corners stay rounded; the inner edge between them is squared
        and shares a single 1px line. Halo shadow on the top edge of
-       the metrics card masks any page content that scrolls behind. */
+       the metrics card masks any page content scrolling behind. */
     .bottom-pin {
-      position: fixed;
-      left: 0; right: 0;
-      bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+      order: 99;
+      flex: 1 0 auto;
+      display: flex;
+      flex-direction: column;
       margin: 0 12px;
+      min-height: 0;
       z-index: 5;
     }
     .bottom-pin .s3-metrics {
@@ -231,18 +246,34 @@
       box-shadow:
         0 -1px 0 var(--line),
         0 -16px 32px -10px rgba(17, 17, 17, 0.22);
+      flex: 0 0 auto;
     }
+    /* Hub fills the remainder of the bottom-pin via flex column —
+       feed table grows (percent-style) to absorb any extra space,
+       actions grid stays pinned at the bottom inside the card. */
     .bottom-pin .s3-issue-hub {
       margin: 0;
       border-top-left-radius: 0;
       border-top-right-radius: 0;
       border-top: 0;
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
     }
-    /* Reserve room so scrollable content can fully reveal above the
-       pinned stack. Combined height ≈ metrics (~170) + hub (~310)
-       ≈ 480px; round up + safe-area + dock zone for safety. */
-    body .td {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 560px);
+    .bottom-pin .s3-issue-hub .ih-feed {
+      flex: 1 1 auto;
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+    }
+    .bottom-pin .s3-issue-hub .ih-feed-scroll {
+      flex: 1 1 auto;
+      max-height: none;
+      min-height: 0;
+    }
+    .bottom-pin .s3-issue-hub .ih-actions {
+      flex: 0 0 auto;
     }
   </style>
 {% endblock %}
