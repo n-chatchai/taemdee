@@ -11,6 +11,14 @@
 
   {% include "_partials/feed_detail_sheet.html" %}
 
+  {# Fixed-height scroll container for the area BETWEEN the top nav
+     and the dock — page content is bounded by .page-scroll so it
+     can never grow into (or behind) the floating glass-nav. Scrolls
+     vertically inside if content overflows. .bottom-pin (rendered
+     visually last via CSS order: 99) flex-grows inside this scroll
+     area to absorb any unused vertical space. #}
+  <div class="page-scroll">
+
   {# Pinned bottom stack — metric on top of issue hub, joined into one
      visual card (rounded corners only on the outer edges, no gap
      between them) and floated above the glass-nav. Keeps the
@@ -145,6 +153,8 @@
   {# Suggestions section ("แต้มดีแนะนำ ✦") removed per operator —
      the dock "แนะนำ" tab still surfaces these via /shop/insights so
      the data isn't lost, just deduped from the home feed. #}
+
+  </div> {# /.page-scroll #}
 {% endblock %}
 
 {% block head_extra %}
@@ -211,23 +221,37 @@
     }
     .s3-issue-hub .sap-action svg { width: 16px; height: 16px; }
 
-    /* Make the page body a flex column at least viewport-tall so the
-       bottom-pin can flex-grow to fill any unused vertical space.
-       Drop the old fixed-position + padding-bottom hack — bottom-pin
-       now lives in flow at the end (CSS order: 99) and reaches up
-       under the todos list whenever the page is short, so there is
-       never an empty gap between the todos and the pinned stack. */
+    /* Lock the whole page to viewport height — .td becomes a flex
+       column with overflow: hidden so nothing scrolls at the body
+       level. The middle area (.page-scroll) then carries all
+       scrolling behaviour bounded by its own height, which means
+       page content can never grow into the area behind the dock. */
     body .td {
+      height: 100dvh;
       display: flex;
       flex-direction: column;
-      min-height: 100dvh;
+      overflow: hidden;
     }
-    /* Reserve dock zone (default .td.td-tabbed = 112px) + home
-       indicator safe-area on iOS PWA, so flex children including the
-       bottom-pin always end ABOVE the floating glass-nav and never
-       grow behind it. Higher specificity than the app.css default
-       so the env() addition actually lands. */
+    /* Override the default .td-tabbed padding-bottom (112px) — the
+       dock-clearance reservation now lives on .page-scroll so the
+       fixed-height scroll container ends exactly at the dock's top
+       edge, never behind it. */
     body .td.td-tabbed {
+      padding-bottom: 0;
+    }
+    /* Scroll container for everything between the top nav and the
+       dock. Flex column so the bottom-pin (order: 99) can grow to
+       fill any unused space; padding-bottom reserves the dock zone
+       + iOS PWA home indicator so scrolled content stops above the
+       floating glass-nav and never grows behind it. */
+    .page-scroll {
+      flex: 1 1 auto;
+      min-height: 0;
+      display: flex;
+      flex-direction: column;
+      overflow-y: auto;
+      overflow-x: hidden;
+      -webkit-overflow-scrolling: touch;
       padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
     }
 
