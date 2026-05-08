@@ -28,8 +28,13 @@
 
   {% if shop.allow_customer_messages %}
     <form class="td-compose" method="POST" action="/messages/{{ shop.id }}">
-      <textarea name="body" rows="2" placeholder="พิมพ์ข้อความ..." required></textarea>
-      <button type="submit">ส่ง</button>
+      <textarea name="body" rows="1" placeholder="พิมพ์ข้อความ..." required></textarea>
+      <button type="submit" aria-label="ส่ง">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+          <line x1="12" y1="19" x2="12" y2="5"/>
+          <polyline points="5 12 12 5 19 12"/>
+        </svg>
+      </button>
     </form>
   {% else %}
     <div class="td-locked">
@@ -85,32 +90,50 @@
     z-index: 10;
   }
   .td-compose {
-    /* Sit ABOVE the c_dock. The dock is positioned with bottom: 14px
-       and is ~76-86px tall counting the icon + label + 10px padding,
-       so its top edge lands ~90-100px up on a no-safe-area screen and
-       even higher on a notched iPhone where the home indicator pushes
-       the dock visually further up. Use 110px as the floor with
-       safe-area-inset-bottom added on top so the compose clears the
-       dock on every device we've seen. */
+    /* Sits above the c_dock. Dock floats with bottom: 14px and is
+       ~76-86px tall, so the compose has to clear ~100px on a no-safe-
+       area screen + safe-area inset on a notched iPhone. */
     position: fixed;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     left: 0; right: 0;
-    padding: 10px 14px;
+    padding: 8px 12px;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
     border-top: 1px solid #e5e0d4;
     border-bottom: 1px solid #e5e0d4;
-    display: flex; gap: 8px; align-items: flex-end;
     z-index: 10;
   }
+  /* iMessage-style: textarea spans the full compose width, send
+     button is an absolute-positioned circular icon at the inner
+     right edge so the textbox feels as wide as the rest of the
+     app's text inputs. */
   .td-compose textarea {
-    flex: 1; padding: 10px 12px; border-radius: 14px;
-    border: 1px solid #d4cdbc; resize: none; font-size: 15px;
+    display: block;
+    width: 100%;
+    padding: 11px 52px 11px 16px;
+    border-radius: 22px;
+    border: 1px solid #d4cdbc;
+    resize: none;
+    font-size: 15px;
     font-family: inherit;
+    line-height: 1.4;
+    min-height: 44px;
+    max-height: 120px;
+    background: #fff;
+    box-sizing: border-box;
   }
   .td-compose button {
-    padding: 0 18px; height: 42px; border-radius: 14px; border: 0;
-    background: var(--accent); color: #fff; font-weight: 600;
+    position: absolute;
+    right: 18px;
+    bottom: 13px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
   }
+  .td-compose button svg { width: 18px; height: 18px; }
 </style>
 
 <script>

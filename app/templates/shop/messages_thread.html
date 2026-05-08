@@ -19,8 +19,13 @@
   </div>
 
   <form class="s-compose" method="POST" action="/shop/messages/{{ thread.id }}/reply">
-    <textarea name="body" rows="2" placeholder="ตอบกลับ..." required></textarea>
-    <button type="submit">ส่ง</button>
+    <textarea name="body" rows="1" placeholder="ตอบกลับ..." required></textarea>
+    <button type="submit" aria-label="ส่ง">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="12" y1="19" x2="12" y2="5"/>
+        <polyline points="5 12 12 5 19 12"/>
+      </svg>
+    </button>
   </form>
 </div>
 
@@ -45,28 +50,46 @@
   .msg-customer .msg-meta { text-align: left; }
   .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
   .s-compose {
-    /* Sit ABOVE the glass-nav — same offset logic as the customer
-       thread compose. Dock is bottom: 14px + ~76-86px tall + safe
-       area on notched devices, so 110px + safe area clears it. */
+    /* Sits above the glass-nav. Same iMessage-style layout as the
+       customer thread compose — full-width textarea + circular
+       send icon overlaid at the inner right edge. */
     position: fixed;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     left: 0; right: 0;
-    padding: 10px 14px;
+    padding: 8px 12px;
     background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
     border-top: 1px solid #e5e0d4;
     border-bottom: 1px solid #e5e0d4;
-    display: flex; gap: 8px; align-items: flex-end;
     z-index: 10;
   }
   .s-compose textarea {
-    flex: 1; padding: 10px 12px; border-radius: 14px;
-    border: 1px solid #d4cdbc; resize: none; font-size: 15px;
+    display: block;
+    width: 100%;
+    padding: 11px 52px 11px 16px;
+    border-radius: 22px;
+    border: 1px solid #d4cdbc;
+    resize: none;
+    font-size: 15px;
     font-family: inherit;
+    line-height: 1.4;
+    min-height: 44px;
+    max-height: 120px;
+    background: #fff;
+    box-sizing: border-box;
   }
   .s-compose button {
-    padding: 0 18px; height: 42px; border-radius: 14px; border: 0;
-    background: var(--accent); color: #fff; font-weight: 600;
+    position: absolute;
+    right: 18px;
+    bottom: 13px;
+    width: 36px; height: 36px;
+    border-radius: 50%;
+    border: 0;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    cursor: pointer;
   }
+  .s-compose button svg { width: 18px; height: 18px; }
 </style>
 
 <script>
