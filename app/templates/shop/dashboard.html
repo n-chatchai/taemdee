@@ -45,6 +45,17 @@
       </div>
     </div>
 
+    {# Sub-stats line moved up under met-num-row per operator —
+       keeps the headline + supporting numbers visually grouped
+       before the chart starts. #}
+    <div class="met-sub">
+      ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
+      {% if wow_pct is not none %}
+        · สัปดาห์นี้
+        <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
+      {% endif %}
+    </div>
+
     <div class="met-trend">
       <div class="trend-legend">
         <span class="lg-item"><span class="lg-dot scan"></span>สแกน</span>
@@ -76,14 +87,6 @@
           </div>
         {% endfor %}
       </div>
-    </div>
-
-    <div class="met-sub">
-      ออกแต้ม <strong>{{ points_today }} ครั้ง</strong> · แลก <strong>{{ redemptions_today }} รางวัล</strong>
-      {% if wow_pct is not none %}
-        · สัปดาห์นี้
-        <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
-      {% endif %}
     </div>
   </div>
 
