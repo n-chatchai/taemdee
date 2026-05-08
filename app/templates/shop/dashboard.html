@@ -41,9 +41,9 @@
         </div>
         <div class="met-sub">
           ออกแต้ม <strong>{{ points_today }}</strong> · แลก <strong>{{ redemptions_today }}</strong>
-          {% if wow_pct is not none %}
+          <!-- {% if wow_pct is not none %}
             · <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
-          {% endif %}
+          {% endif %} -->
         </div>
         {# Always render the delta block — when delta is zero we hide it
            with visibility:hidden via .met-delta--empty so the row's
@@ -215,6 +215,13 @@
       padding: 0;
       background: transparent;
       border: 0;
+    }
+
+    /* A bit-more-compact activity-feed rows — keep the body font
+       close to default but trim padding from 8px to 6px so a row
+       or two more fit above the actions card. */
+    .s3-issue-feed .sap-table td {
+      padding: 6px 0;
     }
 
     /* The .td-pinned default reserves only the dock zone (112px),
