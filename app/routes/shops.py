@@ -1271,6 +1271,7 @@ async def settings_page(
         },
     ]
 
+    s3_top = await s3_top_context(db, shop)
     return templates.TemplateResponse(
         request=request,
         name="shop/settings.html",
@@ -1278,6 +1279,7 @@ async def settings_page(
             "shop": shop,
             "menu_count": menu_count,
             "connect_rows": connect_rows,
+            **s3_top,
         },
     )
 

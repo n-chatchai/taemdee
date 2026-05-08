@@ -18,6 +18,7 @@ from app.core.auth import (
 from app.core.database import get_session
 from app.core.templates import templates
 from app.models import Customer, CustomerMessage, CustomerThread, DeeReachCampaign, Shop
+from app.services.branch import s3_top_context
 from app.services.customer_chat import (
     list_messages,
     list_threads_for_shop,
@@ -121,6 +122,7 @@ async def shop_messages_page(
         })
     items.sort(key=lambda it: it["sort_at"], reverse=True)
 
+    s3_top = await s3_top_context(db, shop)
     return templates.TemplateResponse(
         request=request,
         name="shop/messages_list.html",
@@ -129,6 +131,7 @@ async def shop_messages_page(
             "threads": threads,
             "customer_by_id": customer_by_id,
             "items": items,
+            **s3_top,
         },
     )
 
