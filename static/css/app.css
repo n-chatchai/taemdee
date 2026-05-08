@@ -15,9 +15,11 @@ html, body {
 
 /* ==========================================================
    Native-app feel — kill the "this is a website" tells.
-   Scoped to .has-c-dock (customer surfaces) so we don't change
-   shop-side input behaviour without testing. Apply to shop later
-   once this looks right.
+   Applied at the .td root so both shop and customer surfaces
+   pick it up. Text selection is restored on inputs and on the
+   handful of read-text contexts (messages, voucher/reward
+   labels, customer + product names) where the user might want
+   to copy a string.
    ==========================================================
    - overscroll-behavior: none stops the iOS rubber-band on the
      body so vertical drags don't reveal a grey backdrop.
@@ -26,27 +28,30 @@ html, body {
    - -webkit-touch-callout: none disables the long-press preview
      menu on links + images.
    - user-select: none stops accidental text-selection drags;
-     restored to text on inputs/textareas/messages so reading +
-     editing copy still works.
+     restored to text on inputs/textareas/messages/copyable
+     labels so reading + editing copy still works.
 */
-html:has(.has-c-dock),
-body:has(.has-c-dock) {
+html:has(.td),
+body:has(.td) {
   overscroll-behavior: none;
 }
-.has-c-dock {
+.td {
   -webkit-tap-highlight-color: transparent;
   -webkit-touch-callout: none;
   -webkit-user-select: none;
   user-select: none;
 }
-.has-c-dock input,
-.has-c-dock textarea,
-.has-c-dock [contenteditable="true"],
-.has-c-dock .selectable,
-.has-c-dock .msg-body,
-.has-c-dock .st-preview,
-.has-c-dock .vc-reward,
-.has-c-dock .vc-shop {
+.td input,
+.td textarea,
+.td [contenteditable="true"],
+.td .selectable,
+.td .msg-body,
+.td .st-preview,
+.td .vc-reward,
+.td .vc-shop,
+.td .cust-name,
+.td .row-name,
+.td .row-meta {
   -webkit-user-select: text;
   user-select: text;
   -webkit-touch-callout: default;
