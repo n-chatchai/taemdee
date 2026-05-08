@@ -3,338 +3,206 @@
 
 {% block content %}
   {# Markup follows design/taemdee-shop.html S3 — full-page hub with
-     snapshot + trend bars + attention cards + 4-tab glass nav.
-     The old dock+feed pattern moved to /shop/issue (S3.issue tab). #}
-  
+     metric snapshot + recent-activity feed + 4-tab glass nav. The
+     ออกแต้มลูกค้า actions live in their own glass card sticky-pinned
+     above the dock so the operator can issue points from any scroll
+     position. The rest (metric + feed + todos) flows inside
+     .page-scroll, which is the single bounded scroll container — see
+     .td-pinned in app.css. #}
+
   {% if not (branches_count > 1) %}{% set branch_label = None %}{% endif %}
   {% include "_partials/s3_top.html" %}
 
   {% include "_partials/feed_detail_sheet.html" %}
 
-  {# Fixed-height scroll container for the area BETWEEN the top nav
-     and the dock — page content is bounded by .page-scroll so it
-     can never grow into (or behind) the floating glass-nav. Scrolls
-     vertically inside if content overflows. .bottom-pin (rendered
-     visually last via CSS order: 99) flex-grows inside this scroll
-     area to absorb any unused vertical space. #}
   <div class="page-scroll">
 
-  {# Pinned bottom stack — metric on top of issue hub, joined into one
-     visual card (rounded corners only on the outer edges, no gap
-     between them) and floated above the glass-nav. Keeps the
-     analytics + the primary actions both reachable no matter how
-     far the operator has scrolled the todos list above. #}
-  <div class="bottom-pin">
+    {# Merged metrics card per design rev — replaces the three separate
+       cards (time-pills, snapshot, trend) with one rounded surface that
+       holds the period tabs (underline style), big customer count + delta,
+       inline 7-day bars, and the sub-stats line. #}
+    <div class="s3-metrics">
+      <div class="met-head">
+        <span class="met-title">ลูกค้า</span>
+        <span class="met-pills">
+          <a class="mp{% if period == 'today' %} active{% endif %}" href="/shop/dashboard">วันนี้</a>
+          <a class="mp{% if period == 'week' %} active{% endif %}" href="/shop/dashboard?period=week">สัปดาห์</a>
+          <a class="mp{% if period == 'month' %} active{% endif %}" href="/shop/dashboard?period=month">เดือน</a>
+        </span>
+      </div>
 
-  {# Merged metrics card per design rev — replaces the three separate
-     cards (time-pills, snapshot, trend) with one rounded surface that
-     holds the period tabs (underline style), big customer count + delta,
-     inline 7-day bars, and the sub-stats line. #}
-  <div class="s3-metrics">
-    <div class="met-head">
-      <span class="met-title">ลูกค้า</span>
-      <span class="met-pills">
-        <a class="mp{% if period == 'today' %} active{% endif %}" href="/shop/dashboard">วันนี้</a>
-        <a class="mp{% if period == 'week' %} active{% endif %}" href="/shop/dashboard?period=week">สัปดาห์</a>
-        <a class="mp{% if period == 'month' %} active{% endif %}" href="/shop/dashboard?period=month">เดือน</a>
-      </span>
-    </div>
+      {# met-sub sits inline inside met-num-row (between the big number
+         and the delta) so the headline + supporting figures read as one
+         horizontal line. #}
+      <div class="met-num-row">
+        <div class="met-num">
+          <span class="num-big">{{ period_count }}</span>
+          <span class="num-unit">คน</span>
+        </div>
+        <div class="met-sub">
+          ออกแต้ม <strong>{{ points_today }}</strong> · แลก <strong>{{ redemptions_today }}</strong>
+          {% if wow_pct is not none %}
+            · <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
+          {% endif %}
+        </div>
+        {# Always render the delta block — when delta is zero we hide it
+           with visibility:hidden via .met-delta--empty so the row's
+           height stays constant across periods. #}
+        <div class="met-delta {% if period_delta > 0 %}up{% elif period_delta < 0 %}down{% else %}met-delta--empty{% endif %}">
+          <span class="delta-arr">{% if period_delta > 0 %}↑{% elif period_delta < 0 %}↓{% else %}—{% endif %}</span>
+          <span class="delta-num">{% if period_delta > 0 %}+{% endif %}{{ period_delta }}</span>
+          <span class="delta-from">{{ period_delta_label }}</span>
+        </div>
+      </div>
 
-    {# met-sub sits inline inside met-num-row (between the big number
-       and the delta) so the headline + supporting figures read as one
-       horizontal line. Wraps onto the same row, no new vertical
-       space taken up. #}
-    <div class="met-num-row">
-      <div class="met-num">
-        <span class="num-big">{{ period_count }}</span>
-        <span class="num-unit">คน</span>
-      </div>
-      <div class="met-sub">
-        ออกแต้ม <strong>{{ points_today }}</strong> · แลก <strong>{{ redemptions_today }}</strong>
-        {% if wow_pct is not none %}
-          · <strong{% if wow_pct < 0 %} style="color:var(--accent);"{% else %} style="color:#2D8050;"{% endif %}>{% if wow_pct >= 0 %}+{% endif %}{{ wow_pct }}%</strong>
-        {% endif %}
-      </div>
-      {# Always render the delta block — when delta is zero we hide it
-         with visibility:hidden via the .met-delta--empty class so the
-         row's height stays constant across periods. Without this the
-         chart below jumps a few px when toggling วันนี้ ↔ สัปดาห์
-         depending on which period happens to have delta == 0. #}
-      <div class="met-delta {% if period_delta > 0 %}up{% elif period_delta < 0 %}down{% else %}met-delta--empty{% endif %}">
-        <span class="delta-arr">{% if period_delta > 0 %}↑{% elif period_delta < 0 %}↓{% else %}—{% endif %}</span>
-        <span class="delta-num">{% if period_delta > 0 %}+{% endif %}{{ period_delta }}</span>
-        <span class="delta-from">{{ period_delta_label }}</span>
-      </div>
-    </div>
-
-    <div class="met-trend">
-      <div class="trend-legend">
-        <span class="lg-item"><span class="lg-dot scan"></span>สแกน</span>
-        <span class="lg-item"><span class="lg-dot redeem"></span>แลกรางวัล</span>
-      </div>
-      <div class="trend-bars"
-           style="--cols: {{ daily_pct|length }};"
-           data-cols="{{ daily_pct|length }}"
-           data-period="{{ period }}">
-        {# Bucket count adapts to the period pill: 7 daily / 7 weekly /
-           12 monthly. Rightmost bar is the most recent bucket. Bars
-           stack scans (orange) with a redemption overlay (ink, sized
-           as a share of that bucket's stamps so it never overflows).
-           Top-of-bar number shows scan count, with "/N" suffix when
-           at least one redemption happened that bucket. #}
-        {% for pct in daily_pct %}
-          {% set scans = daily_counts[loop.index0] %}
-          {% set redeems = daily_redemptions[loop.index0] %}
-          <div class="tb">
-            <span class="tb-num{% if scans == 0 %} muted{% endif %}">
-              {{ scans }}{% if redeems > 0 %}<span class="tb-num-redeem">/{{ redeems }}</span>{% endif %}
-            </span>
-            <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%">
-              {% if daily_redeem_pct[loop.index0] > 0 %}
-                <div class="tb-redeem" style="height: {{ daily_redeem_pct[loop.index0] }}%"></div>
-              {% endif %}
+      <div class="met-trend">
+        <div class="trend-legend">
+          <span class="lg-item"><span class="lg-dot scan"></span>สแกน</span>
+          <span class="lg-item"><span class="lg-dot redeem"></span>แลกรางวัล</span>
+        </div>
+        <div class="trend-bars"
+             style="--cols: {{ daily_pct|length }};"
+             data-cols="{{ daily_pct|length }}"
+             data-period="{{ period }}">
+          {% for pct in daily_pct %}
+            {% set scans = daily_counts[loop.index0] %}
+            {% set redeems = daily_redemptions[loop.index0] %}
+            <div class="tb">
+              <span class="tb-num{% if scans == 0 %} muted{% endif %}">
+                {{ scans }}{% if redeems > 0 %}<span class="tb-num-redeem">/{{ redeems }}</span>{% endif %}
+              </span>
+              <div class="tb-bar" style="height: {{ pct if pct >= 6 else 6 }}%">
+                {% if daily_redeem_pct[loop.index0] > 0 %}
+                  <div class="tb-redeem" style="height: {{ daily_redeem_pct[loop.index0] }}%"></div>
+                {% endif %}
+              </div>
+              <span class="tb-day">{{ daily_labels[loop.index0] }}</span>
             </div>
-            <span class="tb-day">{{ daily_labels[loop.index0] }}</span>
-          </div>
-        {% endfor %}
+          {% endfor %}
+        </div>
       </div>
     </div>
-  </div>
 
-  {% include "_partials/issue_hub.html" %}
-
-  </div> {# /.bottom-pin #}
-
-  {% if items %}
-    <div class="ph-section-h" style="margin-top:8px;">
-      <div class="label">รายการที่ต้องทำ</div>
-      <span class="todo-count">{{ items|length }}</span>
+    {# Recent customers feed — uses the standalone .s3-issue-feed
+       card so the activity table flows in the page (no internal
+       scroll). Filter pills (ทั้งหมด/สแกน/แลก) drive filterFeed() in
+       block body_end. #}
+    <div class="s3-issue-feed">
+      <div class="if-head">
+        <div class="if-label">ลูกค้าล่าสุด</div>
+        <span class="met-pills issue-feed-pills">
+          <a class="mp active" onclick="filterFeed('all', this)">ทั้งหมด</a>
+          <a class="mp" onclick="filterFeed('point', this)">สแกน</a>
+          <a class="mp" onclick="filterFeed('redemption', this)">แลก</a>
+        </span>
+      </div>
+      <table class="sap-table" id="sap-table">
+        <thead>
+          <tr>
+            <th class="t">เวลา</th>
+            <th class="n">ลูกค้า</th>
+            <th class="m">วิธีรับ</th>
+            <th class="s">โดย</th>
+            <th class="a">จำนวน</th>
+          </tr>
+        </thead>
+        <tbody id="sap-tbody">
+          {% for kind, item, customer_name, amount, method_th, staff_name in feed %}
+            <tr class="feed-row{% if loop.first %} latest{% endif %}"
+                id="row-{{ item.id }}"
+                data-kind="{{ kind }}"
+                data-detail-url="/shop/feed/{{ kind }}/{{ item.id }}">
+              <td class="t">{{ item.created_at|bkk_feed_time_short }}</td>
+              <td class="n">{{ customer_name }}</td>
+              <td class="m">{{ method_th }}</td>
+              <td class="s">{{ staff_name }}</td>
+              <td class="a">
+                {% if kind == 'point' %}
+                  <span class="icon-mini">+</span> <strong>{{ amount }} แต้ม</strong>
+                {% else %}
+                  <strong>รับรางวัล</strong>
+                {% endif %}
+              </td>
+            </tr>
+          {% else %}
+            <tr><td colspan="5" style="text-align:center; padding:14px 0; color:var(--ink-softer); font-style:italic; font-size:12px;">ยังไม่มีกิจกรรมวันนี้</td></tr>
+          {% endfor %}
+        </tbody>
+      </table>
     </div>
-    {% for it in items %}
-      {# Two flavors of main action: review-style todos that link to a
-         page (claim is marked when the destination saves) vs. side-
-         effect todos that POST /shop/items/<kind>/claim. The skip
-         row beneath always POSTs /skip — dismisses the todo without
-         running the handler so 'ข้าม' on welcome_credit doesn't grant
-         any credit. The explainer copy comes from items.py. #}
-      <div class="s3-todo-wrap">
-        {% if it.link %}
-          {# data-claim-kind tells the body_end JS to fire a
-             sendBeacon to /shop/items/<kind>/claim before the link
-             navigates, so the todo is recorded done on the very tap
-             instead of relying on the destination page to save. #}
-          <a href="{{ it.link }}" class="s3-todo"
-             data-claim-kind="{{ it.kind }}">
-            <div class="td-info">
-              <div class="td-h">{{ it.label|safe }}</div>
-              <div class="td-s">{{ it.sub }}</div>
-            </div>
-            <span class="td-cta">{{ it.cta }}</span>
-          </a>
-        {% else %}
-          <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
-            <button type="submit" class="s3-todo">
+
+    {% if items %}
+      <div class="ph-section-h" style="margin-top:8px;">
+        <div class="label">รายการที่ต้องทำ</div>
+        <span class="todo-count">{{ items|length }}</span>
+      </div>
+      {% for it in items %}
+        {# Two flavors of main action: review-style todos that link to a
+           page (claim is marked when the destination saves) vs. side-
+           effect todos that POST /shop/items/<kind>/claim. #}
+        <div class="s3-todo-wrap">
+          {% if it.link %}
+            <a href="{{ it.link }}" class="s3-todo"
+               data-claim-kind="{{ it.kind }}">
               <div class="td-info">
                 <div class="td-h">{{ it.label|safe }}</div>
                 <div class="td-s">{{ it.sub }}</div>
               </div>
               <span class="td-cta">{{ it.cta }}</span>
-            </button>
+            </a>
+          {% else %}
+            <form method="POST" action="/shop/items/{{ it.kind }}/claim" class="s3-item-form">
+              <button type="submit" class="s3-todo">
+                <div class="td-info">
+                  <div class="td-h">{{ it.label|safe }}</div>
+                  <div class="td-s">{{ it.sub }}</div>
+                </div>
+                <span class="td-cta">{{ it.cta }}</span>
+              </button>
+            </form>
+          {% endif %}
+          <form method="POST" action="/shop/items/{{ it.kind }}/skip" class="s3-todo-skip">
+            <button type="submit" class="s3-skip-btn">ข้าม</button>
+            <span class="s3-skip-explain">{{ it.skip_explain }}</span>
           </form>
-        {% endif %}
-        <form method="POST" action="/shop/items/{{ it.kind }}/skip" class="s3-todo-skip">
-          <button type="submit" class="s3-skip-btn">ข้าม</button>
-          <span class="s3-skip-explain">{{ it.skip_explain }}</span>
-        </form>
-      </div>
-    {% endfor %}
-  {% endif %}
-
-  {# Suggestions section ("แต้มดีแนะนำ ✦") removed per operator —
-     the dock "แนะนำ" tab still surfaces these via /shop/insights so
-     the data isn't lost, just deduped from the home feed. #}
+        </div>
+      {% endfor %}
+    {% endif %}
 
   </div> {# /.page-scroll #}
+
+  {# ออกแต้มลูกค้า — sticky glass card pinned above the dock
+     (position: fixed; bottom: 104px; .s3-issue-actions in app.css). #}
+  {% include "_partials/issue_actions.html" %}
+{% endblock %}
+
+{% block td_class %} td-tabbed td-issue td-pinned{% endblock %}
+
+{% block nav %}
+  {% include "_partials/glass_nav.html" %}
 {% endblock %}
 
 {% block head_extra %}
   <style>
-    /* Align s3-top + the bottom-pin stack to the same horizontal
-       gutter as the glass-nav (12px each side, since the dock uses
+    /* Align s3-top + cards to the same horizontal gutter as the
+       glass-nav (12px each side, since the dock uses
        max-width: calc(100% - 24px) + margin: 0 auto). */
     .s3-top { padding-left: 12px; padding-right: 12px; }
-
-    /* Compact metric card — pulled in tighter so it pairs with the
-       slimmer pinned issue hub at the bottom. Half the original
-       padding, ~half the big-number, and a shorter chart so the
-       analytics panel takes maybe a third of the screen instead
-       of dominating it. */
-    .s3-metrics {
-      padding: 8px 12px 8px;
-      border-radius: 14px;
-    }
-    .s3-metrics .met-head { margin-bottom: 6px; }
-    .s3-metrics .met-num-row { margin-bottom: 6px; gap: 6px; }
-    .s3-metrics .met-num .num-big { font-size: 28px; line-height: 1; }
-    .s3-metrics .met-num .num-unit { font-size: 12px; }
-    .s3-metrics .met-delta .delta-arr { font-size: 12px; }
-    .s3-metrics .met-delta .delta-num { font-size: 13px; }
-    .s3-metrics .met-delta .delta-from { font-size: 11px; }
-    .s3-metrics .met-trend { padding-top: 2px; }
-    .s3-metrics .met-trend .trend-bars { height: 84px; }
-    .s3-metrics .met-trend .trend-legend { font-size: 11px; }
-    /* met-sub now lives inside met-num-row — flex it to fill the
-       middle so the big number stays left, sub-stats sit baseline-
-       aligned in the middle, delta stays right. */
-    .s3-metrics .met-num-row .met-sub {
-      flex: 1;
-      margin: -3px 10px;
-      font-size: 11px;
-      color: var(--ink-soft);
-      align-self: flex-end;
-      padding-bottom: 4px;
-      line-height: 1.35;
-    }
-
-    /* Compact pinned issue hub — smaller padding + denser table rows
-       so the feed + actions stack fits without dominating the
-       viewport bottom half. */
-    .s3-issue-hub {
-      padding: 8px 12px;
-      border-radius: 14px;
-    }
-    .s3-issue-hub .ih-head { margin-bottom: 6px; }
-    .s3-issue-hub .ih-label { font-size: 11px; }
-    .s3-issue-hub .sap-table { font-size: 12px; }
-    .s3-issue-hub .sap-table th { font-size: 10px; padding: 2px 4px; }
-    .s3-issue-hub .sap-table td { padding: 4px 4px; }
-    .s3-issue-hub .ih-actions {
-      margin-top: 8px;
-      padding-top: 8px;
-    }
-    .s3-issue-hub .sap-actions-h { font-size: 11px; margin-bottom: 6px; }
-    .s3-issue-hub .sap-actions { gap: 6px; }
-    .s3-issue-hub .sap-action {
-      padding: 8px 10px;
-      font-size: 13px;
-      border-radius: 12px;
-    }
-    .s3-issue-hub .sap-action svg { width: 16px; height: 16px; }
-
-    /* Lock the whole page to viewport height — html/body sealed
-       so nothing scrolls at the document level, and .td matches the
-       dynamic viewport with overflow: hidden as a backstop. The
-       middle area (.page-scroll) then carries all scrolling bounded
-       by its own height, so content cannot grow into the area
-       behind the dock. */
-    html, body {
-      height: 100dvh;
-      overflow: hidden;
-      margin: 0;
-    }
-    body .td {
-      height: 100dvh;
-      max-height: 100dvh;
-      display: flex;
-      flex-direction: column;
-      overflow: hidden;
-    }
-    /* Dock zone lives on .td (not on .page-scroll) — flex children
-       sit in the content box above this padding, so .page-scroll's
-       bottom edge stops well above the floating glass-nav. Content
-       scrolling inside .page-scroll therefore can never visually
-       cross or sit behind the dock. iOS PWA safe-area added on top
-       of the standard 112px so the home indicator is also clear. */
-    body .td.td-tabbed {
-      padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
-    }
-    /* Scroll container for everything between the top nav and the
-       dock. Flex column so the bottom-pin (order: 99) can grow to
-       fill any unused space; .td's padding-bottom is what reserves
-       the dock zone, not this element, so .page-scroll's bottom
-       edge naturally lands above the dock with no padding hack of
-       its own. */
-    .page-scroll {
-      flex: 1 1 0;
-      min-height: 0;
-      display: flex;
-      flex-direction: column;
-      overflow-y: auto;
-      overflow-x: hidden;
-      -webkit-overflow-scrolling: touch;
-      /* Transparent so .td's background gradient + dot pattern
-         (painted by .td::before / .td::after) show through the
-         scroll area instead of being masked by an opaque box. */
-      background: transparent;
-    }
-
-    /* Pinned bottom stack — metrics card sits directly on top of the
-       issue hub with zero gap, joined into one visual surface. Outer
-       corners stay rounded; the inner edge between them is squared
-       and shares a single 1px line. Halo shadow on the top edge of
-       the metrics card masks any page content scrolling behind. */
-    .bottom-pin {
-      order: 99;
-      flex: 1 0 auto;
-      display: flex;
-      flex-direction: column;
-      margin: 0 12px;
-      min-height: 0;
-      z-index: 5;
-    }
-    .bottom-pin .s3-metrics {
-      margin: 0;
-      border-bottom-left-radius: 0;
-      border-bottom-right-radius: 0;
-      border-bottom: 0;
-      box-shadow: none;
-      flex: 0 0 auto;
-    }
-    /* Hub fills the remainder of the bottom-pin via flex column —
-       feed table grows (percent-style) to absorb any extra space,
-       actions grid stays pinned at the bottom inside the card. */
-    .bottom-pin .s3-issue-hub {
-      margin: 0;
-      border-top-left-radius: 0;
-      border-top-right-radius: 0;
-      border-top: 0;
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-    .bottom-pin .s3-issue-hub .ih-feed {
-      flex: 1 1 auto;
-      display: flex;
-      flex-direction: column;
-      min-height: 0;
-    }
-    .bottom-pin .s3-issue-hub .ih-feed-scroll {
-      flex: 1 1 auto;
-      max-height: none;
-      min-height: 0;
-    }
-    .bottom-pin .s3-issue-hub .ih-actions {
-      flex: 0 0 auto;
+    .s3-metrics,
+    .s3-issue-feed {
+      margin-left: 12px;
+      margin-right: 12px;
     }
   </style>
-{% endblock %}
-
-{% block td_class %} td-tabbed{% endblock %}
-
-{% block nav %}
-  {% include "_partials/glass_nav.html" %}
 {% endblock %}
 
 {% block body_end %}
   {# Collapse the .s3-todo-wrap on click of either the main action
      (link / claim button) or the skip button so the owner sees the
      todo disappear immediately while the underlying navigation /
-     form POST runs in parallel. Same idea as /my-cards' .cl-todo
-     fade. For link-style todos (<a data-claim-kind="...">) we also
-     fire a sendBeacon to /shop/items/<kind>/claim because the
-     destination page doesn't POST that claim itself — without this
-     the todo would silently come back on the next dashboard render. #}
+     form POST runs in parallel. For link-style todos we also fire a
+     sendBeacon to /shop/items/<kind>/claim because the destination
+     page doesn't POST that claim itself. #}
   <script>
     (function () {
       function dismiss(wrap) {
@@ -357,21 +225,31 @@
         const trigger = e.target.closest('.s3-todo, .s3-skip-btn');
         if (!trigger) return;
         dismiss(trigger.closest('.s3-todo-wrap'));
-        // Link-style claim — beacon fires before the browser
-        // navigates so the POST actually leaves the device.
         eagerClaim(trigger.dataset.claimKind);
       });
 
       // Tap "เปิดดู" → navigate → tap back. Without this, Safari /
       // Chrome restores the dashboard from bfcache so the just-
-      // claimed todo still appears even though it's gone server-
-      // side. e.persisted=true means the page came from bfcache;
-      // reload to pick up the fresh todo list.
+      // claimed todo still appears. Reload to pick up the fresh
+      // todo list.
       window.addEventListener('pageshow', function (e) {
         if (e.persisted) {
           window.location.reload();
         }
       });
     })();
+  </script>
+
+  {# Filter pills above the activity feed — toggles row visibility
+     by data-kind without a network round-trip. #}
+  <script>
+    function filterFeed(kind, el) {
+      document.querySelectorAll('.issue-feed-pills .mp').forEach(p => p.classList.remove('active'));
+      el.classList.add('active');
+      const rows = document.querySelectorAll('#sap-tbody .feed-row');
+      rows.forEach(row => {
+        row.style.display = (kind === 'all' || row.dataset.kind === kind) ? '' : 'none';
+      });
+    }
   </script>
 {% endblock %}

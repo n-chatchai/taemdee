@@ -6,6 +6,7 @@
 {% set app_bar_title = 'ตั้งค่า' %}
 {% include "_partials/app_bar.html" %}
 
+<div class="page-scroll">
   {# Shop identity card removed — the avatar in s3_top action row now
      owns "tap to edit shop logo + name" and routes to the existing
      full editor at /shop/settings/identity. #}
@@ -319,9 +320,10 @@
         onsubmit="event.preventDefault(); fetch('/auth/logout',{method:'POST'}).then(()=>location.href='/shop/login');">
     <button type="submit" class="s10-logout">ออกจากระบบ</button>
   </form>
+</div> {# /.page-scroll #}
 {% endblock %}
 
-{% block td_class %} td-tabbed{% endblock %}
+{% block td_class %} td-tabbed td-pinned{% endblock %}
 
 {% block nav %}
   {% include "_partials/glass_nav.html" %}

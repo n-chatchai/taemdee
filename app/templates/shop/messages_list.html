@@ -5,6 +5,7 @@
 {% set app_bar_title = 'ข้อความ' %}
 {% include "_partials/app_bar.html" %}
 
+<div class="page-scroll">
 <div class="s-msgs">
   {% if not items %}
     <div class="s-msgs-empty">
@@ -51,9 +52,10 @@
     </ul>
   {% endif %}
 </div>
+</div> {# /.page-scroll #}
 
 <style>
-  .s-msgs { padding: 8px 16px 100px; }
+  .s-msgs { padding: 8px 16px; }
   .s-msgs-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
   .s-msgs-empty a { color: var(--accent); font-weight: 600; }
   .s-thread-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
@@ -96,6 +98,8 @@
   }
 </style>
 {% endblock %}
+
+{% block td_class %} td-tabbed td-pinned{% endblock %}
 
 {% block nav %}
   {% set nav_active = 'messages' %}

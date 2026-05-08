@@ -8039,6 +8039,41 @@ form.s10-row { margin: 0 0 4px; }
 .td.td-tabbed { padding-bottom: 112px; }
 
 /* ==========================================================
+   Pinned-page layout — opt-in via .td-pinned. Locks the page to
+   the dynamic viewport so nothing scrolls at the document level,
+   and the .page-scroll child becomes the only scroll container
+   bounded above the floating glass-nav. iOS PWA safe-area is
+   added on top of the standard 112px dock zone so the home
+   indicator is also clear. Used on /shop/dashboard, /shop/messages
+   and /shop/settings — pages where the dock and a pinned bottom
+   element should both stay visible at all times.
+   ========================================================== */
+html:has(.td-pinned),
+body:has(.td-pinned) {
+  height: 100dvh;
+  overflow: hidden;
+  margin: 0;
+}
+.td.td-pinned {
+  height: 100dvh;
+  max-height: 100dvh;
+  overflow: hidden;
+}
+.td.td-pinned.td-tabbed {
+  padding-bottom: calc(env(safe-area-inset-bottom, 0px) + 112px);
+}
+.td.td-pinned .page-scroll {
+  flex: 1 1 0;
+  min-height: 0;
+  display: flex;
+  flex-direction: column;
+  overflow-y: auto;
+  overflow-x: hidden;
+  -webkit-overflow-scrolling: touch;
+  background: transparent;
+}
+
+/* ==========================================================
    S3 — Home dashboard: merged metrics card (time pills + hero + trend
    + sub) per design rev — replaces 3 separate cards with one container.
    ========================================================== */
