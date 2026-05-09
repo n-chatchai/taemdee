@@ -6,6 +6,7 @@ from fastapi.responses import RedirectResponse, FileResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel.ext.asyncio.session import AsyncSession
 from starlette.datastructures import MutableHeaders
+from starlette.middleware.gzip import GZipMiddleware
 
 from loguru import logger
 
@@ -318,14 +319,22 @@ class SubdomainRoutingMiddleware:
 
 
 # Order: add_middleware adds to the OUTSIDE, so the last-added wraps everything.
-# Resulting execution order on inbound: SubdomainRouting → ShopContext →
-# CustomerContext → RevalidateHTML → app. Outbound reverses. Both context
-# middlewares are no-ops when the matching cookie is missing, so the order
-# between them doesn't matter functionally.
+# Resulting execution order on inbound: GZip → SubdomainRouting → ShopContext →
+# CustomerContext → RevalidateHTML → app. Outbound reverses, so GZip is the
+# last thing the response touches before the wire. Both context middlewares
+# are no-ops when the matching cookie is missing, so the order between them
+# doesn't matter functionally.
+#
+# minimum_size=1000 skips compressing tiny responses where the gzip overhead
+# (header + dictionary) outweighs savings. app.css (~360KB), the rendered
+# HTML pages, and the ~13KB icons all comfortably exceed it. Cloudflare may
+# add brotli at the edge when the origin sends gzip — that's a feature, not
+# double-compression: CF rewrites Content-Encoding rather than nesting.
 app.add_middleware(RevalidateHTMLMiddleware)
 app.add_middleware(CustomerContextMiddleware)
 app.add_middleware(ShopContextMiddleware)
 app.add_middleware(SubdomainRoutingMiddleware)
+app.add_middleware(GZipMiddleware, minimum_size=1000)
 
 
 @app.exception_handler(SessionAuthError)
