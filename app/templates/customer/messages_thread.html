@@ -2,29 +2,50 @@
 {% block title %}ข้อความถึง {{ shop.name }} · TaemDee{% endblock %}
 {% set nav_active = 'inbox' %}
 
+{# Hide the customer dock on the chat thread per design — inbox.message
+   in design/taemdee-customer.html has no c-glass-nav so chat-input-bar
+   sits flush at the bottom. {% block nav %} is the slot the c_base
+   layout uses to inject c_dock; emptying it drops the dock for this
+   page only. #}
+{% block nav %}{% endblock %}
+
 {% block content %}
+{# Mirrors design/taemdee-customer.html → inbox.message:
+   chat-header (back · shop avatar · name+status · /story link)
+   + chat-thread (date dividers + me/them bubbles, with chat-time
+   on its own line) + chat-input-bar (round input + ink send disc).
+   The shared .chat-* chrome lives in app.css so a future shop-side
+   thread can reuse it. #}
 <div class="td-page td-thread">
-  <div class="td-page-header">
-    <a href="/messages" class="td-back" aria-label="กลับ">←</a>
-    {# Shop avatar + name in the header — same chip we use on
-       received bubbles so the conversation reads like an app. #}
+  <div class="chat-header">
+    <a href="/my-inbox" class="ch-back" aria-label="กลับ">
+      <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+    </a>
     {% with size='sm' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
-    <h1>{{ shop.name }}</h1>
+    <div class="ch-info">
+      <div class="ch-name">{{ shop.name }}</div>
+      {% if shop.allow_customer_messages %}
+        <div class="ch-status">ส่งข้อความถึงร้านได้</div>
+      {% else %}
+        <div class="ch-status">ปิดรับข้อความจากลูกค้า</div>
+      {% endif %}
+    </div>
+    <a href="/story/{{ shop.id }}" class="ch-action" aria-label="ดูร้าน">
+      <svg viewBox="0 0 24 24">
+        <path d="M3 21h18"/>
+        <path d="M5 21V7l8-4v18"/>
+        <path d="M19 21V11l-6-4"/>
+      </svg>
+    </a>
   </div>
 
-  <div class="td-msg-stream">
+  <div class="chat-thread">
     {% for m in messages %}
-      <div class="msg-row msg-row-{{ m.sender }}" data-msg-id="{{ m.id }}">
-        {% if m.sender == 'shop' %}
-          {% with size='xs' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
-        {% endif %}
-        <div class="msg msg-{{ m.sender }}">
-          <div class="msg-body">{{ m.body }}</div>
-          <div class="msg-meta">{{ m.created_at.strftime('%H:%M') }}</div>
-        </div>
-      </div>
+      {% set side = 'me' if m.sender == 'customer' else 'them' %}
+      <div class="chat-bubble {{ side }}" data-msg-id="{{ m.id }}">{{ m.body }}</div>
+      <div class="chat-time {{ side }}">{{ m.created_at.strftime('%H:%M') }}</div>
     {% else %}
-      <div class="td-empty">ลองส่งข้อความแรกถึงร้านนี้เลย</div>
+      <div class="chat-empty">ลองส่งข้อความแรกถึงร้านนี้เลย</div>
     {% endfor %}
   </div>
 
@@ -34,204 +55,102 @@
     </div>
   {% endif %}
 
-  {# "↓ ข้อความใหม่" pill — shown by JS only when an SSE bubble
-     arrived while the textarea was focused, so we didn't auto-scroll
-     and pull the compose under the keyboard. Tap → smooth scroll to
-     bottom + dismiss. #}
-  <button type="button" class="msg-new-pill" id="msg-new-pill" hidden>
+  <button type="button" class="chat-new-pill" id="chat-new-pill" hidden>
     ↓ ข้อความใหม่
   </button>
 
   {% if shop.allow_customer_messages %}
-    <form class="td-compose" method="POST" action="/messages/{{ shop.id }}">
-      <textarea name="body" rows="1" placeholder="พิมพ์ข้อความ..." required></textarea>
-      <button type="submit" aria-label="ส่ง">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-          <line x1="12" y1="19" x2="12" y2="5"/>
-          <polyline points="5 12 12 5 19 12"/>
+    <form class="chat-input-bar" method="POST" action="/messages/{{ shop.id }}">
+      <input type="text" class="chat-input" name="body" placeholder="พิมพ์ข้อความถึงร้าน..." autocomplete="off" required>
+      <button type="submit" class="chat-send" aria-label="ส่ง">
+        <svg viewBox="0 0 24 24">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
         </svg>
       </button>
     </form>
   {% else %}
-    <div class="td-locked">
+    <div class="chat-locked">
       ร้านนี้ปิดรับข้อความจากลูกค้าอยู่
     </div>
   {% endif %}
 </div>
 
 <style>
-  /* Bottom padding leaves room for compose (~64px) + dock (~86px)
-     + safe-area inset (~34px on notched iPhones), so the last
-     message in the stream isn't hidden under either bar. */
-  .td-thread { padding: 12px 14px 240px; }
-  .td-page-header {
-    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  /* No dock on this page — pull the fixed input bar + the locked
+     notice flush to the safe-area bottom, and shrink the thread's
+     bottom padding so the last bubble sits just above the input. */
+  .td-thread { padding: 12px 14px 110px; }
+  .chat-input-bar {
+    bottom: env(safe-area-inset-bottom, 0px);
   }
-  .td-page-header h1 { font-size: 17px; font-weight: 700; margin: 0; flex: 1; }
-  .td-back {
-    display: inline-flex; width: 36px; height: 36px; border-radius: 50%;
-    background: var(--surface, #fff); align-items: center; justify-content: center;
-    text-decoration: none; color: var(--ink); font-size: 20px;
+  .chat-locked {
+    bottom: env(safe-area-inset-bottom, 0px);
   }
-  /* Avatar chrome lives in the shared .shop-avatar / .shop-avatar--xs
-     / .shop-avatar--sm rules in app.css — see /story / /my-inbox-detail
-     for the same chip used at different sizes. */
-
-  .td-msg-stream {
-    display: flex; flex-direction: column;
-    /* Compact: tight gap between consecutive bubbles. */
-    gap: 3px;
-    margin-bottom: 8px;
+  .chat-new-pill {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 70px);
   }
-  /* Row = avatar + bubble. Customer rows align right (no avatar);
-     shop rows align left with the avatar slot. */
-  .msg-row {
-    display: flex; align-items: flex-end; gap: 6px;
-    max-width: 88%;
+  .chat-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
   }
-  .msg-row-customer { align-self: flex-end; }
-  .msg-row-shop     { align-self: flex-start; }
-  /* Bigger gap between sender flips so a shop reply doesn't run
-     directly into the customer's last message. */
-  .msg-row-customer + .msg-row-shop,
-  .msg-row-shop + .msg-row-customer { margin-top: 6px; }
-  /* Hide repeated avatar on consecutive same-sender shop bubbles —
-     only the first row in a sender-run shows the avatar. */
-  .msg-row-shop + .msg-row-shop .shop-avatar {
-    visibility: hidden;
-  }
-
-  .msg {
-    /* Compact bubble — 7px/11px instead of 10px/14px. */
-    padding: 7px 11px; border-radius: 16px;
-    max-width: 100%;
-  }
-  .msg-customer {
-    background: var(--accent); color: #fff;
-    border-bottom-right-radius: 4px;
-  }
-  .msg-shop {
-    background: var(--surface, #fff); color: var(--ink);
-    border: 1px solid #e5e0d4; border-bottom-left-radius: 4px;
-  }
-  .msg-body { font-size: 15px; line-height: 1.4; white-space: pre-wrap; }
-  .msg-meta { font-size: 10px; opacity: 0.55; margin-top: 2px; text-align: right; }
-  .msg-shop .msg-meta { text-align: left; color: var(--ink-soft); opacity: 0.7; }
-
-  .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
   .td-rate-limit {
-    padding: 10px 14px; margin-bottom: 10px;
-    background: #fff3cd; color: #855; border-radius: 10px;
-    font-size: 13px; text-align: center;
-  }
-  .td-locked {
-    position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
-    left: 0; right: 0;
-    padding: 14px 16px;
-    background: rgba(245,241,232,0.96); backdrop-filter: blur(12px);
-    border-top: 1px solid #e5e0d4;
-    border-bottom: 1px solid #e5e0d4;
-    text-align: center; color: var(--ink-soft);
+    padding: 10px 14px;
+    margin-bottom: 10px;
+    background: #fff3cd;
+    color: #855;
+    border-radius: 10px;
     font-size: 13px;
-    z-index: 10;
+    text-align: center;
   }
-
-  /* "ข้อความใหม่" pill — fixed above the compose so it doesn't
-     scroll. Hidden by default; JS toggles `hidden`. */
-  .msg-new-pill {
-    position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 178px);
-    left: 50%; transform: translateX(-50%);
-    padding: 6px 14px; border: 0; border-radius: 999px;
-    background: var(--ink); color: #fff;
-    font-family: 'Prompt', sans-serif; font-size: 12px; font-weight: 600;
-    box-shadow: 0 6px 18px -6px rgba(0,0,0,0.45);
-    z-index: 11;
-    cursor: pointer;
-  }
-
-  .td-compose {
-    position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
-    left: 0; right: 0;
-    padding: 8px 12px;
-    z-index: 10;
-  }
-  .td-compose textarea {
-    display: block;
-    width: 100%;
-    padding: 13px 88px 13px 18px;
-    border-radius: 24px;
-    border: 1px solid #d4cdbc;
-    resize: none;
-    font-size: 16px;
-    font-family: inherit;
-    line-height: 1.45;
-    min-height: 50px;
-    max-height: 140px;
-    background: #fff;
-    box-sizing: border-box;
-  }
-  .td-compose button {
-    position: absolute;
-    right: 18px;
-    bottom: 14px;
-    width: 72px; height: 42px;
-    padding: 0;
-    border-radius: 21px;
-    border: 0;
-    background: var(--accent);
-    color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-  }
-  .td-compose button svg { width: 22px; height: 22px; }
 </style>
 
 <script>
   (function () {
     var SHOP_ID = "{{ shop.id }}";
-    var stream = document.querySelector('.td-msg-stream');
-    var compose = document.querySelector('.td-compose');
-    var ta = compose && compose.querySelector('textarea');
-    var newPill = document.getElementById('msg-new-pill');
+    var thread  = document.querySelector('.chat-thread');
+    var bar     = document.querySelector('.chat-input-bar');
+    var input   = bar && bar.querySelector('.chat-input');
+    var newPill = document.getElementById('chat-new-pill');
 
-    if (!stream) return;
+    if (!thread) return;
 
-    // 1. Auto-scroll on initial load.
     function scrollToBottom(smooth) {
       var opt = smooth ? { behavior: 'smooth', block: 'end' } : { block: 'end' };
-      stream.lastElementChild && stream.lastElementChild.scrollIntoView(opt);
+      thread.lastElementChild && thread.lastElementChild.scrollIntoView(opt);
       if (!smooth) window.scrollTo(0, document.body.scrollHeight);
     }
     scrollToBottom(false);
 
-    // 2. Enter to send, Shift+Enter for newline.
-    if (ta && compose) {
-      ta.addEventListener('keydown', function (e) {
+    if (input && bar) {
+      input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
           e.preventDefault();
-          if (ta.value.trim()) compose.requestSubmit();
+          if (input.value.trim()) bar.requestSubmit();
         }
       });
     }
 
-    // 3. SSE chat-message-in — append bubble. If the textarea is
-    //    focused, DON'T auto-scroll (would yank the compose out from
-    //    under the user's typing) — just show the "ข้อความใหม่" pill.
+    // SSE bubble injection. The server emits `<div class="chat-bubble
+    // them">…</div><div class="chat-time them">…</div>` as a fragment;
+    // we walk the parsed children and append the whole pair so time
+    // stays paired with its bubble.
     function appendBubble(html) {
-      var tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      var node = tmp.firstElementChild;
-      if (!node) return;
-      var id = node.getAttribute('data-msg-id');
-      if (id && stream.querySelector('[data-msg-id="' + id + '"]')) return;
-      var empty = stream.querySelector('.td-empty');
+      var tmpl = document.createElement('template');
+      tmpl.innerHTML = (html || '').trim();
+      var nodes = Array.from(tmpl.content.childNodes).filter(function (n) { return n.nodeType === 1; });
+      if (!nodes.length) return;
+      var bubble = nodes.find(function (n) { return n.classList && n.classList.contains('chat-bubble'); });
+      if (bubble && bubble.dataset.msgId) {
+        if (thread.querySelector('[data-msg-id="' + bubble.dataset.msgId + '"]')) return;
+      }
+      var empty = thread.querySelector('.chat-empty');
       if (empty) empty.remove();
-      stream.appendChild(node);
+      nodes.forEach(function (n) { thread.appendChild(n); });
 
-      var typing = ta && document.activeElement === ta;
+      var typing = input && document.activeElement === input;
       if (typing) {
         if (newPill) newPill.hidden = false;
       } else {
@@ -246,14 +165,12 @@
       } catch (err) { console.warn('[chat] parse failed', err); }
     });
 
-    // 4. "ข้อความใหม่" pill → smooth scroll, dismiss.
     if (newPill) {
       newPill.addEventListener('click', function () {
         scrollToBottom(true);
         newPill.hidden = true;
       });
     }
-
   })();
 </script>
 {% endblock %}

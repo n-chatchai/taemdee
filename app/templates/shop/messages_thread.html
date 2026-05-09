@@ -11,182 +11,87 @@
 {% set _cust_initial = (_cust_name or 'ก')[0] %}
 
 <div class="s-thread">
-  <div class="s-msg-stream">
+  <div class="chat-thread">
     {% for m in messages %}
-      <div class="msg-row msg-row-{{ m.sender }}" data-msg-id="{{ m.id }}">
-        {% if m.sender == 'customer' %}
-          <div class="shop-avatar shop-avatar--xs">
-            {% if _cust_pic %}
-              <img src="{{ _cust_pic }}" alt="" class="shop-avatar-img">
-            {% else %}
-              <span>{{ _cust_initial }}<span class="dot">.</span></span>
-            {% endif %}
-          </div>
-        {% endif %}
-        <div class="msg msg-{{ m.sender }}">
-          <div class="msg-body">{{ m.body }}</div>
-          <div class="msg-meta">{{ m.created_at.strftime('%H:%M') }}</div>
-        </div>
-      </div>
+      {# Operator viewpoint: shop = me (right, ink), customer = them. #}
+      {% set side = 'me' if m.sender == 'shop' else 'them' %}
+      <div class="chat-bubble {{ side }}" data-msg-id="{{ m.id }}">{{ m.body }}</div>
+      <div class="chat-time {{ side }}">{{ m.created_at.strftime('%H:%M') }}</div>
     {% else %}
-      <div class="td-empty">ยังไม่มีข้อความ</div>
+      <div class="chat-empty">ยังไม่มีข้อความ</div>
     {% endfor %}
   </div>
 
-  <button type="button" class="msg-new-pill" id="msg-new-pill" hidden>
+  <button type="button" class="chat-new-pill" id="chat-new-pill" hidden>
     ↓ ข้อความใหม่
   </button>
 
-  <form class="s-compose" method="POST" action="/shop/messages/{{ thread.id }}/reply">
-    <textarea name="body" rows="1" placeholder="ตอบกลับ..." required></textarea>
-    <button type="submit" aria-label="ส่ง">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.4" stroke-linecap="round" stroke-linejoin="round">
-        <line x1="12" y1="19" x2="12" y2="5"/>
-        <polyline points="5 12 12 5 19 12"/>
+  <form class="chat-input-bar chat-input-bar--shop" method="POST" action="/shop/messages/{{ thread.id }}/reply">
+    <input type="text" class="chat-input" name="body" placeholder="ตอบกลับลูกค้า..." autocomplete="off" required>
+    <button type="submit" class="chat-send" aria-label="ส่ง">
+      <svg viewBox="0 0 24 24">
+        <line x1="22" y1="2" x2="11" y2="13"/>
+        <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
       </svg>
     </button>
   </form>
 </div>
 
 <style>
-  .s-thread { padding: 8px 14px 240px; }
-  .s-msg-stream {
-    display: flex; flex-direction: column;
-    gap: 3px;
-    margin-bottom: 8px;
+  .s-thread { padding: 8px 14px 220px; }
+  .chat-empty {
+    padding: 40px 20px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
   }
-  .msg-row {
-    display: flex; align-items: flex-end; gap: 6px;
-    max-width: 88%;
+  /* Shop dock is taller than the customer dock — re-anchor the
+     fixed input bar so it doesn't slide under it. */
+  .chat-input-bar--shop {
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
   }
-  /* Shop view: shop bubble = "me", flush right; customer = other,
-     flush left with a 28px avatar slot. */
-  .msg-row-shop     { align-self: flex-end; }
-  .msg-row-customer { align-self: flex-start; }
-  .msg-row-customer + .msg-row-shop,
-  .msg-row-shop + .msg-row-customer { margin-top: 6px; }
-  .msg-row-customer + .msg-row-customer .msg-avatar {
-    visibility: hidden;
-  }
-
-  .msg-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--accent-soft, #FFE6DF); color: var(--accent);
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden; flex-shrink: 0;
-    font-weight: 700; font-size: 12px;
-  }
-  .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
-
-  .msg {
-    padding: 7px 11px; border-radius: 16px;
-    max-width: 100%;
-  }
-  .msg-shop {
-    background: var(--accent); color: #fff;
-    border-bottom-right-radius: 4px;
-  }
-  .msg-customer {
-    background: var(--surface, #fff); color: var(--ink);
-    border: 1px solid #e5e0d4; border-bottom-left-radius: 4px;
-  }
-  .msg-body { font-size: 15px; line-height: 1.4; white-space: pre-wrap; }
-  .msg-meta { font-size: 10px; opacity: 0.55; margin-top: 2px; text-align: right; }
-  .msg-customer .msg-meta { text-align: left; color: var(--ink-soft); opacity: 0.7; }
-
-  .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
-
-  .msg-new-pill {
-    position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 178px);
-    left: 50%; transform: translateX(-50%);
-    padding: 6px 14px; border: 0; border-radius: 999px;
-    background: var(--ink); color: #fff;
-    font-family: 'Prompt', sans-serif; font-size: 12px; font-weight: 600;
-    box-shadow: 0 6px 18px -6px rgba(0,0,0,0.45);
-    z-index: 11;
-    cursor: pointer;
-  }
-
-  .s-compose {
-    position: fixed;
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
-    left: 0; right: 0;
-    padding: 8px 12px;
-    background: rgba(255,255,255,0.96); backdrop-filter: blur(12px);
-    border-top: 1px solid #e5e0d4;
-    border-bottom: 1px solid #e5e0d4;
-    z-index: 10;
-  }
-  .s-compose textarea {
-    display: block;
-    width: 100%;
-    padding: 13px 88px 13px 18px;
-    border-radius: 24px;
-    border: 1px solid #d4cdbc;
-    resize: none;
-    font-size: 16px;
-    font-family: inherit;
-    line-height: 1.45;
-    min-height: 50px;
-    max-height: 140px;
-    background: #fff;
-    box-sizing: border-box;
-  }
-  .s-compose button {
-    position: absolute;
-    right: 18px;
-    bottom: 14px;
-    width: 72px; height: 42px;
-    padding: 0;
-    border-radius: 21px;
-    border: 0;
-    background: var(--accent);
-    color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    cursor: pointer;
-  }
-  .s-compose button svg { width: 22px; height: 22px; }
 </style>
 
 <script>
   (function () {
     var THREAD_ID = "{{ thread.id }}";
-    var stream = document.querySelector('.s-msg-stream');
-    var compose = document.querySelector('.s-compose');
-    var ta = compose && compose.querySelector('textarea');
-    var newPill = document.getElementById('msg-new-pill');
+    var thread  = document.querySelector('.chat-thread');
+    var bar     = document.querySelector('.chat-input-bar');
+    var input   = bar && bar.querySelector('.chat-input');
+    var newPill = document.getElementById('chat-new-pill');
 
-    if (!stream) return;
+    if (!thread) return;
 
     function scrollToBottom(smooth) {
       var opt = smooth ? { behavior: 'smooth', block: 'end' } : { block: 'end' };
-      stream.lastElementChild && stream.lastElementChild.scrollIntoView(opt);
+      thread.lastElementChild && thread.lastElementChild.scrollIntoView(opt);
       if (!smooth) window.scrollTo(0, document.body.scrollHeight);
     }
     scrollToBottom(false);
 
-    if (ta && compose) {
-      ta.addEventListener('keydown', function (e) {
+    if (input && bar) {
+      input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
           e.preventDefault();
-          if (ta.value.trim()) compose.requestSubmit();
+          if (input.value.trim()) bar.requestSubmit();
         }
       });
     }
 
     function appendBubble(html) {
-      var tmp = document.createElement('div');
-      tmp.innerHTML = html;
-      var node = tmp.firstElementChild;
-      if (!node) return;
-      var id = node.getAttribute('data-msg-id');
-      if (id && stream.querySelector('[data-msg-id="' + id + '"]')) return;
-      var empty = stream.querySelector('.td-empty');
+      var tmpl = document.createElement('template');
+      tmpl.innerHTML = (html || '').trim();
+      var nodes = Array.from(tmpl.content.childNodes).filter(function (n) { return n.nodeType === 1; });
+      if (!nodes.length) return;
+      var bubble = nodes.find(function (n) { return n.classList && n.classList.contains('chat-bubble'); });
+      if (bubble && bubble.dataset.msgId) {
+        if (thread.querySelector('[data-msg-id="' + bubble.dataset.msgId + '"]')) return;
+      }
+      var empty = thread.querySelector('.chat-empty');
       if (empty) empty.remove();
-      stream.appendChild(node);
+      nodes.forEach(function (n) { thread.appendChild(n); });
 
-      var typing = ta && document.activeElement === ta;
+      var typing = input && document.activeElement === input;
       if (typing) {
         if (newPill) newPill.hidden = false;
       } else {
@@ -207,7 +112,6 @@
         newPill.hidden = true;
       });
     }
-
   })();
 </script>
 {% endblock %}

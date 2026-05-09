@@ -1891,6 +1891,10 @@ async def my_inbox(
 
     items = []
     for r in rows:
+        # `has_offer` powers the "มีของฝาก" filter pill in /my-inbox
+        # and the .ic-offer chip on the inbox card. Only DeeReach rows
+        # ever attach a voucher; chat threads don't.
+        offer_text = (r.offer_text or "").strip() if hasattr(r, "offer_text") else ""
         items.append({
             "kind": "reach",
             "row": r,
@@ -1900,6 +1904,8 @@ async def my_inbox(
             "unread": r.read_at is None,
             "href": f"/my-inbox/{r.id}",
             "preview": r.body,
+            "has_offer": bool(offer_text),
+            "offer_text": offer_text or None,
         })
     for t in threads:
         last = last_msg_by_thread.get(t.id)
@@ -1919,6 +1925,8 @@ async def my_inbox(
             "unread_count": int(t.customer_unread or 0),
             "href": f"/messages/{t.shop_id}",
             "preview": preview,
+            "has_offer": False,
+            "offer_text": None,
         })
     items.sort(key=lambda it: it["sort_at"], reverse=True)
 

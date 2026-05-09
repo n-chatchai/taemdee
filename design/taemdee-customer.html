@@ -1085,6 +1085,238 @@
     flex-shrink: 0;
   }
 
+  /* ============================================== */
+  /* Chat thread · 2-way conversation               */
+  /* ============================================== */
+  .chat-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 14px;
+    background: var(--bg);
+    border-bottom: 1px solid rgba(17,17,17,0.08);
+    flex-shrink: 0;
+  }
+  .chat-header .ch-back {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink);
+    cursor: pointer;
+  }
+  .chat-header .ch-back svg {
+    width: 18px; height: 18px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .chat-header .ch-avatar {
+    width: 36px; height: 36px;
+    border-radius: 10px;
+    background: var(--ink);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 15px;
+    letter-spacing: -0.04em;
+    flex-shrink: 0;
+  }
+  .chat-header .ch-avatar .dot { color: var(--accent); }
+  .chat-header .ch-info { flex: 1; min-width: 0; }
+  .chat-header .ch-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14.5px;
+    color: var(--ink);
+    line-height: 1.2;
+    letter-spacing: -0.005em;
+  }
+  .chat-header .ch-status {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    margin-top: 1px;
+  }
+  .chat-header .ch-action {
+    width: 36px; height: 36px;
+    display: flex; align-items: center; justify-content: center;
+    color: var(--ink-soft);
+    cursor: pointer;
+  }
+  .chat-header .ch-action svg {
+    width: 18px; height: 18px;
+    fill: currentColor;
+  }
+
+  .chat-thread {
+    flex: 1;
+    overflow-y: auto;
+    padding: 14px 14px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+  }
+  .chat-date {
+    align-self: center;
+    margin: 8px 0 4px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-softer);
+    background: rgba(17,17,17,0.05);
+    padding: 3px 12px;
+    border-radius: 99px;
+  }
+
+  /* Bubble base */
+  .chat-bubble {
+    max-width: 76%;
+    padding: 9px 13px;
+    border-radius: 16px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.45;
+    color: var(--ink);
+    word-wrap: break-word;
+    margin-top: 2px;
+  }
+  .chat-bubble.me {
+    align-self: flex-end;
+    background: var(--ink);
+    color: var(--bg);
+    border-bottom-right-radius: 4px;
+  }
+  .chat-bubble.them {
+    align-self: flex-start;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.08);
+    border-bottom-left-radius: 4px;
+  }
+  .chat-time {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    color: var(--ink-softer);
+    margin-top: 2px;
+    margin-bottom: 6px;
+  }
+  .chat-time.me { align-self: flex-end; margin-right: 8px; }
+  .chat-time.them { align-self: flex-start; margin-left: 8px; }
+
+  /* DeeReach broadcast card · stretches full width */
+  .chat-deereach {
+    align-self: stretch;
+    background: var(--butter-soft, #FFF6D9);
+    border: 1px solid rgba(255, 217, 82, 0.55);
+    border-radius: 16px;
+    padding: 14px 16px;
+    margin: 6px 0 2px;
+  }
+  .chat-deereach .cd-tag {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    background: var(--accent);
+    color: #fff;
+    padding: 3px 9px;
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.04em;
+    text-transform: uppercase;
+    margin-bottom: 10px;
+  }
+  .chat-deereach .cd-tag svg {
+    width: 11px; height: 11px;
+    fill: currentColor;
+  }
+  .chat-deereach .cd-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    line-height: 1.55;
+    color: var(--ink);
+  }
+  .chat-deereach .cd-voucher {
+    margin-top: 12px;
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    padding: 10px 12px;
+    background: rgba(255,255,255,0.7);
+    border-radius: 10px;
+    border: 1px dashed rgba(176, 130, 30, 0.35);
+  }
+  .chat-deereach .cd-voucher .vc-icon {
+    width: 32px; height: 32px;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
+  }
+  .chat-deereach .cd-voucher .vc-icon svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .chat-deereach .cd-voucher .vc-info { flex: 1; min-width: 0; }
+  .chat-deereach .cd-voucher .vc-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .chat-deereach .cd-voucher .vc-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+
+  /* Input bar at bottom · sticky */
+  .chat-input-bar {
+    flex-shrink: 0;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 12px 12px;
+    background: var(--bg);
+    border-top: 1px solid rgba(17,17,17,0.08);
+  }
+  .chat-input {
+    flex: 1;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 99px;
+    padding: 9px 16px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    outline: none;
+    min-width: 0;
+  }
+  .chat-input::placeholder {
+    color: var(--ink-softer);
+  }
+  .chat-send {
+    flex-shrink: 0;
+    width: 38px; height: 38px;
+    background: var(--ink);
+    color: var(--bg);
+    border: none;
+    border-radius: 50%;
+    cursor: pointer;
+    display: flex; align-items: center; justify-content: center;
+  }
+  .chat-send.active {
+    background: var(--accent);
+    color: #fff;
+  }
+  .chat-send svg {
+    width: 16px; height: 16px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  }
+
   /* Inbox empty state */
   .inbox-empty {
     flex: 1;
@@ -9836,17 +10068,7 @@
                     <div class="ic-shop">ร้านกาแฟลุงหมี</div>
                     <div class="ic-time">2 ชม.</div>
                   </div>
-                  <div class="ic-preview">คิดถึงพี่สมศรีนะ ☕ แวะมาทักหน่อยสิ</div>
-                  <div class="ic-offer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 12 20 22 4 22 4 12"/>
-                      <rect x="2" y="7" width="20" height="5"/>
-                      <line x1="12" y1="22" x2="12" y2="7"/>
-                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-                    </svg>
-                    ของฝาก: ลด ฿20
-                  </div>
+                  <div class="ic-preview">เปิด 7 โมง ปิด 5 โมงเย็นครับ · เสาร์-อาทิตย์...</div>
                 </div>
               </a>
 
@@ -9859,6 +10081,16 @@
                     <div class="ic-time">เมื่อวาน</div>
                   </div>
                   <div class="ic-preview">อีก 2 ครั้ง พี่ก็ครบแล้วนะ — รอพี่อยู่ค่ะ</div>
+                  <div class="ic-offer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 12 20 22 4 22 4 12"/>
+                      <rect x="2" y="7" width="20" height="5"/>
+                      <line x1="12" y1="22" x2="12" y2="7"/>
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                    </svg>
+                    ของฝาก: นวด 30 นาที ฟรี
+                  </div>
                 </div>
               </a>
 
@@ -9869,7 +10101,7 @@
                     <div class="ic-shop">Orchid &amp; Oat</div>
                     <div class="ic-time">3 วัน</div>
                   </div>
-                  <div class="ic-preview">เมนูใหม่ Matcha Yuzu มาแล้ว 🍵</div>
+                  <div class="ic-preview">พี่: ขอแบบไม่หวานได้มั้ยคะ?</div>
                 </div>
               </a>
 
@@ -9987,156 +10219,79 @@
       </div>
     </div>
 
-    <!-- inbox.message — Message detail with offer (auto-saved to gifts) -->
+    <!-- inbox.message — Conversation thread (DeeReach + 2-way chat) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">inbox.message</span>ข้อความ · มีของฝาก (auto-saved)</div>
-        <h3>เปิดข้อความ · ของฝากเก็บอัตโนมัติ</h3>
-        <p>เปิดจาก inbox card · shop logo + name · image hero · message body · <strong>ของฝาก auto-receive</strong> (ไม่ต้องกดรับ · เก็บใน gifts.list ทันที) · check icon + "เก็บไว้ให้แล้ว" · link "ดูใน ของขวัญของพี่ →" · ลด friction</p>
+        <div class="kicker"><span class="n">inbox.message</span>แชทกับร้าน · DeeReach + Chat</div>
+        <h3>คุยกับร้านได้ทั้งสองทาง</h3>
+        <p>เปิดจาก inbox.list — thread เดียวต่อร้าน · ผสม DeeReach broadcast (butter card · special tag) + chat bubbles 2 ทาง · ลูกค้าเริ่มทักร้านได้เลยถ้ามีคำถาม · messaging ฟรี (ไม่ใช้เครดิต) · shop ใช้เครดิตเฉพาะตอนส่ง broadcast/DeeReach ใหม่</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
-            <div class="app-bar">
-              <a class="x" aria-label="ย้อนกลับ">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              </a>
-              <div class="title-mid">ข้อความ</div>
-              <a class="more" aria-label="เพิ่มเติม">
-                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
-              </a>
-            </div>
 
-            <div class="inbox-detail-hero">
-              <div class="idh-logo">m<span class="dot">.</span></div>
-              <div class="idh-text">
-                <div class="idh-shop">ร้านกาแฟลุงหมี</div>
-                <div class="idh-meta">ฝากถึงพี่สมศรี · 2 ชม.ที่แล้ว</div>
+            <div class="chat-header">
+              <a class="ch-back" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+              </a>
+              <div class="ch-avatar">m<span class="dot">.</span></div>
+              <div class="ch-info">
+                <div class="ch-name">ร้านกาแฟลุงหมี</div>
+                <div class="ch-status">เปิดอยู่ · ตอบใน ~10 นาที</div>
               </div>
+              <a class="ch-action" aria-label="ดูร้าน">
+                <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><circle cx="9" cy="9" r="1"/><circle cx="9" cy="13" r="1"/><circle cx="9" cy="17" r="1"/></svg>
+              </a>
             </div>
 
-            <div class="inbox-detail-image" style="background: linear-gradient(135deg, #FFD952 0%, #FF8B57 50%, #FF5E3A 100%);">
-              <div class="idi-emoji">☕</div>
-            </div>
+            <div class="chat-thread">
 
-            <div class="inbox-detail-body">
-              <h1>คิดถึงพี่สมศรีนะ ☕</h1>
-              <p>ห่างหายไปเดือนนึงแล้ว ลุงหมีคิดถึงนะครับ แวะมาเก็บแต้มต่อได้ทุกเมื่อ — เครื่องดื่มร้อนๆ รออยู่</p>
-            </div>
+              <div class="chat-date">วันนี้</div>
 
-            <div class="inbox-detail-offer">
-              <div class="ido-row">
-                <div class="ido-icon">
-                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                    <polyline points="20 12 20 22 4 22 4 12"/>
-                    <rect x="2" y="7" width="20" height="5"/>
-                    <line x1="12" y1="22" x2="12" y2="7"/>
-                    <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-                    <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-                  </svg>
-                </div>
-                <div class="ido-text">
-                  <div class="ido-label">
-                    <svg class="ido-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-                    ของฝากจากร้าน · เก็บไว้ให้แล้ว
+              <!-- DeeReach broadcast (shop sent · with voucher) -->
+              <div class="chat-deereach">
+                <span class="cd-tag">
+                  <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
+                  ข้อความจากร้าน
+                </span>
+                <div class="cd-text">คิดถึงพี่สมศรีนะครับ ☕ ห่างหายไปเดือนนึงแล้ว ลุงหมีคิดถึง — แวะมาเก็บแต้มต่อได้ทุกเมื่อ เครื่องดื่มร้อนๆ รออยู่</div>
+                <div class="cd-voucher">
+                  <div class="vc-icon">
+                    <svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
                   </div>
-                  <div class="ido-name">ลด ฿20 เมื่อซื้อกาแฟ</div>
-                  <div class="ido-condition">ใช้ก่อน 30 พ.ค.</div>
+                  <div class="vc-info">
+                    <div class="vc-name">ลด ฿20 เมื่อซื้อกาแฟ</div>
+                    <div class="vc-meta">เก็บไว้ใช้แล้ว · หมด 30 พ.ค.</div>
+                  </div>
                 </div>
               </div>
-              <a class="ido-link">ดูใน <strong>ของขวัญของพี่</strong> →</a>
+              <div class="chat-time them">14:23</div>
+
+              <!-- Customer reply -->
+              <div class="chat-bubble me">ขอบคุณค่ะลุงหมี เดี๋ยวพรุ่งนี้แวะไปนะ</div>
+              <div class="chat-time me">14:30</div>
+
+              <!-- Shop reply -->
+              <div class="chat-bubble them">รออยู่นะครับพี่สมศรี ✨</div>
+              <div class="chat-time them">14:31</div>
+
+              <!-- Customer asks question -->
+              <div class="chat-bubble me">ปกติร้านปิดกี่โมงคะ?</div>
+              <div class="chat-time me">14:32</div>
+
+              <!-- Shop reply -->
+              <div class="chat-bubble them">เปิด 7 โมง ปิด 5 โมงเย็นครับ · เสาร์-อาทิตย์เปิดถึง 6 โมง</div>
+              <div class="chat-time them">14:33</div>
+
             </div>
 
-            <div class="inbox-detail-cta single">
-              <a class="idc-btn primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/></svg>
-                ดูร้าน
-              </a>
+            <div class="chat-input-bar">
+              <input type="text" class="chat-input" placeholder="พิมพ์ข้อความถึงร้าน..." />
+              <button class="chat-send active" aria-label="ส่ง">
+                <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/></svg>
+              </button>
             </div>
 
-            <nav class="c-glass-nav" aria-label="Main navigation">
-              <a class="gn-tab" aria-label="บัตรของฉัน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
-                <span class="gn-label">บัตร</span>
-              </a>
-              <a class="gn-tab gn-scan" aria-label="สแกน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-                <span class="gn-label">สแกน</span>
-              </a>
-              <a class="gn-tab active" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <span class="gn-label">ข้อความ</span>
-              </a>
-
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
-            </nav>
-          </div>
-        </div>
-      </div>
-    </div>
-
-    <!-- inbox.message.no-offer — Message detail without offer (almost-there) -->
-    <div class="mockup">
-      <div class="mockup-caption">
-        <div class="kicker"><span class="n">inbox.message</span>ข้อความ · ไม่มีของฝาก</div>
-        <h3>ข้อความที่ไม่มีของฝาก</h3>
-        <p>ตัวอย่าง almost-there nudge — ไม่มี offer card · "เปิดบัตรของร้าน" ขึ้นเป็น primary CTA สีดำเต็ม (adaptive layout)</p>
-      </div>
-      <div class="phone">
-        <div class="phone-screen">
-          <div class="td">
-            <div class="app-bar">
-              <a class="x" aria-label="ย้อนกลับ">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
-              </a>
-              <div class="title-mid">ข้อความ</div>
-              <a class="more" aria-label="เพิ่มเติม">
-                <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="5" r="2"/><circle cx="12" cy="12" r="2"/><circle cx="12" cy="19" r="2"/></svg>
-              </a>
-            </div>
-
-            <div class="inbox-detail-hero">
-              <div class="idh-logo lg-massage">น<span class="dot">.</span></div>
-              <div class="idh-text">
-                <div class="idh-shop">ร้านนวดแม่หม่อน</div>
-                <div class="idh-meta">ฝากถึงพี่สมศรี · เมื่อวาน</div>
-              </div>
-            </div>
-
-            <div class="inbox-detail-body">
-              <h1>อีก 2 ครั้ง พี่ก็ครบแล้วนะ 🌿</h1>
-              <p>คิดถึงพี่สมศรีค่ะ — รอพี่อยู่นะ มา 2 ครั้งจะได้นวดฟรีแล้ว ครั้งหน้าแม่หม่อนจะรอบริการเองค่ะ</p>
-            </div>
-
-            <div class="inbox-detail-cta single">
-              <a class="idc-btn primary">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/></svg>
-                ดูร้าน
-              </a>
-            </div>
-
-            <nav class="c-glass-nav" aria-label="Main navigation">
-              <a class="gn-tab" aria-label="บัตรของฉัน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><rect x="2" y="6" width="20" height="14" rx="3"/><line x1="2" y1="11" x2="22" y2="11"/></svg></span>
-                <span class="gn-label">บัตร</span>
-              </a>
-              <a class="gn-tab gn-scan" aria-label="สแกน">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/><circle cx="12" cy="13" r="4"/></svg></span>
-                <span class="gn-label">สแกน</span>
-              </a>
-              <a class="gn-tab active" aria-label="กล่องข้อความ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M21 15a2 2 0 0 1-2 2H7l-4 4V5a2 2 0 0 1 2-2h14a2 2 0 0 1 2 2z"/></svg></span>
-                <span class="gn-label">ข้อความ</span>
-              </a>
-
-              <a class="gn-tab" aria-label="ของขวัญ">
-                <span class="gn-icon"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/></svg><span class="gn-badge"></span></span>
-                <span class="gn-label">ของขวัญ</span>
-              </a>
-            </nav>
           </div>
         </div>
       </div>

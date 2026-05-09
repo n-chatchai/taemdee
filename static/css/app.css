@@ -11779,128 +11779,137 @@ body:has(.td-pinned) {
 }
 
 /* Inbox card list — replaces the old .inbox-row markup. */
-/* ── Inbox list — editorial refresh ───────────────────────────────
-   Cards use a 3px accent left rail (instead of a tiny dot) to mark
-   unread. Read rows go flat with no rail and slightly muted ink.
-   Tag chips (.ic-tag-*) carry colour-coded meta — chat = squarish
-   accent, reach = pill butter — so the eye groups by kind without
-   re-reading text. */
+/* ── Inbox filters + list ─────────────────────────────────────────
+   Mirrors design/taemdee-customer.html → inbox.list. Filter pills
+   above (ทั้งหมด · ยังไม่อ่าน · มีของฝาก) drive a JS filter.
+   Cards use a 6px dot (top-left) for unread + butter-soft .ic-offer
+   chip when a row carries an attached voucher. */
+.inbox-filters {
+  padding: 0 22px 14px;
+  display: flex;
+  gap: 6px;
+  overflow-x: auto;
+  scrollbar-width: none;
+  flex-shrink: 0;
+}
+.inbox-filters::-webkit-scrollbar { display: none; }
+.inbox-filter-pill {
+  padding: 6px 12px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.12);
+  white-space: nowrap;
+  cursor: pointer;
+  flex-shrink: 0;
+}
+.inbox-filter-pill.active {
+  background: var(--ink);
+  color: var(--surface);
+  border-color: var(--ink);
+  font-weight: 500;
+}
+
 .inbox-list {
   margin: 0;
-  padding: 0 16px;
+  padding: 0 14px;
   display: flex;
   flex-direction: column;
-  gap: 4px;
+  gap: 8px;
   flex: 1;
 }
 .inbox-card {
   background: var(--surface);
   border-radius: 14px;
-  padding: 14px 14px 14px 17px;
+  padding: 12px;
   display: flex;
-  gap: 12px;
+  gap: 11px;
   position: relative;
   box-shadow: 0 1px 2px rgba(17,17,17,0.04);
   cursor: pointer;
   text-decoration: none;
   color: inherit;
-  transition: transform 0.12s ease, background-color 0.18s ease;
-  overflow: hidden;
-}
-.inbox-card::before {
-  /* Accent rail. Hidden on read rows; shown for unread. Sits inside
-     the card's border-radius so it tucks neatly against the surface. */
-  content: '';
-  position: absolute;
-  top: 10px;
-  bottom: 10px;
-  left: 6px;
-  width: 3px;
-  border-radius: 999px;
-  background: var(--accent);
+  transition: transform 0.12s ease;
 }
 .inbox-card:active { transform: scale(0.99); }
-.inbox-card:hover { background: color-mix(in srgb, var(--surface) 85%, var(--accent) 4%); }
 .inbox-card.read {
-  background: transparent;
+  background: rgba(253,250,242,0.55);
   box-shadow: none;
 }
-.inbox-card.read::before { display: none; }
-.inbox-card.read .ic-shop { color: var(--ink-soft); font-weight: 500; }
-.inbox-card.read .ic-preview { color: var(--ink-softer); }
-.inbox-card.read .ic-time { color: var(--ink-softer); }
-
-/* Hide the legacy dot — the rail covers the same job, more legibly.
-   Markup still emits .ic-unread-dot so existing JS that adds/removes
-   it on SSE stays valid; we just don't render it anymore. */
-.inbox-card .ic-unread-dot { display: none; }
+.inbox-card.read .ic-body { opacity: 0.7; }
+.inbox-card .ic-unread-dot {
+  position: absolute;
+  top: 14px;
+  left: 4px;
+  width: 6px;
+  height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+}
 
 .inbox-card .ic-body { flex: 1; min-width: 0; }
 .inbox-card .ic-row {
   display: flex;
   justify-content: space-between;
   align-items: baseline;
-  gap: 8px;
+  gap: 6px;
 }
 .inbox-card .ic-shop {
   font-family: 'Prompt', sans-serif;
-  font-size: var(--text-sm);
-  font-weight: 700;
+  font-size: 13.5px;
+  font-weight: 600;
   color: var(--ink);
   line-height: 1.3;
-  letter-spacing: -0.005em;
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
+}
+.inbox-card.read .ic-shop {
+  font-weight: 500;
+  color: var(--ink-soft);
 }
 .inbox-card .ic-time {
-  font-family: 'Host Grotesk', sans-serif;
-  font-size: 11px;
-  font-weight: 600;
-  color: var(--accent);
-  letter-spacing: 0.02em;
-  flex-shrink: 0;
-  text-transform: lowercase;
-}
-.inbox-card.read .ic-time {
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-2xs);
   color: var(--ink-softer);
-  font-weight: 500;
+  flex-shrink: 0;
 }
 .inbox-card .ic-preview {
   font-family: 'Prompt', sans-serif;
-  font-size: 13px;
+  font-size: 12.5px;
   color: var(--ink);
-  line-height: 1.5;
-  margin-top: 4px;
+  line-height: 1.45;
+  margin-top: 2px;
   overflow: hidden;
   display: -webkit-box;
-  -webkit-line-clamp: 2;
-  line-clamp: 2;
+  -webkit-line-clamp: 1;
+  line-clamp: 1;
   -webkit-box-orient: vertical;
 }
+.inbox-card.read .ic-preview { color: var(--ink-soft); }
 
-/* Kind chips — chat = squarish accent (2-way), reach = pill butter
-   (1-way broadcast). Distinct shapes so the eye groups by kind even
-   in a long mixed feed. */
-.inbox-card .ic-tag-chat {
+/* Offer pill — surfaces "ของฝาก: …" inline on the card so the
+   customer can see at a glance that a row has an attached voucher
+   without opening it. butter-soft tint pairs with the accent dot. */
+.inbox-card .ic-offer {
   display: inline-flex;
   align-items: center;
-  padding: 1px 6px;
-  border-radius: 4px;
-  background: var(--accent);
-  color: #fff;
-  font-family: 'Host Grotesk', sans-serif;
-  font-size: 9px;
-  font-weight: 700;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  vertical-align: middle;
+  gap: 5px;
+  background: var(--butter-soft);
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: var(--text-2xs);
+  font-weight: 500;
+  color: var(--ink);
+  margin-top: 6px;
 }
-.inbox-card.read .ic-tag-chat {
-  background: var(--ink-softer);
+.inbox-card .ic-offer svg {
+  width: 11px;
+  height: 11px;
+  flex-shrink: 0;
 }
 
 /* Inbox empty state — typography hero: a giant 0. (Host Grotesk +
@@ -12945,4 +12954,275 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   font-size: 12px;
   color: var(--ink-soft);
   flex-shrink: 0;
+}
+
+/* ============================================================
+   Chat thread — inbox.message in design/taemdee-customer.html.
+   Used by /messages/<shop>. Two-way conversation surface that
+   mixes DeeReach broadcasts (.chat-deereach) with chat bubbles
+   (.chat-bubble.me / .them). chat-input-bar sits fixed at the
+   bottom above the customer dock. chat-header replaces the
+   per-page-header treatment so the screen reads like a chat app.
+   ============================================================ */
+.chat-header {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 14px;
+  background: var(--bg);
+  border-bottom: 1px solid rgba(17,17,17,0.08);
+  margin: -12px -14px 6px;
+  flex-shrink: 0;
+}
+.chat-header .ch-back {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink);
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.chat-header .ch-back svg {
+  width: 18px; height: 18px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+.chat-header .ch-info { flex: 1; min-width: 0; }
+.chat-header .ch-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.2;
+  letter-spacing: -0.005em;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.chat-header .ch-status {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.chat-header .ch-action {
+  width: 36px; height: 36px;
+  display: flex; align-items: center; justify-content: center;
+  color: var(--ink-soft);
+  cursor: pointer;
+  text-decoration: none;
+  flex-shrink: 0;
+}
+.chat-header .ch-action svg {
+  width: 18px; height: 18px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+
+.chat-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+  padding: 4px 0 12px;
+}
+.chat-date {
+  align-self: center;
+  margin: 8px 0 4px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-softer);
+  background: rgba(17,17,17,0.05);
+  padding: 3px 12px;
+  border-radius: 99px;
+}
+
+/* Bubble base */
+.chat-bubble {
+  max-width: 76%;
+  padding: 9px 13px;
+  border-radius: 16px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.45;
+  color: var(--ink);
+  word-wrap: break-word;
+  white-space: pre-wrap;
+  margin-top: 2px;
+}
+.chat-bubble.me {
+  align-self: flex-end;
+  background: var(--ink);
+  color: var(--bg);
+  border-bottom-right-radius: 4px;
+}
+.chat-bubble.them {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.08);
+  border-bottom-left-radius: 4px;
+}
+.chat-time {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  color: var(--ink-softer);
+  margin-top: 2px;
+  margin-bottom: 6px;
+}
+.chat-time.me { align-self: flex-end; margin-right: 8px; }
+.chat-time.them { align-self: flex-start; margin-left: 8px; }
+
+/* DeeReach broadcast card · stretches full width within the thread.
+   Embedded inline so the customer reads campaign + chat as one
+   conversation per shop. */
+.chat-deereach {
+  align-self: stretch;
+  background: var(--butter-soft, #FFF6D9);
+  border: 1px solid rgba(255, 217, 82, 0.55);
+  border-radius: 16px;
+  padding: 14px 16px;
+  margin: 6px 0 2px;
+}
+.chat-deereach .cd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 10px;
+}
+.chat-deereach .cd-tag svg {
+  width: 11px; height: 11px;
+  fill: currentColor;
+}
+.chat-deereach .cd-text {
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px;
+  line-height: 1.55;
+  color: var(--ink);
+  white-space: pre-wrap;
+}
+.chat-deereach .cd-voucher {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 10px;
+  border: 1px dashed rgba(176, 130, 30, 0.35);
+}
+.chat-deereach .cd-voucher .vc-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  flex-shrink: 0;
+}
+.chat-deereach .cd-voucher .vc-icon svg {
+  width: 16px; height: 16px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.chat-deereach .cd-voucher .vc-info { flex: 1; min-width: 0; }
+.chat-deereach .cd-voucher .vc-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.25;
+}
+.chat-deereach .cd-voucher .vc-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
+}
+
+/* Input bar — fixed above the customer dock so the compose stays
+   visible while the thread scrolls. */
+.chat-input-bar {
+  position: fixed;
+  left: 0; right: 0;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+  padding: 10px 12px 12px;
+  background: var(--bg);
+  border-top: 1px solid rgba(17,17,17,0.08);
+  z-index: 10;
+}
+.chat-input {
+  flex: 1;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.12);
+  border-radius: 99px;
+  padding: 9px 16px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13.5px;
+  color: var(--ink);
+  outline: none;
+  min-width: 0;
+}
+.chat-input::placeholder {
+  color: var(--ink-softer);
+}
+.chat-send {
+  flex-shrink: 0;
+  width: 38px; height: 38px;
+  background: var(--ink);
+  color: var(--bg);
+  border: none;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+  padding: 0;
+}
+.chat-send svg {
+  width: 16px; height: 16px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.chat-send:disabled,
+.chat-send.disabled {
+  opacity: 0.45;
+  cursor: not-allowed;
+}
+
+/* "↓ ข้อความใหม่" pill — fixed above chat-input-bar so a new bubble
+   that arrives while the customer is typing surfaces an explicit jump
+   target. JS toggles `hidden`. */
+.chat-new-pill {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 168px);
+  left: 50%; transform: translateX(-50%);
+  padding: 6px 14px; border: 0; border-radius: 999px;
+  background: var(--ink); color: #fff;
+  font-family: 'Prompt', sans-serif; font-size: 12px; font-weight: 600;
+  box-shadow: 0 6px 18px -6px rgba(0,0,0,0.45);
+  z-index: 11;
+  cursor: pointer;
+}
+.chat-locked {
+  position: fixed;
+  bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
+  left: 0; right: 0;
+  padding: 14px 16px;
+  background: rgba(245,241,232,0.96);
+  -webkit-backdrop-filter: blur(12px);
+  backdrop-filter: blur(12px);
+  border-top: 1px solid rgba(17,17,17,0.08);
+  text-align: center; color: var(--ink-soft);
+  font-size: 13px;
+  z-index: 10;
 }

@@ -120,53 +120,30 @@ async def send_message(
     return msg
 
 
-def _avatar_html(*, picture_url: Optional[str], fallback: str) -> str:
-    """28px chip avatar appended to the left of a received bubble in
-    the SSE-injected row HTML. Wraps in .shop-avatar.shop-avatar--xs
-    so the chrome (ink bg, .dot accent, image fill) matches the
-    server-rendered partial used on the initial paint."""
-    if picture_url:
-        return (
-            '<div class="shop-avatar shop-avatar--xs">'
-            f'<img src="{_html.escape(picture_url)}" alt="" class="shop-avatar-img">'
-            '</div>'
-        )
-    initial = _html.escape((fallback or "·")[0])
-    return (
-        '<div class="shop-avatar shop-avatar--xs">'
-        f'<span>{initial}<span class="dot">.</span></span>'
-        '</div>'
-    )
-
-
 def _bubble_html(
     sender: str,
     msg: CustomerMessage,
     *,
-    avatar_html: str = "",
+    viewer: str = "customer",
 ) -> str:
-    """Render one chat row that the SSE listener appends to the open
-    thread page. Outer .msg-row carries the data-msg-id (so the
-    listener can dedupe by id), and contains the avatar slot + the
-    actual .msg bubble. Server-rendered messages in the templates
-    use the same markup so live-appended rows look identical to
-    the initial paint.
+    """Render one chat fragment that the SSE listener appends to the
+    open thread page. Mirrors design/taemdee-customer.html →
+    inbox.message — `<div class="chat-bubble {side}" data-msg-id>` +
+    a sibling `<div class="chat-time {side}">`. Server-rendered
+    messages in the template emit the same pair, so a live-appended
+    bubble looks identical to the initial paint.
 
-    avatar_html is emitted only for the "other side" of the viewer —
-    i.e. the bubble that's being received. Own (sent) bubbles pass
-    an empty string so the row aligns flush right with no avatar
-    column.
+    `viewer` decides which sender flips to `me` (right, ink fill) vs
+    `them` (left, surface fill). Customer-side thread page passes
+    "customer", so the viewer's own bubbles render as me. Future
+    shop-side reuse can pass "shop".
     """
+    side = "me" if sender == viewer else "them"
     body_html = _html.escape(msg.body or "")
     time_str = msg.created_at.strftime("%H:%M")
     return (
-        f'<div class="msg-row msg-row-{sender}" data-msg-id="{msg.id}">'
-        f'{avatar_html}'
-        f'<div class="msg msg-{sender}">'
-        f'<div class="msg-body">{body_html}</div>'
-        f'<div class="msg-meta">{time_str}</div>'
-        f'</div>'
-        f'</div>'
+        f'<div class="chat-bubble {side}" data-msg-id="{msg.id}">{body_html}</div>'
+        f'<div class="chat-time {side}">{time_str}</div>'
     )
 
 
@@ -187,32 +164,18 @@ async def _publish_chat_events(
     if len(body_preview) > 140:
         body_preview = body_preview[:137] + "…"
 
-    # Compute the avatar for the receiver-side render — for a
-    # customer→shop bubble that's the customer's avatar, and vice
-    # versa. The bubble HTML the SSE listener will append therefore
-    # always carries the OTHER side's avatar (the same chip the open
-    # thread page paints inline for received messages).
-    from app.models import Customer, Shop, User
-    if sender == "customer":
-        c = await db.get(Customer, thread.customer_id)
-        c_user = await db.get(User, c.user_id) if c else None
-        avatar_html = _avatar_html(
-            picture_url=(c_user.picture_url if c_user else None),
-            fallback=(c_user.display_name if c_user else None) or "ก",
-        )
-    else:
-        s = await db.get(Shop, thread.shop_id)
-        avatar_html = _avatar_html(
-            picture_url=(s.logo_url if s else None),
-            fallback=(s.name if s else None) or "ร",
-        )
-    bubble = _bubble_html(sender, msg, avatar_html=avatar_html)
+    # Render two bubble fragments — one targeted at the customer-side
+    # thread page (viewer="customer", so customer messages flip to me)
+    # and one at the shop-side. The SSE listeners on each side receive
+    # only their own variant, keeping side alignment consistent.
+    bubble_for_customer = _bubble_html(sender, msg, viewer="customer")
+    bubble_for_shop = _bubble_html(sender, msg, viewer="shop")
 
     if sender == "customer":
         # Notify the shop's open thread page + bump the dock badge.
         publish(thread.shop_id, "chat-message-in", json.dumps({
             "thread_id": str(thread.id),
-            "html": bubble,
+            "html": bubble_for_shop,
         }))
         new_total = await shop_unread_total(db, thread.shop_id)
         publish(thread.shop_id, "messages-update", str(new_total))
@@ -254,7 +217,7 @@ async def _publish_chat_events(
         # unread (single inbox surface), so add both before publish.
         publish_customer(thread.customer_id, "chat-message-in", json.dumps({
             "shop_id": str(thread.shop_id),
-            "html": bubble,
+            "html": bubble_for_customer,
         }))
         chat_total = await customer_unread_total(db, thread.customer_id)
         deereach_total = (await db.exec(
@@ -308,18 +271,6 @@ async def list_threads_for_shop(
     rows = (await db.exec(
         select(CustomerThread)
         .where(CustomerThread.shop_id == shop_id)
-        .order_by(CustomerThread.last_at.desc())
-        .limit(limit)
-    )).all()
-    return list(rows)
-
-
-async def list_threads_for_customer(
-    db: AsyncSession, customer_id: UUID, *, limit: int = 200
-) -> List[CustomerThread]:
-    rows = (await db.exec(
-        select(CustomerThread)
-        .where(CustomerThread.customer_id == customer_id)
         .order_by(CustomerThread.last_at.desc())
         .limit(limit)
     )).all()

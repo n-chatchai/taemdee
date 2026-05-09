@@ -6,19 +6,26 @@
   {% include "_partials/page_head.html" %}
 
   {% if items %}
-    {% set _chat_count = items|selectattr('kind', 'equalto', 'thread')|list|length %}
-    {% set _reach_count = items|selectattr('kind', 'equalto', 'reach')|list|length %}
-    {# Tabs split the merged feed into chat threads vs DeeReach
-       broadcasts. Default tab = แชท because that's the side a
-       customer most actively returns to. JS toggles row visibility
-       by data-kind. #}
-    <div class="tab-pills" role="tablist" style="padding: 0 20px;">
-      <button type="button" class="tab-pill active" data-tab="thread" role="tab">
-        แชท{% if _chat_count %} · {{ _chat_count }}{% endif %}
+    {% set _all_count = items|length %}
+    {% set _unread_count = items|selectattr('unread')|list|length %}
+    {% set _offer_count = items|selectattr('has_offer')|list|length %}
+    {# Filter pills mirror design/taemdee-customer.html → inbox.list.
+       JS toggles row visibility by `unread` / `has_offer` flags
+       on data-* attrs. Default = ทั้งหมด. #}
+    <div class="inbox-filters" role="tablist">
+      <button type="button" class="inbox-filter-pill active" data-filter="all" role="tab">
+        ทั้งหมด · {{ _all_count }}
       </button>
-      <button type="button" class="tab-pill" data-tab="reach" role="tab">
-        แต้มดี{% if _reach_count %} · {{ _reach_count }}{% endif %}
+      {% if _unread_count %}
+      <button type="button" class="inbox-filter-pill" data-filter="unread" role="tab">
+        ยังไม่อ่าน · {{ _unread_count }}
       </button>
+      {% endif %}
+      {% if _offer_count %}
+      <button type="button" class="inbox-filter-pill" data-filter="offer" role="tab">
+        มีของฝาก · {{ _offer_count }}
+      </button>
+      {% endif %}
     </div>
 
     <div class="inbox-list">
@@ -26,19 +33,29 @@
         <a class="inbox-card{% if not it.unread %} read{% endif %}"
            href="{{ it.href }}"
            data-unread="{{ '1' if it.unread else '0' }}"
+           data-offer="{{ '1' if it.has_offer else '0' }}"
            data-kind="{{ it.kind }}"
            {% if it.kind == 'thread' and it.thread %}data-shop-id="{{ it.thread.shop_id }}"{% endif %}>
           {% if it.unread %}<span class="ic-unread-dot"></span>{% endif %}
           {% with shop=it.shop, size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
           <div class="ic-body">
             <div class="ic-row">
-              <div class="ic-shop">
-                {{ it.shop.name if it.shop else 'TaemDee' }}
-                {% if it.kind == 'thread' %}<span class="ic-tag-chat">แชท</span>{% endif %}
-              </div>
+              <div class="ic-shop">{{ it.shop.name if it.shop else 'TaemDee' }}</div>
               <div class="ic-time">{{ it.sort_at|bkk_feed_time }}</div>
             </div>
             <div class="ic-preview">{{ it.preview }}</div>
+            {% if it.has_offer %}
+              <div class="ic-offer">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                  <polyline points="20 12 20 22 4 22 4 12"/>
+                  <rect x="2" y="7" width="20" height="5"/>
+                  <line x1="12" y1="22" x2="12" y2="7"/>
+                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                </svg>
+                ของฝาก{% if it.offer_text %}: {{ it.offer_text }}{% endif %}
+              </div>
+            {% endif %}
           </div>
         </a>
       {% endfor %}
@@ -61,28 +78,34 @@
 
 {% block body_end %}
   <script>
-    // Tab pills — แชท / แต้มดี split. Active pill gets .active; each
-    // .inbox-card with data-kind shows or hides based on the picked
-    // tab. Default = แชท. Selection persists across reloads via
-    // localStorage so a refresh doesn't bounce back to default.
+    // Filter pills — ทั้งหมด / ยังไม่อ่าน / มีของฝาก. Active pill flips
+    // `.active`; each .inbox-card with data-unread / data-offer attrs
+    // shows or hides based on the picked filter. Default = ทั้งหมด.
+    // Selection persists across reloads via localStorage.
     (function () {
-      const pills = document.querySelectorAll('.tab-pill[data-tab]');
-      const cards = document.querySelectorAll('.inbox-card[data-kind]');
+      const pills = document.querySelectorAll('.inbox-filter-pill[data-filter]');
+      const cards = document.querySelectorAll('.inbox-card');
       if (!pills.length) return;
 
-      function apply(kind) {
-        pills.forEach((p) => p.classList.toggle('active', p.dataset.tab === kind));
-        cards.forEach((c) => {
-          c.style.display = c.dataset.kind === kind ? '' : 'none';
-        });
-        try { localStorage.setItem('td_inbox_tab', kind); } catch (_) {}
+      function matches(card, filter) {
+        if (filter === 'unread') return card.dataset.unread === '1';
+        if (filter === 'offer')  return card.dataset.offer === '1';
+        return true;
+      }
+
+      function apply(filter) {
+        pills.forEach((p) => p.classList.toggle('active', p.dataset.filter === filter));
+        cards.forEach((c) => { c.style.display = matches(c, filter) ? '' : 'none'; });
+        try { localStorage.setItem('td_inbox_filter', filter); } catch (_) {}
       }
 
       let saved = null;
-      try { saved = localStorage.getItem('td_inbox_tab'); } catch (_) {}
-      apply(saved === 'reach' ? 'reach' : 'thread');
+      try { saved = localStorage.getItem('td_inbox_filter'); } catch (_) {}
+      // Only honour saved filter if a pill for it exists this load.
+      const valid = Array.from(pills).some((p) => p.dataset.filter === saved);
+      apply(valid ? saved : 'all');
 
-      pills.forEach((p) => p.addEventListener('click', () => apply(p.dataset.tab)));
+      pills.forEach((p) => p.addEventListener('click', () => apply(p.dataset.filter)));
     })();
 
     // Live updates — when a shop sends a reply on an existing
