@@ -236,59 +236,10 @@ body {
 
 .td > * { position: relative; z-index: 1; }
 
-.td-badge {
-  position: absolute;
-  top: 16px;
-  left: 16px;
-  transform: rotate(-6deg);
-  background: var(--ink);
-  color: #FFF;
-  padding: 4px 10px 4px 8px;
-  border-radius: 999px;
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 12px;
-  letter-spacing: -0.01em;
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  z-index: 3;
-  box-shadow: 0 4px 12px -4px rgba(17, 17, 17, 0.25);
-}
-.td-badge .s { width: 11px; height: 6.5px; color: var(--accent); }
-
 /* ==========================================================
    S1 — Login (shop tab default)
    ========================================================== */
 
-.s1-tabs {
-  margin: 18px 22px 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  padding: 4px;
-  box-shadow: none;
-  position: relative;
-  z-index: 2;
-}
-
-.s1-tab {
-  padding: 10px 8px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 14px;
-  color: var(--ink-soft);
-  border-radius: 10px;
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-  line-height: 1.2;
-  text-decoration: none;
-}
 .s1-tab.active {
   background: var(--ink);
   color: var(--bg);
@@ -296,16 +247,6 @@ body {
   box-shadow: 0 2px 6px -2px rgba(17, 17, 17, 0.4);
 }
 
-.s1-tab .tab-pill {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: 10px;
-  letter-spacing: 0.1em;
-  padding: 2px 5px;
-  border-radius: 999px;
-  background: var(--accent);
-  color: #fff;
-  font-weight: 700;
-}
 .s1-tab:not(.active) .tab-pill.optional {
   background: transparent;
   color: var(--ink-soft);
@@ -352,29 +293,6 @@ body {
   font-size: 14px;
   color: var(--ink-soft);
   line-height: 1.55;
-}
-
-.s1-required-notice {
-  margin: 14px 22px 0;
-  padding: 10px 12px;
-  background: var(--accent-soft);
-  border: 1.5px solid var(--accent);
-  border-radius: 12px;
-  text-align: center;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--ink);
-  line-height: 1.4;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 6px;
-}
-.s1-required-notice .dot-r {
-  width: 6px; height: 6px;
-  background: var(--accent);
-  border-radius: 50%;
-  flex-shrink: 0;
 }
 
 .s1-buttons {
@@ -445,17 +363,6 @@ body {
 .s1-btn-phone { background: var(--ink); color: var(--bg); }
 .s1-btn-phone svg { width: 18px; height: 18px; }
 
-.s1-no-pwd {
-  margin: 24px 22px 0;
-  padding: 10px 14px;
-  background: var(--butter-soft);
-  border: 1.5px dashed var(--butter);
-  border-radius: 12px;
-  text-align: center;
-  font-size: 13px;
-  color: var(--ink);
-  line-height: 1.4;
-}
 .s1-no-pwd .icon {
   color: var(--accent);
   font-weight: 700;
@@ -849,31 +756,6 @@ body {
 }
 
 /* S3 hero — compact, centered. Delta lives inline in the hero-top row. */
-.s3-hero {
-  padding: 22px 20px 14px;
-  position: relative;
-  text-align: center;
-}
-.s3-hero::before {
-  content: '';
-  position: absolute;
-  top: 20px;
-  left: 50%;
-  width: 220px;
-  height: 180px;
-  transform: translateX(-50%);
-  background: radial-gradient(circle, var(--butter) 0%, transparent 60%);
-  opacity: 0.5;
-  border-radius: 50%;
-  z-index: 0;
-}
-.s3-hero > * { position: relative; z-index: 1; }
-.s3-hero .hero-top {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 4px;
-}
 .s3-hero .label {
   display: inline-flex;
   align-items: center;
@@ -941,110 +823,8 @@ body {
 }
 
 /* Single-line stats pill — replaces the 3-stat grid. */
-.s3-stats-pills {
-  margin: 4px 20px 16px;
-  padding: 16px 14px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 18px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 0;
-}
-.s3-stats-pills .sp {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  justify-content: center;
-  gap: 4px;
-  padding: 0 8px;
-  border-right: 1px solid rgba(17, 17, 17, 0.1);
-}
-.s3-stats-pills .sp:last-child {
-  border-right: none;
-}
-.s3-stats-pills .sp-num {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 26px;
-  color: var(--ink);
-  letter-spacing: -0.025em;
-  line-height: 1;
-}
-.s3-stats-pills .sp-label {
-  font-family: 'Prompt', sans-serif;
-  font-size: 12.5px;
-  color: var(--ink-soft);
-  letter-spacing: 0.01em;
-}
-
-.s3-reach {
-  margin: 0 20px 18px;
-  padding: 18px 16px 14px;
-  background: var(--butter);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 22px;
-  box-shadow: none;
-  position: relative;
-}
-.s3-reach::before {
-  content: '★';
-  position: absolute;
-  top: 10px;
-  right: 16px;
-  color: var(--ink);
-  font-size: 18px;
-  transform: rotate(12deg);
-}
-.s3-reach .reach-kicker {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  font-style: italic;
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--ink);
-  background: rgba(17, 17, 17, 0.08);
-  padding: 3px 10px;
-  border-radius: 999px;
-  margin-bottom: 10px;
-}
-.s3-reach .reach-head {
-  font-weight: 700;
-  font-size: 16px;
-  letter-spacing: -0.015em;
-  margin-bottom: 4px;
-  line-height: 1.25;
-}
-.s3-reach .reach-body {
-  font-size: 14px;
-  color: var(--ink);
-  opacity: 0.75;
-  line-height: 1.4;
-  margin-bottom: 14px;
-}
 /* Brief-card now links to the S13 list (not a per-suggestion send form),
    so the previous .reach-btn is replaced by a non-button .reach-cta strip. */
-a.s3-reach { text-decoration: none; color: inherit; display: block; }
-.s3-reach .reach-cta {
-  margin-top: 4px;
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  padding: 10px 14px;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 12px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-}
-.s3-reach .reach-cta .reach-arrow {
-  color: var(--butter);
-  font-size: 16px;
-  font-weight: 800;
-}
-
 /* DeeReach empty-state placeholder — shown when the suggestion engine
    has nothing to recommend (no lapsed customers, no near-full cards). */
 .s3-reach.placeholder {
@@ -1105,18 +885,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    <tr>s inside .sap-table — those styles forced tr→grid which broke
    table layout (each row rendered as a stacked rounded card). All
    row styling now lives under .s3-dock .sap-table tr.feed-row above. */
-
-.feed-empty {
-  margin: 0 20px;
-  padding: 24px 16px;
-  background: var(--surface);
-  border: 1.5px dashed var(--line);
-  border-radius: 16px;
-  text-align: center;
-  font-size: 15px;
-  color: var(--ink-softer);
-  font-style: italic;
-}
 
 /* ==========================================================
    App bar (back / title / right action) — used in S5, S8, S10+
@@ -1405,8 +1173,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
     margin: 0;
     page-break-inside: avoid;
   }
-  .s8-qr { box-shadow: none; }
-}
+  }
 
 /* ==========================================================
    C1 — DeeCard (the customer's stamp card)
@@ -1486,26 +1253,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 
 /* C1 top-left back arrow → /my-cards. Always visible — PWA in standalone
    mode has no browser back, so an explicit affordance is required. */
-.c1-back {
-  position: absolute;
-  top: 18px;
-  left: 18px;
-  z-index: 5;
-  width: 36px;
-  height: 36px;
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  text-decoration: none;
-  box-shadow: none;
-}
-.c1-back svg { width: 18px; height: 18px; }
-
 .c1-avatar {
   position: absolute;
   top: 18px;
@@ -1545,16 +1292,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 
 /* C2.1 welcome — mascot avatar above the nickname prompt sheet. */
-.welcome-mascot {
-  margin: 6px auto 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.welcome-mascot svg {
-  filter: drop-shadow(0 6px 16px rgba(255, 94, 58, 0.32));
-}
-
 /* ==========================================================
    C2 Onboarding canvas (C2.1 / C2.2 / C2.3) — full-page flow
    ========================================================== */
@@ -1603,27 +1340,7 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
     radial-gradient(ellipse 70% 50% at 50% 90%, rgba(255, 217, 82, 0.12), transparent 60%);
 }
 
-.ob-shop-head {
-  padding: 50px 20px 0;
-  text-align: center;
-  flex-shrink: 0;
-}
-.ob-shop-mark {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 44px;
-  letter-spacing: -0.035em;
-  color: var(--ink);
-  line-height: 1;
-}
 .ob-shop-mark .dot { color: var(--accent); }
-.ob-shop-sub {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-md);
-  color: var(--ink-soft);
-  margin-top: 8px;
-  letter-spacing: 0.01em;
-}
 /* Compact context strip · used when shop-head.hero is too heavy */
 .ob-shop-strip {
   padding: 36px 20px 0;
@@ -1751,13 +1468,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   50% { opacity: 1; transform: scale(1.15) rotate(20deg); }
 }
 
-.ob-greet {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-lg);
-  line-height: 1.55;
-  color: var(--ink-soft);
-  margin-bottom: 26px;
-}
 .ob-greet .ob-name {
   font-weight: 700;
   color: var(--accent);
@@ -1800,7 +1510,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   margin-top: 10px;
   font-style: italic;
 }
-.ob-greet strong { font-weight: 700; color: var(--ink); }
 .ob-q {
   font-family: 'Prompt', sans-serif;
   font-weight: 600;
@@ -1823,16 +1532,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   box-shadow: none;
 }
 
-.ob-thanks-line {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-base);
-  color: var(--ink-soft);
-  margin-bottom: 18px;
-}
-.ob-thanks-line strong {
-  font-weight: 700;
-  color: var(--ink);
-}
 .ob-big-num {
   margin-bottom: 16px;
   position: relative;
@@ -1884,18 +1583,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .ob-num-sub strong {
   font-weight: 700;
   color: var(--ink);
-}
-.ob-stamps {
-  display: grid;
-  grid-template-columns: repeat(10, 1fr);
-  gap: 6px;
-  margin: 0 auto 18px;
-  max-width: 240px;
-}
-.ob-stamp {
-  aspect-ratio: 1;
-  border-radius: 50%;
-  border: 1.5px dashed var(--ink-softer);
 }
 .ob-stamp.on {
   background: var(--ink);
@@ -1955,15 +1642,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 20px;
 }
 
-.ob-icon-wrap {
-  width: 56px; height: 56px;
-  margin: 0 auto 16px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-radius: 18px;
-  display: flex; align-items: center; justify-content: center;
-}
-.ob-icon-wrap svg { width: 28px; height: 28px; }
 .ob-warn-s {
   font-family: 'Prompt', sans-serif;
   font-size: var(--text-md);
@@ -2059,37 +1737,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-shrink: 0;
 }
 
-.ob-pill {
-  appearance: none; -webkit-appearance: none;
-  width: 100%;
-  padding: 18px 22px;
-  border-radius: 999px;
-  border: 1px solid rgba(17,17,17,0.18);
-  cursor: pointer;
-  display: flex; align-items: center; justify-content: center;
-  gap: 12px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: var(--text-lg);
-  letter-spacing: -0.01em;
-  text-decoration: none;
-  transition: transform 0.15s ease;
-}
-.ob-pill:active { transform: scale(0.98); }
 .ob-pill.primary { background: var(--line-green); color: #fff; }
 .ob-pill.secondary { background: var(--ink); color: #fff; }
-.ob-pill .ob-pill-icon {
-  flex-shrink: 0;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-}
-.ob-pill .ob-pill-icon svg { width: 18px; height: 18px; display: block; }
-.ob-pill .ob-pill-text {
-  line-height: 1;
-  white-space: nowrap;
-}
-
 /* onboard.link_account — 4-row social pill stack (LINE / Google /
    Facebook / phone). Replaces the 2-pill .ob-pill primary+secondary
    layout for step 3. Vertical, 100% width, lighter visual weight than
@@ -2281,25 +1930,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .stamps[data-goal="15"] { grid-template-columns: repeat(15, 1fr); gap: 3px; }
 .stamps[data-goal="15"] .stamp { max-width: 22px; }
 
-.encourage {
-  text-align: center;
-  padding: 18px 20px 0;
-  font-weight: 500;
-  font-size: 16px;
-  color: var(--ink);
-  line-height: 1.4;
-  display: flex;
-  justify-content: center;
-  align-items: center;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.encourage .spark-mini {
-  width: 10px;
-  height: 10px;
-  color: var(--accent);
-}
-
 .reward-pill {
   margin: 24px 20px 0;
   background: var(--surface);
@@ -2392,93 +2022,9 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 /* Role picker — shown on / when both shop + customer cookies validate
    (one device shared by an owner who also collects points elsewhere).
    Two big tiles instead of an auto-redirect tug-of-war. */
-.role-picker-page { display: flex; flex-direction: column; min-height: 100vh; }
-.role-picker-page .rp-head {
-  padding: 64px 24px 28px;
-  text-align: center;
-}
-.role-picker-page .rp-brand {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 26px;
-  letter-spacing: -0.03em;
-  color: var(--ink);
-  margin-bottom: 20px;
-}
 .role-picker-page .rp-brand .dot { color: var(--accent); }
-.role-picker-page .rp-h {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 22px;
-  letter-spacing: -0.015em;
-  color: var(--ink);
-  margin-bottom: 6px;
-}
-.role-picker-page .rp-sub {
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
-  line-height: 1.45;
-}
-.role-picker-page .rp-tiles {
-  display: flex;
-  flex-direction: column;
-  gap: 14px;
-  padding: 12px 20px 32px;
-}
-.role-picker-page .rp-tile {
-  position: relative;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  padding: 22px 20px;
-  background: var(--surface);
-  border: 1px solid rgba(17,17,17,0.18);
-  border-radius: 22px;
-  text-decoration: none;
-  color: inherit;
-  box-shadow: 0 8px 24px -10px rgba(17,17,17,0.18);
-  transition: transform 0.15s ease, box-shadow 0.15s ease;
-}
-.role-picker-page .rp-tile:active { transform: scale(0.985); }
 .role-picker-page .rp-tile.shop .rp-icon { background: var(--ink); color: var(--bg); }
 .role-picker-page .rp-tile.customer .rp-icon { background: var(--accent); color: #FFF; }
-.role-picker-page .rp-icon {
-  width: 56px; height: 56px;
-  border-radius: 16px;
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.role-picker-page .rp-icon svg { width: 26px; height: 26px; }
-.role-picker-page .rp-name {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 18px;
-  color: var(--ink);
-  letter-spacing: -0.01em;
-}
-.role-picker-page .rp-meta {
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  color: var(--ink-soft);
-  margin-top: 2px;
-}
-.role-picker-page .rp-info { flex: 1; min-width: 0; }
-.role-picker-page .rp-arr {
-  width: 32px; height: 32px;
-  border-radius: 50%;
-  background: var(--butter);
-  color: var(--ink);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-
 .footer-mark {
   padding: 18px 18px 20px;
   padding-bottom: max(20px, env(safe-area-inset-bottom));
@@ -2789,11 +2335,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    underneath gets dimmed + desaturated via .pp-page-fade, the sheet
    slides up with a backdrop. Used for link.prompt (cookie-anonymous
    customer with ≥3 stamps) + push.prompt (PWA install moment). */
-.pp-page-fade {
-  opacity: 0.32;
-  filter: saturate(0.65);
-  pointer-events: none;
-}
 .pp-overlay {
   position: fixed;
   inset: 0;
@@ -2924,24 +2465,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .signup-btn.facebook .bn-meta { color: var(--ink-soft); opacity: 1; }
 
 /* Nickname input + save — used by the C2.welcome auto-open sheet. */
-.welcome-nickname-input {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  margin: 0 0 12px;
-  padding: 14px 14px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 12px;
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-md);
-  color: var(--ink);
-}
-.welcome-nickname-input::placeholder { color: var(--ink-softer); }
-.welcome-nickname-input:focus {
-  outline: none;
-  box-shadow: none;
-}
 .signup-btn.nickname-save {
   justify-content: center;
   background: var(--accent);
@@ -3731,14 +3254,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   flex-direction: column;
   gap: 8px;
 }
-.inbox-row {
-  position: relative;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  padding: 12px 14px 12px 18px;
-  cursor: pointer;
-}
 .inbox-row.unread {
   background: var(--accent-soft);
   border-color: rgba(255, 94, 58, 0.32);
@@ -3754,28 +3269,8 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   border-radius: 50%;
   background: var(--accent);
 }
-.inbox-row .ib-shop {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--ink);
-  margin-bottom: 4px;
-}
 .inbox-row .ib-shop .dot { color: var(--accent); }
-.inbox-row .ib-body {
-  font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
-  line-height: 1.4;
-  color: var(--ink);
-  margin-bottom: 6px;
-}
 .inbox-row.unread .ib-body { font-weight: 600; }
-.inbox-row .ib-time {
-  font-family: 'Prompt', sans-serif;
-  font-style: italic;
-  font-size: 11px;
-  color: var(--ink-softer);
-}
 .inbox-empty {
   margin: 60px 22px 0;
   text-align: center;
@@ -3791,40 +3286,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 .inbox-empty .s {
   font-size: 13px;
   line-height: 1.5;
-}
-.inbox-push-toggle {
-  margin: 14px 20px 0;
-  padding: 12px 14px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  text-align: center;
-}
-.inbox-push-toggle .push-btn {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 100%;
-  padding: 10px 14px;
-  background: var(--ink);
-  color: var(--butter);
-  border: none;
-  border-radius: 10px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  cursor: pointer;
-}
-.inbox-push-toggle .push-btn[data-state="on"] {
-  background: var(--mint);
-  color: var(--mint-ink);
-}
-.inbox-push-toggle .push-btn[disabled] { opacity: 0.5; cursor: wait; }
-.inbox-push-toggle .push-hint {
-  margin-top: 6px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 11px;
-  font-style: italic;
-  color: var(--ink-soft);
 }
 /* /shop/issue/scan — S3.scan camera viewfinder for the shop to scan
    the customer's identity QR (from /my-id) and issue a stamp. */
@@ -4036,19 +3497,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Replaces the old .c7-* layout that had a stats hero + flat card
    grid — design moved to a more navigable, prioritised flow.
    ============================================================ */
-.cl-stats {
-  display: flex;
-  gap: 8px;
-  margin: 4px 14px 18px;
-}
-.cl-stat {
-  flex: 1;
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 10px 8px;
-  border: 1px solid var(--line);
-  text-align: center;
-}
 .cl-stat .num {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
@@ -4118,21 +3566,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   pointer-events: none;
 }
 .cl-hero > * { position: relative; z-index: 1; }
-.cl-hero-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 6px;
-  background: rgba(255,255,255,0.22);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  padding: 5px 11px;
-  border-radius: 99px;
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-2xs);
-  font-weight: 600;
-  margin-bottom: 14px;
-  color: #fff;
-}
 .cl-hero-tag .pulse {
   width: 6px; height: 6px;
   border-radius: 50%;
@@ -4145,92 +3578,12 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
   70% { box-shadow: 0 0 0 8px rgba(255,217,82,0); }
   100% { box-shadow: 0 0 0 0 rgba(255,217,82,0); }
 }
-.cl-hero-row {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  margin-bottom: 16px;
-}
-.cl-hero-logo {
-  width: 50px;
-  height: 50px;
-  border-radius: 14px;
-  background: rgba(255,255,255,0.95);
-  color: var(--ink);
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 18px;
-  letter-spacing: -0.04em;
-  flex-shrink: 0;
-}
 .cl-hero-logo .dot { color: var(--accent); margin-left: 1px; }
-.cl-hero-info {
-  flex: 1;
-  min-width: 0;
-}
-.cl-hero-name {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: var(--text-md);
-  color: #fff;
-  letter-spacing: -0.01em;
-  margin-bottom: 2px;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cl-hero-reward {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-xs);
-  color: rgba(255,255,255,0.94);
-  line-height: 1.3;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.cl-hero-num {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 26px;
-  color: #fff;
-  letter-spacing: -0.03em;
-  line-height: 1;
-  text-align: right;
-  flex-shrink: 0;
-}
 .cl-hero-num .of {
   font-size: 13px;
   opacity: 0.7;
   font-weight: 600;
 }
-.cl-hero-cta {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  background: rgba(0,0,0,0.18);
-  backdrop-filter: blur(8px);
-  -webkit-backdrop-filter: blur(8px);
-  border-radius: 14px;
-  padding: 11px 16px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 600;
-  font-size: var(--text-sm);
-  color: #fff;
-  cursor: pointer;
-  border: 1px solid rgba(255,255,255,0.20);
-}
-.cl-hero-cta svg {
-  width: 16px; height: 16px;
-  stroke: currentColor;
-  fill: none;
-  stroke-width: 2.5;
-  stroke-linecap: round;
-  stroke-linejoin: round;
-}
-
 .cl-carousel-wrap {
   /* invisible wrapper · no bg / border / padding · structural only */
 }
@@ -4536,30 +3889,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    C6 — Account menu
    ========================================================== */
 
-.c6-profile-card {
-  margin: 22px 20px 0;
-  padding: 14px 16px;
-  min-height: 100px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 18px;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  position: relative;
-  overflow: hidden;
-}
-.c6-profile-card::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 130px;
-  height: 130px;
-  background: radial-gradient(circle, rgba(255, 217, 82, 0.45) 0%, transparent 65%);
-  border-radius: 50%;
-}
 .c6-profile-card .avatar {
   width: 52px;
   height: 52px;
@@ -4662,14 +3991,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 
 /* Version mark at bottom */
-.c6-version {
-  text-align: center;
-  padding: 0 20px 18px;
-  font-family: 'JetBrains Mono', monospace;
-  font-size: var(--text-2xs);
-  color: var(--ink-softer);
-  letter-spacing: 0.1em;
-}
 .c6-version .brand {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
@@ -4682,63 +4003,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    Install pill + bottom sheet (persistent install affordance)
    Used in: C1, C2, C5, C7 (customer) + S3 (shop)
    ========================================================== */
-
-.install-pill {
-  margin: 16px 16px 0;
-  background: var(--ink);
-  color: #FFF;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  padding: 10px 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  box-shadow: none;
-  cursor: pointer;
-  position: relative;
-}
-.install-pill .ip-stamp {
-  flex-shrink: 0;
-}
-.install-pill .ip-text {
-  flex: 1;
-  min-width: 0;
-  font-weight: 700;
-  font-size: 15px;
-  color: #FFF;
-  line-height: 1.25;
-}
-.install-pill .ip-sub {
-  display: block;
-  font-weight: 400;
-  font-size: 10.5px;
-  color: rgba(255, 255, 255, 0.6);
-  margin-top: 1px;
-}
-.install-pill .ip-arrow {
-  color: var(--butter);
-  font-weight: 700;
-  font-size: 16px;
-  flex-shrink: 0;
-}
-.install-pill .ip-close {
-  position: absolute;
-  top: -6px;
-  right: -6px;
-  width: 18px;
-  height: 18px;
-  border-radius: 50%;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  color: var(--ink);
-  font-size: 13px;
-  font-weight: 700;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  line-height: 1;
-}
 
 /* Install bottom sheet — hidden by default; .open shows it. Ported from
    design 2564-2776 (Apr 29 home-mock variant + iOS step-by-step). */
@@ -5043,26 +4307,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
    S10 — Settings home
    ========================================================== */
 
-.s10-shop-card {
-  margin: 16px 16px 0;
-  padding: 12px 14px;
-  background: var(--ink);
-  color: var(--bg);
-  border-radius: 18px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  overflow: hidden;
-}
-.s10-shop-card::before {
-  content: '';
-  position: absolute;
-  top: -30px; right: -30px;
-  width: 100px; height: 100px;
-  background: radial-gradient(circle, rgba(255, 217, 82, 0.42) 0%, transparent 60%);
-  border-radius: 50%;
-}
 .s10-shop-card .logo {
   width: 42px;
   height: 42px;
@@ -5116,18 +4360,6 @@ a.s3-reach { text-decoration: none; color: inherit; display: block; }
 }
 
 /* S2.1 / S10.location — province picker (text input styled with chevron). */
-.s2-province-pick {
-  display: flex !important;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  color: var(--ink);
-}
-.s2-province-pick svg {
-  color: var(--ink-soft);
-  flex-shrink: 0;
-}
-
 /* S10.location — multi-line address textarea. */
 .s10-textarea {
   min-height: 60px;
@@ -5388,181 +4620,20 @@ form.s10-row { margin: 0 0 4px; }
    progress in the system browser. The PWA's SSE picks up the claim
    and redeems behind the scenes; the overlay just keeps the user
    informed and gives them a manual "ยกเลิก" out. */
-.pair-overlay {
-  position: fixed;
-  inset: 0;
-  background: rgba(17, 17, 17, 0.6);
-  backdrop-filter: blur(6px);
-  -webkit-backdrop-filter: blur(6px);
-  z-index: 1500;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.pair-overlay[hidden] { display: none; }
-.pair-overlay-card {
-  background: #fff;
-  border-radius: 20px;
-  padding: 26px 22px 18px;
-  max-width: 320px;
-  width: 100%;
-  text-align: center;
-  font-family: 'Prompt', sans-serif;
-  box-shadow: 0 20px 50px -10px rgba(17, 17, 17, 0.45);
-}
-.pair-overlay-spin {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  border: 3px solid rgba(17, 17, 17, 0.12);
-  border-top-color: #FF5E3A;
-  margin: 0 auto 14px;
-  animation: pair-spin 0.9s linear infinite;
-}
 @keyframes pair-spin { to { transform: rotate(360deg); } }
-.pair-overlay-h {
-  font-size: 17px;
-  font-weight: 700;
-  letter-spacing: -0.01em;
-  color: #111;
-  margin: 0 0 6px;
-}
-.pair-overlay-s {
-  font-size: 13.5px;
-  color: #555;
-  line-height: 1.55;
-  margin: 0 0 18px;
-}
-.pair-overlay-primary {
-  display: block;
-  width: 100%;
-  background: #FF5E3A;
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 13px 22px;
-  margin: 0 0 10px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 14.5px;
-  cursor: pointer;
-  box-shadow: 0 6px 16px -4px rgba(255, 94, 58, 0.45);
-  transition: transform .1s ease, opacity .15s ease;
-}
-.pair-overlay-primary:active { transform: scale(0.97); }
-.pair-overlay-primary:disabled { opacity: .65; cursor: progress; }
-.pair-overlay-cancel {
-  display: block;
-  width: 100%;
-  background: transparent;
-  border: 0;
-  border-radius: 999px;
-  padding: 8px 18px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  color: #888;
-  cursor: pointer;
-}
-.pair-overlay-cancel:active { color: #555; }
-
 /* OAuth pair-complete landing page (rendered to the external browser
    after a PWA-initiated OAuth flow). Centered card + green/red icon,
    nothing fancy — the user's job is to flip back to the PWA. */
-.td-pair-complete {
-  min-height: 100vh;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  padding: 24px;
-}
-.pair-complete {
-  max-width: 360px;
-  text-align: center;
-  font-family: 'Prompt', sans-serif;
-}
-.pair-complete .pair-icon {
-  width: 64px; height: 64px;
-  border-radius: 50%;
-  margin: 0 auto 18px;
-  display: flex; align-items: center; justify-content: center;
-}
 .pair-complete .pair-icon.ok { background: var(--mint, #C8E8D0); color: var(--mint-ink, #1A6B3A); }
 .pair-complete .pair-icon.err { background: var(--accent-soft); color: var(--accent); }
-.pair-complete .pair-icon svg { width: 30px; height: 30px; }
-.pair-complete h1 {
-  font-size: 22px;
-  font-weight: 700;
-  letter-spacing: -0.02em;
-  margin: 0 0 6px;
-}
-.pair-complete .pair-sub {
-  font-size: 14px;
-  color: var(--ink-soft);
-  margin: 0 0 20px;
-}
-.pair-complete .pair-instruction {
-  font-size: 14px;
-  color: var(--ink);
-  line-height: 1.6;
-  background: var(--surface);
-  border-radius: 14px;
-  padding: 14px 16px;
-  margin: 0 0 20px;
-}
-
 /* Pair-complete CTAs — primary "ไปที่บัตรของฉัน" navigates to
    /my-cards (works whether this page is in the PWA or system
    browser; the cookie was just set on this response). Secondary
    "ปิดหน้านี้" tries window.close() for the popup-from-PWA case
    and falls through to /my-cards. */
-.pair-complete .pair-cta-primary {
-  display: inline-flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 999px;
-  padding: 13px 26px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.01em;
-  text-decoration: none;
-  cursor: pointer;
-  margin: 4px 0 8px;
-  box-shadow: 0 6px 18px -6px rgba(255, 94, 58, 0.45);
-}
 .pair-complete .pair-cta-primary .arr {
   font-weight: 800;
   font-size: 14px;
-}
-.pair-complete .pair-cta-primary:active { transform: scale(0.97); }
-.pair-complete .pair-cta-secondary {
-  background: transparent;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 999px;
-  padding: 9px 22px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 600;
-  font-size: 13px;
-  color: var(--ink-soft);
-  cursor: pointer;
-  margin-bottom: 18px;
-}
-.pair-complete .pair-cta-secondary:hover { color: var(--ink); }
-
-.pair-complete .pair-icon-hint {
-  display: flex;
-  flex-direction: column;
-  align-items: center;
-  gap: 6px;
-  color: var(--ink-softer);
-  font-size: 11.5px;
-  font-style: italic;
-  margin-top: 6px;
 }
 .s10-row .row-icon.connect-icon-line { background: #06C755; color: #fff; border-color: #06C755; }
 .s10-row .row-icon.connect-icon-google { background: #fff; color: var(--ink); }
@@ -5893,39 +4964,6 @@ form.s10-row { margin: 0 0 4px; }
    S11 — Team
    ========================================================== */
 
-.s11-invite {
-  margin: 22px 20px 0;
-  padding: 18px 16px;
-  background: var(--butter);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 22px;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  position: relative;
-  text-decoration: none;
-  color: inherit;
-}
-.s11-invite::before {
-  content: '+';
-  position: absolute;
-  top: -10px;
-  right: 14px;
-  width: 26px;
-  height: 26px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 50%;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 800;
-  font-size: 16px;
-  transform: rotate(8deg);
-}
 .s11-invite .ic {
   width: 44px;
   height: 44px;
@@ -5951,7 +4989,6 @@ form.s10-row { margin: 0 0 4px; }
   margin-top: 1px;
 }
 
-.s11-list { padding: 22px 20px 0; }
 .s11-member .more {
   width: 32px;
   height: 32px;
@@ -5971,34 +5008,7 @@ form.s10-row { margin: 0 0 4px; }
   font-size: 14px;
   letter-spacing: -0.01em;
 }
-.s11-member {
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 16px;
-  box-shadow: none;
-  padding: 12px 14px;
-  margin-bottom: 8px;
-  display: grid;
-  grid-template-columns: 40px 1fr auto;
-  gap: 12px;
-  align-items: center;
-}
 .s11-member.owner-row { background: var(--mint); }
-.s11-member .av {
-  width: 40px;
-  height: 40px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 50%;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: 16px;
-}
-.s11-member .av.b { background: var(--butter); color: var(--ink); }
-.s11-member .av.m { background: var(--mint); color: var(--mint-ink); }
 .s11-member .info { line-height: 1.2; }
 .s11-member .name {
   font-weight: 700;
@@ -6412,26 +5422,6 @@ form.s10-row { margin: 0 0 4px; }
    S5 — Legacy issuance picker (kept for back-compat selectors)
    ========================================================== */
 
-.s5-top {
-  padding: 14px 20px 0;
-  display: flex;
-  justify-content: space-between;
-  align-items: center;
-}
-.s5-top .x {
-  width: 34px;
-  height: 34px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: none;
-  font-size: 16px;
-  text-decoration: none;
-  color: var(--ink);
-}
 .s5-top .branch {
   display: flex;
   align-items: center;
@@ -6474,30 +5464,6 @@ form.s10-row { margin: 0 0 4px; }
   color: var(--ink-soft);
 }
 
-.s5-options {
-  padding: 22px 20px 0;
-  display: flex;
-  flex-direction: column;
-  gap: 10px;
-}
-.s5-option {
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 18px;
-  box-shadow: none;
-  padding: 16px 16px;
-  display: grid;
-  grid-template-columns: 48px 1fr 22px;
-  gap: 14px;
-  align-items: center;
-  cursor: pointer;
-  position: relative;
-  text-decoration: none;
-  color: inherit;
-  font-family: inherit;
-  text-align: left;
-  width: 100%;
-}
 .s5-option.primary { background: var(--ink); color: var(--bg); }
 .s5-option.primary .ic-bg { background: var(--butter); color: var(--ink); }
 .s5-option.primary .opt-arrow {
@@ -6519,42 +5485,8 @@ form.s10-row { margin: 0 0 4px; }
   font-size: 11px;
   letter-spacing: 0.06em;
 }
-.s5-option .ic-bg {
-  width: 48px;
-  height: 48px;
-  border-radius: 14px;
-  background: var(--accent-soft);
-  color: var(--accent);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-}
-.s5-option .ic-bg svg { width: 22px; height: 22px; }
-.s5-option .opt-name {
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.015em;
-  margin-bottom: 1px;
-}
 .s5-option.primary .opt-name { color: var(--bg); }
-.s5-option .opt-sub {
-  font-size: 13px;
-  color: var(--ink-soft);
-  line-height: 1.3;
-}
 .s5-option.primary .opt-sub { color: var(--ink-softer); }
-.s5-option .opt-arrow {
-  width: 22px;
-  height: 22px;
-  border-radius: 50%;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: 13px;
-}
-
 /* "ไม่จำกัด" toggle on /shop/settings/cooldown dims the value+unit
    block while the override is on — visually communicates "this row
    is overridden" without removing the controls (so flipping unlimited
@@ -6596,39 +5528,6 @@ form.s10-row { margin: 0 0 4px; }
 }
 
 /* Inline phone-entry form on the issuance page */
-.s5-phone-form {
-  margin: 14px 20px 0;
-  padding: 16px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 16px;
-  box-shadow: none;
-}
-.s5-phone-form input {
-  width: 100%;
-  padding: 14px 16px;
-  border-radius: 14px;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  background: var(--bg);
-  font-family: inherit;
-  font-size: 18px;
-  font-weight: 600;
-  color: var(--ink);
-  margin-bottom: 10px;
-}
-.s5-phone-form button {
-  width: 100%;
-  padding: 12px 14px;
-  background: var(--ink);
-  color: var(--bg);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 16px;
-  cursor: pointer;
-  box-shadow: none;
-}
 .s5-phone-form .ok {
   background: var(--mint);
   color: var(--mint-ink);
@@ -6681,40 +5580,6 @@ form.s10-row { margin: 0 0 4px; }
    S2.1 — Branch toggle (single-branch hint, design 2026-04-26)
    ========================================================== */
 
-.s2-branch-row {
-  margin: 16px 20px 0;
-  padding: 12px 14px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
-.s2-branch-row .label-block { flex: 1; line-height: 1.3; }
-.s2-branch-row .label-block .h {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 600;
-  font-size: 15px;
-  color: var(--ink);
-}
-.s2-branch-row .label-block .s {
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
-  margin-top: 1px;
-}
-.s2-branch-toggle {
-  width: 38px; height: 22px;
-  background: var(--ink-softer);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 999px;
-  position: relative;
-  cursor: pointer;
-  flex-shrink: 0;
-  transition: background 0.2s;
-}
 .s2-branch-toggle .dot {
   position: absolute;
   top: 50%; transform: translateY(-50%);
@@ -6860,10 +5725,7 @@ form.s10-row { margin: 0 0 4px; }
 .lt-9 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.06em; text-transform: uppercase; }
 .lt-9 .dot { color: var(--butter); }
 .lt-10 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.08em; font-style: italic; }
-.lt-11 { font-family: 'Host Grotesk', sans-serif; font-weight: 800; letter-spacing: -0.04em; }
 .lt-11 .dot { color: var(--butter); }
-.lt-12 { font-family: 'Host Grotesk', sans-serif; font-weight: 700; letter-spacing: -0.025em; color: var(--ink); }
-
 /* Picker tile sets the base font-size; the .lt-N classes inherit it. */
 .s2-logo { font-size: 28px; }
 .s2-helper {
@@ -7173,10 +6035,6 @@ form.s10-row { margin: 0 0 4px; }
   border-color: var(--accent);
   box-shadow: none;
 }
-.s2-goal-custom-input { margin: 10px 20px 0; }
-.s2-goal-custom { text-align: center; font-size: 16px; padding: 12px 14px; }
-.s2-hint-pills { margin: 8px 24px 0; }
-
 /* S2.3 — Customer-view preview matching C1 (full card, not mini phone).
    Re-tinted via .theme-* class so the swatch row live-previews colors. */
 .s2-c1-preview {
@@ -7474,37 +6332,6 @@ form.s10-row { margin: 0 0 4px; }
 .s2-qr-block {
   margin: 8px 22px 20px;
 }
-.s2-qr-actions {
-  display: flex;
-  gap: 10px;
-  margin-top: 10px;
-}
-.s2-qr-download, .s2-qr-print {
-  flex: 1;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  gap: 8px;
-  padding: 14px;
-  border-radius: 14px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  text-decoration: none;
-  cursor: pointer;
-  transition: all 0.2s ease;
-}
-.s2-qr-download {
-  background: var(--ink);
-  color: var(--bg);
-  border: 1px solid rgba(17,17,17,0.18);
-}
-.s2-qr-print {
-  background: var(--surface);
-  color: var(--ink);
-  border: 1px solid rgba(17,17,17,0.18);
-}
-.s2-qr-download svg, .s2-qr-print svg { width: 18px; height: 18px; flex-shrink: 0; }
 .s2-qr-hint {
   margin-top: 10px;
   text-align: center;
@@ -7542,20 +6369,6 @@ form.s10-row { margin: 0 0 4px; }
   color: #fff;
   font-size: 16px;
 }
-.s2-cta-secondary {
-  margin: 0 22px 22px;
-  text-align: center;
-  font-style: italic;
-  font-size: 15px;
-  color: var(--ink-soft);
-  text-decoration: underline;
-  text-decoration-color: rgba(17, 17, 17, 0.3);
-  text-underline-offset: 3px;
-  cursor: pointer;
-  padding: 8px;
-  display: block;
-}
-
 /* ==========================================================
    S3 — Sticky bottom dock (live feed + 3 inline issuance actions)
    ========================================================== */
@@ -7563,8 +6376,6 @@ form.s10-row { margin: 0 0 4px; }
 /* Spacer no longer needs flex: 1 — the dock is now position: fixed and
    doesn't take part in the .td flex flow, so content sits above it
    naturally with the page's padding-bottom reservation below. */
-.s3-spacer { height: 16px; }
-
 /* position:fixed (was sticky) — sticky inside .td was unreliable when
    the page scrolled (overflow-x: hidden on the parent makes .td its own
    scroll container in some browsers, so the dock would scroll out of
@@ -7582,44 +6393,10 @@ form.s10-row { margin: 0 0 4px; }
    visual outcome (rounded card pinned to viewport bottom) without the
    scroll-container quirk. .td-dashboard reserves space below so content
    doesn't end up hidden under the dock+brand stack. */
-.s3-dock {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 60px;
-  margin: 0 auto;
-  max-width: calc(100% - 40px);
-  background: var(--bg);
-  border-radius: 18px;
-  padding: 6px 14px 14px;
-  z-index: 4;
-}
 .td.td-dashboard { padding-bottom: 420px; }
 .td.td-dashboard .s3-spacer { display: none; }
-.s3-dock .dock-handle {
-  width: 36px;
-  height: 4px;
-  background: var(--ink-softer);
-  border-radius: 999px;
-  margin: 0 auto 8px;
-  opacity: 0.5;
-}
 /* Footer brand bar — fixed full-width strip at the very bottom of the
    viewport. Sits below .s3-dock (which is fixed at bottom: 60px). */
-.s3-footer-brand {
-  position: fixed;
-  left: 0;
-  right: 0;
-  bottom: 0;
-  z-index: 5;
-  padding: 16px 18px max(16px, env(safe-area-inset-bottom));
-  background: var(--bg);
-  border-top: 1px solid rgba(17, 17, 17, 0.12);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-}
-.s3-footer-brand .fm-brand { display: flex; align-items: center; gap: 8px; }
 .s3-footer-brand .brand {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
@@ -8501,62 +7278,10 @@ body:has(.td-pinned) {
 /* Legacy s3-time-pills, s3-snapshot, s3-trend kept below for any caller
    that still uses them (none in the current dashboard, but the styles
    stay until we audit other pages). */
-.s3-time-pills {
-  margin: 8px 20px 16px;
-  padding: 4px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.12);
-  border-radius: 14px;
-  display: grid;
-  grid-template-columns: 1fr 1fr 1fr;
-  gap: 4px;
-}
-.s3-time-pills .tp {
-  padding: 8px 0;
-  text-align: center;
-  border-radius: 10px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-soft);
-  cursor: pointer;
-  text-decoration: none;
-  transition: all 0.15s ease;
-}
-.s3-time-pills .tp[aria-disabled="true"] {
-  opacity: 0.55;
-  pointer-events: none;
-}
 .s3-time-pills .tp.active {
   background: var(--ink);
   color: var(--bg);
   font-weight: 700;
-}
-.s3-snapshot {
-  margin: 0 20px 14px;
-  padding: 18px 20px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.12);
-  border-radius: 18px;
-}
-.s3-snapshot .snap-label {
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  font-weight: 500;
-  color: var(--ink-soft);
-  margin-bottom: 8px;
-}
-.s3-snapshot .snap-num-row {
-  display: flex;
-  align-items: flex-end;
-  justify-content: space-between;
-  gap: 12px;
-  margin-bottom: 12px;
-}
-.s3-snapshot .snap-num {
-  display: flex;
-  align-items: baseline;
-  gap: 6px;
 }
 .s3-snapshot .snap-num .num-big {
   font-family: 'Host Grotesk', sans-serif;
@@ -8571,13 +7296,6 @@ body:has(.td-pinned) {
   font-size: 16px;
   font-weight: 500;
   color: var(--ink-soft);
-}
-.s3-snapshot .snap-delta {
-  display: flex;
-  flex-direction: column;
-  align-items: flex-end;
-  line-height: 1.3;
-  padding-bottom: 4px;
 }
 .s3-snapshot .snap-delta .delta-arr,
 .s3-snapshot .snap-delta .delta-num {
@@ -8597,44 +7315,6 @@ body:has(.td-pinned) {
   color: var(--ink-softer);
   margin-top: 2px;
 }
-.s3-snapshot .snap-sub {
-  padding-top: 12px;
-  border-top: 1px solid rgba(17, 17, 17, 0.08);
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  color: var(--ink-soft);
-}
-.s3-snapshot .snap-sub strong {
-  color: var(--ink);
-  font-weight: 700;
-}
-
-.s3-trend {
-  margin: 0 20px 14px;
-  padding: 16px 18px 12px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.12);
-  border-radius: 18px;
-}
-.s3-trend .trend-head {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  margin-bottom: 14px;
-}
-.s3-trend .trend-title {
-  font-family: 'Prompt', sans-serif;
-  font-size: 13px;
-  font-weight: 600;
-  color: var(--ink);
-}
-.s3-trend .trend-pct {
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  color: #2D8050;
-}
-.s3-trend .trend-pct.is-down { color: var(--accent); }
 .s3-trend .trend-bars {
   display: grid;
   grid-template-columns: repeat(7, 1fr);
@@ -8669,39 +7349,11 @@ body:has(.td-pinned) {
   line-height: 1;
 }
 
-.s3-attn {
-  margin: 0 20px 8px;
-  padding: 14px 16px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.12);
-  border-radius: 16px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  text-decoration: none;
-  cursor: pointer;
-}
-.s3-attn .attn-icon {
-  flex-shrink: 0;
-  width: 38px; height: 38px;
-  border-radius: 11px;
-  background: var(--ink);
-  color: var(--butter);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.s3-attn .attn-icon svg { width: 18px; height: 18px; }
 .s3-attn.warn .attn-icon { background: var(--accent); color: #FFF; }
 .s3-attn.opp .attn-icon { background: var(--butter); color: var(--ink); }
 .s3-attn.ai .attn-icon {
   background: linear-gradient(135deg, var(--accent) 0%, var(--butter) 100%);
   color: #FFF;
-}
-.s3-attn .attn-info {
-  flex: 1;
-  line-height: 1.3;
-  min-width: 0;
 }
 .s3-attn .attn-h {
   font-family: 'Prompt', sans-serif;
@@ -8710,17 +7362,6 @@ body:has(.td-pinned) {
   color: var(--ink);
   margin-bottom: 2px;
 }
-.s3-attn .attn-s {
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  color: var(--ink-soft);
-}
-.s3-attn .attn-arr {
-  color: var(--ink-softer);
-  font-size: 22px;
-  flex-shrink: 0;
-}
-
 /* Notification bell (top-right) — circular chrome that matches the
    customer-side .ph-icon-btn, so the two sides feel like the same
    product. Settings cog dropped in the 2026-05-04 dock rework. */
@@ -9581,37 +8222,7 @@ body:has(.td-pinned) {
   100% { box-shadow: 0 0 0 2px var(--bg), 0 0 0 0 rgba(255, 94, 58, 0); }
 }
 
-.s3-dock .sap-feed-h {
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  letter-spacing: 0.06em;
-  text-transform: uppercase;
-  color: var(--ink-soft);
-  margin-bottom: 4px;
-  padding: 0 4px;
-}
 /* Inline hint next to "ลูกค้าล่าสุด" — replaces the old pulsing live dot. */
-.s3-dock .sap-feed-h .sap-feed-hint-inline {
-  font-family: 'Prompt', sans-serif;
-  font-size: 11px;
-  color: var(--ink-softer);
-  font-style: italic;
-  font-weight: 400;
-  letter-spacing: 0;
-  text-transform: none;
-}
-.s3-dock .sap-feed { padding: 0 4px; margin-bottom: 8px; }
-.s3-dock .sap-feed-empty {
-  font-family: 'Prompt', sans-serif;
-  font-size: 12px;
-  color: var(--ink-softer);
-  text-align: center;
-  padding: 8px 0;
-}
 .s3-dock .sap-table {
   width: 100%;
   border-collapse: collapse;
@@ -9693,15 +8304,6 @@ body:has(.td-pinned) {
   text-transform: none;
   letter-spacing: 0;
 }
-.s3-dock .sap-feed-hint {
-  margin-top: 6px;
-  text-align: center;
-  font-family: 'Prompt', sans-serif;
-  font-style: italic;
-  font-size: 12px;
-  color: var(--ink-softer);
-}
-
 .s3-dock .sap-actions-h {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
@@ -10147,30 +8749,6 @@ body:has(.td-pinned) {
    Manual-issue FAB — one-tap walk-in stamp on the shop dashboard
    ========================================================== */
 
-.manual-fab {
-  position: fixed;
-  right: 18px;
-  bottom: max(74px, calc(env(safe-area-inset-bottom) + 60px));
-  z-index: 80;
-  background: var(--accent);
-  color: #fff;
-  border: 2px solid var(--ink);
-  border-radius: 999px;
-  padding: 14px 22px 14px 18px;
-  display: flex;
-  align-items: center;
-  gap: 8px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 17px;
-  letter-spacing: -0.015em;
-  box-shadow: 0 10px 24px -8px rgba(255, 94, 58, 0.55);
-  cursor: pointer;
-  transition: transform 0.15s ease-out, box-shadow 0.15s ease-out;
-}
-.manual-fab:hover { transform: translateY(-2px); }
-.manual-fab:active { transform: translateY(1px); box-shadow: 0 4px 12px -4px rgba(255, 94, 58, 0.55); }
-.manual-fab:disabled { opacity: 0.6; cursor: wait; transform: none; }
 .manual-fab .plus {
   font-family: 'Host Grotesk', sans-serif;
   font-weight: 800;
@@ -10340,16 +8918,6 @@ body:has(.td-pinned) {
   margin-top: 4px;
 }
 
-.s7-method {
-  margin: 20px 20px 0;
-  padding: 14px 16px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .s7-method .ic {
   width: 36px;
   height: 36px;
@@ -10389,26 +8957,6 @@ body:has(.td-pinned) {
   border: 1px solid rgba(17, 17, 17, 0.18);
 }
 
-.s7-cta {
-  margin: 18px 20px 20px;
-  background: var(--ink);
-  color: var(--bg);
-  border: none;
-  padding: 16px 18px;
-  border-radius: 18px;
-  font-family: inherit;
-  font-weight: 700;
-  font-size: 15px;
-  letter-spacing: -0.015em;
-  width: calc(100% - 40px);
-  display: flex;
-  align-items: center;
-  justify-content: space-between;
-  cursor: pointer;
-  text-decoration: none;
-  box-shadow: 0 10px 28px -8px rgba(17, 17, 17, 0.35);
-}
-.s7-cta[disabled] { opacity: 0.5; cursor: not-allowed; }
 .s7-cta .arrow {
   width: 30px;
   height: 30px;
@@ -10425,10 +8973,6 @@ body:has(.td-pinned) {
    S7 confirm — PromptPay QR + step-by-step
    ========================================================== */
 
-.s7c-meta {
-  padding: 22px 20px 0;
-  text-align: center;
-}
 .s7c-meta .label {
   font-weight: 500;
   font-style: italic;
@@ -10500,32 +9044,6 @@ body:has(.td-pinned) {
   color: var(--ink-soft);
 }
 
-.s7c-step {
-  margin: 18px 22px 0;
-  display: grid;
-  grid-template-columns: 26px 1fr;
-  gap: 10px;
-  align-items: center;
-  padding: 12px 14px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 14px;
-  box-shadow: none;
-}
-.s7c-step .n {
-  width: 26px;
-  height: 26px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 50%;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-family: 'Host Grotesk', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-}
 .s7c-step.active { background: var(--butter); }
 .s7c-step .text {
   font-weight: 600;
@@ -10578,12 +9096,6 @@ body:has(.td-pinned) {
    S9 — Theme picker (full-screen, larger previews)
    ========================================================== */
 
-.s9-grid {
-  padding: 22px 20px 0;
-  display: grid;
-  grid-template-columns: 1fr 1fr;
-  gap: 12px;
-}
 .theme-card {
   border: 1px solid rgba(17, 17, 17, 0.18);
   border-radius: 18px;
@@ -10677,20 +9189,6 @@ body:has(.td-pinned) {
    S8 — tip strip (under the printable QR)
    ========================================================== */
 
-.s8-tip {
-  margin: 18px 20px 22px;
-  padding: 12px 14px;
-  background: var(--butter-soft);
-  border: 1.5px dashed var(--butter);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  font-style: italic;
-  font-size: 11.5px;
-  color: var(--ink);
-  line-height: 1.4;
-}
 .s8-tip .tip-bulb {
   flex-shrink: 0;
   width: 22px;
@@ -11304,13 +9802,6 @@ body:has(.td-pinned) {
   border-color: var(--accent);
   box-shadow: 0 0 0 3px rgba(255, 94, 58, 0.15);
 }
-.s13d-msg-count {
-  margin: 6px 4px 0;
-  text-align: right;
-  font-family: 'Prompt', sans-serif;
-  font-size: 11px;
-  color: var(--ink-softer);
-}
 .s13d-preview {
   padding: 12px 14px;
   background: var(--mint);
@@ -11464,52 +9955,12 @@ body:has(.td-pinned) {
   box-sizing: border-box;
 }
 .off-field-input:focus { border-color: var(--accent); }
-.off-icon-picker {
-  display: grid;
-  grid-template-columns: repeat(4, 1fr);
-  gap: 8px;
-}
-.off-icon-opt {
-  aspect-ratio: 1;
-  background: var(--bg);
-  border: 1px solid var(--line);
-  border-radius: 12px;
-  color: var(--ink-soft);
-  cursor: pointer;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-}
-.off-icon-opt svg { width: 24px; height: 24px; }
 .off-icon-opt.active {
   border-color: var(--ink);
   box-shadow: 0 0 0 2px var(--ink);
 }
 /* Per-icon colour swatches — peach / butter / mint — match design's
    .sof-icon variants. Active state stamps the dark ink ring on top. */
-.off-icon-opt.off-icon-peach {
-  background: var(--accent-soft);
-  color: var(--accent);
-  border-color: transparent;
-}
-.off-icon-opt.off-icon-butter {
-  background: var(--butter-soft);
-  color: #6B5102;
-  border-color: transparent;
-}
-.off-icon-opt.off-icon-mint {
-  background: var(--mint);
-  color: var(--mint-ink);
-  border-color: transparent;
-}
-.sof-helper {
-  margin-top: 8px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 11.5px;
-  color: var(--ink-soft);
-  text-align: center;
-}
-
 /* Live offer preview inside the sheet — same layout as the
    customer-side inbox detail's offer card. */
 .s-offer-preview {
@@ -12067,25 +10518,6 @@ body:has(.td-pinned) {
 
 /* Inbox row · per-shop mute link. Sits to the right of the time row,
    small italic to avoid competing with the message body. */
-.inbox-row .ib-mute {
-  display: inline-block;
-  margin-left: 10px;
-  font-family: 'Prompt', sans-serif;
-  font-style: italic;
-  font-size: 11px;
-  color: var(--ink-softer);
-  text-decoration: underline;
-  text-decoration-thickness: 1px;
-  text-underline-offset: 2px;
-  cursor: pointer;
-}
-.inbox-row .ib-mute:hover { color: var(--ink-soft); }
-.inbox-row .ib-mute.muted-done {
-  color: var(--mint-ink);
-  text-decoration: none;
-  cursor: default;
-}
-
 /* Inbox.detail — single message view (port from design lines 1042-1246).
    Image hero + offer card omitted in v1 since the Inbox model doesn't
    yet carry image/offer fields; can be slotted in later. */
@@ -12595,14 +11027,6 @@ body:has(.td-pinned) {
   letter-spacing: -0.005em;
   white-space: pre-line;
 }
-.ss-story-sign {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-2xs);
-  color: var(--ink-soft);
-  margin-top: 12px;
-  font-weight: 500;
-}
-
 /* Menu — 2-col grid (Robinhood-style) of shop menu items. Each tile
    is a 1:1 aspect-ratio gradient image area + name + price below.
    `:nth-child` cycles four palette gradients so visiting a shop with
@@ -12925,17 +11349,6 @@ body:has(.td-pinned) {
 }
 .pe-save:active,
 .pe-cancel:active { transform: scale(0.98); }
-.pe-advanced-link {
-  display: block;
-  text-align: center;
-  margin: 14px 0 4px;
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-xs);
-  color: var(--ink-soft);
-  text-decoration: none;
-}
-.pe-advanced-link:active { color: var(--ink); }
-
 /* /shop/no_permission — friendly 403 for staff who tap a gated link.
    Centered card with lock icon, message, and "back to dashboard" CTA. */
 .no-perm {
@@ -13286,50 +11699,17 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
    placeholder /my-gifts route renders an empty state for now; section/
    card markup is wired so step B can surface real Voucher rows
    without a template change. */
-.c-gifts-section {
-  padding: 14px 20px 0;
-}
 .c-gifts-section.last { padding-bottom: 100px; }
-.c-gifts-label {
-  font-family: 'Prompt', sans-serif;
-  font-style: italic;
-  font-weight: 500;
-  font-size: var(--text-sm);
-  color: var(--ink);
-  margin-bottom: 10px;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
 .c-gifts-label.muted { color: var(--ink-soft); }
 .c-gifts-label .star {
   width: 12px; height: 12px;
   color: var(--butter);
 }
 
-.gift-card {
-  background: var(--surface);
-  border: 1px solid rgba(17,17,17,0.10);
-  border-radius: 14px;
-  padding: 14px;
-  margin-bottom: 8px;
-  display: flex;
-  align-items: center;
-  gap: 12px;
-}
 .gift-card.used {
   background: rgba(17,17,17,0.04);
   opacity: 0.6;
   border-color: transparent;
-}
-.gift-card .gc-icon {
-  width: 44px; height: 44px;
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-size: var(--text-xl);
-  flex-shrink: 0;
 }
 .gift-card.used .gc-icon {
   background: rgba(17,17,17,0.06);
@@ -13341,60 +11721,16 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 .gift-card .gc-icon.butter { background: var(--butter); border: 1px solid var(--ink); }
 .gift-card .gc-icon.mint { background: var(--mint); border: 1px solid var(--mint-ink); }
 .gift-card .gc-icon.accent { background: var(--accent-soft); border: 1px solid var(--accent); }
-.gift-card .gc-info {
-  flex: 1;
-  line-height: 1.3;
-  min-width: 0;
-}
-.gift-card .gc-name {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: var(--text-sm);
-  color: var(--ink);
-}
 .gift-card.used .gc-name {
   text-decoration: line-through;
   font-weight: 600;
   font-size: var(--text-xs);
 }
-.gift-card .gc-meta {
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-xs);
-  color: var(--ink-soft);
-  margin-top: 2px;
-}
 .gift-card.used .gc-meta {
   font-size: var(--text-2xs);
 }
-.gift-card .gc-cta {
-  background: var(--accent);
-  color: #fff;
-  border: none;
-  border-radius: 99px;
-  padding: 5px 12px;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: var(--text-2xs);
-  cursor: pointer;
-  flex-shrink: 0;
-  text-decoration: none;
-  display: inline-block;
-}
 /* Mint check tag — replaces .gc-cta on used vouchers so the row
    reads "consumed" without a CTA the customer can re-tap. */
-.gc-used-tag {
-  width: 24px;
-  height: 24px;
-  background: var(--mint);
-  color: var(--mint-ink);
-  border-radius: 50%;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  flex-shrink: 0;
-}
-.gc-used-tag svg { width: 12px; height: 12px; }
-
 /* ============================================================
    voucher.use — fullscreen voucher screen reached from gifts.list.
    Trust-based: pressing "ใช้" stamps the redemption with served_at,
@@ -14161,11 +12497,6 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 }
 
 /* S3.qr — fullscreen rotating-QR mode for "หันจอให้ลูกค้าสแกน". */
-.s3-qr-page {
-  display: flex;
-  flex-direction: column;
-  min-height: 100vh;
-}
 .s3-qr-stage {
   padding: 0 20px 20px;
   flex: 1;
