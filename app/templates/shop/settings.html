@@ -14,7 +14,6 @@
        sections below. Display name + profile picture for the active
        staff session, posting to /shop/team/profile. #}
     <div>
-      <div class="label">โปรไฟล์</div>
       <form action="/shop/team/profile" method="POST" enctype="multipart/form-data"
             class="profile-edit-form profile-edit-inline" id="settings-profile-form">
         <input type="hidden" name="next_url" value="/shop/settings">
@@ -358,84 +357,6 @@
     <button type="submit" class="s10-logout">ออกจากระบบ</button>
   </form>
 </div> {# /.page-scroll #}
-
-<style>
-  /* Settings split into labelled cards — every direct child of
-     .page-container becomes its own surface (bg + border + radius)
-     with a 16px / weight 700 label above the rows so the groups
-     (แต้ม, บัญชี, etc.) read as distinct sections instead of one
-     undifferentiated list. Selector targets > div so we don't have
-     to name the legacy section class explicitly. */
-  .page-container > div {
-    background: var(--surface);
-    border: 1px solid var(--line);
-    border-radius: 16px;
-    padding: 14px;
-    margin: 12px 0 0;
-  }
-  .page-container > div:first-of-type { margin: 0px; }
-  .page-container > div > .label {
-    font-size: 16px;
-    font-weight: 700;
-    letter-spacing: 0;
-    text-transform: none;
-    color: var(--ink);
-    margin: 0 0 8px;
-  }
-  /* Round social provider icons (LINE / Google / Facebook / Phone)
-     so the brand colour reads as a chip, not a flat 24px tile. */
-  .page-container .connect-row .row-icon {
-    width: 32px;
-    height: 32px;
-    border-radius: 50%;
-  }
-  .page-container .connect-row .row-icon svg {
-    width: 16px;
-    height: 16px;
-  }
-
-  /* Inline staff profile edit form at the top of /shop/settings.
-     The wrapper <div> picks up the .page-container > div card
-     chrome (bg + border + radius + 14px padding), so the form
-     itself just lays out the avatar + input + button centred. */
-  .profile-edit-inline {
-    padding: 0;
-    text-align: center;
-  }
-  .profile-edit-inline .pe-avatar-wrap {
-    margin: 0 0 14px;
-  }
-  .profile-edit-inline .pe-avatar {
-    width: 64px;
-    height: 64px;
-    font-size: 26px;
-  }
-  .profile-edit-inline .pe-avatar .pe-edit-badge {
-    width: 22px;
-    height: 22px;
-  }
-  .profile-edit-inline .pe-avatar .pe-edit-badge svg {
-    width: 11px;
-    height: 11px;
-  }
-  .profile-edit-inline input[type="text"] {
-    max-width: 220px;
-    margin: 0 auto;
-    padding: 9px 12px;
-    font-size: var(--text-sm);
-    text-align: center;
-  }
-  .profile-edit-inline .pe-actions {
-    grid-template-columns: 1fr;
-    justify-items: center;
-    margin-top: 12px;
-  }
-  .profile-edit-inline .pe-save {
-    min-width: 120px;
-    padding: 9px 18px;
-    font-size: var(--text-sm);
-  }
-</style>
 
 <script>
   (function () {

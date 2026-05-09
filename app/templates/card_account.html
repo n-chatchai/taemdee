@@ -33,11 +33,6 @@ settings page itself (the icon links back to /card/account, no-op
 when you're already here). #}
 {% include "_partials/page_head.html" %}
 
-{# Profile card removed — display_name + picture_url are now edited
-   from the avatar button in page_head, which opens the profile sheet
-   mounted in c_base.html. Settings stays focused on connection
-   status, notification toggles, and account-level actions. #}
-
 {% if flash_message %}
 <div class="s10-flash" role="alert"
      style="margin: 12px 22px 0; padding: 12px 14px; border-radius: 12px;
@@ -46,6 +41,46 @@ when you're already here). #}
   {{ flash_message }}
 </div>
 {% endif %}
+
+<div class="page-container" style="padding: 0 12px;">
+
+{# Inline profile section — same shape as the "โปรไฟล์" block on
+   /shop/settings. Wraps in .page-container so each direct-child
+   section picks up the labelled-card chrome (bg + border + radius)
+   defined in app.css. /shop/settings gets its 12px gutter from the
+   parent .page-scroll padding (.td-pinned rule); customer pages
+   aren't pinned, so the gutter is set inline here. The avatar
+   button in page_head still opens the profile_edit_sheet. #}
+<div class="s10-section">
+  <form action="/card/account/profile" method="POST" enctype="multipart/form-data"
+        class="profile-edit-form profile-edit-inline" id="settings-profile-form">
+    <input type="hidden" name="next_url" value="/card/account">
+    <div class="pe-avatar-wrap">
+      <label for="settings-pe-file" class="pe-avatar" id="settings-pe-avatar">
+        {% if customer.picture_url %}
+          <img id="settings-pe-preview" src="{{ customer.picture_url }}" alt="">
+        {% else %}
+          <span id="settings-pe-fallback">{{ (customer.display_name[0]|upper) if customer.display_name else 'ต' }}</span>
+        {% endif %}
+        <span class="pe-edit-badge" aria-hidden="true">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+            <path d="M23 19a2 2 0 0 1-2 2H3a2 2 0 0 1-2-2V8a2 2 0 0 1 2-2h4l2-3h6l2 3h4a2 2 0 0 1 2 2z"/>
+            <circle cx="12" cy="13" r="4"/>
+          </svg>
+        </span>
+      </label>
+      <input type="file" id="settings-pe-file" name="picture" accept="image/*" hidden>
+      <button type="button" id="settings-pe-default" class="pe-default-btn">ใช้ค่าเริ่มต้น</button>
+    </div>
+    <input type="text" id="settings-pe-name" name="display_name" required
+           value="{{ customer.display_name or '' }}" maxlength="40"
+           placeholder="ชื่อที่อยากให้เรียก">
+    <input type="hidden" name="use_default" id="settings-pe-use-default" value="">
+    <div class="pe-actions">
+      <button type="submit" class="pe-save">บันทึก</button>
+    </div>
+  </form>
+</div>
 
 {# Connect status — one row per enabled provider. Anonymous customers
    get a tappable row that kicks the OAuth/OTP flow (claims their card);
@@ -139,6 +174,25 @@ when you're already here). #}
     </div>
     <div class="arrow-r">›</div>
   </a>
+</div>
+
+<div class="s10-section">
+  <div class="label">ช่วยเหลือ</div>
+
+  <div class="s10-row">
+    <div class="row-icon butter">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
+        stroke-linejoin="round">
+        <circle cx="12" cy="12" r="10" />
+        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
+        <line x1="12" y1="17" x2="12.01" y2="17" />
+      </svg>
+    </div>
+    <div class="row-info">
+      <div class="row-name">ติดต่อทีมงาน</div>
+    </div>
+    <div class="arrow-r">›</div>
+  </div>
 
   <div class="s10-row">
     <div class="row-icon">
@@ -152,22 +206,9 @@ when you're already here). #}
     </div>
     <div class="arrow-r">›</div>
   </div>
-
-  <div class="s10-row">
-    <div class="row-icon butter">
-      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round"
-        stroke-linejoin="round">
-        <circle cx="12" cy="12" r="10" />
-        <path d="M9.09 9a3 3 0 015.83 1c0 2-3 3-3 3" />
-        <line x1="12" y1="17" x2="12.01" y2="17" />
-      </svg>
-    </div>
-    <div class="row-info">
-      <div class="row-name">ช่วยเหลือ</div>
-    </div>
-    <div class="arrow-r">›</div>
-  </div>
 </div>
+
+</div> {# /.page-container #}
 
 
 <form action="/card/account/logout" method="POST" style="margin:0;">
@@ -188,6 +229,51 @@ per memory). First tap flips Alpine state, second tap submits. #}
 
 {% block body_end %}
 <script>
+    // Profile edit (inline) — file picker preview + "ใช้ค่าเริ่มต้น" reset.
+    // Same wiring as /shop/settings settings-pe-* script.
+    (function () {
+      const fileInput = document.getElementById('settings-pe-file');
+      if (!fileInput) return;
+      const avatarBox = document.getElementById('settings-pe-avatar');
+      const useDefault = document.getElementById('settings-pe-use-default');
+      const defaultBtn = document.getElementById('settings-pe-default');
+      const nameInput = document.getElementById('settings-pe-name');
+
+      fileInput.addEventListener('change', () => {
+        const file = fileInput.files && fileInput.files[0];
+        if (!file) return;
+        const r = new FileReader();
+        r.onload = () => {
+          useDefault.value = '';
+          const cur = avatarBox.querySelector('img');
+          if (cur) {
+            cur.src = r.result;
+          } else {
+            const span = avatarBox.querySelector('#settings-pe-fallback');
+            const img = document.createElement('img');
+            img.id = 'settings-pe-preview';
+            img.alt = '';
+            img.src = r.result;
+            if (span) span.replaceWith(img);
+          }
+        };
+        r.readAsDataURL(file);
+      });
+
+      defaultBtn.addEventListener('click', () => {
+        useDefault.value = '1';
+        fileInput.value = '';
+        const img = avatarBox.querySelector('img');
+        if (img) {
+          const span = document.createElement('span');
+          span.id = 'settings-pe-fallback';
+          const name = (nameInput.value || 'ต').trim();
+          span.textContent = (name[0] || 'ต').toUpperCase();
+          img.replaceWith(span);
+        }
+      });
+    })();
+
     // C6 ขนาดตัวอักษร — wire the picker. Server is source of truth, but we
     // also mirror to localStorage so the next page-load applies the zoom on
     // first paint via the bootstrap script in pwa_head.
