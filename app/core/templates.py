@@ -109,6 +109,14 @@ templates.env.globals["settings"] = settings
 templates.env.globals["shop_logo"] = shop_logo
 templates.env.globals["has_thai"] = has_thai
 templates.env.globals["has_perm"] = has_perm
+from app.services.shop_swatch import (  # noqa: E402
+    shop_swatch as _tmpl_shop_swatch,
+    shop_theme_bg as _tmpl_shop_theme_bg,
+    shop_theme_ink as _tmpl_shop_theme_ink,
+)
+templates.env.globals["shop_swatch"] = _tmpl_shop_swatch
+templates.env.globals["shop_theme_bg"] = _tmpl_shop_theme_bg
+templates.env.globals["shop_theme_ink"] = _tmpl_shop_theme_ink
 templates.env.filters.update({
     "bkk_hms": bkk_hms,
     "bkk_feed_time": bkk_feed_time,

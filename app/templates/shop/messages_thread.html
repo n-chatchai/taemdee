@@ -15,11 +15,11 @@
     {% for m in messages %}
       <div class="msg-row msg-row-{{ m.sender }}" data-msg-id="{{ m.id }}">
         {% if m.sender == 'customer' %}
-          <div class="msg-avatar">
+          <div class="shop-avatar shop-avatar--xs">
             {% if _cust_pic %}
-              <img src="{{ _cust_pic }}" alt="">
+              <img src="{{ _cust_pic }}" alt="" class="shop-avatar-img">
             {% else %}
-              <span>{{ _cust_initial }}</span>
+              <span>{{ _cust_initial }}<span class="dot">.</span></span>
             {% endif %}
           </div>
         {% endif %}

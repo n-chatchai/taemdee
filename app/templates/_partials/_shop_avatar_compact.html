@@ -1,26 +1,39 @@
-{# Compact shop-avatar inner — caller wraps in their own .ic-logo /
-   .cl-mini-logo / .cl-other-logo / .idh-logo / etc box and styles
-   size + radius. This partial just renders the contents:
+{# Shared shop-avatar chip — renders shop logo as a unified chip across
+   the app. Single source of truth for both the wrapper (.shop-avatar +
+   size modifier) and the 3-state inner content.
 
-     - image logo  → <img> filling the parent (object-fit: cover)
-     - text logo   → <span class="lt-*">FullText<dot></span>
-                     The full styled wordmark — the shop's typography
-                     reads correctly. The wrapper rule scales font-size
-                     down (.cl-other-logo span { font-size: 10px }, etc.)
-                     so 4-6 char Thai wordmarks fit a 36-38px square.
-     - no logo     → first character of shop.name + dot (fallback when
-                     the shop never set a logo)
+   Args:
+     · shop          — Shop row (required)
+     · size          — 'xs'|'sm'|'md'|'lg'|'xl'. When set, the partial
+                       wraps in <div class="shop-avatar shop-avatar--{size}">.
+                       When omitted, only inner content is rendered — for
+                       any future caller that wants to provide its own
+                       wrapper box. All current callers pass `size`.
+     · fallback_char — single character for None-shop edge cases (default 'T')
 
-   Pass `shop` (the Shop row) and optionally `fallback_char` (default
-   'T' for None-shop edge cases). The wrapper styles `<img>` via
-   width/height: 100% — see e.g. .inbox-card .ic-logo img. #}
+   Inner content states:
+     - image logo  → <img class="shop-avatar-img"> filling the chip (object-fit: cover)
+     - text logo   → <span class="lt-*">FullText<dot></span> — the shop's
+                     wordmark; chip font-size scales it to fit
+     - no logo     → first character of shop.name + dot fallback
+
+   See app.css → "Shop avatar — shared chrome" for the size grid. #}
 {% set _av_logo = shop_logo(shop) if shop else None %}
-{% if _av_logo and _av_logo.is_image %}
+{# Chip bg + ink follow the shop's chosen theme (taemdee/mono/night/
+   pastel/sport) so the same shop reads with the same identity colors
+   on every surface — even pages that aren't wrapped in .theme-X. We
+   set both as CSS custom properties; .shop-avatar reads them via
+   var(--shop-color) / var(--shop-ink) with #111 / #fff fallbacks. #}
+{% set _av_bg = shop_theme_bg(shop) if shop else None %}
+{% set _av_ink = shop_theme_ink(shop) if shop else None %}
+{% if size %}<div class="shop-avatar shop-avatar--{{ size }}"{% if _av_bg %} style="--shop-color: {{ _av_bg }}; --shop-ink: {{ _av_ink }};"{% endif %}>{% endif %}
+{%- if _av_logo and _av_logo.is_image -%}
   <img src="{{ _av_logo.url }}" alt="" class="shop-avatar-img">
-{% elif _av_logo and _av_logo.text %}
+{%- elif _av_logo and _av_logo.text -%}
   <span class="{{ _av_logo.css_class }}">{{ _av_logo.text }}{% if _av_logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-{% elif shop and shop.name %}
+{%- elif shop and shop.name -%}
   {{ shop.name[0]|upper }}<span class="dot">.</span>
-{% else %}
+{%- else -%}
   {{ fallback_char|default('T') }}<span class="dot">.</span>
-{% endif %}
+{%- endif -%}
+{% if size %}</div>{% endif %}

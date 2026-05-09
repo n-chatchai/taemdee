@@ -105,9 +105,7 @@
     {% if muted %}
       {% for m in muted %}
         <div class="notif-mute-row">
-          <div class="nm-logo">
-            {% with shop = m.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
-          </div>
+          {% with shop=m.shop, size='sm' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
           <div class="nm-name">{{ m.shop.name }}</div>
           <form method="POST" action="/card/account/mute/{{ m.shop.id }}/unmute" style="margin:0;">
             <button type="submit" class="nm-unmute"

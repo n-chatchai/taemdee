@@ -8,16 +8,7 @@
 {% include "_partials/app_bar.html" %}
 
   <div class="inbox-detail-hero">
-    {% set logo = shop_logo(shop) if shop else None %}
-    <div class="idh-logo">
-      {% if logo and logo.is_image %}
-        <img src="{{ logo.url }}" alt="" class="idh-logo-img">
-      {% elif logo %}
-        <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-      {% elif shop %}
-        {{ shop.name[0]|upper }}
-      {% else %}T{% endif %}
-    </div>
+    {% with size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
     <div class="idh-text">
       <div class="idh-shop">{{ shop.name if shop else 'TaemDee' }}</div>
       <div class="idh-meta">

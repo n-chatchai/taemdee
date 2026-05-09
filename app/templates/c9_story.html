@@ -50,19 +50,12 @@
     </div>
   </div>
 
-  {# Shop card — overlaps the cover by 40px. Avatar uses the shop's
-     uploaded logo image (if any), then the lt-* logo styling, then the
-     shop initial as a final fallback. #}
+  {# Shop card — overlaps the cover by 40px. The shared
+     _shop_avatar_compact partial renders the chip + size modifier
+     in one shot; same chrome the /my-inbox-detail header + chat
+     thread use, just bigger size. #}
   <div class="ss-shop-card">
-    <div class="ss-shop-avatar">
-      {% if logo and logo.is_image %}
-        <img src="{{ logo.url }}" alt="">
-      {% elif logo %}
-        <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-      {% else %}
-        {{ shop.name[0]|upper }}
-      {% endif %}
-    </div>
+    {% with size='lg' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
     <div class="ss-shop-info">
       <div class="ss-shop-name">{{ shop.name }}</div>
       {% if shop_address %}<div class="ss-shop-sub">{{ shop_address }}</div>{% endif %}

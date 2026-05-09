@@ -121,17 +121,22 @@ async def send_message(
 
 
 def _avatar_html(*, picture_url: Optional[str], fallback: str) -> str:
-    """Tiny 28px circular avatar used as the left-of-bubble chip on
-    received messages. img if a picture_url is set, otherwise the
-    first character of the fallback name on a tinted background."""
+    """28px chip avatar appended to the left of a received bubble in
+    the SSE-injected row HTML. Wraps in .shop-avatar.shop-avatar--xs
+    so the chrome (ink bg, .dot accent, image fill) matches the
+    server-rendered partial used on the initial paint."""
     if picture_url:
         return (
-            '<div class="msg-avatar">'
-            f'<img src="{_html.escape(picture_url)}" alt="">'
+            '<div class="shop-avatar shop-avatar--xs">'
+            f'<img src="{_html.escape(picture_url)}" alt="" class="shop-avatar-img">'
             '</div>'
         )
     initial = _html.escape((fallback or "·")[0])
-    return f'<div class="msg-avatar"><span>{initial}</span></div>'
+    return (
+        '<div class="shop-avatar shop-avatar--xs">'
+        f'<span>{initial}<span class="dot">.</span></span>'
+        '</div>'
+    )
 
 
 def _bubble_html(

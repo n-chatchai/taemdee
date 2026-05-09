@@ -213,24 +213,7 @@ def _mask_phone(phone: Optional[str]) -> str:
     return phone
 
 
-# cards.list — small palette swatches the .cl-mini / .cl-other tiles
-# tint themselves with via inline `--shop-color`. Picked from the
-# design mockup (warm earthy hues that work on the cream surface) and
-# rotated by hash of the shop id so the same shop keeps the same
-# colour across page loads without needing a stored field.
-_SHOP_SWATCHES = (
-    "#E87A6A",  # coral
-    "#3E6B5A",  # forest mint
-    "#C49A4D",  # mustard
-    "#7A4A8A",  # plum
-    "#3A6B7A",  # teal
-    "#B05F4A",  # brick
-    "#5C7A8A",  # slate
-)
-
-
-def _shop_swatch(shop_id: uuid.UUID) -> str:
-    return _SHOP_SWATCHES[shop_id.int % len(_SHOP_SWATCHES)]
+from app.services.shop_swatch import shop_swatch as _shop_swatch  # noqa: F401
 
 
 @router.get("/card/account", response_class=HTMLResponse)
@@ -1537,14 +1520,15 @@ async def my_cards(
         shop = shops_by_id.get(redemption.shop_id)
         if shop is not None:
             hero_vouchers.append({
-                "redemption": redemption,
+                # Shape consumed by _partials/voucher_section.html
+                # (shared with /my-gifts).
+                "id": redemption.id,
                 "shop": shop,
+                "shop_color": _shop_swatch(shop.id),
+                "reward_text": shop.reward_description,
+                "reward_image": shop.reward_image,
                 "emoji": _gift_emoji(shop.reward_image),
                 "icon_color": _GIFT_ICON_PALETTE[i % len(_GIFT_ICON_PALETTE)],
-                # Same swatch logic as .cl-mini / .cl-other so the voucher
-                # card tints with each shop's stable colour instead of the
-                # generic accent orange.
-                "shop_color": _shop_swatch(shop.id),
             })
 
     # near + other zones still come from the points view since they're about
@@ -1698,22 +1682,23 @@ async def my_gifts(
     # product. Hero = newest unredeemed; the rest go to the grid.
     def _gift_dict(r: Redemption, s: Shop) -> dict:
         return {
+            # Shared shape with /my-cards hero_vouchers — drives
+            # _partials/voucher_section.html.
             "id": r.id,
-            "name": s.reward_description,
             "shop": s,
+            "shop_color": _shop_swatch(s.id),
+            "reward_text": s.reward_description,
+            "reward_image": s.reward_image,
+            # Extra fields kept for /my-gifts grid/used templates.
+            "name": s.reward_description,
             "shop_name": s.name,
             "emoji": _gift_emoji(s.reward_image),
-            "reward_image": s.reward_image,
-            "shop_color": _shop_swatch(s.id),
             "use_url": f"/card/{s.id}/claimed?r={r.id}",
         }
 
     # Sort by created_at desc so the newest voucher is the hero.
     active_sorted = sorted(active_rows, key=lambda rs: rs[0].created_at, reverse=True)
-    active_all = [_gift_dict(r, s) for r, s in active_sorted]
-
-    hero_gift = active_all[0] if active_all else None
-    grid_gifts = active_all[1:] if len(active_all) > 1 else []
+    active_vouchers = [_gift_dict(r, s) for r, s in active_sorted]
 
     used_gifts = [
         {
@@ -1734,12 +1719,10 @@ async def my_gifts(
         name="my_gifts.html",
         context={
             "customer": customer,
-            "active_count": len(active_all),
-            "hero_gift": hero_gift,
-            "grid_gifts": grid_gifts,
+            "active_vouchers": active_vouchers,
             "used_gifts": used_gifts,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
-            "nav_gifts_badge": len(active_all),
+            "nav_gifts_badge": len(active_vouchers),
         },
     )
     if was_created:

@@ -39,32 +39,23 @@
        jobs without crowding shop.daily's hero. Reach /my-cards via
        the dock instead. #}
 
-    {# Thai shop names need the Prompt font — the Host Grotesk display
-       font we use for latin wordmarks has no Thai glyphs and falls back
-       to the system default. Same logic as qr_card.html. #}
-    {% set _logo_text = (logo.text if logo and not logo.is_image else shop.name) %}
-    {% set _is_thai_logo = has_thai(_logo_text) %}
+    {# Identity chip — same .shop-avatar chrome as /story / /my-inbox-detail
+       / chat header, just bigger (--xl = 96px). Shop name renders below
+       as a separate line so the wordmark inside the chip and the
+       customer-facing name don't compete. Branch / district / location
+       stay in .shop-sub. #}
     <a class="shop-head hero" href="/story/{{ shop.id }}" style="display:block; text-decoration:none; color:inherit;">
-      <div class="shop-logo-mark{% if _is_thai_logo %} is-thai{% endif %}">
-        {% if logo %}
-          {% if logo.is_image %}
-            <img src="{{ logo.url }}" class="shop-logo-img">
-          {% else %}
-            <span class="{{ logo.css_class }}">{{ logo.text }}{% if logo.show_dot %}<span class="dot">.</span>{% endif %}</span>
-          {% endif %}
-        {% else %}{{ shop.name }}<span class="dot">.</span>{% endif %}
-      </div>
+      {% with size='xl' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
+      <div class="shop-name">{{ shop.name }}</div>
       <div class="shop-sub">
-        <span>{{ shop.name }}</span>
-        {% if branch and branch.name %}
-          <span class="dotsep"></span><span>{{ branch.name }}</span>
-        {% endif %}
-        {% if shop.district %}
-          <span class="dotsep"></span><span>{{ shop.district }}</span>
-        {% endif %}
-        {% if shop.location %}
-          <span class="dotsep"></span><span>{{ shop.location }}</span>
-        {% endif %}
+        {% set _meta = [] %}
+        {% if branch and branch.name %}{% set _ = _meta.append(branch.name) %}{% endif %}
+        {% if shop.district %}{% set _ = _meta.append(shop.district) %}{% endif %}
+        {% if shop.location %}{% set _ = _meta.append(shop.location) %}{% endif %}
+        {% for m in _meta %}
+          {% if not loop.first %}<span class="dotsep"></span>{% endif %}
+          <span>{{ m }}</span>
+        {% endfor %}
       </div>
     </a>
 

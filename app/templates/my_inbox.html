@@ -29,9 +29,7 @@
            data-kind="{{ it.kind }}"
            {% if it.kind == 'thread' and it.thread %}data-shop-id="{{ it.thread.shop_id }}"{% endif %}>
           {% if it.unread %}<span class="ic-unread-dot"></span>{% endif %}
-          <div class="ic-logo">
-            {% with shop = it.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
-          </div>
+          {% with shop=it.shop, size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
           <div class="ic-body">
             <div class="ic-row">
               <div class="ic-shop">

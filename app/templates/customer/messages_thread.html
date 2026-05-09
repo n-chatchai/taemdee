@@ -8,9 +8,7 @@
     <a href="/messages" class="td-back" aria-label="กลับ">←</a>
     {# Shop avatar + name in the header — same chip we use on
        received bubbles so the conversation reads like an app. #}
-    <div class="td-head-avatar">
-      {% include "_partials/_shop_avatar_compact.html" %}
-    </div>
+    {% with size='sm' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
     <h1>{{ shop.name }}</h1>
   </div>
 
@@ -18,9 +16,7 @@
     {% for m in messages %}
       <div class="msg-row msg-row-{{ m.sender }}" data-msg-id="{{ m.id }}">
         {% if m.sender == 'shop' %}
-          <div class="msg-avatar">
-            {% include "_partials/_shop_avatar_compact.html" %}
-          </div>
+          {% with size='xs' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
         {% endif %}
         <div class="msg msg-{{ m.sender }}">
           <div class="msg-body">{{ m.body }}</div>
@@ -77,24 +73,9 @@
     background: var(--surface, #fff); align-items: center; justify-content: center;
     text-decoration: none; color: var(--ink); font-size: 20px;
   }
-  /* Header avatar — same chrome as the inbox-card .ic-logo so a
-     shop's typography wordmark (.lt-*) fits cleanly. font-size 10
-     keeps Thai 4-6 char wordmarks legible at this size; <img>
-     children fill via 100% w/h. */
-  .td-head-avatar {
-    width: 32px; height: 32px; border-radius: 50%;
-    background: var(--ink); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden; flex-shrink: 0;
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800;
-    font-size: 10px;
-    line-height: 1;
-    letter-spacing: -0.025em;
-    padding: 2px 4px;
-  }
-  .td-head-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .td-head-avatar .dot { color: var(--accent); }
+  /* Avatar chrome lives in the shared .shop-avatar / .shop-avatar--xs
+     / .shop-avatar--sm rules in app.css — see /story / /my-inbox-detail
+     for the same chip used at different sizes. */
 
   .td-msg-stream {
     display: flex; flex-direction: column;
@@ -103,7 +84,7 @@
     margin-bottom: 8px;
   }
   /* Row = avatar + bubble. Customer rows align right (no avatar);
-     shop rows align left with the 28px avatar slot. */
+     shop rows align left with the avatar slot. */
   .msg-row {
     display: flex; align-items: flex-end; gap: 6px;
     max-width: 88%;
@@ -116,26 +97,9 @@
   .msg-row-shop + .msg-row-customer { margin-top: 6px; }
   /* Hide repeated avatar on consecutive same-sender shop bubbles —
      only the first row in a sender-run shows the avatar. */
-  .msg-row-shop + .msg-row-shop .msg-avatar {
+  .msg-row-shop + .msg-row-shop .shop-avatar {
     visibility: hidden;
   }
-
-  /* Bubble avatar — same chrome shape as the inbox card logo at a
-     smaller size so the wordmark text styling carries through. */
-  .msg-avatar {
-    width: 28px; height: 28px; border-radius: 50%;
-    background: var(--ink); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    overflow: hidden; flex-shrink: 0;
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800;
-    font-size: 9px;
-    line-height: 1;
-    letter-spacing: -0.025em;
-    padding: 2px 3px;
-  }
-  .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
-  .msg-avatar .dot { color: var(--accent); }
 
   .msg {
     /* Compact bubble — 7px/11px instead of 10px/14px. */

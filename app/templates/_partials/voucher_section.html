@@ -1,0 +1,69 @@
+{# "ของขวัญพร้อมใช้" voucher carousel section — shared by /my-cards
+   and /my-gifts.
+
+   Args:
+     · vouchers     — list of dicts. Each item must expose:
+                        - id          (Redemption.id, used as data-voucher-id)
+                        - shop        (Shop row, for the avatar chip + /story link)
+                        - shop_color  (hex string for the gradient tint)
+                        - reward_text (display text, e.g. shop.reward_description)
+                        - reward_image (id passed through to reward_svg.html)
+     · heading      — section heading text. Pass '' (or omit explicit
+                      override) to skip the .cl-section-h header — used
+                      by /my-gifts where the .gl-summary banner above
+                      already labels the section. Default
+                      "ของขวัญพร้อมใช้".
+     · count_label  — count word ("ใบ" / "ชิ้น"); default "ใบ"
+
+   With one voucher the section renders in `.single` mode → one
+   wide card, no horizontal scroll. With many it's a carousel.
+
+   The "แลกของขวัญ" CTA is a span with `data-redeem`; the host page
+   wires up the click handler (stopPropagation + open the
+   voucher.confirm bottom sheet). The card itself is an <a> to
+   /story/<shop> so taps on the body navigate without redeeming. #}
+{% set count_label = count_label|default('ใบ') %}
+{% set heading = heading|default('ของขวัญพร้อมใช้') %}
+{% if vouchers %}
+<div class="cl-voucher-section{% if vouchers|length == 1 %} single{% endif %}">
+  {% if heading %}
+    <div class="cl-section-h" style="font-size: var(--text-lg);">
+      <span class="icon" style="color: var(--accent);">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+      </span>
+      {{ heading }}
+      <span class="count">{{ vouchers|length }} {{ count_label }}</span>
+    </div>
+  {% endif %}
+  <div class="cl-voucher-carousel">
+    {% for v in vouchers %}
+      <a class="cl-voucher-card"
+         href="/story/{{ v.shop.id }}"
+         style="--shop-color: {{ v.shop_color }};">
+        <div class="cl-voucher-image">
+          {% set img_id = v.reward_image %}
+          {% include "_partials/reward_svg.html" %}
+          <span class="v-tag"><span class="pulse"></span>พร้อมใช้</span>
+        </div>
+        <div class="cl-voucher-body">
+          <div class="cl-voucher-shop">
+            {% with shop=v.shop, size='sm' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
+            <span class="name">{{ v.shop.name }}</span>
+          </div>
+          <div class="cl-voucher-reward">{{ v.reward_text }}</div>
+          <span class="cl-voucher-cta"
+                data-redeem
+                data-voucher-id="{{ v.id }}"
+                data-shop-name="{{ v.shop.name }}"
+                data-reward="{{ v.reward_text }}"
+                role="button"
+                tabindex="0">
+            <span>แลกของขวัญ</span>
+            <svg viewBox="0 0 24 24"><polyline points="9 18 15 12 9 6"/></svg>
+          </span>
+        </div>
+      </a>
+    {% endfor %}
+  </div>
+</div>
+{% endif %}
