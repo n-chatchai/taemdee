@@ -520,107 +520,11 @@
      same prompt with claim/skip/auto-fulfill semantics, so the banner
      was duplicating it. Removed. #}
 
-  {# Customer todos — install PWA, link a provider, friend the OA, etc.
-     services/customer_items.list_available already filters out items
-     that are auto-fulfilled (e.g. customer.is_pwa is True) so this
-     block silently disappears as the customer completes them. #}
-  {% if customer_items %}
-    <div class="cl-todos-section" style="margin-top: 4px;">
-      <div class="cl-todos-h">
-        <span class="lab">
-          <span class="ic">
-            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-linecap="round" stroke-linejoin="round"><path d="M9 11l3 3L22 4"/><path d="M21 12v7a2 2 0 01-2 2H5a2 2 0 01-2-2V5a2 2 0 012-2h11"/></svg>
-          </span>
-          รายการแนะนำ
-        </span>
-        <span class="count">{{ customer_items|length }} รายการ</span>
-      </div>
-
-      <div class="cl-todos-list">
-        {% for it in customer_items %}
-          {# CTA — every tap also fires a sendBeacon claim so the
-             item is recorded as done even when the auto-fulfill
-             predicate hasn't caught up (or doesn't exist for that
-             kind). Same idea as the existing line_friend path,
-             applied uniformly. The action handlers (open sheet,
-             push subscribe, navigate) run as before. #}
-          {% set _claim_beacon -%}
-            try {
-              navigator.sendBeacon
-                ? navigator.sendBeacon('/card/items/{{ it.kind }}/claim', new FormData())
-                : fetch('/card/items/{{ it.kind }}/claim', {method:'POST', credentials:'same-origin', keepalive:true}).catch(() => {});
-            } catch(_) {}
-          {%- endset %}
-          <div class="cl-todo">
-            <div class="cl-todo-main">
-              <div class="cl-todo-text">
-                <div class="cl-todo-title">{{ it.label|safe }}</div>
-                <div class="cl-todo-desc">{{ it.sub }}</div>
-              </div>
-              <div class="cl-todo-skip-wrap">
-                <form method="POST" action="/card/items/{{ it.kind }}/skip" class="cl-todo-form">
-                  <button type="submit" class="cl-todo-skip-x">ข้าม</button>
-                </form>
-                {% if it.skip_explain %}
-                  <span class="cl-todo-skip-hint">{{ it.skip_explain }}</span>
-                {% endif %}
-              </div>
-            </div>
-
-            {% if it.kind == 'pwa_install' %}
-              <button type="button" class="cl-todo-cta" onclick="
-                {{ _claim_beacon }}
-                const s = document.getElementById('install-sheet');
-                if (s) s.classList.add('open');">{{ it.cta }}</button>
-            {% elif it.kind == 'enable_push' %}
-              <button type="button" class="cl-todo-cta" onclick="
-                {{ _claim_beacon }}
-                (async () => {
-                  try {
-                    if (!('serviceWorker' in navigator) || !('PushManager' in window)) return;
-                    let reg = await navigator.serviceWorker.getRegistration();
-                    if (!reg) reg = await navigator.serviceWorker.register('/sw.js');
-                    const r = await fetch('/push/vapid-public');
-                    if (!r.ok) return;
-                    const j = await r.json();
-                    const raw = atob(j.public_key.replace(/-/g,'+').replace(/_/g,'/') + '='.repeat((4 - j.public_key.length % 4) % 4));
-                    const key = new Uint8Array(raw.length);
-                    for (let i = 0; i < raw.length; i++) key[i] = raw.charCodeAt(i);
-                    const sub = await reg.pushManager.subscribe({ userVisibleOnly: true, applicationServerKey: key });
-                    const fd = new FormData();
-                    fd.set('endpoint', sub.endpoint);
-                    const p = sub.getKey('p256dh'); const a = sub.getKey('auth');
-                    const b64 = (buf) => { const b = new Uint8Array(buf); let s=''; for (let i=0;i<b.length;i++) s+=String.fromCharCode(b[i]); return btoa(s).replace(/\+/g,'-').replace(/\//g,'_').replace(/=+$/,''); };
-                    fd.set('p256dh', b64(p)); fd.set('auth', b64(a));
-                    await fetch('/push/subscribe', { method: 'POST', body: fd });
-                    location.reload();
-                  } catch(_) {}
-                })();">{{ it.cta }}</button>
-            {% elif it.kind == 'line_friend' %}
-              <a href="{{ settings.line_oa_friend_url }}" target="_blank" rel="noopener"
-                 class="cl-todo-cta"
-                 onclick="{{ _claim_beacon }}">{{ it.cta }}</a>
-            {% elif it.kind == 'set_picture' %}
-              {# Slide up the existing profile_edit_sheet (avatar +
-                 display_name editing) instead of bouncing through
-                 /card/account. data-open="profile-edit" wires into
-                 the partial's global click handler. #}
-              <button type="button" class="cl-todo-cta"
-                      data-open="profile-edit"
-                      onclick="{{ _claim_beacon }}">{{ it.cta }}</button>
-            {% elif it.link %}
-              <a href="{{ it.link }}" class="cl-todo-cta"
-                 onclick="{{ _claim_beacon }}">{{ it.cta }}</a>
-            {% else %}
-              <form method="POST" action="/card/items/{{ it.kind }}/claim" class="cl-todo-form">
-                <button type="submit" class="cl-todo-cta">{{ it.cta }}</button>
-              </form>
-            {% endif %}
-          </div>
-        {% endfor %}
-      </div>
-    </div>
-  {% endif %}
+  {# Customer todos previously rendered inline here ("รายการแนะนำ").
+     Moved into the profile_edit_sheet partial so the cards page stays
+     focused on cards + vouchers; the avatar in page_head shows the
+     pending count badge so the customer still notices unfinished
+     suggestions without clutter on the main view. #}
 
   {# Hero carousel — all unused vouchers (Redemption served_at IS NULL).
      Auto-redeem on /scan creates the Redemption inline, so by the time

@@ -130,19 +130,33 @@ class CustomerContextMiddleware:
 
         # Pre-compute the customer-side messages-tab unread count so
         # /my-cards (and any other customer page) can render the badge
-        # without each route having to fetch it.
+        # without each route having to fetch it. Same for the
+        # actionable-todo list (rendered in the profile-edit sheet
+        # plus the avatar badge in page_head).
         customer_unread = 0
+        customer_items: list = []
         if customer is not None:
             from app.services.customer_chat import customer_unread_total
+            from app.services.customer_items import list_available as _list_customer_items
             from app.core.database import SessionFactory as _SF
             async with _SF() as db:
-                customer_unread = await customer_unread_total(db, customer.id)
+                # Re-fetch customer in this session to access lazy-loaded
+                # relationships safely (the one above was loaded in a
+                # closed session).
+                fresh = await db.get(Customer, customer.id)
+                if fresh is not None:
+                    customer_unread = await customer_unread_total(db, fresh.id)
+                    try:
+                        customer_items = await _list_customer_items(db, fresh)
+                    except Exception:
+                        customer_items = []
 
         # State is the canonical request-scoped dict — c_base.html reads
         # request.state.customer which proxies to scope["state"]["customer"].
         state = scope.setdefault("state", {})
         state["customer"] = customer
         state["customer_unread"] = customer_unread
+        state["customer_items"] = customer_items
         await self.app(scope, receive, send)
 
 

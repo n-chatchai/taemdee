@@ -11233,16 +11233,35 @@ body:has(.td-pinned) {
   justify-content: center;
   cursor: pointer;
   padding: 0;
-  overflow: hidden;
+  overflow: visible;       /* badge sticks out of the circle */
   flex-shrink: 0;
+  position: relative;
 }
 .page-head .ph-avatar img {
   width: 100%;
   height: 100%;
   object-fit: cover;
   display: block;
+  border-radius: 50%;
 }
 .page-head .ph-avatar:active { transform: scale(0.94); }
+/* Pending-todos count chip — accent-orange disc at the top-right
+   of the avatar, white number, no border. Mirrors the system
+   "notification dot with count" pattern (bell + 4 chip). */
+.page-head .ph-avatar-badge {
+  position: absolute;
+  top: -3px; right: -3px;
+  min-width: 18px; height: 18px;
+  padding: 0 5px;
+  border-radius: 999px;
+  background: var(--ink); color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px; font-weight: 700;
+  line-height: 1;
+  display: flex; align-items: center; justify-content: center;
+  pointer-events: none;
+  box-shadow: 0 1px 4px -1px rgba(0,0,0,0.25);
+}
 
 /* Profile-edit bottom sheet — display name + picture uploader.
    Reuses .install-sheet-overlay / .install-sheet for the slide-up
