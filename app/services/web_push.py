@@ -148,3 +148,75 @@ def get_vapid_private_key() -> Optional[str]:
     """Cached private key (None until ensure_vapid_keys has run in this
     process — i.e. only the worker holds this)."""
     return _cache["private"]
+
+
+async def send_to_user(
+    user,
+    *,
+    title: str,
+    body: str,
+    url: str = "/my-cards",
+) -> bool:
+    """Fire a Web Push notification at the given User's saved
+    subscription. Returns True if the push services accepted the
+    payload, False otherwise (no subscription, dead endpoint, missing
+    VAPID keys in this process). Safe to call without awaiting — the
+    delivery itself is sync (pywebpush is blocking) but offloaded to
+    a worker thread so it doesn't block the event loop.
+
+    Used by chat send_message + any future "ping the other side"
+    flows; deereach campaigns have their own dedicated path that
+    additionally bills the credit.
+    """
+    if user is None:
+        return False
+    endpoint = getattr(user, "web_push_endpoint", None)
+    p256dh = getattr(user, "web_push_p256dh", None)
+    auth = getattr(user, "web_push_auth", None)
+    if not (endpoint and p256dh and auth):
+        return False
+    private_key = get_vapid_private_key()
+    if not private_key:
+        # Lazy-load from DB — first send in the web process. The worker
+        # populates the keypair on its first boot; here we just read.
+        try:
+            from app.core.database import SessionFactory
+            async with SessionFactory() as session:
+                await load_vapid_keys(session)
+            private_key = get_vapid_private_key()
+        except Exception:
+            log.exception("web_push send → load_vapid_keys failed")
+            return False
+        if not private_key:
+            log.info("web_push send → VAPID keys still missing after lazy load")
+            return False
+
+    import asyncio
+    import json
+
+    def _send_sync() -> bool:
+        try:
+            from pywebpush import WebPushException, webpush
+            webpush(
+                subscription_info={
+                    "endpoint": endpoint,
+                    "keys": {"p256dh": p256dh, "auth": auth},
+                },
+                data=json.dumps({
+                    "title": title,
+                    "body": body,
+                    "url": url,
+                }),
+                vapid_private_key=private_key,
+                vapid_claims={"sub": WEB_PUSH_VAPID_SUB},
+                ttl=60 * 60 * 24,
+            )
+            return True
+        except Exception as e:  # noqa: BLE001
+            # pywebpush raises WebPushException for 404/410 (dead
+            # endpoint) — caller's responsibility to clear the
+            # subscription if it wants to. We just log + return False.
+            log.warning("web_push send failed: %s", e)
+            return False
+
+    return await asyncio.to_thread(_send_sync)

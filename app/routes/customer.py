@@ -2073,15 +2073,31 @@ async def push_status(
 
 @router.post("/push/subscribe")
 async def push_subscribe(
+    request: Request,
     endpoint: str = Form(...),
     p256dh: str = Form(...),
     auth: str = Form(...),
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Save a Web Push subscription on the current customer. Replacing an
-    existing subscription is fine — most browsers rotate endpoints when
-    the user clears storage or reinstalls. Idempotent."""
+    """Save a Web Push subscription on the active session's User row.
+    Detects shop-staff context first (request.state.staff, set by
+    ShopContextMiddleware) and falls back to the customer cookie path.
+    Replacing an existing subscription is fine — most browsers rotate
+    endpoints when the user clears storage or reinstalls. Idempotent."""
+    staff = getattr(request.state, "staff", None)
+    if staff is not None and staff.user_id is not None:
+        from app.models import User
+        user = await db.get(User, staff.user_id)
+        if user is None:
+            raise HTTPException(status.HTTP_404_NOT_FOUND, "staff user missing")
+        user.web_push_endpoint = endpoint
+        user.web_push_p256dh = p256dh
+        user.web_push_auth = auth
+        db.add(user)
+        await db.commit()
+        return JSONResponse({"ok": True}, status_code=200)
+
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     customer.user.web_push_endpoint = endpoint
     customer.user.web_push_p256dh = p256dh
@@ -2096,12 +2112,26 @@ async def push_subscribe(
 
 @router.post("/push/unsubscribe")
 async def push_unsubscribe(
+    request: Request,
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Clear push subscription — used when the customer revokes notification
-    permission in their browser. Without this, send_web_push will keep
-    hitting an endpoint that returns 410 Gone."""
+    """Clear push subscription — used when the user revokes notification
+    permission in their browser. Without this, send_to_user will keep
+    hitting an endpoint that returns 410 Gone. Mirrors the same
+    staff-then-customer detection as /push/subscribe."""
+    staff = getattr(request.state, "staff", None)
+    if staff is not None and staff.user_id is not None:
+        from app.models import User
+        user = await db.get(User, staff.user_id)
+        if user is not None:
+            user.web_push_endpoint = None
+            user.web_push_p256dh = None
+            user.web_push_auth = None
+            db.add(user)
+            await db.commit()
+        return JSONResponse({"ok": True}, status_code=200)
+
     customer, _ = await find_or_create_customer(customer_cookie, db)
     customer.user.web_push_endpoint = None
     customer.user.web_push_p256dh = None
