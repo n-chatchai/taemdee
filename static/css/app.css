@@ -11459,22 +11459,21 @@ body:has(.td-pinned) {
 }
 
 /* Inbox filter pills — tab-like row above the list. */
-/* แชท / แต้มดี tab pills above /my-inbox. Equal-width so the two
-   tabs share the row evenly, taller hit-target so they read as
-   primary controls instead of small filter chips. */
+/* แชท / แต้มดี tab pills above /my-inbox. Equal-width via
+   flex:1 so each tab takes half the row. */
 .inbox-filters {
-  padding: 0 20px 14px;
+  padding: 0 20px 12px;
   display: flex;
-  gap: 8px;
+  gap: 6px;
   flex-shrink: 0;
 }
 .inbox-filter-pill {
   appearance: none; -webkit-appearance: none;
   flex: 1 1 0;
-  padding: 11px 16px;
+  padding: 8px 14px;
   border-radius: 999px;
   font-family: 'Prompt', sans-serif;
-  font-size: 14px;
+  font-size: 13px;
   font-weight: 600;
   color: var(--ink-soft);
   background: var(--surface);
