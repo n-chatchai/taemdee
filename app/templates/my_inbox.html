@@ -40,7 +40,10 @@
           {% with shop=it.shop, size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
           <div class="ic-body">
             <div class="ic-row">
-              <div class="ic-shop">{{ it.shop.name if it.shop else 'TaemDee' }}</div>
+              <div class="ic-shop">
+                {{ it.shop.name if it.shop else 'TaemDee' }}
+                {% if it.kind == 'thread' %}<span class="ic-tag-chat">แชท</span>{% endif %}
+              </div>
               <div class="ic-time">{{ it.sort_at|bkk_feed_time }}</div>
             </div>
             <div class="ic-preview">{{ it.preview }}</div>

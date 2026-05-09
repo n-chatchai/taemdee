@@ -60,6 +60,29 @@ body:has(.td) {
   -webkit-touch-callout: default;
 }
 
+/* No mobile zoom — viewport tag pins user-scalable=no, but Safari
+   iOS still auto-zooms when an input's font-size is below 16px.
+   Force the minimum across every text-entry field so focusing one
+   never re-frames the page. */
+.td input[type="text"],
+.td input[type="tel"],
+.td input[type="email"],
+.td input[type="password"],
+.td input[type="search"],
+.td input[type="number"],
+.td input[type="url"],
+.td textarea,
+.td select {
+  font-size: max(16px, 1em);
+}
+/* Kill the 300ms double-tap-zoom delay on tappable surfaces so the
+   PWA reads as native. Anchors and buttons inside .td are the
+   common case; leave inputs alone so caret placement still works. */
+.td a,
+.td button {
+  touch-action: manipulation;
+}
+
 /* Press feedback — quick scale(0.97) on :active for the common
    tappable surfaces so taps feel like presses, not link clicks.
    Per-element :active rules elsewhere in this file (e.g. .gl-hero,
@@ -11912,6 +11935,28 @@ body:has(.td-pinned) {
   flex-shrink: 0;
 }
 
+/* Inline "แชท" tag — distinguishes a 2-way chat thread row from a
+   1-way DeeReach broadcast in the mixed inbox feed. Squarish chip
+   so it reads as a kind label, not a count badge. */
+.inbox-card .ic-tag-chat {
+  display: inline-flex;
+  align-items: center;
+  margin-left: 6px;
+  padding: 1px 6px;
+  border-radius: 4px;
+  background: var(--accent);
+  color: #fff;
+  font-family: 'Host Grotesk', sans-serif;
+  font-size: 9px;
+  font-weight: 700;
+  letter-spacing: 0.06em;
+  text-transform: uppercase;
+  vertical-align: middle;
+}
+.inbox-card.read .ic-tag-chat {
+  background: var(--ink-softer);
+}
+
 /* Inbox empty state — typography hero: a giant 0. (Host Grotesk +
    accent dot) reads as identity, not a placeholder illustration.
    Overrides the older .inbox-empty .h/.s rule earlier in the file —
@@ -13154,8 +13199,8 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
   display: flex;
   align-items: center;
-  gap: 8px;
-  padding: 10px 12px 12px;
+  gap: 10px;
+  padding: 12px 14px 14px;
   background: var(--bg);
   border-top: 1px solid rgba(17,17,17,0.08);
   z-index: 10;
@@ -13165,9 +13210,9 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   background: var(--surface);
   border: 1px solid rgba(17,17,17,0.12);
   border-radius: 99px;
-  padding: 9px 16px;
+  padding: 13px 20px;
   font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
+  font-size: 16px;
   color: var(--ink);
   outline: none;
   min-width: 0;
@@ -13177,7 +13222,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
 }
 .chat-send {
   flex-shrink: 0;
-  width: 38px; height: 38px;
+  width: 46px; height: 46px;
   background: var(--ink);
   color: var(--bg);
   border: none;
@@ -13189,7 +13234,7 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   padding: 0;
 }
 .chat-send svg {
-  width: 16px; height: 16px;
+  width: 18px; height: 18px;
   stroke: currentColor; fill: none;
   stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
 }

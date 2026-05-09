@@ -2,6 +2,11 @@
 {% set nav_active = 'inbox' %}
 {% block title %}ข้อความ · TaemDee แต้มดี{% endblock %}
 
+{# Hide the customer dock — like the chat thread, this page reads
+   like a single-conversation surface where the reply bar should sit
+   flush at the bottom. #}
+{% block nav %}{% endblock %}
+
 {% block content %}
 {% set app_bar_back = '/my-inbox' %}
 {% set app_bar_title = 'ข้อความ' %}
@@ -62,5 +67,35 @@
         ดูร้าน
       </a>
     </div>
+
+    {# Reply box — POST goes to /messages/{shop} which creates the
+       CustomerThread on demand, sends the message, and redirects
+       back into the chat thread (where the customer's bubble + any
+       shop reply will live). Hidden when the shop has turned off
+       customer messaging. #}
+    {% if shop.allow_customer_messages %}
+      <form class="chat-input-bar" method="POST" action="/messages/{{ shop.id }}">
+        <input type="text" class="chat-input" name="body" placeholder="ตอบกลับร้าน..." autocomplete="off" required>
+        <button type="submit" class="chat-send" aria-label="ส่ง">
+          <svg viewBox="0 0 24 24">
+            <line x1="22" y1="2" x2="11" y2="13"/>
+            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
+          </svg>
+        </button>
+      </form>
+    {% else %}
+      <div class="chat-locked">
+        ร้านนี้ปิดรับข้อความจากลูกค้าอยู่
+      </div>
+    {% endif %}
   {% endif %}
+
+<style>
+  /* No dock — match the chat-thread layout: pin the input bar /
+     locked notice flush to the safe-area bottom and reserve enough
+     scroll-end padding so the CTA isn't hidden under the bar. */
+  .chat-input-bar { bottom: env(safe-area-inset-bottom, 0px); }
+  .chat-locked { bottom: env(safe-area-inset-bottom, 0px); }
+  .inbox-detail-cta { margin-bottom: 90px; }
+</style>
 {% endblock %}
