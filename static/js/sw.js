@@ -165,13 +165,39 @@ self.addEventListener('push', (event) => {
     payload = { title: 'แต้มดี', body: event.data ? event.data.text() : '' };
   }
   const title = payload.title || 'แต้มดี';
-  const opts = {
-    body: payload.body || '',
-    icon: '/static/taemdee-icons/taemdee-icon-192.png',
-    badge: '/static/taemdee-icons/taemdee-icon-32.png',
-    data: { url: payload.url || '/my-cards' },
-  };
-  event.waitUntil(self.registration.showNotification(title, opts));
+  const url = payload.url || '/my-cards';
+
+  event.waitUntil((async () => {
+    // Suppress the system banner when the user already has the target
+    // URL open in a focused tab — they're looking at it, SSE delivers
+    // the bubble live, no duplicate alert needed. Match by pathname
+    // so query strings + hashes don't matter; falls back to substring
+    // check if the URL doesn't parse for some reason.
+    let onTarget = false;
+    try {
+      const all = await self.clients.matchAll({ type: 'window', includeUncontrolled: true });
+      const targetPath = (url.split('?')[0] || '').split('#')[0];
+      onTarget = all.some((c) => {
+        if (!c.focused) return false;
+        try {
+          return new URL(c.url).pathname === targetPath;
+        } catch (_) {
+          return c.url.indexOf(targetPath) !== -1;
+        }
+      });
+    } catch (_) {
+      // Failed to enumerate clients — fall through and show the
+      // notification rather than silently drop it.
+    }
+    if (onTarget) return;
+
+    await self.registration.showNotification(title, {
+      body: payload.body || '',
+      icon: '/static/taemdee-icons/taemdee-icon-192.png',
+      badge: '/static/taemdee-icons/taemdee-icon-32.png',
+      data: { url },
+    });
+  })());
 });
 
 self.addEventListener('notificationclick', (event) => {
