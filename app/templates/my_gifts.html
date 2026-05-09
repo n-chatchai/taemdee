@@ -9,10 +9,68 @@
    → "ใช้แล้ว" accordion. Card colour tints from each shop's swatch
    via --shop-color. */
 
-/* All active vouchers render via _partials/voucher_section.html
-   (carousel + .cl-section-h header). The .gl-summary banner +
-   .gl-hero / .gl-mini chrome were dropped — section header alone
-   matches /my-cards. */
+/* Hero voucher renders via _partials/voucher_section.html in
+   `.single` mode (carries its own .cl-section-h header). The
+   "ของขวัญอื่นๆ" header below mirrors that partial's chrome so
+   both sections read with the same big-dot rhythm. */
+
+/* 2-col grid of secondary vouchers */
+.gl-grid {
+  margin: 0 16px 18px;
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 10px;
+}
+.gl-mini {
+  border-radius: 16px;
+  overflow: hidden;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.10);
+  cursor: pointer;
+  display: flex; flex-direction: column;
+  text-align: left;
+  font: inherit;
+  padding: 0;
+}
+.gl-mini:active { transform: scale(0.99); }
+.gl-mini-img {
+  height: 78px;
+  position: relative;
+  overflow: hidden;
+}
+.gl-mini-img .reward-svg {
+  width: 100%; height: 100%;
+  display: block;
+}
+.gl-mini-body {
+  padding: 10px 12px 12px;
+  display: flex; flex-direction: column;
+  gap: 4px;
+}
+.gl-mini-shop {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.2;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gl-mini-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14.5px;
+  color: var(--ink);
+  line-height: 1.3;
+  letter-spacing: -0.005em;
+  white-space: nowrap; overflow: hidden; text-overflow: ellipsis;
+}
+.gl-mini-foot {
+  margin-top: 6px;
+  display: flex; align-items: center; justify-content: space-between;
+}
+.gl-mini-action {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 12.5px;
+  color: var(--accent);
+}
 
 /* Used accordion */
 .gl-used-toggle {
@@ -58,10 +116,13 @@
 .gl-used-row .icon {
   width: 36px; height: 36px;
   border-radius: 10px;
-  background: rgba(17,17,17,0.05);
   display: flex; align-items: center; justify-content: center;
-  font-size: 18px;
   flex-shrink: 0;
+  overflow: hidden;
+}
+.gl-used-row .icon .reward-svg {
+  width: 100%; height: 100%;
+  display: block;
 }
 .gl-used-row .info { flex: 1; min-width: 0; }
 .gl-used-row .name {
@@ -222,15 +283,51 @@
 {% block content %}
   {% include "_partials/page_head.html" %}
 
-  {% if active_vouchers or used_gifts %}
-    {# All active vouchers — same partial as /my-cards. One voucher
-       renders in `.single` mode (full-width card); many become a
-       horizontal carousel. The "แลกของขวัญ" CTA opens the
-       voucher.confirm sheet via the data-redeem handler below. #}
-    {% if active_vouchers %}
-      {% with vouchers=active_vouchers %}
+  {% if hero_voucher or grid_gifts or used_gifts %}
+    {# Hero — newest unredeemed voucher. Renders via the shared
+       _partials/voucher_section.html (same .cl-voucher-card chrome
+       /my-cards uses) in `.single` mode = full-width card, no
+       horizontal scroll. Section header comes from the partial
+       default ("ของขวัญพร้อมใช้" with the .cl-section-h dot icon). #}
+    {% if hero_voucher %}
+      {% with vouchers=[hero_voucher] %}
         {% include "_partials/voucher_section.html" %}
       {% endwith %}
+    {% endif %}
+
+    {# "ของขวัญอื่นๆ" — 2-col grid of mini cards. Section header
+       mirrors the partial's .cl-section-h so /my-gifts reads with
+       the same big-dot rhythm as /my-cards. The card chrome
+       (.gl-mini) stays bespoke — denser overview tile by design. #}
+    {% if grid_gifts %}
+    <div class="cl-section-h" style="font-size: var(--text-lg);">
+      <span class="icon" style="color: var(--mint-ink);">
+        <svg viewBox="0 0 24 24" fill="currentColor"><circle cx="12" cy="12" r="10"/></svg>
+      </span>
+      ของขวัญอื่นๆ
+      <span class="count">{{ grid_gifts|length }} ชิ้น</span>
+    </div>
+    <div class="gl-grid">
+      {% for g in grid_gifts %}
+        <button type="button" class="gl-mini"
+                style="--shop-color: {{ g.shop_color }};"
+                data-voucher-id="{{ g.id }}"
+                data-shop-name="{{ g.shop.name }}"
+                data-reward="{{ g.reward_text }}">
+          <div class="gl-mini-img" style="background: {{ reward_bg(g.reward_image) }};">
+            {% set img_id = g.reward_image %}
+            {% include "_partials/reward_svg.html" %}
+          </div>
+          <div class="gl-mini-body">
+            <div class="gl-mini-shop">{{ g.shop.name }}</div>
+            <div class="gl-mini-name">{{ g.reward_text }}</div>
+            <div class="gl-mini-foot">
+              <span class="gl-mini-action">แลก →</span>
+            </div>
+          </div>
+        </button>
+      {% endfor %}
+    </div>
     {% endif %}
 
     {# "ใช้แล้ว" accordion. Closed by default; tap to expand. #}
@@ -242,7 +339,10 @@
     <div class="gl-used-list" id="gl-used-list" data-open="0">
       {% for g in used_gifts %}
       <div class="gl-used-row">
-        <div class="icon">{{ g.emoji }}</div>
+        <div class="icon" style="background: {{ reward_bg(g.reward_image) }};">
+          {% set img_id = g.reward_image %}
+          {% include "_partials/reward_svg.html" %}
+        </div>
         <div class="info">
           <div class="name">{{ g.name }}</div>
           <div class="meta">{{ g.shop_name }}{% if g.used_at %} · ใช้เมื่อ {{ g.used_at }}{% endif %}</div>
@@ -324,20 +424,21 @@
     }
 
     document.addEventListener('click', (e) => {
-      // All active vouchers render via _partials/voucher_section.html
-      // — the redeem CTA is a span.cl-voucher-cta[data-redeem] inside
-      // the card. Click on the card body itself navigates to /story
-      // via the parent <a>; only the CTA opens this sheet.
+      // Hero card uses the shared voucher_section partial — its CTA
+      // is span.cl-voucher-cta[data-redeem]. The "ของขวัญอื่น" grid
+      // tiles are bespoke .gl-mini buttons. Accept both.
       const cta = e.target.closest('.cl-voucher-cta[data-redeem]');
-      if (!cta) return;
+      const grid = e.target.closest('.gl-mini[data-voucher-id]');
+      const trigger = cta || grid;
+      if (!trigger) return;
       e.preventDefault();
       e.stopPropagation();
-      const card = cta.closest('.cl-voucher-card');
-      form.action = `/voucher/${cta.dataset.voucherId}/use`;
+      const card = cta ? cta.closest('.cl-voucher-card') : grid;
+      form.action = `/voucher/${trigger.dataset.voucherId}/use`;
       const avatar = card && card.querySelector('.shop-avatar');
       logoEl.innerHTML = avatar ? avatar.outerHTML : '';
-      shopEl.textContent = cta.dataset.shopName || '';
-      rewardEl.textContent = cta.dataset.reward || '';
+      shopEl.textContent = trigger.dataset.shopName || '';
+      rewardEl.textContent = trigger.dataset.reward || '';
       open();
     });
 

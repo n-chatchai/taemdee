@@ -40,7 +40,7 @@
       <a class="cl-voucher-card"
          href="/story/{{ v.shop.id }}"
          style="--shop-color: {{ v.shop_color }};">
-        <div class="cl-voucher-image">
+        <div class="cl-voucher-image" style="background: {{ reward_bg(v.reward_image) }};">
           {% set img_id = v.reward_image %}
           {% include "_partials/reward_svg.html" %}
           <span class="v-tag"><span class="pulse"></span>พร้อมใช้</span>

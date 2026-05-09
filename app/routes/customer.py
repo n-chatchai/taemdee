@@ -1699,6 +1699,12 @@ async def my_gifts(
     # Sort by created_at desc so the newest voucher is the hero.
     active_sorted = sorted(active_rows, key=lambda rs: rs[0].created_at, reverse=True)
     active_vouchers = [_gift_dict(r, s) for r, s in active_sorted]
+    # /my-gifts splits into a hero (single full-width card via the
+    # shared voucher_section partial) + a 2-col mini grid for the
+    # rest. The two sections use different chrome (.cl-voucher-card
+    # for the hero, .gl-mini for the grid) per the design mockup.
+    hero_voucher = active_vouchers[0] if active_vouchers else None
+    grid_gifts = active_vouchers[1:] if len(active_vouchers) > 1 else []
 
     used_gifts = [
         {
@@ -1719,7 +1725,8 @@ async def my_gifts(
         name="my_gifts.html",
         context={
             "customer": customer,
-            "active_vouchers": active_vouchers,
+            "hero_voucher": hero_voucher,
+            "grid_gifts": grid_gifts,
             "used_gifts": used_gifts,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
             "nav_gifts_badge": len(active_vouchers),

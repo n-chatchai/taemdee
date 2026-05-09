@@ -87,6 +87,30 @@ def has_thai(text: str) -> bool:
     return any("฀" <= c <= "๿" for c in (text or ""))
 
 
+# Background color of each built-in reward illustration. Mirrors the
+# `<rect width="100" height="100" fill="...">` baked into reward_svg.html
+# so callers (e.g. .cl-voucher-image) can paint the surrounding strip
+# in the same hue — keeps the box and the icon visually unified, even
+# when the icon is a custom URL image (no internal rect).
+_REWARD_BG = {
+    "gift_box":   "#FFE6DF",
+    "card":       "#FFF1B8",
+    "star":       "#C8E8D0",
+    "coffee_cup": "#FFF1B8",
+}
+
+
+def reward_bg(img_id: Optional[str]) -> str:
+    """Return the background hex for the given reward illustration id.
+
+    Custom URL images and unknown ids fall back to the cream surface
+    so the strip still looks intentional rather than a dark overlay.
+    """
+    if img_id and img_id in _REWARD_BG:
+        return _REWARD_BG[img_id]
+    return "#F5F1E8"
+
+
 def has_perm(staff, perm: str) -> bool:
     """Mirror of core.auth.require_permission for templates.
 
@@ -109,6 +133,7 @@ templates.env.globals["settings"] = settings
 templates.env.globals["shop_logo"] = shop_logo
 templates.env.globals["has_thai"] = has_thai
 templates.env.globals["has_perm"] = has_perm
+templates.env.globals["reward_bg"] = reward_bg
 from app.services.shop_swatch import (  # noqa: E402
     shop_swatch as _tmpl_shop_swatch,
     shop_theme_bg as _tmpl_shop_theme_bg,
