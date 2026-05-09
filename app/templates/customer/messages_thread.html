@@ -6,18 +6,53 @@
 <div class="td-page td-thread">
   <div class="td-page-header">
     <a href="/messages" class="td-back" aria-label="กลับ">←</a>
+    {# Shop avatar + name in the header — same chip we use on
+       received bubbles so the conversation reads like an app. #}
+    <div class="td-head-avatar">
+      {% if shop.logo_url %}
+        <img src="{{ shop.logo_url }}" alt="">
+      {% else %}
+        <span>{{ (shop.name or 'ร')[0] }}</span>
+      {% endif %}
+    </div>
     <h1>{{ shop.name }}</h1>
   </div>
 
   <div class="td-msg-stream">
     {% for m in messages %}
-      <div class="msg msg-{{ m.sender }}">
-        <div class="msg-body">{{ m.body }}</div>
-        <div class="msg-meta">{{ m.created_at.strftime('%H:%M') }}</div>
+      <div class="msg-row msg-row-{{ m.sender }}" data-msg-id="{{ m.id }}">
+        {% if m.sender == 'shop' %}
+          <div class="msg-avatar">
+            {% if shop.logo_url %}
+              <img src="{{ shop.logo_url }}" alt="">
+            {% else %}
+              <span>{{ (shop.name or 'ร')[0] }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
+        <div class="msg msg-{{ m.sender }}">
+          <div class="msg-body">{{ m.body }}</div>
+          <div class="msg-meta">{{ m.created_at.strftime('%H:%M') }}</div>
+        </div>
       </div>
     {% else %}
       <div class="td-empty">ลองส่งข้อความแรกถึงร้านนี้เลย</div>
     {% endfor %}
+  </div>
+
+  {# Typing indicator chip — shown by JS while a `chat-typing` SSE
+     event is fresh. Auto-hides after a few seconds of silence. #}
+  <div class="msg-typing-row" id="msg-typing-row" hidden>
+    <div class="msg-avatar">
+      {% if shop.logo_url %}
+        <img src="{{ shop.logo_url }}" alt="">
+      {% else %}
+        <span>{{ (shop.name or 'ร')[0] }}</span>
+      {% endif %}
+    </div>
+    <div class="msg-typing-bubble">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
   </div>
 
   {% if request.query_params.get('rate_limited') %}
@@ -25,6 +60,14 @@
       ส่งได้ไม่เกิน 3 ข้อความต่อนาที · รอสักครู่นะครับ
     </div>
   {% endif %}
+
+  {# "↓ ข้อความใหม่" pill — shown by JS only when an SSE bubble
+     arrived while the textarea was focused, so we didn't auto-scroll
+     and pull the compose under the keyboard. Tap → smooth scroll to
+     bottom + dismiss. #}
+  <button type="button" class="msg-new-pill" id="msg-new-pill" hidden>
+    ↓ ข้อความใหม่
+  </button>
 
   {% if shop.allow_customer_messages %}
     <form class="td-compose" method="POST" action="/messages/{{ shop.id }}">
@@ -44,33 +87,102 @@
 </div>
 
 <style>
-  /* Bottom padding leaves room for compose (~62px) + dock (~86px)
+  /* Bottom padding leaves room for compose (~64px) + dock (~86px)
      + safe-area inset (~34px on notched iPhones), so the last
      message in the stream isn't hidden under either bar. */
-  .td-thread { padding: 16px 18px 240px; }
-  .td-page-header { display: flex; align-items: center; gap: 10px; margin-bottom: 14px; }
-  .td-page-header h1 { font-size: 18px; font-weight: 700; margin: 0; flex: 1; }
+  .td-thread { padding: 12px 14px 240px; }
+  .td-page-header {
+    display: flex; align-items: center; gap: 10px; margin-bottom: 12px;
+  }
+  .td-page-header h1 { font-size: 17px; font-weight: 700; margin: 0; flex: 1; }
   .td-back {
     display: inline-flex; width: 36px; height: 36px; border-radius: 50%;
     background: var(--surface, #fff); align-items: center; justify-content: center;
     text-decoration: none; color: var(--ink); font-size: 20px;
   }
-  .td-msg-stream {
-    display: flex; flex-direction: column; gap: 8px;
-    margin-bottom: 16px;
+  .td-head-avatar {
+    width: 32px; height: 32px; border-radius: 50%;
+    background: var(--accent-soft, #FFE6DF); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    font-weight: 700; font-size: 14px;
   }
-  .msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; }
+  .td-head-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .td-msg-stream {
+    display: flex; flex-direction: column;
+    /* Compact: tight gap between consecutive bubbles. */
+    gap: 3px;
+    margin-bottom: 8px;
+  }
+  /* Row = avatar + bubble. Customer rows align right (no avatar);
+     shop rows align left with the 28px avatar slot. */
+  .msg-row {
+    display: flex; align-items: flex-end; gap: 6px;
+    max-width: 88%;
+  }
+  .msg-row-customer { align-self: flex-end; }
+  .msg-row-shop     { align-self: flex-start; }
+  /* Bigger gap between sender flips so a shop reply doesn't run
+     directly into the customer's last message. */
+  .msg-row-customer + .msg-row-shop,
+  .msg-row-shop + .msg-row-customer { margin-top: 6px; }
+  /* Hide repeated avatar on consecutive same-sender shop bubbles —
+     only the first row in a sender-run shows the avatar. */
+  .msg-row-shop + .msg-row-shop .msg-avatar {
+    visibility: hidden;
+  }
+
+  .msg-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent-soft, #FFE6DF); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    font-weight: 700; font-size: 12px;
+  }
+  .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .msg {
+    /* Compact bubble — 7px/11px instead of 10px/14px. */
+    padding: 7px 11px; border-radius: 16px;
+    max-width: 100%;
+  }
   .msg-customer {
-    align-self: flex-end; background: var(--accent); color: #fff;
+    background: var(--accent); color: #fff;
     border-bottom-right-radius: 4px;
   }
   .msg-shop {
-    align-self: flex-start; background: var(--surface, #fff); color: var(--ink);
+    background: var(--surface, #fff); color: var(--ink);
     border: 1px solid #e5e0d4; border-bottom-left-radius: 4px;
   }
-  .msg-body { font-size: 15px; line-height: 1.45; white-space: pre-wrap; }
-  .msg-meta { font-size: 11px; opacity: 0.6; margin-top: 4px; text-align: right; }
-  .msg-shop .msg-meta { text-align: left; }
+  .msg-body { font-size: 15px; line-height: 1.4; white-space: pre-wrap; }
+  .msg-meta { font-size: 10px; opacity: 0.55; margin-top: 2px; text-align: right; }
+  .msg-shop .msg-meta { text-align: left; color: var(--ink-soft); opacity: 0.7; }
+
+  /* Typing indicator — three dots animating in a soft bubble. */
+  .msg-typing-row {
+    display: flex; align-items: flex-end; gap: 6px;
+    max-width: 88%; align-self: flex-start;
+    margin: 6px 0 8px;
+  }
+  .msg-typing-bubble {
+    background: var(--surface, #fff); border: 1px solid #e5e0d4;
+    border-radius: 16px; border-bottom-left-radius: 4px;
+    padding: 8px 12px;
+    display: inline-flex; gap: 4px;
+  }
+  .msg-typing-bubble .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ink-softer, #A39D92);
+    animation: msg-typing-blink 1.2s infinite ease-in-out;
+  }
+  .msg-typing-bubble .dot:nth-child(2) { animation-delay: 0.15s; }
+  .msg-typing-bubble .dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes msg-typing-blink {
+    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+    40% { opacity: 0.95; transform: translateY(-2px); }
+  }
+
   .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
   .td-rate-limit {
     padding: 10px 14px; margin-bottom: 10px;
@@ -89,90 +201,91 @@
     font-size: 13px;
     z-index: 10;
   }
+
+  /* "ข้อความใหม่" pill — fixed above the compose so it doesn't
+     scroll. Hidden by default; JS toggles `hidden`. */
+  .msg-new-pill {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 178px);
+    left: 50%; transform: translateX(-50%);
+    padding: 6px 14px; border: 0; border-radius: 999px;
+    background: var(--ink); color: #fff;
+    font-family: 'Prompt', sans-serif; font-size: 12px; font-weight: 600;
+    box-shadow: 0 6px 18px -6px rgba(0,0,0,0.45);
+    z-index: 11;
+    cursor: pointer;
+  }
+
   .td-compose {
-    /* Sits above the c_dock. Dock floats with bottom: 14px and is
-       ~76-86px tall, so the compose has to clear ~100px on a no-safe-
-       area screen + safe-area inset on a notched iPhone. */
     position: fixed;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     left: 0; right: 0;
     padding: 8px 12px;
     z-index: 10;
   }
-  /* iMessage-style: textarea spans the full compose width, send
-     button is an absolute-positioned circular icon at the inner
-     right edge so the textbox feels as wide as the rest of the
-     app's text inputs. */
   .td-compose textarea {
     display: block;
     width: 100%;
-    /* Right padding leaves room for the wider pill send button below. */
-    padding: 11px 76px 11px 16px;
-    border-radius: 22px;
+    padding: 13px 88px 13px 18px;
+    border-radius: 24px;
     border: 1px solid #d4cdbc;
     resize: none;
-    /* 16px minimum so iOS Safari / PWA doesn't auto-zoom the
-       viewport on focus — anything smaller triggers the
-       accessibility zoom that breaks the messenger feel. */
     font-size: 16px;
     font-family: inherit;
-    line-height: 1.4;
-    min-height: 44px;
-    max-height: 120px;
+    line-height: 1.45;
+    min-height: 50px;
+    max-height: 140px;
     background: #fff;
     box-sizing: border-box;
   }
   .td-compose button {
     position: absolute;
     right: 18px;
-    bottom: 13px;
-    width: 60px; height: 36px;
+    bottom: 14px;
+    width: 72px; height: 42px;
     padding: 0;
-    border-radius: 18px;
+    border-radius: 21px;
     border: 0;
     background: var(--accent);
     color: #fff;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
-  .td-compose button svg { width: 20px; height: 20px; }
+  .td-compose button svg { width: 22px; height: 22px; }
 </style>
 
 <script>
-  // Auto-scroll to bottom on load + after submit so the latest
-  // message is always in view, mirroring the messenger UX.
-  (function () {
-    var stream = document.querySelector('.td-msg-stream');
-    if (stream) stream.scrollIntoView({ block: 'end' });
-    window.scrollTo(0, document.body.scrollHeight);
-  })();
-
-  // Enter to send, Shift+Enter for newline — standard messenger
-  // keyboard contract. Form submit goes through the existing POST.
-  (function () {
-    var form = document.querySelector('.td-compose');
-    if (!form) return;
-    var ta = form.querySelector('textarea');
-    if (!ta) return;
-    ta.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-        e.preventDefault();
-        if (ta.value.trim()) form.requestSubmit();
-      }
-    });
-  })();
-
-  // Live updates — append the shop's reply as it lands. We listen
-  // to the `td:chat-message-in` CustomEvent re-dispatched from
-  // _partials/c_dock.html (already running on every customer page
-  // with the dock) so we share the single /sse/me EventSource
-  // instead of opening a second one. data-msg-id keeps re-deliveries
-  // from double-rendering on a fast reload.
   (function () {
     var SHOP_ID = "{{ shop.id }}";
     var stream = document.querySelector('.td-msg-stream');
+    var compose = document.querySelector('.td-compose');
+    var ta = compose && compose.querySelector('textarea');
+    var newPill = document.getElementById('msg-new-pill');
+    var typingRow = document.getElementById('msg-typing-row');
+
     if (!stream) return;
 
+    // 1. Auto-scroll on initial load.
+    function scrollToBottom(smooth) {
+      var opt = smooth ? { behavior: 'smooth', block: 'end' } : { block: 'end' };
+      stream.lastElementChild && stream.lastElementChild.scrollIntoView(opt);
+      if (!smooth) window.scrollTo(0, document.body.scrollHeight);
+    }
+    scrollToBottom(false);
+
+    // 2. Enter to send, Shift+Enter for newline.
+    if (ta && compose) {
+      ta.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+          e.preventDefault();
+          if (ta.value.trim()) compose.requestSubmit();
+        }
+      });
+    }
+
+    // 3. SSE chat-message-in — append bubble. If the textarea is
+    //    focused, DON'T auto-scroll (would yank the compose out from
+    //    under the user's typing) — just show the "ข้อความใหม่" pill.
     function appendBubble(html) {
       var tmp = document.createElement('div');
       tmp.innerHTML = html;
@@ -183,18 +296,71 @@
       var empty = stream.querySelector('.td-empty');
       if (empty) empty.remove();
       stream.appendChild(node);
-      window.scrollTo(0, document.body.scrollHeight);
-    }
 
+      var typing = ta && document.activeElement === ta;
+      if (typing) {
+        if (newPill) newPill.hidden = false;
+      } else {
+        scrollToBottom(true);
+      }
+    }
     document.addEventListener('td:chat-message-in', function (e) {
       try {
         var data = JSON.parse(e.detail);
         if (!data || data.shop_id !== SHOP_ID) return;
         appendBubble(data.html);
-      } catch (err) {
-        console.warn('[chat] parse failed', err);
-      }
+      } catch (err) { console.warn('[chat] parse failed', err); }
     });
+
+    // 4. "ข้อความใหม่" pill → smooth scroll, dismiss.
+    if (newPill) {
+      newPill.addEventListener('click', function () {
+        scrollToBottom(true);
+        newPill.hidden = true;
+      });
+    }
+
+    // 5. Typing indicator (incoming) — show chip while events arrive,
+    //    auto-hide after 4s of silence.
+    var typingHideTimer = null;
+    document.addEventListener('td:chat-typing', function (e) {
+      try {
+        var data = JSON.parse(e.detail);
+        if (!data || data.shop_id !== SHOP_ID) return;
+        if (typingRow) {
+          typingRow.hidden = false;
+          if (ta && document.activeElement !== ta) {
+            // If the user isn't typing, keep the chip visible by
+            // scrolling so they see it.
+            scrollToBottom(true);
+          }
+        }
+        clearTimeout(typingHideTimer);
+        typingHideTimer = setTimeout(function () {
+          if (typingRow) typingRow.hidden = true;
+        }, 4000);
+      } catch (_) {}
+    });
+
+    // 6. Typing indicator (outgoing) — POST /messages/<shop>/typing on
+    //    each keystroke, but throttle so we hit the server at most
+    //    once every ~3s while the user is actively typing.
+    var typingPostAt = 0;
+    function maybePostTyping() {
+      var now = Date.now();
+      if (now - typingPostAt < 3000) return;
+      typingPostAt = now;
+      try {
+        fetch('/messages/' + SHOP_ID + '/typing', {
+          method: 'POST',
+          credentials: 'same-origin',
+          keepalive: true,
+        }).catch(function () {});
+      } catch (_) {}
+    }
+    if (ta) {
+      ta.addEventListener('input', maybePostTyping);
+    }
   })();
 </script>
 {% endblock %}

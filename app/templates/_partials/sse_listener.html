@@ -27,6 +27,11 @@
           detail: e.data,
         }));
       });
+      evt.addEventListener('chat-typing', function (e) {
+        document.dispatchEvent(new CustomEvent('td:chat-typing', {
+          detail: e.data,
+        }));
+      });
     }
     function closeStream() {
       if (!evt) return;

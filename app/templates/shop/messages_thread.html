@@ -6,17 +6,50 @@
 {% set app_bar_back = '/shop/messages' %}
 {% include "_partials/app_bar.html" %}
 
+{% set _cust_pic = customer.user.picture_url if customer and customer.user else None %}
+{% set _cust_name = (customer.display_name if customer else None) or 'ลูกค้า' %}
+{% set _cust_initial = (_cust_name or 'ก')[0] %}
+
 <div class="s-thread">
   <div class="s-msg-stream">
     {% for m in messages %}
-      <div class="msg msg-{{ m.sender }}">
-        <div class="msg-body">{{ m.body }}</div>
-        <div class="msg-meta">{{ m.created_at.strftime('%H:%M') }}</div>
+      <div class="msg-row msg-row-{{ m.sender }}" data-msg-id="{{ m.id }}">
+        {% if m.sender == 'customer' %}
+          <div class="msg-avatar">
+            {% if _cust_pic %}
+              <img src="{{ _cust_pic }}" alt="">
+            {% else %}
+              <span>{{ _cust_initial }}</span>
+            {% endif %}
+          </div>
+        {% endif %}
+        <div class="msg msg-{{ m.sender }}">
+          <div class="msg-body">{{ m.body }}</div>
+          <div class="msg-meta">{{ m.created_at.strftime('%H:%M') }}</div>
+        </div>
       </div>
     {% else %}
       <div class="td-empty">ยังไม่มีข้อความ</div>
     {% endfor %}
   </div>
+
+  {# Typing indicator chip — JS toggles `hidden`. #}
+  <div class="msg-typing-row" id="msg-typing-row" hidden>
+    <div class="msg-avatar">
+      {% if _cust_pic %}
+        <img src="{{ _cust_pic }}" alt="">
+      {% else %}
+        <span>{{ _cust_initial }}</span>
+      {% endif %}
+    </div>
+    <div class="msg-typing-bubble">
+      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
+    </div>
+  </div>
+
+  <button type="button" class="msg-new-pill" id="msg-new-pill" hidden>
+    ↓ ข้อความใหม่
+  </button>
 
   <form class="s-compose" method="POST" action="/shop/messages/{{ thread.id }}/reply">
     <textarea name="body" rows="1" placeholder="ตอบกลับ..." required></textarea>
@@ -30,29 +63,90 @@
 </div>
 
 <style>
-  .s-thread { padding: 8px 16px 240px; }
+  .s-thread { padding: 8px 14px 240px; }
   .s-msg-stream {
-    display: flex; flex-direction: column; gap: 8px;
-    margin-bottom: 16px;
+    display: flex; flex-direction: column;
+    gap: 3px;
+    margin-bottom: 8px;
   }
-  .msg { max-width: 85%; padding: 10px 14px; border-radius: 16px; }
-  /* Shop view: SHOP messages on the right (we are the shop), customer on the left. */
+  .msg-row {
+    display: flex; align-items: flex-end; gap: 6px;
+    max-width: 88%;
+  }
+  /* Shop view: shop bubble = "me", flush right; customer = other,
+     flush left with a 28px avatar slot. */
+  .msg-row-shop     { align-self: flex-end; }
+  .msg-row-customer { align-self: flex-start; }
+  .msg-row-customer + .msg-row-shop,
+  .msg-row-shop + .msg-row-customer { margin-top: 6px; }
+  .msg-row-customer + .msg-row-customer .msg-avatar {
+    visibility: hidden;
+  }
+
+  .msg-avatar {
+    width: 28px; height: 28px; border-radius: 50%;
+    background: var(--accent-soft, #FFE6DF); color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    overflow: hidden; flex-shrink: 0;
+    font-weight: 700; font-size: 12px;
+  }
+  .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+
+  .msg {
+    padding: 7px 11px; border-radius: 16px;
+    max-width: 100%;
+  }
   .msg-shop {
-    align-self: flex-end; background: var(--accent); color: #fff;
+    background: var(--accent); color: #fff;
     border-bottom-right-radius: 4px;
   }
   .msg-customer {
-    align-self: flex-start; background: var(--surface, #fff); color: var(--ink);
+    background: var(--surface, #fff); color: var(--ink);
     border: 1px solid #e5e0d4; border-bottom-left-radius: 4px;
   }
-  .msg-body { font-size: 15px; line-height: 1.45; white-space: pre-wrap; }
-  .msg-meta { font-size: 11px; opacity: 0.6; margin-top: 4px; text-align: right; }
-  .msg-customer .msg-meta { text-align: left; }
+  .msg-body { font-size: 15px; line-height: 1.4; white-space: pre-wrap; }
+  .msg-meta { font-size: 10px; opacity: 0.55; margin-top: 2px; text-align: right; }
+  .msg-customer .msg-meta { text-align: left; color: var(--ink-soft); opacity: 0.7; }
+
+  /* Typing chip — three dots blinking in a soft bubble. */
+  .msg-typing-row {
+    display: flex; align-items: flex-end; gap: 6px;
+    max-width: 88%; align-self: flex-start;
+    margin: 6px 0 8px;
+  }
+  .msg-typing-bubble {
+    background: var(--surface, #fff); border: 1px solid #e5e0d4;
+    border-radius: 16px; border-bottom-left-radius: 4px;
+    padding: 8px 12px;
+    display: inline-flex; gap: 4px;
+  }
+  .msg-typing-bubble .dot {
+    width: 6px; height: 6px; border-radius: 50%;
+    background: var(--ink-softer, #A39D92);
+    animation: msg-typing-blink 1.2s infinite ease-in-out;
+  }
+  .msg-typing-bubble .dot:nth-child(2) { animation-delay: 0.15s; }
+  .msg-typing-bubble .dot:nth-child(3) { animation-delay: 0.3s; }
+  @keyframes msg-typing-blink {
+    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+    40% { opacity: 0.95; transform: translateY(-2px); }
+  }
+
   .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
+
+  .msg-new-pill {
+    position: fixed;
+    bottom: calc(env(safe-area-inset-bottom, 0px) + 178px);
+    left: 50%; transform: translateX(-50%);
+    padding: 6px 14px; border: 0; border-radius: 999px;
+    background: var(--ink); color: #fff;
+    font-family: 'Prompt', sans-serif; font-size: 12px; font-weight: 600;
+    box-shadow: 0 6px 18px -6px rgba(0,0,0,0.45);
+    z-index: 11;
+    cursor: pointer;
+  }
+
   .s-compose {
-    /* Sits above the glass-nav. Same iMessage-style layout as the
-       customer thread compose — full-width textarea + circular
-       send icon overlaid at the inner right edge. */
     position: fixed;
     bottom: calc(env(safe-area-inset-bottom, 0px) + 110px);
     left: 0; right: 0;
@@ -65,65 +159,60 @@
   .s-compose textarea {
     display: block;
     width: 100%;
-    /* Right padding leaves room for the wider pill send button below. */
-    padding: 11px 76px 11px 16px;
-    border-radius: 22px;
+    padding: 13px 88px 13px 18px;
+    border-radius: 24px;
     border: 1px solid #d4cdbc;
     resize: none;
-    /* 16px minimum so iOS Safari / PWA doesn't auto-zoom the
-       viewport on focus — anything smaller triggers the
-       accessibility zoom that breaks the messenger feel. */
     font-size: 16px;
     font-family: inherit;
-    line-height: 1.4;
-    min-height: 44px;
-    max-height: 120px;
+    line-height: 1.45;
+    min-height: 50px;
+    max-height: 140px;
     background: #fff;
     box-sizing: border-box;
   }
   .s-compose button {
     position: absolute;
     right: 18px;
-    bottom: 13px;
-    width: 60px; height: 36px;
+    bottom: 14px;
+    width: 72px; height: 42px;
     padding: 0;
-    border-radius: 18px;
+    border-radius: 21px;
     border: 0;
     background: var(--accent);
     color: #fff;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
-  .s-compose button svg { width: 20px; height: 20px; }
+  .s-compose button svg { width: 22px; height: 22px; }
 </style>
 
 <script>
-  (function () { window.scrollTo(0, document.body.scrollHeight); })();
-
-  // Enter to send, Shift+Enter for newline.
-  (function () {
-    var form = document.querySelector('.s-compose');
-    if (!form) return;
-    var ta = form.querySelector('textarea');
-    if (!ta) return;
-    ta.addEventListener('keydown', function (e) {
-      if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-        e.preventDefault();
-        if (ta.value.trim()) form.requestSubmit();
-      }
-    });
-  })();
-
-  // Live updates — append the customer's incoming bubble as it lands.
-  // We listen to the `td:chat-message-in` CustomEvent re-dispatched
-  // from _partials/sse_listener.html (already running on every shop
-  // page) so we share the single /shop/events EventSource instead
-  // of opening a second one. data-msg-id keeps re-deliveries from
-  // double-rendering.
   (function () {
     var THREAD_ID = "{{ thread.id }}";
     var stream = document.querySelector('.s-msg-stream');
+    var compose = document.querySelector('.s-compose');
+    var ta = compose && compose.querySelector('textarea');
+    var newPill = document.getElementById('msg-new-pill');
+    var typingRow = document.getElementById('msg-typing-row');
+
     if (!stream) return;
+
+    function scrollToBottom(smooth) {
+      var opt = smooth ? { behavior: 'smooth', block: 'end' } : { block: 'end' };
+      stream.lastElementChild && stream.lastElementChild.scrollIntoView(opt);
+      if (!smooth) window.scrollTo(0, document.body.scrollHeight);
+    }
+    scrollToBottom(false);
+
+    if (ta && compose) {
+      ta.addEventListener('keydown', function (e) {
+        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
+          e.preventDefault();
+          if (ta.value.trim()) compose.requestSubmit();
+        }
+      });
+    }
 
     function appendBubble(html) {
       var tmp = document.createElement('div');
@@ -135,18 +224,63 @@
       var empty = stream.querySelector('.td-empty');
       if (empty) empty.remove();
       stream.appendChild(node);
-      window.scrollTo(0, document.body.scrollHeight);
-    }
 
+      var typing = ta && document.activeElement === ta;
+      if (typing) {
+        if (newPill) newPill.hidden = false;
+      } else {
+        scrollToBottom(true);
+      }
+    }
     document.addEventListener('td:chat-message-in', function (e) {
       try {
         var data = JSON.parse(e.detail);
         if (!data || data.thread_id !== THREAD_ID) return;
         appendBubble(data.html);
-      } catch (err) {
-        console.warn('[chat] parse failed', err);
-      }
+      } catch (err) { console.warn('[chat] parse failed', err); }
     });
+
+    if (newPill) {
+      newPill.addEventListener('click', function () {
+        scrollToBottom(true);
+        newPill.hidden = true;
+      });
+    }
+
+    var typingHideTimer = null;
+    document.addEventListener('td:chat-typing', function (e) {
+      try {
+        var data = JSON.parse(e.detail);
+        if (!data || data.thread_id !== THREAD_ID) return;
+        if (typingRow) {
+          typingRow.hidden = false;
+          if (ta && document.activeElement !== ta) {
+            scrollToBottom(true);
+          }
+        }
+        clearTimeout(typingHideTimer);
+        typingHideTimer = setTimeout(function () {
+          if (typingRow) typingRow.hidden = true;
+        }, 4000);
+      } catch (_) {}
+    });
+
+    var typingPostAt = 0;
+    function maybePostTyping() {
+      var now = Date.now();
+      if (now - typingPostAt < 3000) return;
+      typingPostAt = now;
+      try {
+        fetch('/shop/messages/' + THREAD_ID + '/typing', {
+          method: 'POST',
+          credentials: 'same-origin',
+          keepalive: true,
+        }).catch(function () {});
+      } catch (_) {}
+    }
+    if (ta) {
+      ta.addEventListener('input', maybePostTyping);
+    }
   })();
 </script>
 {% endblock %}

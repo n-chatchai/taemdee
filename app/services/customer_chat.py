@@ -120,19 +120,48 @@ async def send_message(
     return msg
 
 
-def _bubble_html(sender: str, msg: CustomerMessage) -> str:
-    """Render the message bubble that the SSE listener appends to the
-    open thread page. Mirrors the .msg / .msg-customer / .msg-shop
-    markup the templates render server-side so the appended bubble
-    looks identical. data-msg-id lets the listener skip duplicate
-    appends (e.g. the sender's own optimistic add)."""
+def _avatar_html(*, picture_url: Optional[str], fallback: str) -> str:
+    """Tiny 28px circular avatar used as the left-of-bubble chip on
+    received messages. img if a picture_url is set, otherwise the
+    first character of the fallback name on a tinted background."""
+    if picture_url:
+        return (
+            '<div class="msg-avatar">'
+            f'<img src="{_html.escape(picture_url)}" alt="">'
+            '</div>'
+        )
+    initial = _html.escape((fallback or "·")[0])
+    return f'<div class="msg-avatar"><span>{initial}</span></div>'
+
+
+def _bubble_html(
+    sender: str,
+    msg: CustomerMessage,
+    *,
+    avatar_html: str = "",
+) -> str:
+    """Render one chat row that the SSE listener appends to the open
+    thread page. Outer .msg-row carries the data-msg-id (so the
+    listener can dedupe by id), and contains the avatar slot + the
+    actual .msg bubble. Server-rendered messages in the templates
+    use the same markup so live-appended rows look identical to
+    the initial paint.
+
+    avatar_html is emitted only for the "other side" of the viewer —
+    i.e. the bubble that's being received. Own (sent) bubbles pass
+    an empty string so the row aligns flush right with no avatar
+    column.
+    """
     body_html = _html.escape(msg.body or "")
     time_str = msg.created_at.strftime("%H:%M")
     return (
-        f'<div class="msg msg-{sender}" data-msg-id="{msg.id}">'
+        f'<div class="msg-row msg-row-{sender}" data-msg-id="{msg.id}">'
+        f'{avatar_html}'
+        f'<div class="msg msg-{sender}">'
         f'<div class="msg-body">{body_html}</div>'
         f'<div class="msg-meta">{time_str}</div>'
-        f"</div>"
+        f'</div>'
+        f'</div>'
     )
 
 
@@ -149,10 +178,30 @@ async def _publish_chat_events(
     from app.services.events import publish, publish_customer
     from app.services.web_push import send_to_user
 
-    bubble = _bubble_html(sender, msg)
     body_preview = (msg.body or "[แนบไฟล์]").strip()
     if len(body_preview) > 140:
         body_preview = body_preview[:137] + "…"
+
+    # Compute the avatar for the receiver-side render — for a
+    # customer→shop bubble that's the customer's avatar, and vice
+    # versa. The bubble HTML the SSE listener will append therefore
+    # always carries the OTHER side's avatar (the same chip the open
+    # thread page paints inline for received messages).
+    from app.models import Customer, Shop, User
+    if sender == "customer":
+        c = await db.get(Customer, thread.customer_id)
+        c_user = await db.get(User, c.user_id) if c else None
+        avatar_html = _avatar_html(
+            picture_url=(c_user.picture_url if c_user else None),
+            fallback=(c_user.display_name if c_user else None) or "ก",
+        )
+    else:
+        s = await db.get(Shop, thread.shop_id)
+        avatar_html = _avatar_html(
+            picture_url=(s.logo_url if s else None),
+            fallback=(s.name if s else None) or "ร",
+        )
+    bubble = _bubble_html(sender, msg, avatar_html=avatar_html)
 
     if sender == "customer":
         # Notify the shop's open thread page + bump the dock badge.
