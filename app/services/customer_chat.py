@@ -153,16 +153,14 @@ async def _publish_chat_events(
     msg: CustomerMessage,
     sender: str,
 ) -> None:
-    """Fire the SSE events for the side that DIDN'T just send, plus
-    a Web Push notification to the same side so the recipient gets a
-    system-level alert when the PWA isn't on the foreground tab."""
+    """Fire SSE events to the side that DIDN'T just send, so the open
+    thread page bumps the new bubble + the dock badge in real time.
+
+    Web Push is intentionally not sent for chat — DeeReach is the only
+    surface that ships system-level alerts to keep notification volume
+    low and avoid pinging customers on every reply."""
     from loguru import logger
     from app.services.events import publish, publish_customer
-    from app.services.web_push import send_to_user
-
-    body_preview = (msg.body or "[แนบไฟล์]").strip()
-    if len(body_preview) > 140:
-        body_preview = body_preview[:137] + "…"
 
     # Render two bubble fragments — one targeted at the customer-side
     # thread page (viewer="customer", so customer messages flip to me)
@@ -172,7 +170,6 @@ async def _publish_chat_events(
     bubble_for_shop = _bubble_html(sender, msg, viewer="shop")
 
     if sender == "customer":
-        # Notify the shop's open thread page + bump the dock badge.
         publish(thread.shop_id, "chat-message-in", json.dumps({
             "thread_id": str(thread.id),
             "html": bubble_for_shop,
@@ -183,37 +180,8 @@ async def _publish_chat_events(
             f"💬 chat publish (customer→shop): shop={thread.shop_id} "
             f"thread={thread.id} msg={msg.id} new_unread={new_total}"
         )
-        # Web Push to every staff member of this shop with a saved
-        # subscription. Title is the customer's display name so the
-        # operator immediately sees who replied.
-        from app.models import Customer, StaffMember, User
-        customer = await db.get(Customer, thread.customer_id)
-        cust_user = await db.get(User, customer.user_id) if customer else None
-        sender_label = (cust_user.display_name if cust_user else None) or "ลูกค้า"
-        staff_rows = (await db.exec(
-            select(StaffMember).where(
-                StaffMember.shop_id == thread.shop_id,
-                StaffMember.user_id.is_not(None),
-                StaffMember.revoked_at.is_(None),
-            )
-        )).all()
-        push_url = f"/shop/messages/{thread.id}"
-        for staff in staff_rows:
-            staff_user = await db.get(User, staff.user_id)
-            if staff_user is None:
-                continue
-            try:
-                await send_to_user(
-                    staff_user,
-                    title=sender_label,
-                    body=body_preview,
-                    url=push_url,
-                )
-            except Exception:
-                logger.exception("web_push to staff failed (shop=%s staff=%s)", thread.shop_id, staff.id)
     else:
-        # Notify the customer's open thread page + bump the dock
-        # badge. The dock counter merges DeeReach unread with chat
+        # The customer dock counter merges DeeReach unread with chat
         # unread (single inbox surface), so add both before publish.
         publish_customer(thread.customer_id, "chat-message-in", json.dumps({
             "shop_id": str(thread.shop_id),
@@ -232,22 +200,6 @@ async def _publish_chat_events(
             f"💬 chat publish (shop→customer): customer={thread.customer_id} "
             f"shop={thread.shop_id} msg={msg.id} merged_unread={merged}"
         )
-        # Web Push to the customer with the shop's name as the title.
-        from app.models import Customer, Shop, User
-        customer = await db.get(Customer, thread.customer_id)
-        cust_user = await db.get(User, customer.user_id) if customer else None
-        shop = await db.get(Shop, thread.shop_id)
-        shop_label = (shop.name if shop else None) or "ร้าน"
-        push_url = f"/messages/{thread.shop_id}"
-        try:
-            await send_to_user(
-                cust_user,
-                title=shop_label,
-                body=body_preview,
-                url=push_url,
-            )
-        except Exception:
-            logger.exception("web_push to customer failed (customer=%s)", thread.customer_id)
 
 
 async def list_messages(
