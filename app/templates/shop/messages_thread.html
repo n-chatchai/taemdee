@@ -225,6 +225,10 @@
       if (empty) empty.remove();
       stream.appendChild(node);
 
+      // Drop the typing chip immediately — the actual message landed,
+      // no need to keep blinking dots.
+      hideTyping();
+
       var typing = ta && document.activeElement === ta;
       if (typing) {
         if (newPill) newPill.hidden = false;
@@ -248,6 +252,11 @@
     }
 
     var typingHideTimer = null;
+    function hideTyping() {
+      clearTimeout(typingHideTimer);
+      typingHideTimer = null;
+      if (typingRow) typingRow.hidden = true;
+    }
     document.addEventListener('td:chat-typing', function (e) {
       try {
         var data = JSON.parse(e.detail);
@@ -259,9 +268,7 @@
           }
         }
         clearTimeout(typingHideTimer);
-        typingHideTimer = setTimeout(function () {
-          if (typingRow) typingRow.hidden = true;
-        }, 4000);
+        typingHideTimer = setTimeout(hideTyping, 4000);
       } catch (_) {}
     });
 

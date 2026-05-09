@@ -297,6 +297,11 @@
       if (empty) empty.remove();
       stream.appendChild(node);
 
+      // The wait is over — drop the typing chip the moment the
+      // actual message lands; otherwise it lingers behind the new
+      // bubble for the timeout window and reads as "stuck".
+      hideTyping();
+
       var typing = ta && document.activeElement === ta;
       if (typing) {
         if (newPill) newPill.hidden = false;
@@ -321,8 +326,14 @@
     }
 
     // 5. Typing indicator (incoming) — show chip while events arrive,
-    //    auto-hide after 4s of silence.
+    //    auto-hide after 4s of silence, and hide instantly when the
+    //    actual message comes in (appendBubble calls hideTyping()).
     var typingHideTimer = null;
+    function hideTyping() {
+      clearTimeout(typingHideTimer);
+      typingHideTimer = null;
+      if (typingRow) typingRow.hidden = true;
+    }
     document.addEventListener('td:chat-typing', function (e) {
       try {
         var data = JSON.parse(e.detail);
@@ -330,15 +341,11 @@
         if (typingRow) {
           typingRow.hidden = false;
           if (ta && document.activeElement !== ta) {
-            // If the user isn't typing, keep the chip visible by
-            // scrolling so they see it.
             scrollToBottom(true);
           }
         }
         clearTimeout(typingHideTimer);
-        typingHideTimer = setTimeout(function () {
-          if (typingRow) typingRow.hidden = true;
-        }, 4000);
+        typingHideTimer = setTimeout(hideTyping, 4000);
       } catch (_) {}
     });
 
