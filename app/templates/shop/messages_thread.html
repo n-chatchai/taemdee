@@ -69,12 +69,50 @@
     }
     scrollToBottom(false);
 
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, function (c) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+      });
+    }
+    function nowHHMM() {
+      var d = new Date();
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+
     if (input && bar) {
       input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
           e.preventDefault();
           if (input.value.trim()) bar.requestSubmit();
         }
+      });
+
+      // Submit via AJAX + optimistic bubble insert so the operator's
+      // reply appears instantly without a page roundtrip. Server still
+      // SSE-publishes to the customer side, so the customer sees it
+      // live too.
+      bar.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var body = (input.value || '').trim();
+        if (!body) return;
+
+        var tmpId = 'tmp-' + Date.now();
+        appendBubble(
+          '<div class="chat-bubble me" data-msg-id="' + tmpId + '">' + escapeHtml(body) + '</div>' +
+          '<div class="chat-time me">' + nowHHMM() + '</div>'
+        );
+        input.value = '';
+        input.focus();
+        scrollToBottom(true);
+
+        var fd = new FormData();
+        fd.set('body', body);
+        fetch(bar.action, {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin',
+          redirect: 'manual',
+        }).catch(function (err) { console.warn('[chat] send failed', err); });
       });
     }
 

@@ -13016,14 +13016,16 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   padding: 10px 14px;
   background: var(--bg);
   border-bottom: 1px solid rgba(17,17,17,0.08);
-  margin: -12px -14px 6px;
-  flex-shrink: 0;
-  /* Pin to the top of the viewport so the chat title + back action
-     stay reachable while the thread scrolls. Opaque bg ensures
-     bubbles passing under it don't bleed through. */
-  position: sticky;
+  /* Pin to the top of the viewport so the back button + shop name
+     stay reachable while the thread scrolls. position: fixed beats
+     sticky here because the chat-thread page nests the header inside
+     a .td-thread block whose own padding + negative-margin trick
+     was breaking sticky's containing-block lookup. */
+  position: fixed;
   top: 0;
-  z-index: 5;
+  left: 0;
+  right: 0;
+  z-index: 10;
 }
 .chat-header .ch-back {
   width: 36px; height: 36px;

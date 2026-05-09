@@ -79,8 +79,9 @@
 <style>
   /* No dock on this page — pull the fixed input bar + the locked
      notice flush to the safe-area bottom, and shrink the thread's
-     bottom padding so the last bubble sits just above the input. */
-  .td-thread { padding: 12px 14px 110px; }
+     bottom padding so the last bubble sits just above the input.
+     Top padding reserves space for the fixed .chat-header. */
+  .td-thread { padding: 70px 14px 110px; }
   .chat-input-bar {
     bottom: env(safe-area-inset-bottom, 0px);
   }
@@ -124,12 +125,49 @@
     }
     scrollToBottom(false);
 
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, function (c) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+      });
+    }
+    function nowHHMM() {
+      var d = new Date();
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+
     if (input && bar) {
       input.addEventListener('keydown', function (e) {
         if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
           e.preventDefault();
           if (input.value.trim()) bar.requestSubmit();
         }
+      });
+
+      // Submit via AJAX + optimistic bubble insert so a reply appears
+      // instantly without the page roundtrip. Server still SSE-publishes
+      // to the shop side, so the operator sees it live too.
+      bar.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var body = (input.value || '').trim();
+        if (!body) return;
+
+        var tmpId = 'tmp-' + Date.now();
+        appendBubble(
+          '<div class="chat-bubble me" data-msg-id="' + tmpId + '">' + escapeHtml(body) + '</div>' +
+          '<div class="chat-time me">' + nowHHMM() + '</div>'
+        );
+        input.value = '';
+        input.focus();
+        scrollToBottom(true);
+
+        var fd = new FormData();
+        fd.set('body', body);
+        fetch(bar.action, {
+          method: 'POST',
+          body: fd,
+          credentials: 'same-origin',
+          redirect: 'manual',
+        }).catch(function (err) { console.warn('[chat] send failed', err); });
       });
     }
 
