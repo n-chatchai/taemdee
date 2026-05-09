@@ -72,20 +72,22 @@
   .s-msgs-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
   .s-msgs-empty a { color: var(--accent); font-weight: 600; }
 
-  /* Pill tabs above the list — แชท / แต้มดี split. */
+  /* Pill tabs above the list — แชท / แต้มดี split. Equal-width
+     so the two tabs share the row evenly, taller hit-target so
+     they read as primary controls instead of secondary filters. */
   .s-msgs-tabs {
-    display: flex; gap: 6px;
-    margin: 0 0 10px;
+    display: flex; gap: 8px;
+    margin: 0 0 12px;
   }
   .s-msgs-tab {
-    flex: 0 0 auto;
-    padding: 7px 14px;
+    flex: 1 1 0;
+    padding: 11px 16px;
     border-radius: 999px;
     border: 1px solid var(--line);
     background: var(--surface);
     color: var(--ink-soft);
     font-family: 'Prompt', sans-serif;
-    font-size: 13px; font-weight: 600;
+    font-size: 14px; font-weight: 600;
     cursor: pointer;
   }
   .s-msgs-tab.active {
