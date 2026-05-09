@@ -176,19 +176,37 @@ def unsubscribe(shop_id: UUID, q: asyncio.Queue) -> None:
         _subscribers[shop_id].remove(q)
 
 
-def feed_row_html(kind: str, item_id: UUID, when_label: str, customer_name: str = "ลูกค้า", amount_str: str = "1 แต้ม") -> str:
-    """Render one feed row for the shop dashboard live feed (S3 dock) and SSE
-    stream. Emits a `<tr class="feed-row">` carrying data-detail-url so a
-    tap opens the S3.detail bottom sheet (where the void button lives now)."""
+def feed_row_html(
+    kind: str,
+    item_id: UUID,
+    when_label: str,
+    customer_name: str = "ลูกค้า",
+    amount_str: str = "1 แต้ม",
+    method_th: str = "—",
+    staff_name: str = "—",
+) -> str:
+    """Render one feed row for the shop dashboard live feed and SSE
+    stream. Emits a 5-cell `<tr class="feed-row">` matching the
+    dashboard table (เวลา / ลูกค้า / วิธีรับ / โดย / จำนวน) plus the
+    /shop/issue activity table; rows missing method/staff context
+    fall back to an em-dash placeholder so the column count stays
+    correct. data-detail-url drives the S3.detail bottom sheet
+    (where the void button lives now) on tap."""
     if kind == "point":
         label = f'<span class="icon-mini">+</span><strong>{amount_str}</strong>'
     else:
         label = "<strong>รับรางวัล</strong>"
+        # When the row is a redemption and the caller didn't pass a
+        # method label, "แลกรางวัล" reads better than "—".
+        if method_th == "—":
+            method_th = "แลกรางวัล"
     detail_url = f"/shop/feed/{kind}/{item_id}"
     return (
-        f'<tr class="feed-row" id="row-{item_id}" data-detail-url="{detail_url}">'
+        f'<tr class="feed-row" id="row-{item_id}" data-kind="{kind}" data-detail-url="{detail_url}">'
         f'<td class="t">{when_label}</td>'
         f'<td class="n">{customer_name}</td>'
+        f'<td class="m">{method_th}</td>'
+        f'<td class="s">{staff_name}</td>'
         f'<td class="a">{label}</td>'
         f"</tr>"
     )
