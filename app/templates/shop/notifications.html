@@ -71,6 +71,16 @@
   </style>
 {% endblock %}
 
+{# Sub page but keep the dock — the operator can still tab away to
+   home / customers / settings without going through the back arrow.
+   td-tabbed reserves the dock-zone padding-bottom. #}
+{% block td_class %} td-tabbed{% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'home' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}
+
 {% block body_end %}
   {# Same eager-claim + bfcache-reload trick as the old dashboard
      todos so taps on link-style items record the claim before
