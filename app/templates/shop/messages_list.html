@@ -6,6 +6,21 @@
 
 <div class="page-scroll">
 <div class="s-msgs">
+  {% set _chat_count = items|selectattr('kind', 'equalto', 'thread')|list|length %}
+  {% set _reach_count = items|selectattr('kind', 'equalto', 'campaign')|list|length %}
+  {# Tab pills — split the merged feed into chat threads vs DeeReach
+     broadcasts. Default tab = แชท because that's the realtime side
+     the operator most often returns to. JS toggles row visibility
+     by data-kind. #}
+  <div class="s-msgs-tabs" role="tablist">
+    <button type="button" class="s-msgs-tab active" data-tab="thread" role="tab">
+      แชท{% if _chat_count %} · {{ _chat_count }}{% endif %}
+    </button>
+    <button type="button" class="s-msgs-tab" data-tab="campaign" role="tab">
+      แต้มดี{% if _reach_count %} · {{ _reach_count }}{% endif %}
+    </button>
+  </div>
+
   {% if not items %}
     <div class="s-msgs-empty">
       ยังไม่มีกิจกรรม · ส่งแคมเปญ DeeReach ผ่าน "<a href="/shop/deereach">แนะนำ</a>"
@@ -14,7 +29,7 @@
   {% else %}
     <ul class="s-thread-list">
       {% for it in items %}
-        <li{% if it.kind == 'thread' %} data-thread-id="{{ it.thread.id }}"{% endif %}>
+        <li data-kind="{{ it.kind }}"{% if it.kind == 'thread' %} data-thread-id="{{ it.thread.id }}"{% endif %}>
           <a href="{{ it.href }}" data-kind="{{ it.kind }}">
             <div class="st-avatar st-avatar-{{ it.kind }}">
               {% if it.kind == 'thread' %}
@@ -56,6 +71,28 @@
 <style>
   .s-msgs-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
   .s-msgs-empty a { color: var(--accent); font-weight: 600; }
+
+  /* Pill tabs above the list — แชท / แต้มดี split. */
+  .s-msgs-tabs {
+    display: flex; gap: 6px;
+    margin: 0 0 10px;
+  }
+  .s-msgs-tab {
+    flex: 0 0 auto;
+    padding: 7px 14px;
+    border-radius: 999px;
+    border: 1px solid var(--line);
+    background: var(--surface);
+    color: var(--ink-soft);
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px; font-weight: 600;
+    cursor: pointer;
+  }
+  .s-msgs-tab.active {
+    background: var(--ink); color: #fff;
+    border-color: var(--ink);
+  }
+
   .s-thread-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
   .s-thread-list a {
     display: flex; align-items: center; gap: 12px;
@@ -116,6 +153,38 @@
 {% endblock %}
 
 {% block body_end %}
+  {# Tab toggle — pure client-side filter. Active pill gets .active;
+     each <li data-kind> shows or hides based on the picked tab.
+     Default = "thread" (แชท) because the realtime side is the one
+     the operator usually returns to. The chosen tab persists across
+     reloads via localStorage so a refresh doesn't bounce the user
+     back to the default. #}
+  <script>
+    (function () {
+      var tabs = document.querySelectorAll('.s-msgs-tab[data-tab]');
+      var rows = document.querySelectorAll('.s-thread-list > li[data-kind]');
+      if (!tabs.length) return;
+
+      function apply(kind) {
+        tabs.forEach(function (t) {
+          t.classList.toggle('active', t.dataset.tab === kind);
+        });
+        rows.forEach(function (r) {
+          r.style.display = r.dataset.kind === kind ? '' : 'none';
+        });
+        try { localStorage.setItem('td_shop_msgs_tab', kind); } catch (_) {}
+      }
+
+      var saved = null;
+      try { saved = localStorage.getItem('td_shop_msgs_tab'); } catch (_) {}
+      apply(saved === 'campaign' ? 'campaign' : 'thread');
+
+      tabs.forEach(function (t) {
+        t.addEventListener('click', function () { apply(t.dataset.tab); });
+      });
+    })();
+  </script>
+
   {# Live updates — when a customer sends a message, the matching
      thread row updates its preview + timestamp, bumps the unread
      badge, and bubbles to the top of the list. We piggy-back on the

@@ -6,14 +6,19 @@
   {% include "_partials/page_head.html" %}
 
   {% if items %}
-    {# Filter pills — pure client-side. JS toggles `.hidden` on cards
-       that don't match. "มีของฝาก" is design-only for now (Inbox model
-       has no offer column yet) so we render it disabled. #}
+    {% set _chat_count = items|selectattr('kind', 'equalto', 'thread')|list|length %}
+    {% set _reach_count = items|selectattr('kind', 'equalto', 'reach')|list|length %}
+    {# Tabs split the merged feed into chat threads vs DeeReach
+       broadcasts. Default tab = แชท because that's the side a
+       customer most actively returns to. JS toggles row visibility
+       by data-kind. #}
     <div class="inbox-filters" role="tablist">
-      <button type="button" class="inbox-filter-pill active" data-filter="all">ทั้งหมด · {{ items|length }}</button>
-      <button type="button" class="inbox-filter-pill" data-filter="unread">ยังไม่อ่าน · {{ unread_count }}</button>
-      <button type="button" class="inbox-filter-pill" data-filter="offer" disabled
-              style="opacity:0.45; cursor:not-allowed;" title="เร็วๆ นี้">มีของฝาก</button>
+      <button type="button" class="inbox-filter-pill active" data-tab="thread" role="tab">
+        แชท{% if _chat_count %} · {{ _chat_count }}{% endif %}
+      </button>
+      <button type="button" class="inbox-filter-pill" data-tab="reach" role="tab">
+        แต้มดี{% if _reach_count %} · {{ _reach_count }}{% endif %}
+      </button>
     </div>
 
     <div class="inbox-list">
@@ -72,21 +77,28 @@
 
 {% block body_end %}
   <script>
-    // Filter pills — toggle .hidden on cards. Active pill gets .active.
+    // Tab pills — แชท / แต้มดี split. Active pill gets .active; each
+    // .inbox-card with data-kind shows or hides based on the picked
+    // tab. Default = แชท. Selection persists across reloads via
+    // localStorage so a refresh doesn't bounce back to default.
     (function () {
-      const pills = document.querySelectorAll('.inbox-filter-pill[data-filter]');
-      const cards = document.querySelectorAll('.inbox-card[data-unread]');
-      pills.forEach((p) => {
-        p.addEventListener('click', () => {
-          pills.forEach((q) => q.classList.toggle('active', q === p));
-          const filter = p.dataset.filter;
-          cards.forEach((c) => {
-            const unread = c.dataset.unread === '1';
-            const show = filter === 'all' || (filter === 'unread' && unread);
-            c.style.display = show ? '' : 'none';
-          });
+      const pills = document.querySelectorAll('.inbox-filter-pill[data-tab]');
+      const cards = document.querySelectorAll('.inbox-card[data-kind]');
+      if (!pills.length) return;
+
+      function apply(kind) {
+        pills.forEach((p) => p.classList.toggle('active', p.dataset.tab === kind));
+        cards.forEach((c) => {
+          c.style.display = c.dataset.kind === kind ? '' : 'none';
         });
-      });
+        try { localStorage.setItem('td_inbox_tab', kind); } catch (_) {}
+      }
+
+      let saved = null;
+      try { saved = localStorage.getItem('td_inbox_tab'); } catch (_) {}
+      apply(saved === 'reach' ? 'reach' : 'thread');
+
+      pills.forEach((p) => p.addEventListener('click', () => apply(p.dataset.tab)));
     })();
 
     // Live updates — when a shop sends a reply on an existing
