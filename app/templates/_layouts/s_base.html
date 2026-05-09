@@ -18,6 +18,9 @@
   <title>{% block title %}{{ shop.name }} · TaemDee{% endblock %}</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  {# Hoisted out of app.css so the font CSS download runs in
+     parallel with the app stylesheet instead of behind it. #}
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
   {% include "_partials/pwa_head.html" %}
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
   <script src="https://unpkg.com/htmx.org@1.9.10"></script>

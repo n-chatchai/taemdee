@@ -1,9 +1,12 @@
 /* TaemDee — global design tokens and screen-specific styles
  * Reflects designer drop in `taemdee-final-thai.html` (S1 Login + global system).
  * Subsequent releases will append more screen-specific blocks below.
+ *
+ * The Google Fonts <@import> used to live here; moved into pwa_head.html
+ * as a parallel <link rel="stylesheet"> so the font CSS download no
+ * longer serialises behind app.css parsing — both stylesheets fetch
+ * concurrently and first paint arrives sooner.
  */
-
-@import url('https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap');
 
 * { box-sizing: border-box; margin: 0; padding: 0; }
 [x-cloak] { display: none !important; }
