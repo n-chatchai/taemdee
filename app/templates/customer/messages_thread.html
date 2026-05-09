@@ -9,11 +9,7 @@
     {# Shop avatar + name in the header — same chip we use on
        received bubbles so the conversation reads like an app. #}
     <div class="td-head-avatar">
-      {% if shop.logo_url %}
-        <img src="{{ shop.logo_url }}" alt="">
-      {% else %}
-        <span>{{ (shop.name or 'ร')[0] }}</span>
-      {% endif %}
+      {% include "_partials/_shop_avatar_compact.html" %}
     </div>
     <h1>{{ shop.name }}</h1>
   </div>
@@ -23,11 +19,7 @@
       <div class="msg-row msg-row-{{ m.sender }}" data-msg-id="{{ m.id }}">
         {% if m.sender == 'shop' %}
           <div class="msg-avatar">
-            {% if shop.logo_url %}
-              <img src="{{ shop.logo_url }}" alt="">
-            {% else %}
-              <span>{{ (shop.name or 'ร')[0] }}</span>
-            {% endif %}
+            {% include "_partials/_shop_avatar_compact.html" %}
           </div>
         {% endif %}
         <div class="msg msg-{{ m.sender }}">
@@ -85,14 +77,24 @@
     background: var(--surface, #fff); align-items: center; justify-content: center;
     text-decoration: none; color: var(--ink); font-size: 20px;
   }
+  /* Header avatar — same chrome as the inbox-card .ic-logo so a
+     shop's typography wordmark (.lt-*) fits cleanly. font-size 10
+     keeps Thai 4-6 char wordmarks legible at this size; <img>
+     children fill via 100% w/h. */
   .td-head-avatar {
     width: 32px; height: 32px; border-radius: 50%;
-    background: var(--accent-soft, #FFE6DF); color: var(--accent);
+    background: var(--ink); color: #fff;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; flex-shrink: 0;
-    font-weight: 700; font-size: 14px;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 10px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    padding: 2px 4px;
   }
   .td-head-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .td-head-avatar .dot { color: var(--accent); }
 
   .td-msg-stream {
     display: flex; flex-direction: column;
@@ -118,14 +120,22 @@
     visibility: hidden;
   }
 
+  /* Bubble avatar — same chrome shape as the inbox card logo at a
+     smaller size so the wordmark text styling carries through. */
   .msg-avatar {
     width: 28px; height: 28px; border-radius: 50%;
-    background: var(--accent-soft, #FFE6DF); color: var(--accent);
+    background: var(--ink); color: #fff;
     display: flex; align-items: center; justify-content: center;
     overflow: hidden; flex-shrink: 0;
-    font-weight: 700; font-size: 12px;
+    font-family: 'Host Grotesk', sans-serif;
+    font-weight: 800;
+    font-size: 9px;
+    line-height: 1;
+    letter-spacing: -0.025em;
+    padding: 2px 3px;
   }
   .msg-avatar img { width: 100%; height: 100%; object-fit: cover; }
+  .msg-avatar .dot { color: var(--accent); }
 
   .msg {
     /* Compact bubble — 7px/11px instead of 10px/14px. */
