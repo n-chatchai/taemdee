@@ -12,11 +12,11 @@
      broadcasts. Default tab = แชท because that's the realtime side
      the operator most often returns to. JS toggles row visibility
      by data-kind. #}
-  <div class="s-msgs-tabs" role="tablist">
-    <button type="button" class="s-msgs-tab active" data-tab="thread" role="tab">
+  <div class="tab-pills" role="tablist">
+    <button type="button" class="tab-pill active" data-tab="thread" role="tab">
       แชท{% if _chat_count %} · {{ _chat_count }}{% endif %}
     </button>
-    <button type="button" class="s-msgs-tab" data-tab="campaign" role="tab">
+    <button type="button" class="tab-pill" data-tab="campaign" role="tab">
       แต้มดี{% if _reach_count %} · {{ _reach_count }}{% endif %}
     </button>
   </div>
@@ -72,27 +72,8 @@
   .s-msgs-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
   .s-msgs-empty a { color: var(--accent); font-weight: 600; }
 
-  /* Pill tabs above the list — แชท / แต้มดี split. Equal-width
-     via flex:1 so each tab takes half the row. */
-  .s-msgs-tabs {
-    display: flex; gap: 6px;
-    margin: 0 0 10px;
-  }
-  .s-msgs-tab {
-    flex: 1 1 0;
-    padding: 8px 14px;
-    border-radius: 999px;
-    border: 1px solid var(--line);
-    background: var(--surface);
-    color: var(--ink-soft);
-    font-family: 'Prompt', sans-serif;
-    font-size: 13px; font-weight: 600;
-    cursor: pointer;
-  }
-  .s-msgs-tab.active {
-    background: var(--ink); color: #fff;
-    border-color: var(--ink);
-  }
+  /* Pill tabs styled by the shared .tab-pills / .tab-pill rules in
+     app.css — see /my-inbox for the customer-side counterpart. */
 
   .s-thread-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
   .s-thread-list a {
@@ -162,7 +143,7 @@
      back to the default. #}
   <script>
     (function () {
-      var tabs = document.querySelectorAll('.s-msgs-tab[data-tab]');
+      var tabs = document.querySelectorAll('.tab-pill[data-tab]');
       var rows = document.querySelectorAll('.s-thread-list > li[data-kind]');
       if (!tabs.length) return;
 

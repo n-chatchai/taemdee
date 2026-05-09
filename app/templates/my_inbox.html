@@ -12,11 +12,11 @@
        broadcasts. Default tab = แชท because that's the side a
        customer most actively returns to. JS toggles row visibility
        by data-kind. #}
-    <div class="inbox-filters" role="tablist">
-      <button type="button" class="inbox-filter-pill active" data-tab="thread" role="tab">
+    <div class="tab-pills" role="tablist" style="padding: 0 20px;">
+      <button type="button" class="tab-pill active" data-tab="thread" role="tab">
         แชท{% if _chat_count %} · {{ _chat_count }}{% endif %}
       </button>
-      <button type="button" class="inbox-filter-pill" data-tab="reach" role="tab">
+      <button type="button" class="tab-pill" data-tab="reach" role="tab">
         แต้มดี{% if _reach_count %} · {{ _reach_count }}{% endif %}
       </button>
     </div>
@@ -82,7 +82,7 @@
     // tab. Default = แชท. Selection persists across reloads via
     // localStorage so a refresh doesn't bounce back to default.
     (function () {
-      const pills = document.querySelectorAll('.inbox-filter-pill[data-tab]');
+      const pills = document.querySelectorAll('.tab-pill[data-tab]');
       const cards = document.querySelectorAll('.inbox-card[data-kind]');
       if (!pills.length) return;
 

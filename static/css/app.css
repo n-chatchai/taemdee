@@ -11477,16 +11477,17 @@ body:has(.td-pinned) {
   opacity: 0.85;
 }
 
-/* Inbox filter pills — tab-like row above the list. */
-/* แชท / แต้มดี tab pills above /my-inbox. Equal-width via
-   flex:1 so each tab takes half the row. */
-.inbox-filters {
-  padding: 0 20px 12px;
+/* Shared tab-pill row — used on /my-inbox (customer) and
+   /shop/messages (shop) to split content into kind tabs.
+   Inactive pill is transparent with a soft rounded border so the
+   page texture shows through; active flips to ink fill. flex:1
+   so the pills share the row evenly. */
+.tab-pills {
   display: flex;
   gap: 6px;
-  flex-shrink: 0;
+  margin: 0 0 12px;
 }
-.inbox-filter-pill {
+.tab-pill {
   appearance: none; -webkit-appearance: none;
   flex: 1 1 0;
   padding: 8px 14px;
@@ -11495,12 +11496,12 @@ body:has(.td-pinned) {
   font-size: 13px;
   font-weight: 600;
   color: var(--ink-soft);
-  background: var(--surface);
-  border: 1px solid rgba(17,17,17,0.12);
+  background: transparent;
+  border: 1px solid rgba(17, 17, 17, 0.18);
   white-space: nowrap;
   cursor: pointer;
 }
-.inbox-filter-pill.active {
+.tab-pill.active {
   background: var(--ink);
   color: var(--surface);
   border-color: var(--ink);
