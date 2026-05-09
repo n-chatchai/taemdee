@@ -69,60 +69,177 @@
 </div> {# /.page-scroll #}
 
 <style>
-  .s-msgs-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; line-height: 1.7; }
+  /* Empty state — typography hero matches /my-inbox 0. mark on the
+     customer side, but here it's a textual prompt with action links
+     since the operator can act on it. */
+  .s-msgs-empty {
+    padding: 60px 24px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.7;
+  }
   .s-msgs-empty a { color: var(--accent); font-weight: 600; }
 
   /* Pill tabs styled by the shared .tab-pills / .tab-pill rules in
      app.css — see /my-inbox for the customer-side counterpart. */
 
-  .s-thread-list { list-style: none; padding: 0; margin: 0; display: flex; flex-direction: column; gap: 8px; }
-  .s-thread-list a {
-    display: flex; align-items: center; gap: 12px;
-    padding: 12px 14px; border-radius: 14px;
-    background: var(--surface, #fff); text-decoration: none; color: var(--ink);
-    border: 1px solid #e5e0d4;
+  /* ── Thread list — editorial refresh ────────────────────────────
+     Mirrors the moves on the customer-side /my-inbox: 3px accent
+     left rail for unread (rows with .st-badge), flat read state,
+     typography hierarchy (Host Grotesk lowercase time, bolder name,
+     2-line preview), squarish tag chip. Keeps the per-row <li>
+     markup intact so the existing JS hook (data-thread-id /
+     .st-badge bump) doesn't shift. */
+  .s-thread-list {
+    list-style: none;
+    padding: 0;
+    margin: 0;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
   }
+  .s-thread-list > li { position: relative; }
+  /* Accent rail — only for rows that carry an unread badge. */
+  .s-thread-list > li:has(.st-badge)::before {
+    content: '';
+    position: absolute;
+    top: 10px;
+    bottom: 10px;
+    left: 6px;
+    width: 3px;
+    border-radius: 999px;
+    background: var(--accent);
+    z-index: 1;
+  }
+  .s-thread-list a {
+    display: flex;
+    align-items: flex-start;
+    gap: 12px;
+    padding: 14px 14px 14px 17px;
+    border-radius: 14px;
+    background: transparent;
+    border: none;
+    text-decoration: none;
+    color: var(--ink);
+    transition: background-color 0.18s ease, transform 0.12s ease;
+  }
+  .s-thread-list > li:has(.st-badge) a {
+    background: var(--surface);
+    box-shadow: 0 1px 2px rgba(17,17,17,0.04);
+  }
+  .s-thread-list a:hover {
+    background: color-mix(in srgb, var(--surface) 85%, var(--accent) 4%);
+  }
+  .s-thread-list a:active { transform: scale(0.99); }
+
   .st-avatar {
-    width: 40px; height: 40px; border-radius: 50%;
+    width: 40px; height: 40px;
+    border-radius: 50%;
     background: var(--accent); color: #fff;
     display: flex; align-items: center; justify-content: center;
-    font-weight: 600; flex-shrink: 0;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700; font-size: 16px;
+    flex-shrink: 0;
   }
   .st-avatar-campaign {
     background: var(--butter, #FFD952);
     color: var(--ink);
   }
   .st-avatar svg { width: 18px; height: 18px; }
+
   .st-info { flex: 1; min-width: 0; }
-  .st-name-row { display: flex; align-items: center; gap: 6px; }
-  .st-name {
-    font-weight: 600; font-size: 15px;
-    min-width: 0;
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
+  .st-name-row {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
   }
-  /* "แชท" pill — matches the customer-side /my-inbox treatment so a
-     thread row reads consistently across both surfaces. */
+  .st-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 15px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+  }
+  .s-thread-list > li:not(:has(.st-badge)) .st-name {
+    font-weight: 500;
+    color: var(--ink-soft);
+  }
+
+  /* Squarish tag chip — same shape as /my-inbox .ic-tag-chat so the
+     two surfaces read with one tag language. */
   .st-tag-chat {
-    background: var(--accent-soft, #FFD9CD); color: var(--accent);
-    border-radius: 999px; padding: 1px 8px;
-    font-size: 11px; font-weight: 700;
+    display: inline-flex;
+    align-items: center;
+    padding: 1px 6px;
+    border-radius: 4px;
+    background: var(--accent);
+    color: #fff;
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 9px;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    text-transform: uppercase;
     flex-shrink: 0;
   }
-  /* Time pinned to the right of the name row (top-right of the
-     thread card) so the preview line below has the full row width. */
+  .s-thread-list > li:not(:has(.st-badge)) .st-tag-chat {
+    background: var(--ink-softer);
+  }
+
+  /* Time — Host Grotesk lowercase, accent on unread, soft on read.
+     Pinned to the right of the name row. */
   .st-time {
-    font-size: 11px; color: var(--ink-softer, #A39D92);
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--accent);
+    letter-spacing: 0.02em;
     margin-left: auto;
     flex-shrink: 0;
   }
-  .st-preview {
-    font-size: 13px; color: var(--ink-soft);
-    overflow: hidden; text-overflow: ellipsis; white-space: nowrap;
-    margin-top: 2px;
+  .s-thread-list > li:not(:has(.st-badge)) .st-time {
+    color: var(--ink-softer);
+    font-weight: 500;
   }
+
+  .st-preview {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink);
+    line-height: 1.5;
+    margin-top: 4px;
+    overflow: hidden;
+    display: -webkit-box;
+    -webkit-line-clamp: 2;
+    line-clamp: 2;
+    -webkit-box-orient: vertical;
+  }
+  .s-thread-list > li:not(:has(.st-badge)) .st-preview {
+    color: var(--ink-softer);
+  }
+
+  /* Unread badge — keeps the count chip on the right, but tightened
+     to align with the typographic rhythm of the rest of the row. */
   .st-badge {
-    background: var(--accent); color: #fff; border-radius: 999px;
-    padding: 2px 9px; font-size: 12px; font-weight: 700;
+    align-self: center;
+    background: var(--accent);
+    color: #fff;
+    border-radius: 999px;
+    min-width: 22px;
+    height: 22px;
+    padding: 0 7px;
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    font-family: 'Host Grotesk', sans-serif;
+    font-size: 11px;
+    font-weight: 700;
+    letter-spacing: 0;
+    flex-shrink: 0;
   }
 </style>
 {% endblock %}

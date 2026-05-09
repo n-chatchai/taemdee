@@ -44,30 +44,16 @@
       {% endfor %}
     </div>
 
-    <style>
-      /* "แชท" pill — distinguishes a 2-way customer-thread row from a
-         1-way DeeReach broadcast in the unified inbox list. */
-      .ic-tag-chat {
-        display: inline-block; margin-left: 6px;
-        padding: 1px 7px; border-radius: 999px;
-        background: var(--accent-soft, #FFD9CD); color: var(--accent);
-        font-size: 11px; font-weight: 700;
-        vertical-align: middle;
-      }
-    </style>
   {% else %}
     <div class="inbox-empty">
-      <div class="ie-avatar">
-        <svg viewBox="0 0 100 100">
-          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
-          <circle cx="36" cy="42" r="9" fill="#FFD952"/>
-          <circle cx="64" cy="42" r="9" fill="#FFD952"/>
-          <path d="M30 62 Q50 80 70 62" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
-        </svg>
+      <div class="ie-mark" aria-hidden="true">
+        <span class="ie-mark-num">0</span>
+        <span class="ie-mark-dot">.</span>
       </div>
+      <div class="ie-h">กล่องข้อความเงียบ</div>
       <div class="ie-msg">
-        <strong>ยังไม่มีข้อความนะครับ</strong><br>
-        เก็บแต้มที่ร้านโปรด พี่ก็จะได้ข่าวจากร้านที่นี่ครับ
+        เก็บแต้มที่ร้านโปรดสักร้าน<br>
+        ข่าวกับโปรโมชั่นจะมาเด้งที่นี่เอง
       </div>
     </div>
   {% endif %}

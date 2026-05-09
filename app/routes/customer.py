@@ -1720,11 +1720,20 @@ async def my_gifts(
         for r, s in used_rows
     ]
 
+    # page_head ph-sub renders "วัน{weekday_th} · ขอให้เป็นวันที่ดี";
+    # without weekday_th the line collapses to just "วัน".
+    from app.models.util import BKK
+    from datetime import datetime, timezone
+    weekday_th = ("จันทร์", "อังคาร", "พุธ", "พฤหัสบดี", "ศุกร์", "เสาร์", "อาทิตย์")[
+        datetime.now(timezone.utc).astimezone(BKK).weekday()
+    ]
+
     response = templates.TemplateResponse(
         request=request,
         name="my_gifts.html",
         context={
             "customer": customer,
+            "weekday_th": weekday_th,
             "hero_voucher": hero_voucher,
             "grid_gifts": grid_gifts,
             "used_gifts": used_gifts,
