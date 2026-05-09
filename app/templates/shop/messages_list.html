@@ -14,7 +14,7 @@
   {% else %}
     <ul class="s-thread-list">
       {% for it in items %}
-        <li>
+        <li{% if it.kind == 'thread' %} data-thread-id="{{ it.thread.id }}"{% endif %}>
           <a href="{{ it.href }}" data-kind="{{ it.kind }}">
             <div class="st-avatar st-avatar-{{ it.kind }}">
               {% if it.kind == 'thread' %}
@@ -113,4 +113,71 @@
 {% block nav %}
   {% set nav_active = 'messages' %}
   {% include "_partials/glass_nav.html" %}
+{% endblock %}
+
+{% block body_end %}
+  {# Live updates — when a customer sends a message, the matching
+     thread row updates its preview + timestamp, bumps the unread
+     badge, and bubbles to the top of the list. We piggy-back on the
+     single /shop/events EventSource opened by sse_listener.html
+     (re-dispatched as the `td:chat-message-in` CustomEvent) instead
+     of opening a second stream. #}
+  <script>
+    (function () {
+      var list = document.querySelector('.s-thread-list');
+      if (!list) return;
+
+      function fmtDateTime(d) {
+        var dd = String(d.getDate()).padStart(2, '0');
+        var mm = String(d.getMonth() + 1).padStart(2, '0');
+        var hh = String(d.getHours()).padStart(2, '0');
+        var mi = String(d.getMinutes()).padStart(2, '0');
+        return dd + '/' + mm + ' ' + hh + ':' + mi;
+      }
+
+      function bumpRow(threadId, bubbleHtml) {
+        var li = list.querySelector('li[data-thread-id="' + threadId + '"]');
+        if (!li) {
+          // First-ever message from this customer — no row exists
+          // yet. Soft reload picks up the freshly-rendered list.
+          location.reload();
+          return;
+        }
+        var tmp = document.createElement('div');
+        tmp.innerHTML = bubbleHtml;
+        var body = tmp.querySelector('.msg-body');
+        var bodyText = body ? body.textContent : '';
+
+        var preview = li.querySelector('.st-preview');
+        if (preview) preview.textContent = 'พี่: ' + bodyText;
+        var time = li.querySelector('.st-time');
+        if (time) time.textContent = fmtDateTime(new Date());
+
+        var anchor = li.querySelector('a');
+        var badge = li.querySelector('.st-badge');
+        if (badge) {
+          var n = parseInt(badge.textContent, 10) || 0;
+          badge.textContent = String(n + 1);
+        } else if (anchor) {
+          badge = document.createElement('span');
+          badge.className = 'st-badge';
+          badge.textContent = '1';
+          anchor.appendChild(badge);
+        }
+
+        if (li !== list.firstElementChild) {
+          list.insertBefore(li, list.firstElementChild);
+        }
+      }
+
+      document.addEventListener('td:chat-message-in', function (e) {
+        try {
+          var data = JSON.parse(e.detail);
+          if (data && data.thread_id && data.html) {
+            bumpRow(data.thread_id, data.html);
+          }
+        } catch (_) {}
+      });
+    })();
+  </script>
 {% endblock %}

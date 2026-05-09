@@ -21,7 +21,8 @@
         <a class="inbox-card{% if not it.unread %} read{% endif %}"
            href="{{ it.href }}"
            data-unread="{{ '1' if it.unread else '0' }}"
-           data-kind="{{ it.kind }}">
+           data-kind="{{ it.kind }}"
+           {% if it.kind == 'thread' and it.thread %}data-shop-id="{{ it.thread.shop_id }}"{% endif %}>
           {% if it.unread %}<span class="ic-unread-dot"></span>{% endif %}
           <div class="ic-logo">
             {% with shop = it.shop %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
@@ -85,6 +86,51 @@
             c.style.display = show ? '' : 'none';
           });
         });
+      });
+    })();
+
+    // Live updates — when a shop sends a reply on an existing
+    // thread, bump the matching card's unread dot, refresh its
+    // preview, and float it to the top of the list. Listens on the
+    // `td:chat-message-in` CustomEvent re-dispatched from
+    // _partials/c_dock.html so we share the single /sse/me stream.
+    (function () {
+      var listEl = document.querySelector('.inbox-list');
+      if (!listEl) return;
+
+      function bumpCard(shopId, bubbleHtml) {
+        var card = listEl.querySelector('.inbox-card[data-kind="thread"][data-shop-id="' + shopId + '"]');
+        if (!card) {
+          location.reload();
+          return;
+        }
+        // Mark unread + add the dot if it isn't there already.
+        card.dataset.unread = '1';
+        card.classList.remove('read');
+        if (!card.querySelector('.ic-unread-dot')) {
+          var dot = document.createElement('span');
+          dot.className = 'ic-unread-dot';
+          card.insertBefore(dot, card.firstChild);
+        }
+        // Refresh preview to the latest message body.
+        var tmp = document.createElement('div');
+        tmp.innerHTML = bubbleHtml;
+        var body = tmp.querySelector('.msg-body');
+        if (body) {
+          var preview = card.querySelector('.ic-preview');
+          if (preview) preview.textContent = body.textContent;
+        }
+        // Move card to top of the list.
+        if (card !== listEl.firstElementChild) {
+          listEl.insertBefore(card, listEl.firstElementChild);
+        }
+      }
+
+      document.addEventListener('td:chat-message-in', function (e) {
+        try {
+          var data = JSON.parse(e.detail);
+          if (data && data.shop_id && data.html) bumpCard(data.shop_id, data.html);
+        } catch (_) {}
       });
     })();
   </script>

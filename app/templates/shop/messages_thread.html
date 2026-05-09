@@ -109,14 +109,13 @@
     });
   })();
 
-  // Live SSE — append the customer's incoming message as it lands.
-  // /shop/events is the shop's event stream; the server pushes
-  // 'chat-message-in' with {thread_id, html} on every customer
-  // message. Filter by thread_id since /shop/events carries every
-  // thread's chat events for this shop. data-msg-id keeps re-
-  // deliveries from double-rendering.
+  // Live updates — append the customer's incoming bubble as it lands.
+  // We listen to the `td:chat-message-in` CustomEvent re-dispatched
+  // from _partials/sse_listener.html (already running on every shop
+  // page) so we share the single /shop/events EventSource instead
+  // of opening a second one. data-msg-id keeps re-deliveries from
+  // double-rendering.
   (function () {
-    if (!('EventSource' in window)) return;
     var THREAD_ID = "{{ thread.id }}";
     var stream = document.querySelector('.s-msg-stream');
     if (!stream) return;
@@ -134,42 +133,14 @@
       window.scrollTo(0, document.body.scrollHeight);
     }
 
-    var es;
-    function open() {
+    document.addEventListener('td:chat-message-in', function (e) {
       try {
-        es = new EventSource('/shop/events');
-        es.addEventListener('open', function () {
-          console.info('[chat] SSE connected (shop thread=' + THREAD_ID + ')');
-        });
-        es.addEventListener('chat-message-in', function (ev) {
-          console.info('[chat] event chat-message-in:', ev.data);
-          try {
-            var data = JSON.parse(ev.data);
-            if (data.thread_id !== THREAD_ID) return;
-            appendBubble(data.html);
-          } catch (err) {
-            console.warn('[chat] parse failed', err);
-          }
-        });
-        es.onerror = function (e) {
-          console.warn('[chat] SSE error, retry in 30s', e);
-          try { es.close(); } catch (_) {}
-          setTimeout(open, 30000);
-        };
-      } catch (e) {
-        console.warn('[chat] EventSource open failed', e);
+        var data = JSON.parse(e.detail);
+        if (!data || data.thread_id !== THREAD_ID) return;
+        appendBubble(data.html);
+      } catch (err) {
+        console.warn('[chat] parse failed', err);
       }
-    }
-    if (!document.hidden) open();
-    document.addEventListener('visibilitychange', function () {
-      if (document.hidden) {
-        if (es) { try { es.close(); } catch (_) {} es = null; }
-      } else if (!es) {
-        open();
-      }
-    });
-    window.addEventListener('pagehide', function () {
-      if (es) { try { es.close(); } catch (_) {} }
     });
   })();
 </script>

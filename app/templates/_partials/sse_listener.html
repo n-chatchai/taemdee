@@ -17,6 +17,16 @@
       evt.addEventListener('feed-row', onFeedRow);
       evt.addEventListener('void', onVoid);
       evt.addEventListener('messages-update', onMessagesUpdate);
+      // Re-dispatch chat-message-in as a DOM CustomEvent so per-page
+      // scripts (e.g. /shop/messages list, /shop/messages/<id> thread)
+      // can listen on `document` without opening a second EventSource
+      // — HTTP/1.1 caps origin connections at 6 and dock + chat would
+      // otherwise burn two of those.
+      evt.addEventListener('chat-message-in', function (e) {
+        document.dispatchEvent(new CustomEvent('td:chat-message-in', {
+          detail: e.data,
+        }));
+      });
     }
     function closeStream() {
       if (!evt) return;

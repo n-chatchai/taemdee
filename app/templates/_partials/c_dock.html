@@ -102,6 +102,16 @@
           const n = parseInt(ev.data, 10);
           if (!isNaN(n)) setBadge(giftsIcon, n);
         });
+        // Re-dispatch chat events as a DOM CustomEvent so per-page
+        // scripts (thread view, message list) can react without
+        // opening a second EventSource — HTTP/1.1 caps origin
+        // connections at 6 and we already have prefetch + push
+        // burning a couple.
+        es.addEventListener('chat-message-in', (ev) => {
+          document.dispatchEvent(new CustomEvent('td:chat-message-in', {
+            detail: ev.data,
+          }));
+        });
         es.onerror = () => {
           // Browser auto-reconnects already; this catches the give-up case.
           setTimeout(() => { try { es.close(); } catch (_) {} open(); }, retryDelay);
