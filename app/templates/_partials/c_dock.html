@@ -112,11 +112,6 @@
             detail: ev.data,
           }));
         });
-        es.addEventListener('chat-typing', (ev) => {
-          document.dispatchEvent(new CustomEvent('td:chat-typing', {
-            detail: ev.data,
-          }));
-        });
         es.onerror = () => {
           // Browser auto-reconnects already; this catches the give-up case.
           setTimeout(() => { try { es.close(); } catch (_) {} open(); }, retryDelay);

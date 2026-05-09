@@ -40,21 +40,6 @@
     {% endfor %}
   </div>
 
-  {# Typing indicator chip — shown by JS while a `chat-typing` SSE
-     event is fresh. Auto-hides after a few seconds of silence. #}
-  <div class="msg-typing-row" id="msg-typing-row" hidden>
-    <div class="msg-avatar">
-      {% if shop.logo_url %}
-        <img src="{{ shop.logo_url }}" alt="">
-      {% else %}
-        <span>{{ (shop.name or 'ร')[0] }}</span>
-      {% endif %}
-    </div>
-    <div class="msg-typing-bubble">
-      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-    </div>
-  </div>
-
   {% if request.query_params.get('rate_limited') %}
     <div class="td-rate-limit">
       ส่งได้ไม่เกิน 3 ข้อความต่อนาที · รอสักครู่นะครับ
@@ -159,30 +144,6 @@
   .msg-meta { font-size: 10px; opacity: 0.55; margin-top: 2px; text-align: right; }
   .msg-shop .msg-meta { text-align: left; color: var(--ink-soft); opacity: 0.7; }
 
-  /* Typing indicator — three dots animating in a soft bubble. */
-  .msg-typing-row {
-    display: flex; align-items: flex-end; gap: 6px;
-    max-width: 88%; align-self: flex-start;
-    margin: 6px 0 8px;
-  }
-  .msg-typing-bubble {
-    background: var(--surface, #fff); border: 1px solid #e5e0d4;
-    border-radius: 16px; border-bottom-left-radius: 4px;
-    padding: 8px 12px;
-    display: inline-flex; gap: 4px;
-  }
-  .msg-typing-bubble .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--ink-softer, #A39D92);
-    animation: msg-typing-blink 1.2s infinite ease-in-out;
-  }
-  .msg-typing-bubble .dot:nth-child(2) { animation-delay: 0.15s; }
-  .msg-typing-bubble .dot:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes msg-typing-blink {
-    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-    40% { opacity: 0.95; transform: translateY(-2px); }
-  }
-
   .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
   .td-rate-limit {
     padding: 10px 14px; margin-bottom: 10px;
@@ -261,7 +222,6 @@
     var compose = document.querySelector('.td-compose');
     var ta = compose && compose.querySelector('textarea');
     var newPill = document.getElementById('msg-new-pill');
-    var typingRow = document.getElementById('msg-typing-row');
 
     if (!stream) return;
 
@@ -297,11 +257,6 @@
       if (empty) empty.remove();
       stream.appendChild(node);
 
-      // The wait is over — drop the typing chip the moment the
-      // actual message lands; otherwise it lingers behind the new
-      // bubble for the timeout window and reads as "stuck".
-      hideTyping();
-
       var typing = ta && document.activeElement === ta;
       if (typing) {
         if (newPill) newPill.hidden = false;
@@ -325,49 +280,6 @@
       });
     }
 
-    // 5. Typing indicator (incoming) — show chip while events arrive,
-    //    auto-hide after 4s of silence, and hide instantly when the
-    //    actual message comes in (appendBubble calls hideTyping()).
-    var typingHideTimer = null;
-    function hideTyping() {
-      clearTimeout(typingHideTimer);
-      typingHideTimer = null;
-      if (typingRow) typingRow.hidden = true;
-    }
-    document.addEventListener('td:chat-typing', function (e) {
-      try {
-        var data = JSON.parse(e.detail);
-        if (!data || data.shop_id !== SHOP_ID) return;
-        if (typingRow) {
-          typingRow.hidden = false;
-          if (ta && document.activeElement !== ta) {
-            scrollToBottom(true);
-          }
-        }
-        clearTimeout(typingHideTimer);
-        typingHideTimer = setTimeout(hideTyping, 4000);
-      } catch (_) {}
-    });
-
-    // 6. Typing indicator (outgoing) — POST /messages/<shop>/typing on
-    //    each keystroke, but throttle so we hit the server at most
-    //    once every ~3s while the user is actively typing.
-    var typingPostAt = 0;
-    function maybePostTyping() {
-      var now = Date.now();
-      if (now - typingPostAt < 3000) return;
-      typingPostAt = now;
-      try {
-        fetch('/messages/' + SHOP_ID + '/typing', {
-          method: 'POST',
-          credentials: 'same-origin',
-          keepalive: true,
-        }).catch(function () {});
-      } catch (_) {}
-    }
-    if (ta) {
-      ta.addEventListener('input', maybePostTyping);
-    }
   })();
 </script>
 {% endblock %}

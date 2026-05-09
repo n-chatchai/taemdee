@@ -166,25 +166,3 @@ async def send_to_shop(
     )
 
 
-@router.post("/messages/{shop_id}/typing")
-async def customer_typing(
-    shop_id: UUID,
-    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
-    db: AsyncSession = Depends(get_session),
-):
-    """Customer fires this on every keystroke (debounced ~3s by JS).
-    We re-publish a `chat-typing` SSE event to the shop's stream so
-    the open thread page can show "ลูกค้ากำลังพิมพ์…". Receiver-side
-    timeout drops the chip after a few seconds of silence — no
-    explicit "stopped typing" event needed."""
-    import json
-    from app.services.events import publish
-
-    customer, _ = await find_or_create_customer(customer_cookie, db)
-    thread = await get_or_create_thread(
-        db, customer_id=customer.id, shop_id=shop_id,
-    )
-    publish(shop_id, "chat-typing", json.dumps({
-        "thread_id": str(thread.id),
-    }))
-    return {"ok": True}

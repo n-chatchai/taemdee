@@ -191,24 +191,3 @@ async def shop_messages_reply(
     )
 
 
-@router.post("/messages/{thread_id}/typing")
-async def shop_typing(
-    thread_id: UUID,
-    shop: Shop = Depends(get_current_shop),
-    _: SessionContext = Depends(get_session_context),
-    db: AsyncSession = Depends(get_session),
-):
-    """Shop fires this on every keystroke (debounced ~3s by JS).
-    We re-publish a `chat-typing` SSE event to the customer's stream
-    so the open thread page can show "ร้านกำลังพิมพ์…". Receiver-side
-    timeout drops the chip after a few seconds of silence."""
-    import json
-    from app.services.events import publish_customer
-
-    thread = await db.get(CustomerThread, thread_id)
-    if thread is None or thread.shop_id != shop.id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบบทสนทนานี้")
-    publish_customer(thread.customer_id, "chat-typing", json.dumps({
-        "shop_id": str(thread.shop_id),
-    }))
-    return {"ok": True}

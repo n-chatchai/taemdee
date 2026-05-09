@@ -33,20 +33,6 @@
     {% endfor %}
   </div>
 
-  {# Typing indicator chip — JS toggles `hidden`. #}
-  <div class="msg-typing-row" id="msg-typing-row" hidden>
-    <div class="msg-avatar">
-      {% if _cust_pic %}
-        <img src="{{ _cust_pic }}" alt="">
-      {% else %}
-        <span>{{ _cust_initial }}</span>
-      {% endif %}
-    </div>
-    <div class="msg-typing-bubble">
-      <span class="dot"></span><span class="dot"></span><span class="dot"></span>
-    </div>
-  </div>
-
   <button type="button" class="msg-new-pill" id="msg-new-pill" hidden>
     ↓ ข้อความใหม่
   </button>
@@ -107,30 +93,6 @@
   .msg-body { font-size: 15px; line-height: 1.4; white-space: pre-wrap; }
   .msg-meta { font-size: 10px; opacity: 0.55; margin-top: 2px; text-align: right; }
   .msg-customer .msg-meta { text-align: left; color: var(--ink-soft); opacity: 0.7; }
-
-  /* Typing chip — three dots blinking in a soft bubble. */
-  .msg-typing-row {
-    display: flex; align-items: flex-end; gap: 6px;
-    max-width: 88%; align-self: flex-start;
-    margin: 6px 0 8px;
-  }
-  .msg-typing-bubble {
-    background: var(--surface, #fff); border: 1px solid #e5e0d4;
-    border-radius: 16px; border-bottom-left-radius: 4px;
-    padding: 8px 12px;
-    display: inline-flex; gap: 4px;
-  }
-  .msg-typing-bubble .dot {
-    width: 6px; height: 6px; border-radius: 50%;
-    background: var(--ink-softer, #A39D92);
-    animation: msg-typing-blink 1.2s infinite ease-in-out;
-  }
-  .msg-typing-bubble .dot:nth-child(2) { animation-delay: 0.15s; }
-  .msg-typing-bubble .dot:nth-child(3) { animation-delay: 0.3s; }
-  @keyframes msg-typing-blink {
-    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
-    40% { opacity: 0.95; transform: translateY(-2px); }
-  }
 
   .td-empty { padding: 40px 20px; text-align: center; color: var(--ink-soft); font-size: 14px; }
 
@@ -194,7 +156,6 @@
     var compose = document.querySelector('.s-compose');
     var ta = compose && compose.querySelector('textarea');
     var newPill = document.getElementById('msg-new-pill');
-    var typingRow = document.getElementById('msg-typing-row');
 
     if (!stream) return;
 
@@ -225,10 +186,6 @@
       if (empty) empty.remove();
       stream.appendChild(node);
 
-      // Drop the typing chip immediately — the actual message landed,
-      // no need to keep blinking dots.
-      hideTyping();
-
       var typing = ta && document.activeElement === ta;
       if (typing) {
         if (newPill) newPill.hidden = false;
@@ -251,43 +208,6 @@
       });
     }
 
-    var typingHideTimer = null;
-    function hideTyping() {
-      clearTimeout(typingHideTimer);
-      typingHideTimer = null;
-      if (typingRow) typingRow.hidden = true;
-    }
-    document.addEventListener('td:chat-typing', function (e) {
-      try {
-        var data = JSON.parse(e.detail);
-        if (!data || data.thread_id !== THREAD_ID) return;
-        if (typingRow) {
-          typingRow.hidden = false;
-          if (ta && document.activeElement !== ta) {
-            scrollToBottom(true);
-          }
-        }
-        clearTimeout(typingHideTimer);
-        typingHideTimer = setTimeout(hideTyping, 4000);
-      } catch (_) {}
-    });
-
-    var typingPostAt = 0;
-    function maybePostTyping() {
-      var now = Date.now();
-      if (now - typingPostAt < 3000) return;
-      typingPostAt = now;
-      try {
-        fetch('/shop/messages/' + THREAD_ID + '/typing', {
-          method: 'POST',
-          credentials: 'same-origin',
-          keepalive: true,
-        }).catch(function () {});
-      } catch (_) {}
-    }
-    if (ta) {
-      ta.addEventListener('input', maybePostTyping);
-    }
   })();
 </script>
 {% endblock %}
