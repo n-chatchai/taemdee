@@ -46,9 +46,11 @@
     const flash = document.getElementById('dash-flash');
     const feedBody = document.getElementById('sap-tbody');
     const FEED_CAP = parseInt('{{ feed_cap or 5 }}', 10) || 5;
-    const issueTabBadge = document.querySelector('.s3-glass-nav .gn-tab[href="/shop/issue"] .gn-icon .gn-badge');
-    const issueTabIcon = document.querySelector('.s3-glass-nav .gn-tab[href="/shop/issue"] .gn-icon');
-    const onIssuePage = !!feedBody;
+    // The activity feed now lives on /shop/dashboard (the old /shop/issue
+    // standalone tab was merged into home). When the operator is on a
+    // different dock tab, flag the home tab so they know a stamp landed.
+    const homeTabIcon = document.querySelector('.s3-glass-nav .gn-tab[href="/shop/dashboard"] .gn-icon');
+    const onFeedPage = !!feedBody;
 
     let flashTimer = null;
     function showFlash(msg, kind) {
@@ -90,19 +92,20 @@
       osc.stop(t + 0.55);
     }
 
-    function showIssueTabBadge() {
-      // The badge element is rendered conditionally by glass_nav.html when
-      // nav_issue_badge is true; here we add it dynamically so off-tab pages
-      // can still indicate activity without re-rendering server-side.
-      if (!issueTabIcon) return;
-      if (issueTabIcon.querySelector('.gn-badge')) return;
+    function showHomeTabBadge() {
+      // Add a tiny accent dot to the home dock tab so off-tab
+      // operators see "something happened" — they tap home, the
+      // dashboard renders the new row server-side, and the click
+      // listener at the bottom clears the dot.
+      if (!homeTabIcon) return;
+      if (homeTabIcon.querySelector('.gn-badge')) return;
       const dot = document.createElement('span');
       dot.className = 'gn-badge';
-      issueTabIcon.appendChild(dot);
+      homeTabIcon.appendChild(dot);
     }
 
     function onFeedRow(e) {
-      if (onIssuePage) {
+      if (onFeedPage) {
         feedBody.querySelector('.feed-row.latest')?.classList.remove('latest');
         feedBody.insertAdjacentHTML('afterbegin', e.data);
         const newRow = feedBody.firstElementChild;
@@ -113,8 +116,9 @@
         while (feedBody.children.length > FEED_CAP) feedBody.lastElementChild?.remove();
         playDing();
       } else {
-        // Off-tab — flag the ออกแต้ม nav tab so the owner notices.
-        showIssueTabBadge();
+        // Off the dashboard — flag the home tab so the operator
+        // knows a customer just stamped / redeemed something.
+        showHomeTabBadge();
         playDing();
       }
     }
@@ -152,9 +156,9 @@
     // Initial connect when the page first becomes visible.
     if (!document.hidden) openStream();
 
-    // Tapping the ออกแต้ม tab clears the badge — visiting the page is the
-    // implicit "I've seen the new activity" signal.
-    document.querySelectorAll('.s3-glass-nav .gn-tab[href="/shop/issue"]')
+    // Tapping the home tab clears the badge — visiting the
+    // dashboard is the implicit "I've seen the new activity" signal.
+    document.querySelectorAll('.s3-glass-nav .gn-tab[href="/shop/dashboard"]')
       .forEach(t => t.addEventListener('click', () => {
         t.querySelector('.gn-badge')?.remove();
       }));
