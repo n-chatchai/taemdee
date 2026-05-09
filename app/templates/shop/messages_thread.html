@@ -65,7 +65,8 @@
   .s-compose textarea {
     display: block;
     width: 100%;
-    padding: 11px 52px 11px 16px;
+    /* Right padding leaves room for the wider pill send button below. */
+    padding: 11px 76px 11px 16px;
     border-radius: 22px;
     border: 1px solid #d4cdbc;
     resize: none;
@@ -84,15 +85,16 @@
     position: absolute;
     right: 18px;
     bottom: 13px;
-    width: 36px; height: 36px;
-    border-radius: 50%;
+    width: 60px; height: 36px;
+    padding: 0;
+    border-radius: 18px;
     border: 0;
     background: var(--accent);
     color: #fff;
     display: flex; align-items: center; justify-content: center;
     cursor: pointer;
   }
-  .s-compose button svg { width: 18px; height: 18px; }
+  .s-compose button svg { width: 20px; height: 20px; }
 </style>
 
 <script>
