@@ -8,11 +8,13 @@
 
 {% set _cust_name = (customer.display_name if customer else None) or 'ลูกค้า' %}
 {% set _cust_initial = (_cust_name or 'ก')[0]|upper %}
+{% set _shop_label = shop.name or 'ร้าน' %}
+{% set _shop_initial = (_shop_label or 'ร')[0]|upper %}
 
 <div class="page-scroll">
 <div class="ix-detail">
 
-  {# Customer strip — quick relationship cue at the top of the page. #}
+  {# Customer relationship strip — quick cue at the top of the page. #}
   <div class="ix-cust-strip">
     <div class="ix-avatar">{{ _cust_initial }}</div>
     <div class="ix-info">
@@ -26,17 +28,19 @@
 
   <div class="ix-body">
 
-    {# Broadcast (DeeReach) post + delivery stats. #}
+    {# Broadcast post — first line of body becomes the headline. #}
+    {% set _src = (campaign.message_text if campaign and campaign.message_text else inbox.body) or '' %}
+    {% set _split = _src.split('\n', 1) if _src else [''] %}
+    {% set _headline = _split[0] if (_split|length > 1 and _split[0]) else '' %}
+    {% set _rest = _split[1] if (_split|length > 1) else _src %}
+
     <div class="ix-deereach">
       <span class="ixd-tag">
         <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
         DeeReach ที่คุณส่ง
       </span>
-      {% if campaign and campaign.message_text %}
-        <div class="ixd-text">{{ campaign.message_text }}</div>
-      {% else %}
-        <div class="ixd-text">{{ inbox.body }}</div>
-      {% endif %}
+      {% if _headline %}<div class="ixd-headline">{{ _headline }}</div>{% endif %}
+      {% if _rest %}<div class="ixd-text">{{ _rest }}</div>{% endif %}
       <div class="ixd-stats">
         <span><strong>✓</strong> ส่ง {{ inbox.created_at.strftime('%d/%m %H:%M') }}</span>
         {% if inbox.read_at %}
@@ -52,13 +56,12 @@
       </div>
     </div>
 
-    <div class="ix-comments-h">
-      <span class="lab">การตอบกลับ</span>
-      <span class="count">{{ replies|length }} ครั้ง</span>
-    </div>
-
-    {% set _shop_label = shop.name or 'ร้าน' %}
-    {% set _shop_initial = (_shop_label or 'ร')[0]|upper %}
+    {% if replies %}
+      <div class="ix-comments-h">
+        <span class="lab">การตอบกลับ</span>
+        <span class="count">{{ replies|length }} ครั้ง</span>
+      </div>
+    {% endif %}
     <div class="ix-thread" id="ix-thread">
       {% for r in replies %}
         <div class="ix-comment{% if r.sender == 'shop' %} shop{% endif %}" data-reply-id="{{ r.id }}">
@@ -74,33 +77,81 @@
       {% endfor %}
     </div>
 
-  </div>
-
-  <form class="chat-input-bar chat-input-bar--shop" method="POST" action="/shop/messages/{{ inbox.id }}/reply">
-    <input type="text" class="chat-input" name="body" placeholder="ตอบเพิ่ม · ฟรี ไม่ใช้เครดิต..." autocomplete="off" required>
-    <button type="submit" class="chat-send" aria-label="ส่ง">
-      <svg viewBox="0 0 24 24">
-        <line x1="22" y1="2" x2="11" y2="13"/>
-        <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
-      </svg>
+    {# Compose CTA — design pattern: tap the dashed card to open the
+       bottom sheet below. Keeps the detail page tight (no always-
+       visible textarea) and matches the operator's "ตอบเพิ่ม" mental
+       model. #}
+    <button type="button" class="ix-compose" id="ix-compose-cta" aria-label="ตอบเพิ่ม">
+      <div class="ixco-icon">
+        <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+      </div>
+      <div class="ixco-text"><strong>ตอบเพิ่ม</strong></div>
     </button>
-  </form>
 
+  </div>
 </div>
+</div>
+
+{# Bottom-sheet compose — opened by the .ix-compose CTA. POST to the
+   reply endpoint; on submit we optimistically render the operator's
+   ix-comment in the thread above and close the sheet. #}
+<div class="rc-overlay" id="ixco-overlay" hidden>
+  <form class="rc-sheet" method="POST" action="/shop/messages/{{ inbox.id }}/reply" id="ixco-form">
+    <div class="sheet-handle"></div>
+    <div class="ix-compose-active" style="margin-top:0; border:none; padding:0;">
+      <div class="ixca-head"><span class="ixca-label">ตอบเพิ่มลูกค้า</span></div>
+      <textarea class="ixca-textarea" name="body" id="ixco-textarea"
+                placeholder="พิมพ์ข้อความถึงลูกค้า..." maxlength="500" rows="4"></textarea>
+      <div class="ixca-foot">
+        <button type="button" class="ixca-cancel" id="ixco-cancel"
+                style="background:transparent;border:none;font-family:'Prompt',sans-serif;font-size:13px;color:var(--ink-soft);cursor:pointer;">
+          ยกเลิก
+        </button>
+        <button type="submit" class="ixca-send" id="ixco-send" disabled>ส่งตอบกลับ</button>
+      </div>
+    </div>
+  </form>
 </div>
 
 <style>
-  /* Reserve room at the bottom of the scroll for the fixed compose +
-     the shop dock. */
-  .ix-detail { padding-bottom: 200px; }
+  .ix-detail { padding-bottom: 120px; }
+  .rc-overlay {
+    position: fixed; inset: 0;
+    background: rgba(17,17,17,0.5);
+    z-index: 9000;
+    display: flex;
+    align-items: flex-end;
+    justify-content: center;
+  }
+  .rc-overlay[hidden] { display: none; }
+  .rc-sheet {
+    background: var(--bg);
+    border-top-left-radius: 24px;
+    border-top-right-radius: 24px;
+    padding: 14px 20px 20px;
+    width: 100%;
+    max-width: 480px;
+    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.25);
+  }
+  .rc-sheet .sheet-handle {
+    width: 36px; height: 4px;
+    border-radius: 999px;
+    background: var(--ink-softer);
+    margin: 0 auto 16px;
+    opacity: 0.4;
+  }
 </style>
 
 <script>
   (function () {
     var INBOX_ID = "{{ inbox.id }}";
     var thread = document.getElementById('ix-thread');
-    var bar    = document.querySelector('.chat-input-bar');
-    var input  = bar && bar.querySelector('.chat-input');
+    var cta    = document.getElementById('ix-compose-cta');
+    var overlay = document.getElementById('ixco-overlay');
+    var form   = document.getElementById('ixco-form');
+    var ta     = document.getElementById('ixco-textarea');
+    var sendBtn = document.getElementById('ixco-send');
+    var cancelBtn = document.getElementById('ixco-cancel');
     if (!thread) return;
 
     function escapeHtml(s) {
@@ -112,7 +163,6 @@
       var d = new Date();
       return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
     }
-
     function appendComment(html) {
       var tmp = document.createElement('template');
       tmp.innerHTML = (html || '').trim();
@@ -124,32 +174,56 @@
       node.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
-    var SHOP_LABEL  = "{{ shop.name|escape }}";
-    var SHOP_INITIAL = "{{ ((shop.name or 'ร')[0]|upper)|escape }}";
+    function openSheet() {
+      if (!overlay) return;
+      overlay.removeAttribute('hidden');
+      document.body.style.overflow = 'hidden';
+      setTimeout(function () { ta && ta.focus(); }, 50);
+    }
+    function closeSheet() {
+      if (!overlay) return;
+      overlay.setAttribute('hidden', '');
+      document.body.style.overflow = '';
+    }
 
-    if (input && bar) {
-      bar.addEventListener('submit', function (e) {
+    if (cta && overlay) {
+      cta.addEventListener('click', openSheet);
+      cancelBtn && cancelBtn.addEventListener('click', closeSheet);
+      overlay.addEventListener('click', function (e) {
+        if (e.target === overlay) closeSheet();
+      });
+    }
+
+    if (ta && sendBtn) {
+      ta.addEventListener('input', function () {
+        sendBtn.disabled = !ta.value.trim();
+      });
+    }
+
+    if (form) {
+      form.addEventListener('submit', function (e) {
         e.preventDefault();
-        var body = (input.value || '').trim();
+        var body = (ta.value || '').trim();
         if (!body) return;
         var tmpId = 'tmp-' + Date.now();
         appendComment(
           '<div class="ix-comment shop" data-reply-id="' + tmpId + '">' +
-            '<div class="ixc-avatar">' + escapeHtml(SHOP_INITIAL) + '</div>' +
+            '<div class="ixc-avatar">{{ _shop_initial|escape }}</div>' +
             '<div class="ixc-body">' +
               '<div class="ixc-head">' +
-                '<span class="ixc-author">' + escapeHtml(SHOP_LABEL) + '</span>' +
+                '<span class="ixc-author">{{ _shop_label|escape }}</span>' +
                 '<span class="ixc-time">' + nowHHMM() + '</span>' +
               '</div>' +
               '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
             '</div>' +
           '</div>'
         );
-        input.value = '';
-        input.focus();
+        ta.value = '';
+        sendBtn.disabled = true;
+        closeSheet();
         var fd = new FormData();
         fd.set('body', body);
-        fetch(bar.action, {
+        fetch(form.action, {
           method: 'POST', body: fd,
           credentials: 'same-origin', redirect: 'manual',
         }).catch(function (err) { console.warn('[reply] send failed', err); });

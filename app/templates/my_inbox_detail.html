@@ -2,8 +2,9 @@
 {% set nav_active = 'inbox' %}
 {% block title %}ข้อความ · TaemDee แต้มดี{% endblock %}
 
-{# No dock — broadcast detail reads like a single-conversation surface
-   so the reply bar stays flush at the bottom of the viewport. #}
+{# Per design/taemdee-customer.html → inbox.message: focused detail
+   surface, no dock, app_bar + shop strip up top, broadcast post with
+   inline voucher, comment list, inline compose card. #}
 {% block nav %}{% endblock %}
 
 {% block content %}
@@ -11,125 +12,131 @@
 {% set app_bar_title = 'ข้อความ' %}
 {% include "_partials/app_bar.html" %}
 
-  <div class="inbox-detail-hero">
-    {% with size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
-    <div class="idh-text">
-      <div class="idh-shop">{{ shop.name if shop else 'TaemDee' }}</div>
-      <div class="idh-meta">
-        {% if customer.display_name and customer.display_name != 'คุณลูกค้า' %}ฝากถึงพี่{{ customer.display_name }} · {% endif %}{{ row.created_at|bkk_feed_time }}
-      </div>
-    </div>
-  </div>
+{% set _customer_label = customer.display_name or 'พี่' %}
+{% set _customer_initial = (_customer_label or 'ก')[0]|upper %}
+{% set _shop_label = (shop.name if shop else 'ร้าน') %}
+{% set _shop_initial = (_shop_label or 'ร')[0]|upper %}
 
-  <div class="inbox-detail-body">
-    <p>{{ row.body }}</p>
+<div class="ix-shop-strip">
+  {% with size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
+  <div class="ix-info">
+    <div class="ix-name">{{ _shop_label }}</div>
+    <div class="ix-time">{{ row.created_at|bkk_feed_time }}</div>
   </div>
+  {% if shop %}
+    <a class="ix-contact" href="/story/{{ shop.id }}" aria-label="ดูร้าน">
+      <svg viewBox="0 0 24 24"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/></svg>
+      ดูร้าน
+    </a>
+  {% endif %}
+</div>
 
-  {% if row.offer_text %}
-    {# Voucher auto-receive per the May 1 design: when a DeeReach
-       message has an offer attached the system already minted the
-       Redemption row, so this block reads as confirmation ("เก็บไว้
-       ให้แล้ว") and routes the customer onward to /my-gifts. #}
-    <div class="inbox-detail-offer">
-      <div class="ido-row">
-        <div class="ido-icon">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+<div class="ix-body">
+
+  {# DeeReach broadcast post — first line of the body becomes the
+     headline (17px bold) and the remainder fills ixd-text (smaller,
+     soft). Inbox rows that don't carry a line break render as a
+     single ixd-text block and the headline is skipped. #}
+  {% set _body = (row.body or '').strip() %}
+  {% set _split = _body.split('\n', 1) if _body else [''] %}
+  {% set _headline = _split[0] if (_split|length > 1 and _split[0]) else '' %}
+  {% set _rest = _split[1] if (_split|length > 1) else _body %}
+
+  <div class="ix-deereach">
+    <span class="ixd-tag">
+      <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
+      ข้อความจากร้าน
+    </span>
+    {% if _headline %}<div class="ixd-headline">{{ _headline }}</div>{% endif %}
+    {% if _rest %}<div class="ixd-text">{{ _rest }}</div>{% endif %}
+    {% if row.offer_text %}
+      <div class="ixd-voucher">
+        <div class="ixv-icon">
+          <svg viewBox="0 0 24 24" fill="none">
             <polyline points="20 12 20 22 4 22 4 12"/>
             <rect x="2" y="7" width="20" height="5"/>
             <line x1="12" y1="22" x2="12" y2="7"/>
-            <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-            <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+            <path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/>
+            <path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/>
           </svg>
         </div>
-        <div class="ido-text">
-          <div class="ido-label">
-            <svg class="ido-check" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 6 9 17 4 12"/></svg>
-            ของฝากจากร้าน · เก็บไว้ให้แล้ว
-          </div>
-          <div class="ido-name">{{ row.offer_text }}</div>
-          {% if row.offer_until %}
-            <div class="ido-condition">ใช้ก่อน {{ row.offer_until|bkk_short_date }}</div>
-          {% endif %}
+        <div class="ixv-info">
+          <div class="ixv-name">{{ row.offer_text }}</div>
+          <div class="ixv-meta">เก็บไว้ใช้แล้ว{% if row.offer_until %} · หมด {{ row.offer_until|bkk_short_date }}{% endif %}</div>
         </div>
       </div>
-      <a class="ido-link" href="/my-gifts">ดูใน <strong>ของขวัญของพี่</strong> →</a>
-    </div>
-  {% endif %}
+    {% endif %}
+  </div>
 
-  {% if shop %}
-    <div class="inbox-detail-cta single">
-      <a class="idc-btn primary" href="/story/{{ shop.id }}">
-        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/></svg>
-        ดูร้าน
-      </a>
-    </div>
-  {% endif %}
-
-  {# Replies thread — comment-under-a-post pattern from design.
-     Avatar chip + author + time + body row, border-top divider
-     between rows. .ix-comment.shop flips the avatar to ink so the
-     shop's voice is visually distinct. #}
-  {% set _customer_label = customer.display_name or 'พี่' %}
-  {% set _customer_initial = (_customer_label or 'ก')[0]|upper %}
-  {% set _shop_label = (shop.name if shop else 'ร้าน') %}
-  {% set _shop_initial = (_shop_label or 'ร')[0]|upper %}
+  {# Comments section — design's "การตอบกลับ" header + ix-comment
+     rows. Customer-side: own replies sit on the .ix-comment row
+     (default avatar = ink), shop replies use .ix-comment.shop
+     (avatar = accent). #}
   {% if replies %}
     <div class="ix-comments-h">
       <span class="lab">การตอบกลับ</span>
       <span class="count">{{ replies|length }} ครั้ง</span>
     </div>
-    <div class="ix-thread" id="ix-thread">
-      {% for r in replies %}
-        <div class="ix-comment{% if r.sender == 'shop' %} shop{% endif %}" data-reply-id="{{ r.id }}">
-          <div class="ixc-avatar">{% if r.sender == 'shop' %}{{ _shop_initial }}{% else %}{{ _customer_initial }}{% endif %}</div>
-          <div class="ixc-body">
-            <div class="ixc-head">
-              <span class="ixc-author">{% if r.sender == 'shop' %}{{ _shop_label }}{% else %}{{ _customer_label }}{% endif %}</span>
-              <span class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</span>
-            </div>
-            <div class="ixc-text">{{ r.body }}</div>
-          </div>
-        </div>
-      {% endfor %}
-    </div>
-  {% else %}
-    <div class="ix-thread" id="ix-thread"></div>
   {% endif %}
+  <div class="ix-thread" id="ix-thread">
+    {% for r in replies %}
+      <div class="ix-comment{% if r.sender == 'shop' %} shop{% endif %}" data-reply-id="{{ r.id }}">
+        <div class="ixc-avatar">{% if r.sender == 'shop' %}{{ _shop_initial }}{% else %}{{ _customer_initial }}{% endif %}</div>
+        <div class="ixc-body">
+          <div class="ixc-head">
+            <span class="ixc-author">{% if r.sender == 'shop' %}{{ _shop_label }}{% else %}คุณ{% endif %}</span>
+            <span class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</span>
+          </div>
+          <div class="ixc-text">{{ r.body }}</div>
+        </div>
+      </div>
+    {% endfor %}
+  </div>
 
   {% if request.query_params.get('rate_limited') %}
-    <div class="td-rate-limit">
-      ตอบได้ไม่เกิน 3 ข้อความต่อนาที · รอสักครู่นะครับ
-    </div>
+    <div class="td-rate-limit">ตอบได้ไม่เกิน 3 ข้อความต่อนาที · รอสักครู่นะครับ</div>
   {% endif %}
 
-  {# Reply form — scoped to this broadcast (POST /my-inbox/{id}/reply).
-     Hidden when the shop has turned off customer messaging. #}
+  {# Inline compose card per design — textarea + quick-reply chips
+     + char counter + send. Hidden when the shop has turned off
+     customer messaging. #}
   {% if shop and shop.allow_customer_messages %}
-    <form class="chat-input-bar" method="POST" action="/my-inbox/{{ row.id }}/reply">
-      <input type="text" class="chat-input" name="body" placeholder="ตอบกลับร้าน..." autocomplete="off" required>
-      <button type="submit" class="chat-send" aria-label="ส่ง">
-        <svg viewBox="0 0 24 24">
-          <line x1="22" y1="2" x2="11" y2="13"/>
-          <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
-        </svg>
-      </button>
+    <form class="ix-compose-active" method="POST" action="/my-inbox/{{ row.id }}/reply" id="ix-compose">
+      <div class="ixca-head">
+        <span class="ixca-label">ตอบกลับร้าน</span>
+      </div>
+      <textarea class="ixca-textarea" name="body" id="ixca-textarea"
+                placeholder="พิมพ์ข้อความถึงร้าน..." maxlength="200"
+                rows="3"></textarea>
+      <div class="ixca-quicks" aria-label="ตอบเร็ว">
+        <button type="button" class="ixca-quick" data-quick="ขอบคุณค่ะ">+ ขอบคุณค่ะ</button>
+        <button type="button" class="ixca-quick" data-quick="ไปแน่นอน">+ ไปแน่นอน</button>
+        <button type="button" class="ixca-quick" data-quick="ขอเลื่อน">+ ขอเลื่อน</button>
+      </div>
+      <div class="ixca-foot">
+        <span class="ixca-count" id="ixca-count">0 / 200</span>
+        <button type="submit" class="ixca-send" id="ixca-send" disabled>ส่งตอบกลับ</button>
+      </div>
     </form>
   {% else %}
-    <div class="chat-locked">ร้านนี้ปิดรับการตอบกลับ</div>
+    <div class="ix-compose" aria-disabled="true" style="cursor:default;">
+      <div class="ixco-icon">
+        <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
+      </div>
+      <div class="ixco-text">ร้านนี้<strong>ปิดรับ</strong>การตอบกลับ</div>
+    </div>
   {% endif %}
+</div>
 
 <style>
-  /* Pin the reply bar / locked notice flush to the safe-area bottom
-     since the page hides the dock. Detail body padding leaves room
-     for the bar + reply thread. */
-  .chat-input-bar { bottom: env(safe-area-inset-bottom, 0px); }
-  .chat-locked { bottom: env(safe-area-inset-bottom, 0px); }
-  .inbox-detail-cta { margin-bottom: 16px; }
-  .ix-thread { padding: 0 16px 110px; }
   .td-rate-limit {
-    padding: 10px 14px; margin: 0 16px 10px;
-    background: #fff3cd; color: #855; border-radius: 10px;
-    font-size: 13px; text-align: center;
+    margin: 12px 0 0;
+    padding: 10px 14px;
+    background: #fff3cd;
+    color: #855;
+    border-radius: 10px;
+    font-size: 13px;
+    text-align: center;
   }
 </style>
 
@@ -137,8 +144,10 @@
   (function () {
     var INBOX_ID = "{{ row.id }}";
     var thread = document.getElementById('ix-thread');
-    var bar    = document.querySelector('.chat-input-bar');
-    var input  = bar && bar.querySelector('.chat-input');
+    var form   = document.getElementById('ix-compose');
+    var ta     = document.getElementById('ixca-textarea');
+    var sendBtn = document.getElementById('ixca-send');
+    var counter = document.getElementById('ixca-count');
     if (!thread) return;
 
     function escapeHtml(s) {
@@ -150,7 +159,6 @@
       var d = new Date();
       return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
     }
-
     function appendComment(html) {
       var tmp = document.createElement('template');
       tmp.innerHTML = (html || '').trim();
@@ -162,40 +170,56 @@
       node.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
-    var CUSTOMER_LABEL  = "{{ _customer_label|escape }}";
-    var CUSTOMER_INITIAL = "{{ _customer_initial|escape }}";
+    if (form && ta) {
+      // Char counter + enable/disable send.
+      function updateCounter() {
+        var n = (ta.value || '').length;
+        if (counter) counter.textContent = n + ' / 200';
+        if (sendBtn) sendBtn.disabled = !ta.value.trim();
+      }
+      ta.addEventListener('input', updateCounter);
+      ta.addEventListener('change', updateCounter);
 
-    if (input && bar) {
-      // Optimistic AJAX submit — comment appears instantly.
-      bar.addEventListener('submit', function (e) {
+      // Quick-reply chips append into the textarea (design: "+ ขอบคุณ").
+      form.querySelectorAll('.ixca-quick').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var sep = (ta.value && !ta.value.endsWith(' ')) ? ' ' : '';
+          ta.value = (ta.value + sep + chip.dataset.quick).slice(0, 200);
+          updateCounter();
+          ta.focus();
+        });
+      });
+
+      // Optimistic AJAX submit — comment appears instantly + textarea
+      // clears. Server's SSE event keeps the shop side live too.
+      form.addEventListener('submit', function (e) {
         e.preventDefault();
-        var body = (input.value || '').trim();
+        var body = (ta.value || '').trim();
         if (!body) return;
         var tmpId = 'tmp-' + Date.now();
         appendComment(
           '<div class="ix-comment" data-reply-id="' + tmpId + '">' +
-            '<div class="ixc-avatar">' + escapeHtml(CUSTOMER_INITIAL) + '</div>' +
+            '<div class="ixc-avatar">{{ _customer_initial|escape }}</div>' +
             '<div class="ixc-body">' +
               '<div class="ixc-head">' +
-                '<span class="ixc-author">' + escapeHtml(CUSTOMER_LABEL) + '</span>' +
+                '<span class="ixc-author">คุณ</span>' +
                 '<span class="ixc-time">' + nowHHMM() + '</span>' +
               '</div>' +
               '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
             '</div>' +
           '</div>'
         );
-        input.value = '';
-        input.focus();
+        ta.value = '';
+        updateCounter();
         var fd = new FormData();
         fd.set('body', body);
-        fetch(bar.action, {
+        fetch(form.action, {
           method: 'POST', body: fd,
           credentials: 'same-origin', redirect: 'manual',
         }).catch(function (err) { console.warn('[reply] send failed', err); });
       });
     }
 
-    // SSE — when the shop replies live, append their comment.
     document.addEventListener('td:inbox-reply-in', function (e) {
       try {
         var data = JSON.parse(e.detail);

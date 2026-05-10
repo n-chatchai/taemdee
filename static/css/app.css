@@ -13095,6 +13095,77 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
    campaign with "ลูกค้าตอบกลับ" rows underneath.
    ============================================================ */
 
+/* Customer side — shop strip atop the broadcast detail page.
+   Mirrors design/taemdee-customer.html → inbox.message: shop logo
+   + name + sent-time + a "ดูร้าน" CTA link. */
+.ix-shop-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid rgba(17,17,17,0.08);
+}
+.ix-shop-strip .ix-logo {
+  width: 38px; height: 38px;
+  border-radius: 11px;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Host Grotesk', sans-serif;
+  font-weight: 800;
+  font-size: 15px;
+  letter-spacing: -0.04em;
+  flex-shrink: 0;
+  overflow: hidden;
+}
+.ix-shop-strip .ix-logo .dot { color: var(--accent); }
+.ix-shop-strip .ix-logo img,
+.ix-shop-strip .ix-logo .shop-avatar-img {
+  width: 100%; height: 100%;
+  object-fit: cover;
+  display: block;
+}
+.ix-shop-strip .ix-info { flex: 1; min-width: 0; }
+.ix-shop-strip .ix-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  color: var(--ink);
+  line-height: 1.2;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ix-shop-strip .ix-time {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.ix-shop-strip .ix-contact {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 11px;
+  background: var(--bg);
+  border: 1px solid rgba(17,17,17,0.12);
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+.ix-shop-strip .ix-contact svg {
+  width: 11px; height: 11px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+
 /* Shop side — customer relationship strip atop the detail page. */
 .ix-cust-strip {
   display: flex;
@@ -13194,6 +13265,45 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   line-height: 1.55;
   color: var(--ink-soft);
   white-space: pre-wrap;
+}
+.ix-deereach .ixd-voucher {
+  margin-top: 12px;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: 10px 12px;
+  background: rgba(255,255,255,0.7);
+  border-radius: 10px;
+  border: 1px dashed rgba(176, 130, 30, 0.35);
+}
+.ix-deereach .ixd-voucher .ixv-icon {
+  width: 32px; height: 32px;
+  border-radius: 8px;
+  background: var(--accent);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ix-deereach .ixd-voucher .ixv-icon svg {
+  width: 16px; height: 16px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+}
+.ix-deereach .ixd-voucher .ixv-info { flex: 1; min-width: 0; }
+.ix-deereach .ixd-voucher .ixv-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  line-height: 1.2;
+}
+.ix-deereach .ixd-voucher .ixv-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 2px;
 }
 .ix-deereach .ixd-stats {
   margin-top: 12px;
@@ -13409,3 +13519,133 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   line-height: 1.7;
 }
 .ib-empty a { color: var(--accent); font-weight: 600; }
+
+/* Compose — two flavours per design.
+   .ix-compose       = dashed CTA card (tap-to-open compose sheet).
+                       Used by /shop/messages/<id> per design — keeps
+                       the detail page tight; the actual textarea
+                       lives in a bottom sheet that the page mounts.
+   .ix-compose-active = always-visible inline textarea + quick-reply
+                       chips + char counter. Used by /my-inbox/<id>
+                       per design — customer reply is one-shot and
+                       short, so the inline form is the lighter UX.
+   Free pill is dropped per the project's spec — shop's broadcast cost
+   already lives on the ix-deereach card, replies don't need a
+   separate "ฟรี" label. */
+.ix-compose {
+  margin-top: 20px;
+  padding: 14px 16px;
+  background: var(--surface);
+  border: 1.5px dashed rgba(17,17,17,0.18);
+  border-radius: 14px;
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  cursor: text;
+}
+.ix-compose .ixco-icon {
+  width: 30px; height: 30px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  flex-shrink: 0;
+}
+.ix-compose .ixco-icon svg {
+  width: 14px; height: 14px;
+  stroke: currentColor; fill: none;
+  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+}
+.ix-compose .ixco-text {
+  flex: 1;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  color: var(--ink-soft);
+}
+.ix-compose .ixco-text strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.ix-compose-active {
+  margin-top: 20px;
+  padding: 14px 16px 12px;
+  background: var(--surface);
+  border: 1.5px solid var(--ink);
+  border-radius: 14px;
+}
+.ix-compose-active .ixca-head { margin-bottom: 10px; }
+.ix-compose-active .ixca-label {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ix-compose-active .ixca-textarea {
+  width: 100%;
+  background: var(--bg);
+  border: 1px solid rgba(17,17,17,0.12);
+  border-radius: 10px;
+  padding: 10px 12px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 16px;
+  color: var(--ink);
+  line-height: 1.5;
+  outline: none;
+  resize: none;
+  min-height: 70px;
+  box-sizing: border-box;
+}
+.ix-compose-active .ixca-textarea::placeholder {
+  color: var(--ink-softer);
+}
+.ix-compose-active .ixca-quicks {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 6px;
+  margin-top: 10px;
+}
+.ix-compose-active .ixca-quick {
+  padding: 5px 10px;
+  background: var(--butter-soft, #FFF6D9);
+  border: 1px solid rgba(255, 217, 82, 0.45);
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink);
+  cursor: pointer;
+  appearance: none;
+  -webkit-appearance: none;
+}
+.ix-compose-active .ixca-foot {
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  margin-top: 10px;
+}
+.ix-compose-active .ixca-count {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+}
+.ix-compose-active .ixca-send {
+  background: var(--accent);
+  color: #fff;
+  border: none;
+  border-radius: 99px;
+  padding: 8px 18px;
+  cursor: pointer;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  letter-spacing: -0.005em;
+}
+.ix-compose-active .ixca-send:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
