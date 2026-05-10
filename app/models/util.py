@@ -49,6 +49,39 @@ def bkk_short_date(dt: datetime) -> str:
     return f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]}"
 
 
+def bkk_relative_time(dt: datetime) -> str:
+    """Coarse Thai relative time string for inbox / message lists —
+    "2 นาที", "1 ชม.", "3 วัน", "1 สัปดาห์", or `25 เม.ย.` once the row
+    is older than a month. Matches the design's ib-time / ix-time
+    treatment in inbox.list / inbox.message.
+    """
+    if dt is None:
+        return ""
+    now = datetime.now(timezone.utc)
+    if dt.tzinfo is None:
+        dt_aware = dt.replace(tzinfo=timezone.utc)
+    else:
+        dt_aware = dt.astimezone(timezone.utc)
+    delta = now - dt_aware
+    seconds = int(delta.total_seconds())
+    if seconds < 60:
+        return "เมื่อกี้นี้"
+    minutes = seconds // 60
+    if minutes < 60:
+        return f"{minutes} นาที"
+    hours = minutes // 60
+    if hours < 24:
+        return f"{hours} ชม."
+    days = hours // 24
+    if days < 7:
+        return f"{days} วัน"
+    weeks = days // 7
+    if weeks < 4:
+        return f"{weeks} สัปดาห์"
+    bkk = dt_aware.astimezone(BKK)
+    return f"{bkk.day} {_THAI_MONTH_SHORT[bkk.month - 1]}"
+
+
 def bkk_feed_time_short(dt: datetime) -> str:
     """Compact feed-row label for table columns where the full
     `bkk_feed_time` (weekday + date + HH:MM:SS) is too wide. Renders

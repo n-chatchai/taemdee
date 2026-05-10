@@ -131,6 +131,10 @@ async def shop_messages_page(
 
     # Section headers — one per campaign, "ทั่วไป" bucket for inboxes
     # with no campaign link (manual sends sometimes lack one).
+    # Headline preview reads the first inbox row's body (already
+    # expanded by the dispatcher), not campaign.message_text — that
+    # one still carries `{name}` / `{shop_name}` placeholders that
+    # would leak into the section header if rendered raw.
     sections: list = []
     seen: set = set()
     for v in rows_view:
@@ -139,19 +143,27 @@ async def shop_messages_page(
         if key in seen:
             continue
         seen.add(key)
+        section_rows = [r for r in rows_view if (r["campaign"].id if r["campaign"] else None) == key]
+        # Tag in each row prefers the campaign's offer label
+        # ("ลด ฿20") over the kind label ("ชวนกลับ"), so the eye
+        # groups by what was on offer first.
         if cp is not None:
-            label = _DEEREACH_KIND_LABELS.get(cp.kind, "ส่งให้ลูกค้า")
-            headline = (cp.message_text or "").strip().splitlines()[0] if cp.message_text else label
+            tag = (cp.offer_label or "").strip() or _DEEREACH_KIND_LABELS.get(cp.kind, "ส่งให้ลูกค้า")
+            sample_inbox = section_rows[0]["inbox"] if section_rows else None
+            sample_body = (sample_inbox.body if sample_inbox else (cp.message_text or "")) or ""
+            headline = sample_body.strip().splitlines()[0] if sample_body else tag
             section = {
-                "title": f"DeeReach · \"{headline[:48]}\" — ส่งเมื่อ {cp.sent_at.strftime('%d/%m %H:%M') if cp.sent_at else ''}",
-                "kind": label,
-                "rows": [r for r in rows_view if r["campaign"] and r["campaign"].id == cp.id],
+                "headline": headline[:48],
+                "sent_at": cp.sent_at,
+                "tag": tag,
+                "rows": section_rows,
             }
         else:
             section = {
-                "title": "ทั่วไป",
-                "kind": "ทั่วไป",
-                "rows": [r for r in rows_view if r["campaign"] is None],
+                "headline": "ทั่วไป",
+                "sent_at": None,
+                "tag": "ทั่วไป",
+                "rows": section_rows,
             }
         sections.append(section)
 

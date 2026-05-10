@@ -17,7 +17,9 @@
     </div>
   {% else %}
     {% for section in sections %}
-      <div class="ib-context-h">{{ section.title }}</div>
+      <div class="ib-context-h">
+        ข้อความ · "{{ section.headline }}"{% if section.sent_at %} — ส่งเมื่อ {{ section.sent_at|bkk_relative_time }}{% endif %}
+      </div>
       <div class="ib-list">
         {% for r in section.rows %}
           <a class="ib-card{% if r.unread %} unread{% endif %}" href="{{ r.href }}">
@@ -26,11 +28,11 @@
             <div class="ib-body">
               <div class="ib-row">
                 <div class="ib-name">{{ r.name }}</div>
-                <div class="ib-time">{{ r.sort_at.strftime('%d/%m %H:%M') }}</div>
+                <div class="ib-time">{{ r.sort_at|bkk_relative_time }}</div>
               </div>
               <div class="ib-preview">{{ r.preview }}</div>
               <div class="ib-context">
-                <span class="ctx-tag">{{ section.kind }}</span>
+                <span class="ctx-tag">{{ section.tag }}</span>
                 {% if r.unread %}<span class="ctx-unread">{{ r.unread }} ใหม่</span>{% endif %}
               </div>
             </div>

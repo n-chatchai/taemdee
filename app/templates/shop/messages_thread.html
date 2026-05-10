@@ -28,8 +28,11 @@
 
   <div class="ix-body">
 
-    {# Broadcast post — first line of body becomes the headline. #}
-    {% set _src = (campaign.message_text if campaign and campaign.message_text else inbox.body) or '' %}
+    {# Broadcast post — first line of body becomes the headline.
+       Prefer inbox.body over campaign.message_text since the
+       dispatcher already expanded per-customer placeholders
+       ({name}/{shop_name}) into the inbox row's text. #}
+    {% set _src = (inbox.body if inbox.body else (campaign.message_text if campaign else '')) or '' %}
     {% set _split = _src.split('\n', 1) if _src else [''] %}
     {% set _headline = _split[0] if (_split|length > 1 and _split[0]) else '' %}
     {% set _rest = _split[1] if (_split|length > 1) else _src %}
