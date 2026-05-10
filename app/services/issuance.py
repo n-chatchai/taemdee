@@ -159,7 +159,7 @@ async def build_recent_feed(db, shop, *, feed_cap: int):
     issue.html / dashboard.html templates render. Kept minimal — no
     template knowledge here, just the data."""
     from sqlmodel import select
-    from app.models import Customer, Point, Redemption, StaffMember
+    from app.models import Customer, Point, Redemption, StaffMember, User
 
     recent_points = (await db.exec(
         select(Point)
@@ -190,10 +190,24 @@ async def build_recent_feed(db, shop, *, feed_cap: int):
 
     staff_by_id = {}
     if staff_ids:
+        # Pull staff + their bound user in one query so we can read
+        # the display name without lazy-loading .user (which 500s on
+        # an async session). Falls back to display_name_hint (the
+        # owner's invite label, set before the seat is claimed) and
+        # then to "พนักงาน".
         rows = (await db.exec(
-            select(StaffMember).where(StaffMember.id.in_(staff_ids))
+            select(StaffMember, User)
+            .join(User, User.id == StaffMember.user_id, isouter=True)
+            .where(StaffMember.id.in_(staff_ids))
         )).all()
-        staff_by_id = {s.id: (s.name or "พนักงาน") for s in rows}
+        staff_by_id = {
+            s.id: (
+                (u.display_name if u and u.display_name else None)
+                or s.display_name_hint
+                or "พนักงาน"
+            )
+            for s, u in rows
+        }
 
     method_th_map = {
         "customer_scan": "ลูกค้าสแกน",
