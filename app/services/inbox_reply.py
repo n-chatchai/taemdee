@@ -187,21 +187,37 @@ async def customer_unread_total(
     return int(n or 0)
 
 
-def _comment_html(reply: InboxReply, *, viewer: str) -> str:
+def _comment_html(
+    reply: InboxReply,
+    *,
+    customer_label: str,
+    customer_initial: str,
+    shop_label: str,
+    shop_initial: str,
+) -> str:
     """Render one ix-comment row that the SSE listener appends to the
-    open detail page. `viewer` is 'customer' or 'shop' — drives the
-    me/them side, mirroring the chat-bubble pattern.
-
-    Customer-side detail page sees customer's own replies as `me` and
-    shop replies as `them`. Shop-side detail flips that.
+    open detail page. Mirrors design/taemdee-shop.html → inbox.message:
+    avatar chip + author + time + body. Shop-sender rows get the
+    `.shop` modifier so the avatar flips to ink. Same markup serves
+    customer + shop sides (the listener doesn't need a viewer flag —
+    rendered comments are author-anchored, not viewer-anchored).
     """
-    side = "me" if reply.sender == viewer else "them"
+    is_shop = reply.sender == "shop"
+    cls = "ix-comment shop" if is_shop else "ix-comment"
+    initial = _html.escape(shop_initial if is_shop else customer_initial)
+    author = _html.escape(shop_label if is_shop else customer_label)
     body_html = _html.escape(reply.body or "")
     time_str = reply.created_at.strftime("%H:%M")
     return (
-        f'<div class="ix-comment ix-comment--{side}" data-reply-id="{reply.id}">'
+        f'<div class="{cls}" data-reply-id="{reply.id}">'
+        f'<div class="ixc-avatar">{initial}</div>'
+        f'<div class="ixc-body">'
+        f'<div class="ixc-head">'
+        f'<span class="ixc-author">{author}</span>'
+        f'<span class="ixc-time">{time_str}</span>'
+        f'</div>'
         f'<div class="ixc-text">{body_html}</div>'
-        f'<div class="ixc-time">{time_str}</div>'
+        f'</div>'
         f'</div>'
     )
 
@@ -215,15 +231,28 @@ async def _publish_reply_events(
     detail page picks the comment up live. No web push for replies —
     only the broadcast itself ever sends a push."""
     from loguru import logger
+    from app.models import Customer, Shop
     from app.services.events import publish, publish_customer
 
-    comment_for_customer = _comment_html(reply, viewer="customer")
-    comment_for_shop = _comment_html(reply, viewer="shop")
+    # Hydrate the labels + initials once so a single rendered comment
+    # works on both sides — the markup is author-anchored, not
+    # viewer-anchored, so we don't need separate variants.
+    customer = await db.get(Customer, inbox.customer_id)
+    shop = await db.get(Shop, inbox.shop_id)
+    customer_label = (customer.display_name if customer else None) or "พี่"
+    shop_label = (shop.name if shop else None) or "ร้าน"
+    comment = _comment_html(
+        reply,
+        customer_label=customer_label,
+        customer_initial=(customer_label[:1] or "ก").upper(),
+        shop_label=shop_label,
+        shop_initial=(shop_label[:1] or "ร").upper(),
+    )
 
     if reply.sender == "customer":
         publish(inbox.shop_id, "inbox-reply-in", json.dumps({
             "inbox_id": str(inbox.id),
-            "html": comment_for_shop,
+            "html": comment,
         }))
         new_total = await shop_unread_total(db, inbox.shop_id)
         publish(inbox.shop_id, "messages-update", str(new_total))
@@ -234,7 +263,7 @@ async def _publish_reply_events(
     else:  # shop reply
         publish_customer(inbox.customer_id, "inbox-reply-in", json.dumps({
             "inbox_id": str(inbox.id),
-            "html": comment_for_customer,
+            "html": comment,
         }))
         merged = await customer_unread_total(db, inbox.customer_id)
         publish_customer(inbox.customer_id, "inbox-update", str(merged))

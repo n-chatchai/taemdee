@@ -65,9 +65,14 @@
     </div>
   {% endif %}
 
-  {# Replies thread — own bubbles flush right (me), shop replies left
-     (them). Ix-comment chrome is shared with /shop/messages/<id> so
-     both sides read the same set of replies. #}
+  {# Replies thread — comment-under-a-post pattern from design.
+     Avatar chip + author + time + body row, border-top divider
+     between rows. .ix-comment.shop flips the avatar to ink so the
+     shop's voice is visually distinct. #}
+  {% set _customer_label = customer.display_name or 'พี่' %}
+  {% set _customer_initial = (_customer_label or 'ก')[0]|upper %}
+  {% set _shop_label = (shop.name if shop else 'ร้าน') %}
+  {% set _shop_initial = (_shop_label or 'ร')[0]|upper %}
   {% if replies %}
     <div class="ix-comments-h">
       <span class="lab">การตอบกลับ</span>
@@ -75,10 +80,15 @@
     </div>
     <div class="ix-thread" id="ix-thread">
       {% for r in replies %}
-        {% set side = 'me' if r.sender == 'customer' else 'them' %}
-        <div class="ix-comment ix-comment--{{ side }}" data-reply-id="{{ r.id }}">
-          <div class="ixc-text">{{ r.body }}</div>
-          <div class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</div>
+        <div class="ix-comment{% if r.sender == 'shop' %} shop{% endif %}" data-reply-id="{{ r.id }}">
+          <div class="ixc-avatar">{% if r.sender == 'shop' %}{{ _shop_initial }}{% else %}{{ _customer_initial }}{% endif %}</div>
+          <div class="ixc-body">
+            <div class="ixc-head">
+              <span class="ixc-author">{% if r.sender == 'shop' %}{{ _shop_label }}{% else %}{{ _customer_label }}{% endif %}</span>
+              <span class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</span>
+            </div>
+            <div class="ixc-text">{{ r.body }}</div>
+          </div>
         </div>
       {% endfor %}
     </div>
@@ -152,6 +162,9 @@
       node.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
+    var CUSTOMER_LABEL  = "{{ _customer_label|escape }}";
+    var CUSTOMER_INITIAL = "{{ _customer_initial|escape }}";
+
     if (input && bar) {
       // Optimistic AJAX submit — comment appears instantly.
       bar.addEventListener('submit', function (e) {
@@ -160,9 +173,15 @@
         if (!body) return;
         var tmpId = 'tmp-' + Date.now();
         appendComment(
-          '<div class="ix-comment ix-comment--me" data-reply-id="' + tmpId + '">' +
-            '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
-            '<div class="ixc-time">' + nowHHMM() + '</div>' +
+          '<div class="ix-comment" data-reply-id="' + tmpId + '">' +
+            '<div class="ixc-avatar">' + escapeHtml(CUSTOMER_INITIAL) + '</div>' +
+            '<div class="ixc-body">' +
+              '<div class="ixc-head">' +
+                '<span class="ixc-author">' + escapeHtml(CUSTOMER_LABEL) + '</span>' +
+                '<span class="ixc-time">' + nowHHMM() + '</span>' +
+              '</div>' +
+              '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
+            '</div>' +
           '</div>'
         );
         input.value = '';

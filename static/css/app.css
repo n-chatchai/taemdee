@@ -13231,50 +13231,69 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   color: var(--ink-soft);
 }
 
-/* Reply rows — me/them sides instead of design's per-author chip
-   so customer + shop see one set of styles. me = right-aligned ink
-   pill, them = left-aligned surface pill — feels more like a chat
-   conversation than design's borderless rows but keeps the comments-
-   under-a-post mental model. */
+/* Reply rows — comment-under-a-post pattern from
+   design/taemdee-shop.html → inbox.message. Avatar chip on the
+   left, author + time row, body underneath. Border-top divider
+   between rows so the thread reads as a list of comments rather
+   than chat bubbles. .ix-comment.shop swaps the avatar to ink so
+   the shop's voice is visually distinct from customer replies. */
 .ix-thread {
   display: flex;
   flex-direction: column;
-  gap: 4px;
 }
 .ix-comment {
-  max-width: 76%;
-  padding: 8px 12px;
-  border-radius: 14px;
+  display: flex;
+  gap: 12px;
+  padding: 10px 4px;
+  border-top: 1px solid rgba(17,17,17,0.06);
+}
+.ix-comment:first-of-type {
+  border-top: none;
+  padding-top: 4px;
+}
+.ix-comment .ixc-avatar {
+  width: 28px; height: 28px;
+  border-radius: 50%;
+  background: var(--accent-soft, #FFE3DA);
+  color: var(--accent);
+  display: flex;
+  align-items: center;
+  justify-content: center;
   font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 11px;
+  flex-shrink: 0;
 }
-.ix-comment--me {
-  align-self: flex-end;
+.ix-comment.shop .ixc-avatar {
   background: var(--ink);
-  color: var(--bg);
-  border-bottom-right-radius: 4px;
+  color: #fff;
 }
-.ix-comment--them {
-  align-self: flex-start;
-  background: var(--surface);
-  border: 1px solid rgba(17,17,17,0.08);
-  border-bottom-left-radius: 4px;
+.ix-comment .ixc-body { flex: 1; min-width: 0; }
+.ix-comment .ixc-head {
+  display: flex;
+  align-items: baseline;
+  gap: 8px;
+  margin-bottom: 2px;
 }
-.ix-comment .ixc-text {
-  font-size: 13.5px;
-  line-height: 1.45;
-  white-space: pre-wrap;
-  word-wrap: break-word;
+.ix-comment .ixc-author {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
 }
 .ix-comment .ixc-time {
-  font-size: 10px;
-  margin-top: 2px;
-  opacity: 0.55;
-  text-align: right;
-}
-.ix-comment--them .ixc-time {
-  text-align: left;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
   color: var(--ink-softer);
-  opacity: 1;
+}
+.ix-comment .ixc-text {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+  line-height: 1.5;
+  color: var(--ink);
+  white-space: pre-wrap;
+  word-wrap: break-word;
 }
 
 /* Shop /shop/messages — section per broadcast + reply rows. */

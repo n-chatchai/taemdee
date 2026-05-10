@@ -57,13 +57,19 @@
       <span class="count">{{ replies|length }} ครั้ง</span>
     </div>
 
+    {% set _shop_label = shop.name or 'ร้าน' %}
+    {% set _shop_initial = (_shop_label or 'ร')[0]|upper %}
     <div class="ix-thread" id="ix-thread">
       {% for r in replies %}
-        {# Operator viewpoint: shop = me (right), customer = them (left). #}
-        {% set side = 'me' if r.sender == 'shop' else 'them' %}
-        <div class="ix-comment ix-comment--{{ side }}" data-reply-id="{{ r.id }}">
-          <div class="ixc-text">{{ r.body }}</div>
-          <div class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</div>
+        <div class="ix-comment{% if r.sender == 'shop' %} shop{% endif %}" data-reply-id="{{ r.id }}">
+          <div class="ixc-avatar">{% if r.sender == 'shop' %}{{ _shop_initial }}{% else %}{{ _cust_initial }}{% endif %}</div>
+          <div class="ixc-body">
+            <div class="ixc-head">
+              <span class="ixc-author">{% if r.sender == 'shop' %}{{ _shop_label }}{% else %}{{ _cust_name }}{% endif %}</span>
+              <span class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</span>
+            </div>
+            <div class="ixc-text">{{ r.body }}</div>
+          </div>
         </div>
       {% endfor %}
     </div>
@@ -118,6 +124,9 @@
       node.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
+    var SHOP_LABEL  = "{{ shop.name|escape }}";
+    var SHOP_INITIAL = "{{ ((shop.name or 'ร')[0]|upper)|escape }}";
+
     if (input && bar) {
       bar.addEventListener('submit', function (e) {
         e.preventDefault();
@@ -125,9 +134,15 @@
         if (!body) return;
         var tmpId = 'tmp-' + Date.now();
         appendComment(
-          '<div class="ix-comment ix-comment--me" data-reply-id="' + tmpId + '">' +
-            '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
-            '<div class="ixc-time">' + nowHHMM() + '</div>' +
+          '<div class="ix-comment shop" data-reply-id="' + tmpId + '">' +
+            '<div class="ixc-avatar">' + escapeHtml(SHOP_INITIAL) + '</div>' +
+            '<div class="ixc-body">' +
+              '<div class="ixc-head">' +
+                '<span class="ixc-author">' + escapeHtml(SHOP_LABEL) + '</span>' +
+                '<span class="ixc-time">' + nowHHMM() + '</span>' +
+              '</div>' +
+              '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
+            '</div>' +
           '</div>'
         );
         input.value = '';

@@ -1363,6 +1363,223 @@
     letter-spacing: 0.04em;
   }
 
+  /* Compose · expanded state (when tapped) */
+  .ix-compose-active {
+    margin-top: 20px;
+    padding: 14px 16px 12px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+  }
+  .ix-compose-active .ixca-head {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-bottom: 10px;
+  }
+  .ix-compose-active .ixca-label {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: var(--ink);
+    display: flex;
+    align-items: center;
+    gap: 6px;
+  }
+  .ix-compose-active .ixca-label .free {
+    background: rgba(111, 168, 130, 0.18);
+    color: var(--mint-ink, #2a4f44);
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .ix-compose-active .ixca-close {
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    padding: 0;
+    font-size: 18px;
+    line-height: 1;
+    width: 24px; height: 24px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+  }
+  .ix-compose-active .ixca-textarea {
+    width: 100%;
+    background: var(--bg);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 10px;
+    padding: 10px 12px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    color: var(--ink);
+    line-height: 1.5;
+    outline: none;
+    resize: none;
+    min-height: 70px;
+    box-sizing: border-box;
+  }
+  .ix-compose-active .ixca-textarea::placeholder {
+    color: var(--ink-softer);
+  }
+  .ix-compose-active .ixca-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    margin-top: 10px;
+  }
+  .ix-compose-active .ixca-count {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
+    color: var(--ink-soft);
+  }
+  .ix-compose-active .ixca-count.warn {
+    color: var(--accent);
+  }
+  .ix-compose-active .ixca-send {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    padding: 8px 18px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    letter-spacing: -0.005em;
+  }
+  .ix-compose-active .ixca-send:disabled {
+    background: rgba(17,17,17,0.18);
+    color: var(--ink-softer);
+    cursor: not-allowed;
+  }
+  .ix-compose-active .ixca-quicks {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-top: 10px;
+  }
+  .ix-compose-active .ixca-quick {
+    padding: 5px 10px;
+    background: var(--butter-soft, #FFF6D9);
+    border: 1px solid rgba(255, 217, 82, 0.45);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink);
+    cursor: pointer;
+  }
+
+  /* Compose · EXPANDED state · email-reply form */
+  .ix-compose-expanded {
+    margin-top: 20px;
+    padding: 14px 16px 12px;
+    background: var(--surface);
+    border: 1.5px solid var(--ink);
+    border-radius: 14px;
+  }
+  .ix-compose-expanded .ixce-context {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    padding-bottom: 10px;
+    margin-bottom: 12px;
+    border-bottom: 1px solid rgba(17,17,17,0.08);
+  }
+  .ix-compose-expanded .ixce-context .arrow {
+    color: var(--accent);
+    font-weight: 700;
+  }
+  .ix-compose-expanded .ixce-context .quote {
+    font-weight: 600;
+    color: var(--ink);
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+    flex: 1;
+    min-width: 0;
+  }
+  .ix-compose-expanded .ixce-textarea {
+    width: 100%;
+    min-height: 80px;
+    background: transparent;
+    border: none;
+    font-family: 'Prompt', sans-serif;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.5;
+    outline: none;
+    resize: none;
+    padding: 0;
+    box-sizing: border-box;
+  }
+  .ix-compose-expanded .ixce-textarea::placeholder {
+    color: var(--ink-softer);
+  }
+  .ix-compose-expanded .ixce-foot {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    padding-top: 12px;
+    border-top: 1px solid rgba(17,17,17,0.08);
+  }
+  .ix-compose-expanded .ixce-meta {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .ix-compose-expanded .ixce-meta .free-tag {
+    background: rgba(111, 168, 130, 0.18);
+    color: var(--mint-ink, #2a4f44);
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
+  .ix-compose-expanded .ixce-actions {
+    display: inline-flex;
+    gap: 6px;
+  }
+  .ix-compose-expanded .ixce-cancel {
+    background: transparent;
+    border: none;
+    color: var(--ink-soft);
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 500;
+    font-size: 12px;
+    padding: 8px 12px;
+    border-radius: 99px;
+  }
+  .ix-compose-expanded .ixce-send {
+    background: var(--accent);
+    color: #fff;
+    border: none;
+    border-radius: 99px;
+    padding: 8px 16px;
+    cursor: pointer;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 12px;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+  }
+
   /* Inbox empty state */
   .inbox-empty {
     flex: 1;
@@ -10344,13 +10561,22 @@
                 </div>
               </div>
 
-              <div class="ix-compose">
-                <div class="ixco-icon">
-                  <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+              <div class="ix-compose-active">
+                <div class="ixca-head">
+                  <span class="ixca-label">
+                    ตอบกลับร้าน
+                    <span class="free">ฟรี</span>
+                  </span>
                 </div>
-                <div class="ixco-text">
-                  <strong>ตอบเพิ่ม</strong>
-                  <span class="free">ฟรี</span>
+                <textarea class="ixca-textarea" placeholder="พิมพ์ข้อความถึงร้าน..."></textarea>
+                <div class="ixca-quicks">
+                  <span class="ixca-quick">+ ขอบคุณค่ะ</span>
+                  <span class="ixca-quick">+ ไปแน่นอน</span>
+                  <span class="ixca-quick">+ ขอเลื่อน</span>
+                </div>
+                <div class="ixca-foot">
+                  <span class="ixca-count">0 / 200</span>
+                  <button class="ixca-send" disabled>ส่งตอบกลับ</button>
                 </div>
               </div>
 
