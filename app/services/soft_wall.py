@@ -103,24 +103,39 @@ async def claim_by_provider(
         # original existing's customer with anonymous's data folded
         # in, or the promoted anonymous customer reassigned to
         # existing.user_id when existing had no customer).
+        # NOTE: merge_users deleted the source User above. The deleted
+        # row is still tracked in the session, so any ORM operation
+        # that walks a relationship into it (db.add cascade, lazy
+        # load) blows up with "Instance has been deleted". We use
+        # direct UPDATE statements below to flip is_anonymous so
+        # SQLAlchemy never has to traverse the post-merge object graph.
+        from sqlmodel import update as _update
         merged_cust = (await db.exec(
-            select(Customer).where(Customer.user_id == existing_user.id)
+            select(Customer).where(
+                Customer.user_id == existing_user.id,
+                Customer.merged_into_id.is_(None),
+            )
         )).first()
         if merged_cust is not None:
             if merged_cust.is_anonymous:
-                merged_cust.is_anonymous = False
-                db.add(merged_cust)
+                await db.exec(
+                    _update(Customer)
+                    .where(Customer.id == merged_cust.id)
+                    .values(is_anonymous=False)
+                )
                 await db.commit()
                 await db.refresh(merged_cust)
             return merged_cust
         # No customer at all on existing user (only StaffMember). The
-        # anonymous customer was reassigned to existing.user_id; find
-        # it and flip is_anonymous.
-        # (anonymous_customer's user_id changed inside merge_users)
-        await db.refresh(anonymous_customer)
-        anonymous_customer.is_anonymous = False
-        db.add(anonymous_customer)
+        # anonymous customer was reassigned to existing.user_id; flip
+        # is_anonymous via UPDATE for the same reason.
+        await db.exec(
+            _update(Customer)
+            .where(Customer.id == anonymous_customer.id)
+            .values(is_anonymous=False, user_id=existing_user.id)
+        )
         await db.commit()
+        await db.refresh(anonymous_customer)
         return anonymous_customer
 
     # No conflict — promote the anonymous user in place.
