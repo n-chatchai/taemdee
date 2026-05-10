@@ -1,33 +1,77 @@
 {% extends "_layouts/s_base.html" %}
-{% block title %}{{ customer.display_name or 'ลูกค้า' }} · ข้อความ · TaemDee{% endblock %}
+{% block title %}{{ customer.display_name or 'ลูกค้า' }} · ตอบกลับ · TaemDee{% endblock %}
 
 {% block content %}
-{% set app_bar_title = customer.display_name or 'ลูกค้า' %}
+{% set app_bar_title = 'ตอบกลับลูกค้า' %}
 {% set app_bar_back = '/shop/messages' %}
 {% include "_partials/app_bar.html" %}
 
-{% set _cust_pic = customer.user.picture_url if customer and customer.user else None %}
 {% set _cust_name = (customer.display_name if customer else None) or 'ลูกค้า' %}
-{% set _cust_initial = (_cust_name or 'ก')[0] %}
+{% set _cust_initial = (_cust_name or 'ก')[0]|upper %}
 
-<div class="s-thread">
-  <div class="chat-thread">
-    {% for m in messages %}
-      {# Operator viewpoint: shop = me (right, ink), customer = them. #}
-      {% set side = 'me' if m.sender == 'shop' else 'them' %}
-      <div class="chat-bubble {{ side }}" data-msg-id="{{ m.id }}">{{ m.body }}</div>
-      <div class="chat-time {{ side }}">{{ m.created_at.strftime('%H:%M') }}</div>
-    {% else %}
-      <div class="chat-empty">ยังไม่มีข้อความ</div>
-    {% endfor %}
+<div class="page-scroll">
+<div class="ix-detail">
+
+  {# Customer strip — quick relationship cue at the top of the page. #}
+  <div class="ix-cust-strip">
+    <div class="ix-avatar">{{ _cust_initial }}</div>
+    <div class="ix-info">
+      <div class="ix-name">{{ _cust_name }}</div>
+      {% if visit_count is not none %}
+        <div class="ix-tag"><span class="dot-on"></span>เก็บแต้ม · {{ visit_count }} ครั้ง</div>
+      {% endif %}
+    </div>
+    <a class="ix-view-cust" href="/shop/customers?q={{ _cust_name }}">ดูข้อมูล →</a>
   </div>
 
-  <button type="button" class="chat-new-pill" id="chat-new-pill" hidden>
-    ↓ ข้อความใหม่
-  </button>
+  <div class="ix-body">
 
-  <form class="chat-input-bar chat-input-bar--shop" method="POST" action="/shop/messages/{{ thread.id }}/reply">
-    <input type="text" class="chat-input" name="body" placeholder="ตอบกลับลูกค้า..." autocomplete="off" required>
+    {# Broadcast (DeeReach) post + delivery stats. #}
+    <div class="ix-deereach">
+      <span class="ixd-tag">
+        <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
+        DeeReach ที่คุณส่ง
+      </span>
+      {% if campaign and campaign.message_text %}
+        <div class="ixd-text">{{ campaign.message_text }}</div>
+      {% else %}
+        <div class="ixd-text">{{ inbox.body }}</div>
+      {% endif %}
+      <div class="ixd-stats">
+        <span><strong>✓</strong> ส่ง {{ inbox.created_at.strftime('%d/%m %H:%M') }}</span>
+        {% if inbox.read_at %}
+          <span><strong>✓</strong> อ่าน {{ inbox.read_at.strftime('%d/%m %H:%M') }}</span>
+        {% endif %}
+        {% if inbox.offer_text %}
+          <span>ของฝาก: <strong>{{ inbox.offer_text }}</strong></span>
+        {% endif %}
+        {% if campaign and campaign.final_credits_satang %}
+          {% set _credits = campaign.final_credits_satang / 100 %}
+          <span>ค่าใช้: <strong>{{ '%.1f'|format(_credits) }} เครดิต</strong></span>
+        {% endif %}
+      </div>
+    </div>
+
+    <div class="ix-comments-h">
+      <span class="lab">การตอบกลับ</span>
+      <span class="count">{{ replies|length }} ครั้ง</span>
+    </div>
+
+    <div class="ix-thread" id="ix-thread">
+      {% for r in replies %}
+        {# Operator viewpoint: shop = me (right), customer = them (left). #}
+        {% set side = 'me' if r.sender == 'shop' else 'them' %}
+        <div class="ix-comment ix-comment--{{ side }}" data-reply-id="{{ r.id }}">
+          <div class="ixc-text">{{ r.body }}</div>
+          <div class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</div>
+        </div>
+      {% endfor %}
+    </div>
+
+  </div>
+
+  <form class="chat-input-bar chat-input-bar--shop" method="POST" action="/shop/messages/{{ inbox.id }}/reply">
+    <input type="text" class="chat-input" name="body" placeholder="ตอบเพิ่ม · ฟรี ไม่ใช้เครดิต..." autocomplete="off" required>
     <button type="submit" class="chat-send" aria-label="ส่ง">
       <svg viewBox="0 0 24 24">
         <line x1="22" y1="2" x2="11" y2="13"/>
@@ -35,39 +79,23 @@
       </svg>
     </button>
   </form>
+
+</div>
 </div>
 
 <style>
-  .s-thread { padding: 8px 14px 220px; }
-  .chat-empty {
-    padding: 40px 20px;
-    text-align: center;
-    color: var(--ink-soft);
-    font-size: 14px;
-  }
-  /* Shop dock is taller than the customer dock — re-anchor the
-     fixed input bar so it doesn't slide under it. */
-  .chat-input-bar--shop {
-    bottom: calc(env(safe-area-inset-bottom, 0px) + 100px);
-  }
+  /* Reserve room at the bottom of the scroll for the fixed compose +
+     the shop dock. */
+  .ix-detail { padding-bottom: 200px; }
 </style>
 
 <script>
   (function () {
-    var THREAD_ID = "{{ thread.id }}";
-    var thread  = document.querySelector('.chat-thread');
-    var bar     = document.querySelector('.chat-input-bar');
-    var input   = bar && bar.querySelector('.chat-input');
-    var newPill = document.getElementById('chat-new-pill');
-
+    var INBOX_ID = "{{ inbox.id }}";
+    var thread = document.getElementById('ix-thread');
+    var bar    = document.querySelector('.chat-input-bar');
+    var input  = bar && bar.querySelector('.chat-input');
     if (!thread) return;
-
-    function scrollToBottom(smooth) {
-      var opt = smooth ? { behavior: 'smooth', block: 'end' } : { block: 'end' };
-      thread.lastElementChild && thread.lastElementChild.scrollIntoView(opt);
-      if (!smooth) window.scrollTo(0, document.body.scrollHeight);
-    }
-    scrollToBottom(false);
 
     function escapeHtml(s) {
       return (s || '').replace(/[&<>"']/g, function (c) {
@@ -79,80 +107,52 @@
       return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
     }
 
-    if (input && bar) {
-      input.addEventListener('keydown', function (e) {
-        if (e.key === 'Enter' && !e.shiftKey && !e.isComposing) {
-          e.preventDefault();
-          if (input.value.trim()) bar.requestSubmit();
-        }
-      });
+    function appendComment(html) {
+      var tmp = document.createElement('template');
+      tmp.innerHTML = (html || '').trim();
+      var node = tmp.content.firstElementChild;
+      if (!node) return;
+      var id = node.getAttribute('data-reply-id');
+      if (id && thread.querySelector('[data-reply-id="' + id + '"]')) return;
+      thread.appendChild(node);
+      node.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
 
-      // Submit via AJAX + optimistic bubble insert so the operator's
-      // reply appears instantly without a page roundtrip. Server still
-      // SSE-publishes to the customer side, so the customer sees it
-      // live too.
+    if (input && bar) {
       bar.addEventListener('submit', function (e) {
         e.preventDefault();
         var body = (input.value || '').trim();
         if (!body) return;
-
         var tmpId = 'tmp-' + Date.now();
-        appendBubble(
-          '<div class="chat-bubble me" data-msg-id="' + tmpId + '">' + escapeHtml(body) + '</div>' +
-          '<div class="chat-time me">' + nowHHMM() + '</div>'
+        appendComment(
+          '<div class="ix-comment ix-comment--me" data-reply-id="' + tmpId + '">' +
+            '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
+            '<div class="ixc-time">' + nowHHMM() + '</div>' +
+          '</div>'
         );
         input.value = '';
         input.focus();
-        scrollToBottom(true);
-
         var fd = new FormData();
         fd.set('body', body);
         fetch(bar.action, {
-          method: 'POST',
-          body: fd,
-          credentials: 'same-origin',
-          redirect: 'manual',
-        }).catch(function (err) { console.warn('[chat] send failed', err); });
+          method: 'POST', body: fd,
+          credentials: 'same-origin', redirect: 'manual',
+        }).catch(function (err) { console.warn('[reply] send failed', err); });
       });
     }
 
-    function appendBubble(html) {
-      var tmpl = document.createElement('template');
-      tmpl.innerHTML = (html || '').trim();
-      var nodes = Array.from(tmpl.content.childNodes).filter(function (n) { return n.nodeType === 1; });
-      if (!nodes.length) return;
-      var bubble = nodes.find(function (n) { return n.classList && n.classList.contains('chat-bubble'); });
-      if (bubble && bubble.dataset.msgId) {
-        if (thread.querySelector('[data-msg-id="' + bubble.dataset.msgId + '"]')) return;
-      }
-      var empty = thread.querySelector('.chat-empty');
-      if (empty) empty.remove();
-      nodes.forEach(function (n) { thread.appendChild(n); });
-
-      var typing = input && document.activeElement === input;
-      if (typing) {
-        if (newPill) newPill.hidden = false;
-      } else {
-        scrollToBottom(true);
-      }
-    }
-    document.addEventListener('td:chat-message-in', function (e) {
+    document.addEventListener('td:inbox-reply-in', function (e) {
       try {
         var data = JSON.parse(e.detail);
-        if (!data || data.thread_id !== THREAD_ID) return;
-        appendBubble(data.html);
-      } catch (err) { console.warn('[chat] parse failed', err); }
+        if (!data || data.inbox_id !== INBOX_ID) return;
+        appendComment(data.html);
+      } catch (err) { console.warn('[reply] parse failed', err); }
     });
-
-    if (newPill) {
-      newPill.addEventListener('click', function () {
-        scrollToBottom(true);
-        newPill.hidden = true;
-      });
-    }
   })();
 </script>
 {% endblock %}
+
+{% block td_class %} td-tabbed td-pinned{% endblock %}
 
 {% block nav %}
   {% set nav_active = 'messages' %}

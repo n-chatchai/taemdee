@@ -32,15 +32,10 @@
         <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
       </a>
       <div class="ss-fab-group">
-        {# ส่งข้อความ CTA — moved out of the bottom button row into
-           a top-right FAB so the chat affordance is reachable
-           without scrolling. /shop/settings still gates the
-           feature; the icon only renders when allowed. #}
-        {% if shop.allow_customer_messages %}
-          <a href="/messages/{{ shop.id }}" class="ss-fab" aria-label="ส่งข้อความถึงร้าน">
-            <svg viewBox="0 0 24 24"><path d="M21 15a2 2 0 01-2 2H7l-4 4V5a2 2 0 012-2h14a2 2 0 012 2z"/></svg>
-          </a>
-        {% endif %}
+        {# Customer-initiated chat is intentionally not supported — the
+           reply box lives inside /my-inbox/<id> and only opens after a
+           DeeReach broadcast lands. Story page no longer carries a
+           "ส่งข้อความ" FAB. #}
       </div>
     </div>
 

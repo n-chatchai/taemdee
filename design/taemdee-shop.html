@@ -1529,33 +1529,20 @@
     color: var(--ink-softer);
     letter-spacing: 0.02em;
   }
-
   /* ============================================== */
-  /* Chat · 2-way conversation (shop side)          */
-  /* me = shop (right · ink dark) · them = customer (left · butter) */
+  /* Inbox detail · post + comments + compose       */
+  /* (shop side · NOT chat · NOT bubbles)           */
   /* ============================================== */
-  .chat-header {
+  .ix-cust-strip {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
-    background: var(--bg);
+    padding: 12px 16px;
+    background: var(--surface);
     border-bottom: 1px solid rgba(17,17,17,0.08);
-    flex-shrink: 0;
   }
-  .chat-header .ch-back {
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink);
-    cursor: pointer;
-  }
-  .chat-header .ch-back svg {
-    width: 18px; height: 18px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .chat-header .ch-avatar {
-    width: 36px; height: 36px;
+  .ix-cust-strip .ix-avatar {
+    width: 38px; height: 38px;
     border-radius: 50%;
     background: var(--accent-soft, #FFE3DA);
     color: var(--accent);
@@ -1565,22 +1552,21 @@
     font-size: 14px;
     flex-shrink: 0;
   }
-  .chat-header .ch-info { flex: 1; min-width: 0; }
-  .chat-header .ch-name {
+  .ix-cust-strip .ix-info { flex: 1; min-width: 0; }
+  .ix-cust-strip .ix-name {
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 14.5px;
+    font-size: 14px;
     color: var(--ink);
     line-height: 1.2;
-    letter-spacing: -0.005em;
   }
-  .chat-header .ch-status {
+  .ix-cust-strip .ix-tag {
     font-family: 'Prompt', sans-serif;
     font-size: 11px;
     color: var(--ink-soft);
     margin-top: 1px;
   }
-  .chat-header .ch-status .dot-on {
+  .ix-cust-strip .ix-tag .dot-on {
     display: inline-block;
     width: 6px; height: 6px;
     border-radius: 50%;
@@ -1588,82 +1574,35 @@
     margin-right: 4px;
     vertical-align: 1px;
   }
-  .chat-header .ch-action {
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink-soft);
-    cursor: pointer;
-  }
-  .chat-header .ch-action svg {
-    width: 18px; height: 18px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
+  .ix-cust-strip .ix-view-cust {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 11px;
+    background: var(--bg);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
   }
 
-  .chat-thread {
+  .ix-body {
     flex: 1;
     overflow-y: auto;
-    padding: 14px 14px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .chat-date {
-    align-self: center;
-    margin: 8px 0 4px;
-    font-family: 'Prompt', sans-serif;
-    font-size: 10.5px;
-    color: var(--ink-softer);
-    background: rgba(17,17,17,0.05);
-    padding: 3px 12px;
-    border-radius: 99px;
+    padding: 16px;
   }
 
-  .chat-bubble {
-    max-width: 76%;
-    padding: 9px 13px;
-    border-radius: 16px;
-    font-family: 'Prompt', sans-serif;
-    font-size: 13.5px;
-    line-height: 1.45;
-    color: var(--ink);
-    word-wrap: break-word;
-    margin-top: 2px;
-  }
-  /* me = shop (right · ink) */
-  .chat-bubble.me {
-    align-self: flex-end;
-    background: var(--ink);
-    color: var(--bg);
-    border-bottom-right-radius: 4px;
-  }
-  /* them = customer (left · surface) */
-  .chat-bubble.them {
-    align-self: flex-start;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.08);
-    border-bottom-left-radius: 4px;
-  }
-  .chat-time {
-    font-family: 'Prompt', sans-serif;
-    font-size: 10px;
-    color: var(--ink-softer);
-    margin-top: 2px;
-    margin-bottom: 6px;
-  }
-  .chat-time.me { align-self: flex-end; margin-right: 8px; }
-  .chat-time.them { align-self: flex-start; margin-left: 8px; }
-
-  /* DeeReach broadcast card · shop's own broadcast shown in thread */
-  .chat-deereach {
-    align-self: stretch;
+  .ix-deereach {
     background: var(--butter-soft, #FFF6D9);
     border: 1px solid rgba(255, 217, 82, 0.55);
     border-radius: 16px;
-    padding: 14px 16px;
-    margin: 6px 0 2px;
+    padding: 18px 20px;
   }
-  .chat-deereach .cd-tag {
+  .ix-deereach .ixd-tag {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -1676,76 +1615,172 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
-  .chat-deereach .cd-tag svg {
-    width: 11px; height: 11px;
+  .ix-deereach .ixd-tag svg {
+    width: 10px; height: 10px;
     fill: currentColor;
   }
-  .chat-deereach .cd-text {
+  .ix-deereach .ixd-headline {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
-    line-height: 1.55;
+    font-weight: 700;
+    font-size: 17px;
     color: var(--ink);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
   }
-  .chat-deereach .cd-stats {
-    margin-top: 10px;
-    padding-top: 10px;
+  .ix-deereach .ixd-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .ix-deereach .ixd-stats {
+    margin-top: 12px;
+    padding-top: 12px;
     border-top: 1px dashed rgba(176, 130, 30, 0.35);
     display: flex;
     gap: 14px;
+    flex-wrap: wrap;
     font-family: 'Prompt', sans-serif;
     font-size: 11px;
     color: var(--ink-soft);
   }
-  .chat-deereach .cd-stats strong {
+  .ix-deereach .ixd-stats strong {
     color: var(--ink);
     font-weight: 700;
   }
 
-  .chat-input-bar {
-    flex-shrink: 0;
+  .ix-comments-h {
+    margin: 24px 4px 12px;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px 12px;
-    background: var(--bg);
-    border-top: 1px solid rgba(17,17,17,0.08);
+    align-items: baseline;
+    justify-content: space-between;
   }
-  .chat-input {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.12);
-    border-radius: 99px;
-    padding: 9px 16px;
+  .ix-comments-h .lab {
     font-family: 'Prompt', sans-serif;
-    font-size: 13.5px;
+    font-weight: 600;
+    font-size: 13px;
     color: var(--ink);
-    outline: none;
-    min-width: 0;
+    letter-spacing: -0.005em;
   }
-  .chat-input::placeholder {
+  .ix-comments-h .count {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+
+  .ix-comment {
+    display: flex;
+    gap: 12px;
+    padding: 10px 4px;
+    border-top: 1px solid rgba(17,17,17,0.06);
+  }
+  .ix-comment:first-of-type {
+    border-top: none;
+    padding-top: 4px;
+  }
+  .ix-comment .ixc-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--accent-soft, #FFE3DA);
+    color: var(--accent);
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .ix-comment.shop .ixc-avatar {
+    background: var(--ink);
+    color: #fff;
+  }
+  .ix-comment .ixc-body { flex: 1; min-width: 0; }
+  .ix-comment .ixc-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .ix-comment .ixc-author {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .ix-comment .ixc-time {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
     color: var(--ink-softer);
   }
-  .chat-send {
-    flex-shrink: 0;
-    width: 38px; height: 38px;
+  .ix-comment .ixc-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  .ix-compose {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1.5px dashed rgba(17,17,17,0.18);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: text;
+  }
+  .ix-compose .ixco-icon {
+    width: 30px; height: 30px;
+    border-radius: 50%;
     background: var(--accent);
     color: #fff;
-    border: none;
-    border-radius: 50%;
-    cursor: pointer;
     display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  .chat-send svg {
-    width: 16px; height: 16px;
+  .ix-compose .ixco-icon svg {
+    width: 14px; height: 14px;
     stroke: currentColor; fill: none;
     stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
   }
+  .ix-compose .ixco-text {
+    flex: 1;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .ix-compose .ixco-text strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .ix-compose .ixco-text .free {
+    display: inline-block;
+    margin-left: 4px;
+    background: rgba(111, 168, 130, 0.18);
+    color: var(--mint-ink, #2a4f44);
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+  }
 
-  /* inbox.list (shop) · customer thread list */
+  /* Shop inbox.list · replies received per broadcast */
+  .ib-context-h {
+    margin: 12px 16px 6px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+    font-weight: 700;
+  }
   .ib-list {
-    margin: 8px 16px 0;
+    margin: 0 16px 16px;
     display: flex;
     flex-direction: column;
     gap: 6px;
@@ -1760,14 +1795,13 @@
     border-radius: 14px;
     text-decoration: none;
     cursor: pointer;
-    position: relative;
   }
   .ib-card.unread {
     background: var(--butter-soft, #FFF6D9);
     border-color: rgba(255, 217, 82, 0.45);
   }
   .ib-card .ib-avatar {
-    width: 38px; height: 38px;
+    width: 36px; height: 36px;
     border-radius: 50%;
     background: var(--ink);
     color: #fff;
@@ -1812,48 +1846,25 @@
   }
   .ib-card.unread .ib-preview {
     color: var(--ink);
-    font-weight: 500;
   }
-  .ib-card .ib-unread-num {
-    flex-shrink: 0;
-    background: var(--accent);
-    color: #fff;
-    min-width: 18px;
-    height: 18px;
-    padding: 0 5px;
-    border-radius: 99px;
-    font-family: 'Host Grotesk', sans-serif;
-    font-weight: 800;
-    font-size: 10.5px;
+  .ib-card .ib-context {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10px;
+    color: var(--ink-softer);
+    margin-top: 3px;
     display: flex;
     align-items: center;
-    justify-content: center;
+    gap: 4px;
   }
-  .ib-filters {
-    display: flex;
-    gap: 6px;
-    margin: 8px 16px 0;
-    overflow-x: auto;
-    scrollbar-width: none;
-  }
-  .ib-filters::-webkit-scrollbar { display: none; }
-  .ib-filter-pill {
-    padding: 6px 12px;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.12);
+  .ib-card .ib-context .ctx-tag {
+    background: rgba(255, 217, 82, 0.4);
+    color: var(--ink);
+    padding: 1px 6px;
     border-radius: 99px;
-    font-family: 'Prompt', sans-serif;
-    font-size: 11.5px;
-    color: var(--ink-soft);
-    white-space: nowrap;
-    flex-shrink: 0;
-    cursor: pointer;
-  }
-  .ib-filter-pill.active {
-    background: var(--ink);
-    color: var(--bg);
-    border-color: var(--ink);
     font-weight: 600;
+  }
+  .ib-card.unread .ib-context .ctx-tag {
+    background: rgba(255, 255, 255, 0.7);
   }
 
   /* S3.customers — Customer list (white card · mirrors s3-issue-feed) */
@@ -11838,12 +11849,12 @@
       </div>
     </div>
 
-    <!-- inbox.list (shop) — Conversations with customers -->
+    <!-- inbox.list (shop) — Replies received from customers · per-broadcast context -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">inbox.list</span>กล่องข้อความจากลูกค้า</div>
-        <h3>ลูกค้าทักมา · ตอบกลับฟรี</h3>
-        <p>Shop side · list แชทที่ลูกค้าทักมา หรือต่อจาก DeeReach broadcast · sort latest · unread badge ใน butter card · filter: ทั้งหมด / ยังไม่ตอบ / ลูกค้าประจำ. Reply ฟรี · ใช้เครดิตเฉพาะส่ง broadcast/DeeReach ใหม่ใน reach.send</p>
+        <div class="kicker"><span class="n">inbox.list</span>ลูกค้าตอบกลับ DeeReach</div>
+        <h3>เห็นว่า broadcast ได้ผลแค่ไหน</h3>
+        <p>Shop side · list ลูกค้าที่ตอบกลับ DeeReach broadcast ที่ส่งไป · แต่ละ row แสดง broadcast context tag ("ลด ฿20" / "เมนูใหม่") · ไม่ใช่ general chat · ลูกค้า initiate ไม่ได้ · scoped per broadcast · auto-archive 7 วัน · reply ฟรี</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
@@ -11852,21 +11863,15 @@
             <div class="page-head">
               <div class="ph-text">
                 <h1>สวัสดี <strong>ลุงหมี</strong><span class="dot">.</span></h1>
-                <div class="ph-sub">ข้อความจากลูกค้า · 3 ยังไม่ตอบ</div>
+                <div class="ph-sub">ลูกค้าตอบกลับ · 3 ยังไม่ได้ตอบ</div>
               </div>
               <div class="actions">
                 <a class="settings-btn"></a>
               </div>
             </div>
 
-            <div class="ib-filters">
-              <span class="ib-filter-pill active">ทั้งหมด · 5</span>
-              <span class="ib-filter-pill">ยังไม่ตอบ · 3</span>
-              <span class="ib-filter-pill">ลูกค้าประจำ</span>
-            </div>
-
+            <div class="ib-context-h">DeeReach · "คิดถึงพี่ ☕ · ลด ฿20" — ส่งเมื่อ 2 ชม.</div>
             <div class="ib-list">
-
               <a class="ib-card unread">
                 <div class="ib-avatar">ส</div>
                 <div class="ib-body">
@@ -11874,9 +11879,9 @@
                     <div class="ib-name">สมศรี</div>
                     <div class="ib-time">2 นาที</div>
                   </div>
-                  <div class="ib-preview">ปกติร้านปิดกี่โมงคะ?</div>
+                  <div class="ib-preview">ขอบคุณค่ะลุงหมี เดี๋ยวพรุ่งนี้แวะไปนะ</div>
+                  <div class="ib-context"><span class="ctx-tag">ลด ฿20</span></div>
                 </div>
-                <span class="ib-unread-num">2</span>
               </a>
 
               <a class="ib-card unread">
@@ -11887,8 +11892,8 @@
                     <div class="ib-time">15 นาที</div>
                   </div>
                   <div class="ib-preview">ขอบคุณครับลุง · พรุ่งนี้แวะแน่นอน</div>
+                  <div class="ib-context"><span class="ctx-tag">ลด ฿20</span></div>
                 </div>
-                <span class="ib-unread-num">1</span>
               </a>
 
               <a class="ib-card unread">
@@ -11898,19 +11903,23 @@
                     <div class="ib-name">ป้านิด</div>
                     <div class="ib-time">1 ชม.</div>
                   </div>
-                  <div class="ib-preview">มีกาแฟเย็นมั้ยคะ ที่ไม่หวานมาก</div>
+                  <div class="ib-preview">ใช้กับเมนูเย็นได้มั้ยคะ?</div>
+                  <div class="ib-context"><span class="ctx-tag">ลด ฿20</span></div>
                 </div>
-                <span class="ib-unread-num">1</span>
               </a>
+            </div>
 
+            <div class="ib-context-h">DeeReach · "เมนูใหม่กาแฟอินโด" — ส่งเมื่อ 1 สัปดาห์</div>
+            <div class="ib-list">
               <a class="ib-card">
                 <div class="ib-avatar">ม</div>
                 <div class="ib-body">
                   <div class="ib-row">
                     <div class="ib-name">มะลิ</div>
-                    <div class="ib-time">เมื่อวาน</div>
+                    <div class="ib-time">3 วัน</div>
                   </div>
-                  <div class="ib-preview">คุณ: รออยู่นะครับพี่มะลิ ✨</div>
+                  <div class="ib-preview">คุณ: ลองมาชิมได้เลยครับ ✨</div>
+                  <div class="ib-context"><span class="ctx-tag">เมนูใหม่</span></div>
                 </div>
               </a>
 
@@ -11919,12 +11928,12 @@
                 <div class="ib-body">
                   <div class="ib-row">
                     <div class="ib-name">น้อย</div>
-                    <div class="ib-time">3 วัน</div>
+                    <div class="ib-time">5 วัน</div>
                   </div>
-                  <div class="ib-preview">คุณ: ของฝาก: ลด ฿20 (DeeReach)</div>
+                  <div class="ib-preview">น่าสนใจค่ะ จะแวะไปนะ</div>
+                  <div class="ib-context"><span class="ctx-tag">เมนูใหม่</span></div>
                 </div>
               </a>
-
             </div>
 
           </div>
@@ -11932,69 +11941,77 @@
       </div>
     </div>
 
-    <!-- inbox.message (shop) — Conversation view from shop POV -->
+    <!-- inbox.message (shop) — Post + customer reply + compose CTA -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">inbox.message</span>คุยกับลูกค้า · DeeReach + Chat</div>
-        <h3>ตอบลูกค้า · ฟรี ไม่ใช้เครดิต</h3>
-        <p>Shop side · DeeReach broadcast แสดงเป็น butter card (พร้อมสถิติ delivery) + chat bubbles 2 ทาง · me=ร้าน (right ink) them=ลูกค้า (left surface) · input bar reply ฟรี · ส่ง broadcast ใหม่ใน reach.send (ใช้เครดิต)</p>
+        <div class="kicker"><span class="n">inbox.message</span>ตอบกลับลูกค้า · ฟรี</div>
+        <h3>ดู context broadcast + ตอบกลับ</h3>
+        <p>Shop side · DeeReach card (post) ที่ส่งไป · พร้อม delivery stats · customer reply เป็น comment row · "ตอบเพิ่ม" compose CTA · ตอบฟรีไม่ใช้เครดิต · scoped ใน broadcast นั้น (ไม่ใช่ chat)</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
 
-            <div class="chat-header">
-              <a class="ch-back" aria-label="ย้อนกลับ">
-                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               </a>
-              <div class="ch-avatar">ส</div>
-              <div class="ch-info">
-                <div class="ch-name">สมศรี</div>
-                <div class="ch-status"><span class="dot-on"></span>ออนไลน์ · ลูกค้าประจำ · 12 ครั้ง</div>
-              </div>
-              <a class="ch-action" aria-label="ดูข้อมูลลูกค้า">
-                <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="12" y1="16" x2="12" y2="12"/><line x1="12" y1="8" x2="12.01" y2="8"/></svg>
-              </a>
+              <div class="title-mid">ตอบกลับลูกค้า</div>
+              <div class="placeholder"></div>
             </div>
 
-            <div class="chat-thread">
+            <div class="ix-cust-strip">
+              <div class="ix-avatar">ส</div>
+              <div class="ix-info">
+                <div class="ix-name">สมศรี</div>
+                <div class="ix-tag"><span class="dot-on"></span>ลูกค้าประจำ · 12 ครั้ง</div>
+              </div>
+              <a class="ix-view-cust">ดูข้อมูล →</a>
+            </div>
 
-              <div class="chat-date">วันนี้</div>
+            <div class="ix-body">
 
-              <!-- Shop's DeeReach broadcast (sent earlier) -->
-              <div class="chat-deereach">
-                <span class="cd-tag">
+              <div class="ix-deereach">
+                <span class="ixd-tag">
                   <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
                   DeeReach ที่คุณส่ง
                 </span>
-                <div class="cd-text">คิดถึงพี่สมศรีนะครับ ☕ ห่างหายไปเดือนนึงแล้ว ลุงหมีคิดถึง — แวะมาเก็บแต้มต่อได้ทุกเมื่อ เครื่องดื่มร้อนๆ รออยู่</div>
-                <div class="cd-stats">
-                  <span><strong>✓</strong> ส่งแล้ว</span>
-                  <span><strong>✓</strong> เปิดอ่าน 14:23</span>
+                <div class="ixd-headline">คิดถึงพี่สมศรีนะ ☕</div>
+                <div class="ixd-text">ห่างหายไปเดือนนึงแล้ว ลุงหมีคิดถึงนะครับ แวะมาเก็บแต้มต่อได้ทุกเมื่อ</div>
+                <div class="ixd-stats">
+                  <span><strong>✓</strong> ส่ง 14:23</span>
+                  <span><strong>✓</strong> เปิดอ่าน 14:25</span>
                   <span>ของฝาก: <strong>ลด ฿20</strong></span>
+                  <span>ค่าใช้: <strong>0.5 เครดิต</strong></span>
                 </div>
               </div>
-              <div class="chat-time me">14:23 · 0.5 เครดิต</div>
 
-              <!-- Customer reply -->
-              <div class="chat-bubble them">ขอบคุณค่ะลุงหมี เดี๋ยวพรุ่งนี้แวะไปนะ</div>
-              <div class="chat-time them">14:30</div>
+              <div class="ix-comments-h">
+                <span class="lab">การตอบกลับ</span>
+                <span class="count">1 ครั้ง</span>
+              </div>
 
-              <!-- Shop reply -->
-              <div class="chat-bubble me">รออยู่นะครับพี่สมศรี ✨</div>
-              <div class="chat-time me">14:31 · ฟรี</div>
+              <div class="ix-comment">
+                <div class="ixc-avatar">ส</div>
+                <div class="ixc-body">
+                  <div class="ixc-head">
+                    <span class="ixc-author">สมศรี</span>
+                    <span class="ixc-time">14:30</span>
+                  </div>
+                  <div class="ixc-text">ขอบคุณค่ะลุงหมี เดี๋ยวพรุ่งนี้แวะไปนะ</div>
+                </div>
+              </div>
 
-              <!-- Customer asks question -->
-              <div class="chat-bubble them">ปกติร้านปิดกี่โมงคะ?</div>
-              <div class="chat-time them">14:32</div>
+              <div class="ix-compose">
+                <div class="ixco-icon">
+                  <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <div class="ixco-text">
+                  <strong>ตอบเพิ่ม</strong>
+                  <span class="free">ฟรี · ไม่ใช้เครดิต</span>
+                </div>
+              </div>
 
-            </div>
-
-            <div class="chat-input-bar">
-              <input type="text" class="chat-input" placeholder="พิมพ์ข้อความ · ตอบฟรี" />
-              <button class="chat-send" aria-label="ส่ง">
-                <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/></svg>
-              </button>
             </div>
 
           </div>

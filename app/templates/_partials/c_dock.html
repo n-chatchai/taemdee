@@ -102,13 +102,13 @@
           const n = parseInt(ev.data, 10);
           if (!isNaN(n)) setBadge(giftsIcon, n);
         });
-        // Re-dispatch chat events as a DOM CustomEvent so per-page
-        // scripts (thread view, message list) can react without
+        // Re-dispatch inbox-reply-in as a DOM CustomEvent so per-page
+        // scripts (broadcast detail, /my-inbox list) can react without
         // opening a second EventSource — HTTP/1.1 caps origin
         // connections at 6 and we already have prefetch + push
         // burning a couple.
-        es.addEventListener('chat-message-in', (ev) => {
-          document.dispatchEvent(new CustomEvent('td:chat-message-in', {
+        es.addEventListener('inbox-reply-in', (ev) => {
+          document.dispatchEvent(new CustomEvent('td:inbox-reply-in', {
             detail: ev.data,
           }));
         });

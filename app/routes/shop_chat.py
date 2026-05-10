@@ -1,13 +1,16 @@
-"""Shop-side endpoints for customer ↔ shop chat.
+"""Shop-side endpoints for the broadcast-scoped reply model.
 
-Replaces the dock's "ออกแต้ม" tab as the new "ข้อความ" entry point.
-List of conversations, single thread + reply box, and the badge
-counter that the dock partial reads to render unread state."""
+Replaces the customer ↔ shop chat with replies parented on the shop's
+DeeReach broadcasts (Inbox rows). The dock's "ข้อความ" entry shows
+broadcasts the shop has sent + the customers who replied. Tapping a
+reply opens the broadcast detail with the reply thread and a compose
+box."""
 
 from uuid import UUID
 
 from fastapi import APIRouter, Depends, Form, HTTPException, Request, status
 from fastapi.responses import HTMLResponse, RedirectResponse
+from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.auth import (
@@ -17,13 +20,12 @@ from app.core.auth import (
 )
 from app.core.database import get_session
 from app.core.templates import templates
-from app.models import Customer, CustomerMessage, CustomerThread, DeeReachCampaign, Shop
+from app.models import Customer, DeeReachCampaign, Inbox, InboxReply, Shop
 from app.services.branch import s3_top_context
-from app.services.customer_chat import (
-    list_messages,
-    list_threads_for_shop,
-    mark_read,
-    send_message,
+from app.services.inbox_reply import (
+    list_replies,
+    mark_shop_read,
+    send_reply,
 )
 
 router = APIRouter()
@@ -46,81 +48,112 @@ async def shop_messages_page(
     _: SessionContext = Depends(get_session_context),
     db: AsyncSession = Depends(get_session),
 ):
-    """Unified shop ข้อความ — customer chat threads (two-way) AND
-    DeeReach broadcast campaigns the shop has sent. Sorted by most-
-    recent activity. Tapping a thread opens /shop/messages/{thread_id}
-    (compose + reply); tapping a campaign opens
-    /shop/deereach/sent?campaign_id={id} (the existing confirmation /
-    audit page)."""
-    from sqlmodel import select
+    """Shop messages — DeeReach broadcasts the shop sent, grouped by
+    campaign with the customers who replied listed under each. Per
+    design/taemdee-shop.html → inbox.list. Replies are scoped per
+    broadcast (no general chat); customers can't initiate."""
+    # Inbox rows that have at least one reply, joined back to their
+    # campaign so we can section by broadcast. Inbox rows without
+    # replies are skipped — there's nothing to show for them on the
+    # shop side. Cap at 50 inboxes to keep render snappy.
+    inbox_rows = (await db.exec(
+        select(Inbox)
+        .join(InboxReply, InboxReply.inbox_id == Inbox.id)
+        .where(Inbox.shop_id == shop.id)
+        .group_by(Inbox.id)
+        .order_by(Inbox.created_at.desc())
+        .limit(50)
+    )).all()
 
-    threads = await list_threads_for_shop(db, shop.id)
-    customer_by_id = {}
-    if threads:
-        cids = [t.customer_id for t in threads]
+    customer_by_id: dict = {}
+    if inbox_rows:
+        cids = [r.customer_id for r in inbox_rows]
         rows = (await db.exec(
             select(Customer).where(Customer.id.in_(cids))
         )).all()
         customer_by_id = {c.id: c for c in rows}
 
-    # DeeReach campaigns this shop has actually sent — `sent_at IS NOT
-    # NULL` filters out drafts / failed locks. Cap at 50 to keep the
-    # list responsive on a heavy sender.
-    campaigns = (await db.exec(
-        select(DeeReachCampaign)
-        .where(
-            DeeReachCampaign.shop_id == shop.id,
-            DeeReachCampaign.sent_at.is_not(None),
-        )
-        .order_by(DeeReachCampaign.sent_at.desc())
-        .limit(50)
-    )).all()
-
-    # Last-message preview per thread — single batched query keyed by
-    # thread_id so we render a "พี่: ..." / "เรา: ..." line under
-    # each row without N+1.
-    last_msg_by_thread = {}
-    if threads:
-        thread_ids = [t.id for t in threads]
-        msg_rows = (await db.exec(
-            select(CustomerMessage)
-            .where(CustomerMessage.thread_id.in_(thread_ids))
-            .order_by(CustomerMessage.thread_id, CustomerMessage.created_at.desc())
+    # Pull the latest reply per inbox for the row preview + sort key,
+    # plus an unread count of customer-sender replies the shop hasn't
+    # opened yet (drives the per-row chip).
+    last_reply_by_inbox: dict = {}
+    unread_by_inbox: dict = {}
+    if inbox_rows:
+        ibx_ids = [r.id for r in inbox_rows]
+        replies = (await db.exec(
+            select(InboxReply)
+            .where(InboxReply.inbox_id.in_(ibx_ids))
+            .order_by(InboxReply.inbox_id, InboxReply.created_at.desc())
         )).all()
-        for m in msg_rows:
-            last_msg_by_thread.setdefault(m.thread_id, m)
+        for rp in replies:
+            last_reply_by_inbox.setdefault(rp.inbox_id, rp)
+            if rp.sender == "customer" and rp.shop_read_at is None:
+                unread_by_inbox[rp.inbox_id] = unread_by_inbox.get(rp.inbox_id, 0) + 1
 
-    items = []
-    for t in threads:
-        c = customer_by_id.get(t.customer_id)
-        last = last_msg_by_thread.get(t.id)
+    # Hydrate the campaigns the inboxes belong to so we can section
+    # the list by "DeeReach · X · ส่งเมื่อ Y".
+    campaign_by_id: dict = {}
+    cids = {r.campaign_id for r in inbox_rows if r.campaign_id is not None}
+    if cids:
+        cps = (await db.exec(
+            select(DeeReachCampaign).where(DeeReachCampaign.id.in_(cids))
+        )).all()
+        campaign_by_id = {cp.id: cp for cp in cps}
+
+    # Compose row dicts in latest-reply-first order; the template
+    # buckets them into sections by campaign_id.
+    inbox_rows_sorted = sorted(
+        inbox_rows,
+        key=lambda r: (last_reply_by_inbox.get(r.id).created_at if last_reply_by_inbox.get(r.id) else r.created_at),
+        reverse=True,
+    )
+    rows_view = []
+    for r in inbox_rows_sorted:
+        c = customer_by_id.get(r.customer_id)
+        last = last_reply_by_inbox.get(r.id)
         if last is None:
-            preview = "ยังไม่มีข้อความ"
+            preview = ""
+            sort_at = r.created_at
         else:
-            prefix = "พี่: " if last.sender == "customer" else "เรา: "
-            preview = prefix + (last.body or "[แนบไฟล์]")
-        items.append({
-            "kind": "thread",
-            "thread": t,
+            prefix = "พี่: " if last.sender == "customer" else "คุณ: "
+            preview = prefix + (last.body or "")
+            sort_at = last.created_at
+        rows_view.append({
+            "inbox": r,
+            "campaign": campaign_by_id.get(r.campaign_id) if r.campaign_id else None,
             "customer": c,
             "name": (c and c.display_name) or "ลูกค้า",
             "preview": preview,
-            "sort_at": t.last_at,
-            "href": f"/shop/messages/{t.id}",
-            "unread": int(t.shop_unread or 0),
+            "sort_at": sort_at,
+            "href": f"/shop/messages/{r.id}",
+            "unread": unread_by_inbox.get(r.id, 0),
         })
-    for cp in campaigns:
-        items.append({
-            "kind": "campaign",
-            "campaign": cp,
-            "name": _DEEREACH_KIND_LABELS.get(cp.kind, "ส่งให้ลูกค้า"),
-            "preview": cp.message_text or "",
-            "audience": cp.audience_count,
-            "sort_at": cp.sent_at,
-            "href": f"/shop/deereach/sent?campaign_id={cp.id}",
-            "unread": 0,
-        })
-    items.sort(key=lambda it: it["sort_at"], reverse=True)
+
+    # Section headers — one per campaign, "ทั่วไป" bucket for inboxes
+    # with no campaign link (manual sends sometimes lack one).
+    sections: list = []
+    seen: set = set()
+    for v in rows_view:
+        cp = v["campaign"]
+        key = cp.id if cp else None
+        if key in seen:
+            continue
+        seen.add(key)
+        if cp is not None:
+            label = _DEEREACH_KIND_LABELS.get(cp.kind, "ส่งให้ลูกค้า")
+            headline = (cp.message_text or "").strip().splitlines()[0] if cp.message_text else label
+            section = {
+                "title": f"DeeReach · \"{headline[:48]}\" — ส่งเมื่อ {cp.sent_at.strftime('%d/%m %H:%M') if cp.sent_at else ''}",
+                "kind": label,
+                "rows": [r for r in rows_view if r["campaign"] and r["campaign"].id == cp.id],
+            }
+        else:
+            section = {
+                "title": "ทั่วไป",
+                "kind": "ทั่วไป",
+                "rows": [r for r in rows_view if r["campaign"] is None],
+            }
+        sections.append(section)
 
     _is_owner = bool(request.state.staff and request.state.staff.is_owner)
     s3_top = await s3_top_context(db, shop, is_owner=_is_owner)
@@ -129,29 +162,47 @@ async def shop_messages_page(
         name="shop/messages_list.html",
         context={
             "shop": shop,
-            "threads": threads,
-            "customer_by_id": customer_by_id,
-            "items": items,
+            "sections": sections,
+            "kind_labels": _DEEREACH_KIND_LABELS,
             **s3_top,
         },
     )
 
 
-@router.get("/messages/{thread_id}", response_class=HTMLResponse)
+@router.get("/messages/{inbox_id}", response_class=HTMLResponse)
 async def shop_messages_thread(
     request: Request,
-    thread_id: UUID,
+    inbox_id: UUID,
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(get_session_context),
     db: AsyncSession = Depends(get_session),
 ):
-    thread = await db.get(CustomerThread, thread_id)
-    if thread is None or thread.shop_id != shop.id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบบทสนทนานี้")
-    customer = await db.get(Customer, thread.customer_id)
+    """Broadcast detail (shop side) — ix-deereach card + delivery
+    stats + customer reply thread + ตอบเพิ่ม CTA. Per
+    design/taemdee-shop.html → inbox.message."""
+    inbox = await db.get(Inbox, inbox_id)
+    if inbox is None or inbox.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบข้อความนี้")
+    customer = await db.get(Customer, inbox.customer_id)
+    campaign = await db.get(DeeReachCampaign, inbox.campaign_id) if inbox.campaign_id else None
 
-    await mark_read(db, thread, by="shop")
-    messages = await list_messages(db, thread.id)
+    await mark_shop_read(db, inbox)
+    replies = await list_replies(db, inbox.id)
+
+    # Customer's relationship snapshot — used by the .ix-cust-strip
+    # ("ลูกค้าประจำ · N ครั้ง"). Best-effort; falls back to "—" on
+    # missing data.
+    visit_count = None
+    if customer is not None:
+        from app.models import Point
+        from sqlmodel import func as _func
+        visit_count = (await db.exec(
+            select(_func.count()).select_from(Point).where(
+                Point.customer_id == customer.id,
+                Point.shop_id == shop.id,
+            )
+        )).one()
+        visit_count = int(visit_count or 0)
 
     return templates.TemplateResponse(
         request=request,
@@ -159,35 +210,35 @@ async def shop_messages_thread(
         context={
             "shop": shop,
             "customer": customer,
-            "thread": thread,
-            "messages": messages,
+            "inbox": inbox,
+            "campaign": campaign,
+            "replies": replies,
+            "visit_count": visit_count,
         },
     )
 
 
-@router.post("/messages/{thread_id}/reply")
+@router.post("/messages/{inbox_id}/reply")
 async def shop_messages_reply(
-    thread_id: UUID,
+    inbox_id: UUID,
     body: str = Form(""),
     shop: Shop = Depends(get_current_shop),
     _: SessionContext = Depends(get_session_context),
     db: AsyncSession = Depends(get_session),
 ):
-    thread = await db.get(CustomerThread, thread_id)
-    if thread is None or thread.shop_id != shop.id:
-        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบบทสนทนานี้")
+    inbox = await db.get(Inbox, inbox_id)
+    if inbox is None or inbox.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบข้อความนี้")
 
     text = (body or "").strip()
     if not text:
         return RedirectResponse(
-            url=f"/shop/messages/{thread_id}",
+            url=f"/shop/messages/{inbox_id}",
             status_code=status.HTTP_303_SEE_OTHER,
         )
 
-    await send_message(db, thread, sender="shop", body=text)
+    await send_reply(db, inbox, sender="shop", body=text)
     return RedirectResponse(
-        url=f"/shop/messages/{thread_id}",
+        url=f"/shop/messages/{inbox_id}",
         status_code=status.HTTP_303_SEE_OTHER,
     )
-
-

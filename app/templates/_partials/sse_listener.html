@@ -17,13 +17,13 @@
       evt.addEventListener('feed-row', onFeedRow);
       evt.addEventListener('void', onVoid);
       evt.addEventListener('messages-update', onMessagesUpdate);
-      // Re-dispatch chat-message-in as a DOM CustomEvent so per-page
-      // scripts (e.g. /shop/messages list, /shop/messages/<id> thread)
-      // can listen on `document` without opening a second EventSource
-      // — HTTP/1.1 caps origin connections at 6 and dock + chat would
-      // otherwise burn two of those.
-      evt.addEventListener('chat-message-in', function (e) {
-        document.dispatchEvent(new CustomEvent('td:chat-message-in', {
+      // Re-dispatch inbox-reply-in as a DOM CustomEvent so per-page
+      // scripts (e.g. /shop/messages list, /shop/messages/<id>) can
+      // listen on `document` without opening a second EventSource —
+      // HTTP/1.1 caps origin connections at 6 and dock + replies
+      // would otherwise burn two of those.
+      evt.addEventListener('inbox-reply-in', function (e) {
+        document.dispatchEvent(new CustomEvent('td:inbox-reply-in', {
           detail: e.data,
         }));
       });
@@ -130,9 +130,9 @@
       if (rowId) document.getElementById(rowId)?.classList.add('voided');
     }
 
-    // Live "ข้อความ" tab badge — fired by customer_chat.send_message
-    // (customer→shop) and mark_read (zeroing on shop open). Keeps the
-    // dock counter in sync without a full page reload.
+    // Live "ข้อความ" tab badge — fired by inbox_reply.send_reply
+    // (customer→shop) and mark_shop_read (zeroing on shop open).
+    // Keeps the dock counter in sync without a page reload.
     const messagesTabIcon = document.querySelector('.s3-glass-nav .gn-tab[href="/shop/messages"] .gn-icon');
     function onMessagesUpdate(e) {
       if (!messagesTabIcon) return;

@@ -24,7 +24,6 @@ from app.routes import (
     auth,
     branches,
     customer,
-    customer_chat,
     deereach,
     issuance,
     shop_chat,
@@ -136,7 +135,7 @@ class CustomerContextMiddleware:
         customer_unread = 0
         customer_items: list = []
         if customer is not None:
-            from app.services.customer_chat import customer_unread_total
+            from app.services.inbox_reply import customer_unread_total
             from app.services.customer_items import list_available as _list_customer_items
             from app.core.database import SessionFactory as _SF
             async with _SF() as db:
@@ -230,7 +229,7 @@ class ShopContextMiddleware:
         # shop request.
         shop_unread = 0
         if shop is not None:
-            from app.services.customer_chat import shop_unread_total
+            from app.services.inbox_reply import shop_unread_total
             from app.core.database import SessionFactory as _SF
             async with _SF() as db:
                 shop_unread = await shop_unread_total(db, shop.id)
@@ -509,7 +508,6 @@ async def version():
 
 app.include_router(auth.router, prefix="/auth", tags=["auth"])
 app.include_router(customer.router, tags=["customer"])
-app.include_router(customer_chat.router, tags=["customer-chat"])
 app.include_router(shops.router, prefix="/shop", tags=["shops"])
 app.include_router(shop_chat.router, prefix="/shop", tags=["shop-chat"])
 app.include_router(issuance.router, prefix="/shop", tags=["issuance"])

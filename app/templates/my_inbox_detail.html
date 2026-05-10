@@ -2,9 +2,8 @@
 {% set nav_active = 'inbox' %}
 {% block title %}ข้อความ · TaemDee แต้มดี{% endblock %}
 
-{# Hide the customer dock — like the chat thread, this page reads
-   like a single-conversation surface where the reply bar should sit
-   flush at the bottom. #}
+{# No dock — broadcast detail reads like a single-conversation surface
+   so the reply bar stays flush at the bottom of the viewport. #}
 {% block nav %}{% endblock %}
 
 {% block content %}
@@ -58,44 +57,133 @@
   {% endif %}
 
   {% if shop %}
-    {# .single forces 1-col grid — design dropped the secondary "บัตร"
-       button per the May 1 pass; "ดูร้าน" goes to /story/{shop} as the
-       single primary action. #}
     <div class="inbox-detail-cta single">
       <a class="idc-btn primary" href="/story/{{ shop.id }}">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M3 21h18"/><path d="M5 21V7l8-4v18"/><path d="M19 21V11l-6-4"/><circle cx="9" cy="9" r="1" fill="currentColor"/><circle cx="9" cy="13" r="1" fill="currentColor"/><circle cx="9" cy="17" r="1" fill="currentColor"/></svg>
         ดูร้าน
       </a>
     </div>
+  {% endif %}
 
-    {# Reply box — POST goes to /messages/{shop} which creates the
-       CustomerThread on demand, sends the message, and redirects
-       back into the chat thread (where the customer's bubble + any
-       shop reply will live). Hidden when the shop has turned off
-       customer messaging. #}
-    {% if shop.allow_customer_messages %}
-      <form class="chat-input-bar" method="POST" action="/messages/{{ shop.id }}">
-        <input type="text" class="chat-input" name="body" placeholder="ตอบกลับร้าน..." autocomplete="off" required>
-        <button type="submit" class="chat-send" aria-label="ส่ง">
-          <svg viewBox="0 0 24 24">
-            <line x1="22" y1="2" x2="11" y2="13"/>
-            <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
-          </svg>
-        </button>
-      </form>
-    {% else %}
-      <div class="chat-locked">
-        ร้านนี้ปิดรับข้อความจากลูกค้าอยู่
-      </div>
-    {% endif %}
+  {# Replies thread — own bubbles flush right (me), shop replies left
+     (them). Ix-comment chrome is shared with /shop/messages/<id> so
+     both sides read the same set of replies. #}
+  {% if replies %}
+    <div class="ix-comments-h">
+      <span class="lab">การตอบกลับ</span>
+      <span class="count">{{ replies|length }} ครั้ง</span>
+    </div>
+    <div class="ix-thread" id="ix-thread">
+      {% for r in replies %}
+        {% set side = 'me' if r.sender == 'customer' else 'them' %}
+        <div class="ix-comment ix-comment--{{ side }}" data-reply-id="{{ r.id }}">
+          <div class="ixc-text">{{ r.body }}</div>
+          <div class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</div>
+        </div>
+      {% endfor %}
+    </div>
+  {% else %}
+    <div class="ix-thread" id="ix-thread"></div>
+  {% endif %}
+
+  {% if request.query_params.get('rate_limited') %}
+    <div class="td-rate-limit">
+      ตอบได้ไม่เกิน 3 ข้อความต่อนาที · รอสักครู่นะครับ
+    </div>
+  {% endif %}
+
+  {# Reply form — scoped to this broadcast (POST /my-inbox/{id}/reply).
+     Hidden when the shop has turned off customer messaging. #}
+  {% if shop and shop.allow_customer_messages %}
+    <form class="chat-input-bar" method="POST" action="/my-inbox/{{ row.id }}/reply">
+      <input type="text" class="chat-input" name="body" placeholder="ตอบกลับร้าน..." autocomplete="off" required>
+      <button type="submit" class="chat-send" aria-label="ส่ง">
+        <svg viewBox="0 0 24 24">
+          <line x1="22" y1="2" x2="11" y2="13"/>
+          <polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/>
+        </svg>
+      </button>
+    </form>
+  {% else %}
+    <div class="chat-locked">ร้านนี้ปิดรับการตอบกลับ</div>
   {% endif %}
 
 <style>
-  /* No dock — match the chat-thread layout: pin the input bar /
-     locked notice flush to the safe-area bottom and reserve enough
-     scroll-end padding so the CTA isn't hidden under the bar. */
+  /* Pin the reply bar / locked notice flush to the safe-area bottom
+     since the page hides the dock. Detail body padding leaves room
+     for the bar + reply thread. */
   .chat-input-bar { bottom: env(safe-area-inset-bottom, 0px); }
   .chat-locked { bottom: env(safe-area-inset-bottom, 0px); }
-  .inbox-detail-cta { margin-bottom: 90px; }
+  .inbox-detail-cta { margin-bottom: 16px; }
+  .ix-thread { padding: 0 16px 110px; }
+  .td-rate-limit {
+    padding: 10px 14px; margin: 0 16px 10px;
+    background: #fff3cd; color: #855; border-radius: 10px;
+    font-size: 13px; text-align: center;
+  }
 </style>
+
+<script>
+  (function () {
+    var INBOX_ID = "{{ row.id }}";
+    var thread = document.getElementById('ix-thread');
+    var bar    = document.querySelector('.chat-input-bar');
+    var input  = bar && bar.querySelector('.chat-input');
+    if (!thread) return;
+
+    function escapeHtml(s) {
+      return (s || '').replace(/[&<>"']/g, function (c) {
+        return ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'})[c];
+      });
+    }
+    function nowHHMM() {
+      var d = new Date();
+      return String(d.getHours()).padStart(2, '0') + ':' + String(d.getMinutes()).padStart(2, '0');
+    }
+
+    function appendComment(html) {
+      var tmp = document.createElement('template');
+      tmp.innerHTML = (html || '').trim();
+      var node = tmp.content.firstElementChild;
+      if (!node) return;
+      var id = node.getAttribute('data-reply-id');
+      if (id && thread.querySelector('[data-reply-id="' + id + '"]')) return;
+      thread.appendChild(node);
+      node.scrollIntoView({ behavior: 'smooth', block: 'end' });
+    }
+
+    if (input && bar) {
+      // Optimistic AJAX submit — comment appears instantly.
+      bar.addEventListener('submit', function (e) {
+        e.preventDefault();
+        var body = (input.value || '').trim();
+        if (!body) return;
+        var tmpId = 'tmp-' + Date.now();
+        appendComment(
+          '<div class="ix-comment ix-comment--me" data-reply-id="' + tmpId + '">' +
+            '<div class="ixc-text">' + escapeHtml(body) + '</div>' +
+            '<div class="ixc-time">' + nowHHMM() + '</div>' +
+          '</div>'
+        );
+        input.value = '';
+        input.focus();
+        var fd = new FormData();
+        fd.set('body', body);
+        fetch(bar.action, {
+          method: 'POST', body: fd,
+          credentials: 'same-origin', redirect: 'manual',
+        }).catch(function (err) { console.warn('[reply] send failed', err); });
+      });
+    }
+
+    // SSE — when the shop replies live, append their comment.
+    document.addEventListener('td:inbox-reply-in', function (e) {
+      try {
+        var data = JSON.parse(e.detail);
+        if (!data || data.inbox_id !== INBOX_ID) return;
+        appendComment(data.html);
+      } catch (err) { console.warn('[reply] parse failed', err); }
+    });
+  })();
+</script>
 {% endblock %}

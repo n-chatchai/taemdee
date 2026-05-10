@@ -13001,204 +13001,6 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   flex-shrink: 0;
 }
 
-/* ============================================================
-   Chat thread — inbox.message in design/taemdee-customer.html.
-   Used by /messages/<shop>. Two-way conversation surface that
-   mixes DeeReach broadcasts (.chat-deereach) with chat bubbles
-   (.chat-bubble.me / .them). chat-input-bar sits fixed at the
-   bottom above the customer dock. chat-header replaces the
-   per-page-header treatment so the screen reads like a chat app.
-   ============================================================ */
-.chat-header {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 10px 14px;
-  background: var(--bg);
-  border-bottom: 1px solid rgba(17,17,17,0.08);
-  /* Pin to the top of the viewport so the back button + shop name
-     stay reachable while the thread scrolls. position: fixed beats
-     sticky here because the chat-thread page nests the header inside
-     a .td-thread block whose own padding + negative-margin trick
-     was breaking sticky's containing-block lookup. */
-  position: fixed;
-  top: 0;
-  left: 0;
-  right: 0;
-  z-index: 10;
-}
-.chat-header .ch-back {
-  width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--ink);
-  cursor: pointer;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-.chat-header .ch-back svg {
-  width: 18px; height: 18px;
-  stroke: currentColor; fill: none;
-  stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
-}
-.chat-header .ch-info { flex: 1; min-width: 0; }
-.chat-header .ch-name {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 14.5px;
-  color: var(--ink);
-  line-height: 1.2;
-  letter-spacing: -0.005em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.chat-header .ch-status {
-  font-family: 'Prompt', sans-serif;
-  font-size: 11px;
-  color: var(--ink-soft);
-  margin-top: 1px;
-}
-.chat-header .ch-action {
-  width: 36px; height: 36px;
-  display: flex; align-items: center; justify-content: center;
-  color: var(--ink-soft);
-  cursor: pointer;
-  text-decoration: none;
-  flex-shrink: 0;
-}
-.chat-header .ch-action svg {
-  width: 18px; height: 18px;
-  stroke: currentColor; fill: none;
-  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-}
-
-.chat-thread {
-  display: flex;
-  flex-direction: column;
-  gap: 4px;
-  padding: 4px 0 12px;
-}
-.chat-date {
-  align-self: center;
-  margin: 8px 0 4px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 10.5px;
-  color: var(--ink-softer);
-  background: rgba(17,17,17,0.05);
-  padding: 3px 12px;
-  border-radius: 99px;
-}
-
-/* Bubble base */
-.chat-bubble {
-  max-width: 76%;
-  padding: 9px 13px;
-  border-radius: 16px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 13.5px;
-  line-height: 1.45;
-  color: var(--ink);
-  word-wrap: break-word;
-  white-space: pre-wrap;
-  margin-top: 2px;
-}
-.chat-bubble.me {
-  align-self: flex-end;
-  background: var(--ink);
-  color: var(--bg);
-  border-bottom-right-radius: 4px;
-}
-.chat-bubble.them {
-  align-self: flex-start;
-  background: var(--surface);
-  border: 1px solid rgba(17,17,17,0.08);
-  border-bottom-left-radius: 4px;
-}
-.chat-time {
-  font-family: 'Prompt', sans-serif;
-  font-size: 10px;
-  color: var(--ink-softer);
-  margin-top: 2px;
-  margin-bottom: 6px;
-}
-.chat-time.me { align-self: flex-end; margin-right: 8px; }
-.chat-time.them { align-self: flex-start; margin-left: 8px; }
-
-/* DeeReach broadcast card · stretches full width within the thread.
-   Embedded inline so the customer reads campaign + chat as one
-   conversation per shop. */
-.chat-deereach {
-  align-self: stretch;
-  background: var(--butter-soft, #FFF6D9);
-  border: 1px solid rgba(255, 217, 82, 0.55);
-  border-radius: 16px;
-  padding: 14px 16px;
-  margin: 6px 0 2px;
-}
-.chat-deereach .cd-tag {
-  display: inline-flex;
-  align-items: center;
-  gap: 5px;
-  background: var(--accent);
-  color: #fff;
-  padding: 3px 9px;
-  border-radius: 99px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 10px;
-  font-weight: 700;
-  letter-spacing: 0.04em;
-  text-transform: uppercase;
-  margin-bottom: 10px;
-}
-.chat-deereach .cd-tag svg {
-  width: 11px; height: 11px;
-  fill: currentColor;
-}
-.chat-deereach .cd-text {
-  font-family: 'Prompt', sans-serif;
-  font-size: 14px;
-  line-height: 1.55;
-  color: var(--ink);
-  white-space: pre-wrap;
-}
-.chat-deereach .cd-voucher {
-  margin-top: 12px;
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 10px 12px;
-  background: rgba(255,255,255,0.7);
-  border-radius: 10px;
-  border: 1px dashed rgba(176, 130, 30, 0.35);
-}
-.chat-deereach .cd-voucher .vc-icon {
-  width: 32px; height: 32px;
-  border-radius: 8px;
-  background: var(--accent);
-  color: #fff;
-  display: flex; align-items: center; justify-content: center;
-  flex-shrink: 0;
-}
-.chat-deereach .cd-voucher .vc-icon svg {
-  width: 16px; height: 16px;
-  stroke: currentColor; fill: none;
-  stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
-}
-.chat-deereach .cd-voucher .vc-info { flex: 1; min-width: 0; }
-.chat-deereach .cd-voucher .vc-name {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 13px;
-  color: var(--ink);
-  line-height: 1.25;
-}
-.chat-deereach .cd-voucher .vc-meta {
-  font-family: 'Prompt', sans-serif;
-  font-size: 10.5px;
-  color: var(--ink-soft);
-  margin-top: 2px;
-}
-
 /* Input bar — fixed above the customer dock so the compose stays
    visible while the thread scrolls. */
 .chat-input-bar {
@@ -13279,3 +13081,312 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   font-size: 13px;
   z-index: 10;
 }
+
+/* ============================================================
+   Inbox detail chrome (ix-*) — broadcast post + replies. Used by
+   /shop/messages/<inbox_id> (operator view) and /my-inbox/<id>
+   (customer view). Replaces the old chat-bubble pattern: replies
+   render as ix-comment rows with me/them sides instead of bubbles
+   so the conversation reads as comments under a post (per
+   design/taemdee-customer.html → inbox.message and
+   design/taemdee-shop.html → inbox.message).
+
+   Page-grouping list (.ib-*) for /shop/messages — sections per
+   campaign with "ลูกค้าตอบกลับ" rows underneath.
+   ============================================================ */
+
+/* Shop side — customer relationship strip atop the detail page. */
+.ix-cust-strip {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 16px;
+  background: var(--surface);
+  border-bottom: 1px solid rgba(17,17,17,0.08);
+}
+.ix-cust-strip .ix-avatar {
+  width: 38px; height: 38px;
+  border-radius: 50%;
+  background: var(--accent-soft, #FFE3DA);
+  color: var(--accent);
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+  flex-shrink: 0;
+}
+.ix-cust-strip .ix-info { flex: 1; min-width: 0; }
+.ix-cust-strip .ix-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700; font-size: 14px;
+  color: var(--ink); line-height: 1.2;
+}
+.ix-cust-strip .ix-tag {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px; color: var(--ink-soft);
+  margin-top: 1px;
+}
+.ix-cust-strip .ix-tag .dot-on {
+  display: inline-block;
+  width: 6px; height: 6px;
+  border-radius: 50%;
+  background: var(--mint, #6FA882);
+  margin-right: 4px;
+  vertical-align: 1px;
+}
+.ix-cust-strip .ix-view-cust {
+  flex-shrink: 0;
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  padding: 6px 11px;
+  background: var(--bg);
+  border: 1px solid rgba(17,17,17,0.12);
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  font-weight: 600;
+  color: var(--ink);
+  text-decoration: none;
+}
+
+.ix-body {
+  padding: 16px;
+}
+
+/* DeeReach broadcast card embedded above the replies. */
+.ix-deereach {
+  background: var(--butter-soft, #FFF6D9);
+  border: 1px solid rgba(255, 217, 82, 0.55);
+  border-radius: 16px;
+  padding: 18px 20px;
+}
+.ix-deereach .ixd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  background: var(--accent);
+  color: #fff;
+  padding: 3px 9px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  font-weight: 700;
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 12px;
+}
+.ix-deereach .ixd-tag svg {
+  width: 10px; height: 10px;
+  fill: currentColor;
+}
+.ix-deereach .ixd-headline {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 17px;
+  color: var(--ink);
+  line-height: 1.35;
+  letter-spacing: -0.01em;
+  margin-bottom: 6px;
+}
+.ix-deereach .ixd-text {
+  font-family: 'Prompt', sans-serif;
+  font-size: 13.5px;
+  line-height: 1.55;
+  color: var(--ink-soft);
+  white-space: pre-wrap;
+}
+.ix-deereach .ixd-stats {
+  margin-top: 12px;
+  padding-top: 12px;
+  border-top: 1px dashed rgba(176, 130, 30, 0.35);
+  display: flex;
+  gap: 14px;
+  flex-wrap: wrap;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+}
+.ix-deereach .ixd-stats strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+/* Section header above the reply thread. */
+.ix-comments-h {
+  margin: 24px 4px 12px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+}
+.ix-comments-h .lab {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.ix-comments-h .count {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+
+/* Reply rows — me/them sides instead of design's per-author chip
+   so customer + shop see one set of styles. me = right-aligned ink
+   pill, them = left-aligned surface pill — feels more like a chat
+   conversation than design's borderless rows but keeps the comments-
+   under-a-post mental model. */
+.ix-thread {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+}
+.ix-comment {
+  max-width: 76%;
+  padding: 8px 12px;
+  border-radius: 14px;
+  font-family: 'Prompt', sans-serif;
+}
+.ix-comment--me {
+  align-self: flex-end;
+  background: var(--ink);
+  color: var(--bg);
+  border-bottom-right-radius: 4px;
+}
+.ix-comment--them {
+  align-self: flex-start;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.08);
+  border-bottom-left-radius: 4px;
+}
+.ix-comment .ixc-text {
+  font-size: 13.5px;
+  line-height: 1.45;
+  white-space: pre-wrap;
+  word-wrap: break-word;
+}
+.ix-comment .ixc-time {
+  font-size: 10px;
+  margin-top: 2px;
+  opacity: 0.55;
+  text-align: right;
+}
+.ix-comment--them .ixc-time {
+  text-align: left;
+  color: var(--ink-softer);
+  opacity: 1;
+}
+
+/* Shop /shop/messages — section per broadcast + reply rows. */
+.ib-context-h {
+  margin: 12px 16px 6px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  font-weight: 700;
+}
+.ib-list {
+  margin: 0 16px 16px;
+  display: flex;
+  flex-direction: column;
+  gap: 6px;
+}
+.ib-card {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 12px 14px;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.08);
+  border-radius: 14px;
+  text-decoration: none;
+  color: var(--ink);
+  cursor: pointer;
+}
+.ib-card.unread {
+  background: var(--butter-soft, #FFF6D9);
+  border-color: rgba(255, 217, 82, 0.45);
+}
+.ib-card .ib-avatar {
+  width: 36px; height: 36px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 14px;
+  flex-shrink: 0;
+}
+.ib-card.unread .ib-avatar {
+  background: var(--accent);
+}
+.ib-card .ib-body { flex: 1; min-width: 0; }
+.ib-card .ib-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.ib-card .ib-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13.5px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.ib-card .ib-time {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+.ib-card .ib-preview {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+  line-height: 1.35;
+  margin-top: 1px;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.ib-card.unread .ib-preview { color: var(--ink); }
+.ib-card .ib-context {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  color: var(--ink-softer);
+  margin-top: 3px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+.ib-card .ib-context .ctx-tag {
+  background: rgba(255, 217, 82, 0.4);
+  color: var(--ink);
+  padding: 1px 6px;
+  border-radius: 99px;
+  font-weight: 600;
+}
+.ib-card.unread .ib-context .ctx-tag {
+  background: rgba(255, 255, 255, 0.7);
+}
+.ib-card .ib-context .ctx-unread {
+  background: var(--accent);
+  color: #fff;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-weight: 700;
+}
+.ib-empty {
+  padding: 50px 24px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-size: 14px;
+  line-height: 1.7;
+}
+.ib-empty a { color: var(--accent); font-weight: 600; }

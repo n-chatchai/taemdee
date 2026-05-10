@@ -1,247 +1,46 @@
 {% extends "_layouts/s_base.html" %}
-{% block title %}ข้อความ · {{ shop.name }} · TaemDee{% endblock %}
+{% block title %}ลูกค้าตอบกลับ DeeReach · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
 {% include "_partials/page_top.html" %}
 
+{# Per design/taemdee-shop.html → inbox.list. Shop sees their own
+   broadcasts grouped by campaign with a list of customers who
+   replied under each. Replies are scoped per broadcast — there is
+   no general chat anymore. #}
 <div class="page-scroll">
-<div class="s-msgs">
-  {% set _chat_count = items|selectattr('kind', 'equalto', 'thread')|list|length %}
-  {% set _reach_count = items|selectattr('kind', 'equalto', 'campaign')|list|length %}
-  {# Tab pills — split the merged feed into chat threads vs DeeReach
-     broadcasts. Default tab = แชท because that's the realtime side
-     the operator most often returns to. JS toggles row visibility
-     by data-kind. #}
-  <div class="tab-pills" role="tablist">
-    <button type="button" class="tab-pill active" data-tab="thread" role="tab">
-      แชท{% if _chat_count %} · {{ _chat_count }}{% endif %}
-    </button>
-    <button type="button" class="tab-pill" data-tab="campaign" role="tab">
-      แต้มดี{% if _reach_count %} · {{ _reach_count }}{% endif %}
-    </button>
-  </div>
-
-  {% if not items %}
-    <div class="s-msgs-empty">
-      ยังไม่มีกิจกรรม · ส่งแคมเปญ DeeReach ผ่าน "<a href="/shop/deereach">แนะนำ</a>"
-      หรือเปิดให้ลูกค้าทักร้านได้ที่ <a href="/shop/settings">ตั้งค่า</a>
+<div class="page-container">
+  {% if not sections %}
+    <div class="ib-empty">
+      <strong>ยังไม่มีลูกค้าตอบกลับ</strong><br>
+      ส่ง DeeReach ผ่าน "<a href="/shop/deereach">แนะนำ</a>" — ลูกค้าตอบกลับจะมาแสดงที่นี่
     </div>
   {% else %}
-    <ul class="s-thread-list">
-      {% for it in items %}
-        <li data-kind="{{ it.kind }}"{% if it.kind == 'thread' %} data-thread-id="{{ it.thread.id }}"{% endif %}>
-          <a href="{{ it.href }}" data-kind="{{ it.kind }}">
-            <div class="st-avatar st-avatar-{{ it.kind }}">
-              {% if it.kind == 'thread' %}
-                {{ it.name[0]|upper }}
-              {% else %}
-                {# DeeReach campaign — speech-out icon #}
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <path d="M3 11l18-8-8 18-2-8-8-2z"/>
-                </svg>
-              {% endif %}
-            </div>
-            <div class="st-info">
-              <div class="st-name-row">
-                <div class="st-name">{{ it.name }}</div>
-                {% if it.kind == 'thread' %}
-                  <span class="st-tag-chat">แชท</span>
-                {% endif %}
-                <span class="st-time">{{ it.sort_at.strftime('%d/%m %H:%M') }}</span>
+    {% for section in sections %}
+      <div class="ib-context-h">{{ section.title }}</div>
+      <div class="ib-list">
+        {% for r in section.rows %}
+          <a class="ib-card{% if r.unread %} unread{% endif %}" href="{{ r.href }}">
+            {% set _initial = (r.name[0] if r.name else 'ก')|upper %}
+            <div class="ib-avatar">{{ _initial }}</div>
+            <div class="ib-body">
+              <div class="ib-row">
+                <div class="ib-name">{{ r.name }}</div>
+                <div class="ib-time">{{ r.sort_at.strftime('%d/%m %H:%M') }}</div>
               </div>
-              <div class="st-preview">
-                {% if it.kind == 'campaign' %}
-                  ส่งให้ {{ it.audience }} คน{% if it.preview %} · {{ it.preview[:60] }}{% if it.preview|length > 60 %}…{% endif %}{% endif %}
-                {% else %}
-                  {{ it.preview or 'แตะเพื่อดูบทสนทนา' }}
-                {% endif %}
+              <div class="ib-preview">{{ r.preview }}</div>
+              <div class="ib-context">
+                <span class="ctx-tag">{{ section.kind }}</span>
+                {% if r.unread %}<span class="ctx-unread">{{ r.unread }} ใหม่</span>{% endif %}
               </div>
             </div>
-            {% if it.unread %}
-              <span class="st-badge">{{ it.unread }}</span>
-            {% endif %}
           </a>
-        </li>
-      {% endfor %}
-    </ul>
+        {% endfor %}
+      </div>
+    {% endfor %}
   {% endif %}
 </div>
-</div> {# /.page-scroll #}
-
-<style>
-  /* Empty state — typography hero matches /my-inbox 0. mark on the
-     customer side, but here it's a textual prompt with action links
-     since the operator can act on it. */
-  .s-msgs-empty {
-    padding: 60px 24px;
-    text-align: center;
-    color: var(--ink-soft);
-    font-size: 14px;
-    line-height: 1.7;
-  }
-  .s-msgs-empty a { color: var(--accent); font-weight: 600; }
-
-  /* Pill tabs styled by the shared .tab-pills / .tab-pill rules in
-     app.css — see /my-inbox for the customer-side counterpart. */
-
-  /* ── Thread list — editorial refresh ────────────────────────────
-     Mirrors the moves on the customer-side /my-inbox: 3px accent
-     left rail for unread (rows with .st-badge), flat read state,
-     typography hierarchy (Host Grotesk lowercase time, bolder name,
-     2-line preview), squarish tag chip. Keeps the per-row <li>
-     markup intact so the existing JS hook (data-thread-id /
-     .st-badge bump) doesn't shift. */
-  .s-thread-list {
-    list-style: none;
-    padding: 0;
-    margin: 0;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .s-thread-list > li { position: relative; }
-  /* Accent rail — only for rows that carry an unread badge. */
-  .s-thread-list > li:has(.st-badge)::before {
-    content: '';
-    position: absolute;
-    top: 10px;
-    bottom: 10px;
-    left: 6px;
-    width: 3px;
-    border-radius: 999px;
-    background: var(--accent);
-    z-index: 1;
-  }
-  .s-thread-list a {
-    display: flex;
-    align-items: flex-start;
-    gap: 12px;
-    padding: 14px 14px 14px 17px;
-    border-radius: 14px;
-    background: transparent;
-    border: none;
-    text-decoration: none;
-    color: var(--ink);
-    transition: background-color 0.18s ease, transform 0.12s ease;
-  }
-  .s-thread-list > li:has(.st-badge) a {
-    background: var(--surface);
-    box-shadow: 0 1px 2px rgba(17,17,17,0.04);
-  }
-  .s-thread-list a:hover {
-    background: color-mix(in srgb, var(--surface) 85%, var(--accent) 4%);
-  }
-  .s-thread-list a:active { transform: scale(0.99); }
-
-  .st-avatar {
-    width: 40px; height: 40px;
-    border-radius: 50%;
-    background: var(--accent); color: #fff;
-    display: flex; align-items: center; justify-content: center;
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700; font-size: 16px;
-    flex-shrink: 0;
-  }
-  .st-avatar-campaign {
-    background: var(--butter, #FFD952);
-    color: var(--ink);
-  }
-  .st-avatar svg { width: 18px; height: 18px; }
-
-  .st-info { flex: 1; min-width: 0; }
-  .st-name-row {
-    display: flex;
-    align-items: baseline;
-    gap: 8px;
-  }
-  .st-name {
-    font-family: 'Prompt', sans-serif;
-    font-weight: 700;
-    font-size: 15px;
-    color: var(--ink);
-    letter-spacing: -0.005em;
-    min-width: 0;
-    overflow: hidden;
-    text-overflow: ellipsis;
-    white-space: nowrap;
-  }
-  .s-thread-list > li:not(:has(.st-badge)) .st-name {
-    font-weight: 500;
-    color: var(--ink-soft);
-  }
-
-  /* Squarish tag chip — same shape as /my-inbox .ic-tag-chat so the
-     two surfaces read with one tag language. */
-  .st-tag-chat {
-    display: inline-flex;
-    align-items: center;
-    padding: 1px 6px;
-    border-radius: 4px;
-    background: var(--accent);
-    color: #fff;
-    font-family: 'Host Grotesk', sans-serif;
-    font-size: 9px;
-    font-weight: 700;
-    letter-spacing: 0.06em;
-    text-transform: uppercase;
-    flex-shrink: 0;
-  }
-  .s-thread-list > li:not(:has(.st-badge)) .st-tag-chat {
-    background: var(--ink-softer);
-  }
-
-  /* Time — Host Grotesk lowercase, accent on unread, soft on read.
-     Pinned to the right of the name row. */
-  .st-time {
-    font-family: 'Host Grotesk', sans-serif;
-    font-size: 11px;
-    font-weight: 600;
-    color: var(--accent);
-    letter-spacing: 0.02em;
-    margin-left: auto;
-    flex-shrink: 0;
-  }
-  .s-thread-list > li:not(:has(.st-badge)) .st-time {
-    color: var(--ink-softer);
-    font-weight: 500;
-  }
-
-  .st-preview {
-    font-family: 'Prompt', sans-serif;
-    font-size: 13px;
-    color: var(--ink);
-    line-height: 1.5;
-    margin-top: 4px;
-    overflow: hidden;
-    display: -webkit-box;
-    -webkit-line-clamp: 2;
-    line-clamp: 2;
-    -webkit-box-orient: vertical;
-  }
-  .s-thread-list > li:not(:has(.st-badge)) .st-preview {
-    color: var(--ink-softer);
-  }
-
-  /* Unread badge — keeps the count chip on the right, but tightened
-     to align with the typographic rhythm of the rest of the row. */
-  .st-badge {
-    align-self: center;
-    background: var(--accent);
-    color: #fff;
-    border-radius: 999px;
-    min-width: 22px;
-    height: 22px;
-    padding: 0 7px;
-    display: inline-flex;
-    align-items: center;
-    justify-content: center;
-    font-family: 'Host Grotesk', sans-serif;
-    font-size: 11px;
-    font-weight: 700;
-    letter-spacing: 0;
-    flex-shrink: 0;
-  }
-</style>
+</div>
 {% endblock %}
 
 {% block td_class %} td-tabbed td-pinned{% endblock %}
@@ -249,103 +48,4 @@
 {% block nav %}
   {% set nav_active = 'messages' %}
   {% include "_partials/glass_nav.html" %}
-{% endblock %}
-
-{% block body_end %}
-  {# Tab toggle — pure client-side filter. Active pill gets .active;
-     each <li data-kind> shows or hides based on the picked tab.
-     Default = "thread" (แชท) because the realtime side is the one
-     the operator usually returns to. The chosen tab persists across
-     reloads via localStorage so a refresh doesn't bounce the user
-     back to the default. #}
-  <script>
-    (function () {
-      var tabs = document.querySelectorAll('.tab-pill[data-tab]');
-      var rows = document.querySelectorAll('.s-thread-list > li[data-kind]');
-      if (!tabs.length) return;
-
-      function apply(kind) {
-        tabs.forEach(function (t) {
-          t.classList.toggle('active', t.dataset.tab === kind);
-        });
-        rows.forEach(function (r) {
-          r.style.display = r.dataset.kind === kind ? '' : 'none';
-        });
-        try { localStorage.setItem('td_shop_msgs_tab', kind); } catch (_) {}
-      }
-
-      var saved = null;
-      try { saved = localStorage.getItem('td_shop_msgs_tab'); } catch (_) {}
-      apply(saved === 'campaign' ? 'campaign' : 'thread');
-
-      tabs.forEach(function (t) {
-        t.addEventListener('click', function () { apply(t.dataset.tab); });
-      });
-    })();
-  </script>
-
-  {# Live updates — when a customer sends a message, the matching
-     thread row updates its preview + timestamp, bumps the unread
-     badge, and bubbles to the top of the list. We piggy-back on the
-     single /shop/events EventSource opened by sse_listener.html
-     (re-dispatched as the `td:chat-message-in` CustomEvent) instead
-     of opening a second stream. #}
-  <script>
-    (function () {
-      var list = document.querySelector('.s-thread-list');
-      if (!list) return;
-
-      function fmtDateTime(d) {
-        var dd = String(d.getDate()).padStart(2, '0');
-        var mm = String(d.getMonth() + 1).padStart(2, '0');
-        var hh = String(d.getHours()).padStart(2, '0');
-        var mi = String(d.getMinutes()).padStart(2, '0');
-        return dd + '/' + mm + ' ' + hh + ':' + mi;
-      }
-
-      function bumpRow(threadId, bubbleHtml) {
-        var li = list.querySelector('li[data-thread-id="' + threadId + '"]');
-        if (!li) {
-          // First-ever message from this customer — no row exists
-          // yet. Soft reload picks up the freshly-rendered list.
-          location.reload();
-          return;
-        }
-        var tmp = document.createElement('div');
-        tmp.innerHTML = bubbleHtml;
-        var body = tmp.querySelector('.msg-body');
-        var bodyText = body ? body.textContent : '';
-
-        var preview = li.querySelector('.st-preview');
-        if (preview) preview.textContent = 'พี่: ' + bodyText;
-        var time = li.querySelector('.st-time');
-        if (time) time.textContent = fmtDateTime(new Date());
-
-        var anchor = li.querySelector('a');
-        var badge = li.querySelector('.st-badge');
-        if (badge) {
-          var n = parseInt(badge.textContent, 10) || 0;
-          badge.textContent = String(n + 1);
-        } else if (anchor) {
-          badge = document.createElement('span');
-          badge.className = 'st-badge';
-          badge.textContent = '1';
-          anchor.appendChild(badge);
-        }
-
-        if (li !== list.firstElementChild) {
-          list.insertBefore(li, list.firstElementChild);
-        }
-      }
-
-      document.addEventListener('td:chat-message-in', function (e) {
-        try {
-          var data = JSON.parse(e.detail);
-          if (data && data.thread_id && data.html) {
-            bumpRow(data.thread_id, data.html);
-          }
-        } catch (_) {}
-      });
-    })();
-  </script>
 {% endblock %}

@@ -1841,11 +1841,10 @@ async def my_inbox(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Unified inbox — DeeReach broadcast messages and Customer↔Shop
-    chat threads in one list, sorted by most-recent activity. Tapping
-    a DeeReach row opens /my-inbox/{id} (read-only detail with the
-    shop's body); tapping a thread row opens /messages/{shop_id}
-    (compose + reply view)."""
+    """Customer inbox — DeeReach broadcasts the shops sent. Tapping a
+    row opens /my-inbox/{id} where the customer can read the broadcast
+    and reply (replies are scoped to that broadcast per design).
+    Customer-initiated chat is intentionally not supported."""
     customer, was_created = await find_or_create_customer(customer_cookie, db)
     rows = (await db.exec(
         select(Inbox).where(Inbox.customer_id == customer.id)
@@ -1853,16 +1852,7 @@ async def my_inbox(
         .limit(50)
     )).all()
 
-    # Customer ↔ Shop threads (Phase 1 chat).
-    from app.models import CustomerThread, CustomerMessage
-    threads = (await db.exec(
-        select(CustomerThread)
-        .where(CustomerThread.customer_id == customer.id)
-        .order_by(CustomerThread.last_at.desc())
-        .limit(50)
-    )).all()
-
-    shop_ids = {r.shop_id for r in rows} | {t.shop_id for t in threads}
+    shop_ids = {r.shop_id for r in rows}
     shops_by_id = {}
     if shop_ids:
         shop_rows = (await db.exec(select(Shop).where(Shop.id.in_(shop_ids)))).all()
@@ -1875,28 +1865,10 @@ async def my_inbox(
         select(CustomerShopMute.shop_id).where(CustomerShopMute.customer_id == customer.id)
     )).all())
 
-    # Last-message preview per thread — single batched query keyed by
-    # thread_id. Empty threads (no messages yet) get "ยังไม่มีข้อความ"
-    # so they still render and the customer can re-enter to compose.
-    last_msg_by_thread = {}
-    if threads:
-        thread_ids = [t.id for t in threads]
-        msg_rows = (await db.exec(
-            select(CustomerMessage)
-            .where(CustomerMessage.thread_id.in_(thread_ids))
-            .order_by(CustomerMessage.thread_id, CustomerMessage.created_at.desc())
-        )).all()
-        for m in msg_rows:
-            last_msg_by_thread.setdefault(m.thread_id, m)
-
     items = []
     for r in rows:
-        # `has_offer` powers the "มีของฝาก" filter pill in /my-inbox
-        # and the .ic-offer chip on the inbox card. Only DeeReach rows
-        # ever attach a voucher; chat threads don't.
         offer_text = (r.offer_text or "").strip() if hasattr(r, "offer_text") else ""
         items.append({
-            "kind": "reach",
             "row": r,
             "shop": shops_by_id.get(r.shop_id),
             "muted": r.shop_id in muted_shop_ids,
@@ -1907,28 +1879,6 @@ async def my_inbox(
             "has_offer": bool(offer_text),
             "offer_text": offer_text or None,
         })
-    for t in threads:
-        last = last_msg_by_thread.get(t.id)
-        sender_prefix = ""
-        preview = "ยังไม่มีข้อความ · พิมพ์ส่งร้านได้เลย"
-        if last is not None:
-            if last.sender == "customer":
-                sender_prefix = "พี่: "
-            preview = sender_prefix + (last.body or "[แนบไฟล์]")
-        items.append({
-            "kind": "thread",
-            "thread": t,
-            "shop": shops_by_id.get(t.shop_id),
-            "muted": t.shop_id in muted_shop_ids,
-            "sort_at": t.last_at,
-            "unread": bool(t.customer_unread),
-            "unread_count": int(t.customer_unread or 0),
-            "href": f"/messages/{t.shop_id}",
-            "preview": preview,
-            "has_offer": False,
-            "offer_text": None,
-        })
-    items.sort(key=lambda it: it["sort_at"], reverse=True)
 
     # Greeting context for the page-head ("สวัสดีครับพี่X · วันศุกร์ ขอให้
     # เป็นวันที่ดี"). Same shape as /my-cards for consistency.
@@ -1938,9 +1888,7 @@ async def my_inbox(
         datetime.now(timezone.utc).astimezone(BKK).weekday()
     ]
 
-    reach_unread = sum(1 for it in items if it["kind"] == "reach" and it["unread"])
-    thread_unread = sum(int(it.get("unread_count") or 0) for it in items if it["kind"] == "thread")
-    unread_count = reach_unread + thread_unread
+    unread_count = sum(1 for it in items if it["unread"])
 
     response = templates.TemplateResponse(
         request=request,
@@ -1992,10 +1940,11 @@ async def my_inbox_detail(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """Inbox.detail — single message view with shop hero + body + 'open
-    card' / 'mute shop' actions. Auto-marks the row as read on view.
-    404s if the row belongs to another customer (ownership check) so
-    sharing a URL leaks nothing."""
+    """Inbox.message — broadcast detail with shop hero, body, attached
+    voucher, plus the customer's own replies and the shop's replies
+    inline as ix-comment rows. Reply form posts to
+    /my-inbox/{id}/reply. Customer-initiated chat is intentionally not
+    available."""
     customer, _ = await find_or_create_customer(customer_cookie, db)
     row = await db.get(Inbox, inbox_id)
     if row is None or row.customer_id != customer.id:
@@ -2005,8 +1954,6 @@ async def my_inbox_detail(
         row.read_at = utcnow()
         db.add(row)
         await db.commit()
-        # Drop the dock `ข้อความ` badge live on every open tab — the SSE
-        # stream picks this up and updates without a page refresh.
         from app.services.events import publish_customer
         publish_customer(
             customer.id, "inbox-update",
@@ -2014,6 +1961,7 @@ async def my_inbox_detail(
         )
 
     from app.models import CustomerShopMute
+    from app.services.inbox_reply import list_replies
     is_muted = False
     if shop is not None:
         is_muted = (await db.exec(
@@ -2022,6 +1970,7 @@ async def my_inbox_detail(
                 CustomerShopMute.shop_id == shop.id,
             )
         )).first() is not None
+    replies = await list_replies(db, row.id)
 
     return templates.TemplateResponse(
         request=request,
@@ -2030,12 +1979,56 @@ async def my_inbox_detail(
             "customer": customer,
             "shop": shop,
             "row": row,
+            "replies": replies,
             "is_muted": is_muted,
-            # Note: this row was just flipped to read above, so the count
-            # already excludes it. Badge reflects the next unread, if any.
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
             "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
+    )
+
+
+@router.post("/my-inbox/{inbox_id}/reply")
+async def my_inbox_reply(
+    request: Request,
+    inbox_id: uuid.UUID,
+    body: str = Form(""),
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Customer reply to a DeeReach broadcast. Replies are scoped to
+    the broadcast (inbox_id) — the customer cannot start a new
+    conversation, only respond to one the shop opened. Rate-limited
+    via the inbox_reply service. Redirects back to the detail page so
+    the new ix-comment shows on the next render; the SSE event keeps
+    the shop side live too."""
+    from app.services.inbox_reply import RateLimited, send_reply
+
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    row = await db.get(Inbox, inbox_id)
+    if row is None or row.customer_id != customer.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบข้อความ")
+
+    text = (body or "").strip()
+    if not text:
+        return RedirectResponse(
+            url=f"/my-inbox/{inbox_id}", status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    shop = await db.get(Shop, row.shop_id) if row.shop_id else None
+    if shop is None or not shop.allow_customer_messages:
+        return RedirectResponse(
+            url=f"/my-inbox/{inbox_id}", status_code=status.HTTP_303_SEE_OTHER,
+        )
+
+    try:
+        await send_reply(db, row, sender="customer", body=text)
+    except RateLimited:
+        return RedirectResponse(
+            url=f"/my-inbox/{inbox_id}?rate_limited=1",
+            status_code=status.HTTP_303_SEE_OTHER,
+        )
+    return RedirectResponse(
+        url=f"/my-inbox/{inbox_id}", status_code=status.HTTP_303_SEE_OTHER,
     )
 
 

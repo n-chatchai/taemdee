@@ -1,0 +1,244 @@
+"""Reply lifecycle for the broadcast-scoped inbox model.
+
+Replaces the old customer_chat module. Replies are always parented on
+an Inbox row (a DeeReach broadcast that landed in the customer's
+inbox), so the data model rules out customer-initiated chat by design.
+
+Per-side responsibilities:
+  · send_reply(inbox_id, sender='customer'|'shop', body): create the
+    InboxReply row, fire the SSE event for the OTHER side's open
+    detail page (so the new comment appears live), and roll the
+    unread badges.
+  · mark_shop_read(inbox_id): set shop_read_at on every customer-sender
+    reply for that inbox — fired when the operator opens the detail
+    page so the unread badge in /shop/messages drops.
+  · mark_customer_read(inbox_id): clear Inbox.read_at NULL → utcnow()
+    when the customer opens the detail page (replaces the read flag we
+    used to flip in routes/customer.py).
+"""
+
+import html as _html
+import json
+from datetime import timedelta
+from typing import List
+from uuid import UUID
+
+from sqlmodel import func, select
+from sqlmodel.ext.asyncio.session import AsyncSession
+
+from app.models import Inbox, InboxReply
+from app.models.util import utcnow
+
+
+# Customer can send at most this many replies to a single broadcast in
+# the trailing window — guards against automated abuse. Shop side is
+# unrestricted; replying to your own customers is the desired behaviour.
+CUSTOMER_RATE_WINDOW = timedelta(minutes=1)
+CUSTOMER_RATE_LIMIT = 3
+
+
+class RateLimited(Exception):
+    """Raised by send_reply when the customer has hit
+    CUSTOMER_RATE_LIMIT replies within CUSTOMER_RATE_WINDOW on this
+    inbox row."""
+
+
+async def list_replies(
+    db: AsyncSession, inbox_id: UUID, *, limit: int = 200
+) -> List[InboxReply]:
+    """Oldest-first reply list for the broadcast detail page."""
+    rows = (await db.exec(
+        select(InboxReply)
+        .where(InboxReply.inbox_id == inbox_id)
+        .order_by(InboxReply.created_at)
+        .limit(limit)
+    )).all()
+    return list(rows)
+
+
+async def _customer_recent_count(
+    db: AsyncSession, inbox_id: UUID
+) -> int:
+    cutoff = utcnow() - CUSTOMER_RATE_WINDOW
+    rows = (await db.exec(
+        select(InboxReply).where(
+            InboxReply.inbox_id == inbox_id,
+            InboxReply.sender == "customer",
+            InboxReply.created_at >= cutoff,
+        )
+    )).all()
+    return len(list(rows))
+
+
+async def send_reply(
+    db: AsyncSession,
+    inbox: Inbox,
+    *,
+    sender: str,
+    body: str,
+) -> InboxReply:
+    """Append a reply onto the broadcast and notify the other side via
+    SSE. Returns the persisted InboxReply.
+
+    sender:
+      · 'customer' → reply enters the conversation, customer-rate-
+        limited; shop's unread badge increments.
+      · 'shop'     → operator reply; resets Inbox.read_at to NULL so
+        the customer sees the broadcast as unread again on next list
+        render.
+    """
+    text = (body or "").strip()
+    if not text:
+        raise ValueError("body required")
+    if sender not in ("customer", "shop"):
+        raise ValueError(f"invalid sender: {sender}")
+
+    if sender == "customer":
+        recent = await _customer_recent_count(db, inbox.id)
+        if recent >= CUSTOMER_RATE_LIMIT:
+            raise RateLimited()
+
+    reply = InboxReply(inbox_id=inbox.id, sender=sender, body=text)
+    db.add(reply)
+
+    # When the shop replies, kick the broadcast back to "unread" on the
+    # customer side — the shop's reply IS new content for the customer
+    # to read, even if the original broadcast was already opened.
+    if sender == "shop":
+        inbox.read_at = None
+        db.add(inbox)
+
+    await db.commit()
+    await db.refresh(reply)
+
+    await _publish_reply_events(db, inbox, reply)
+    return reply
+
+
+async def mark_shop_read(db: AsyncSession, inbox: Inbox) -> int:
+    """Stamp shop_read_at on every customer-sender reply for this
+    inbox. Returns how many rows were updated. Called when the shop
+    opens /shop/messages/<inbox_id> so the unread chip on the list
+    drops to zero."""
+    rows = (await db.exec(
+        select(InboxReply).where(
+            InboxReply.inbox_id == inbox.id,
+            InboxReply.sender == "customer",
+            InboxReply.shop_read_at.is_(None),
+        )
+    )).all()
+    n = 0
+    now = utcnow()
+    for r in rows:
+        r.shop_read_at = now
+        db.add(r)
+        n += 1
+    if n:
+        await db.commit()
+    return n
+
+
+async def shop_unread_inbox_ids(db: AsyncSession, shop_id: UUID) -> List[UUID]:
+    """Inbox rows under this shop that carry at least one unread
+    customer reply. Used to badge /shop/messages list rows + the dock
+    counter."""
+    rows = (await db.exec(
+        select(Inbox.id)
+        .join(InboxReply, InboxReply.inbox_id == Inbox.id)
+        .where(
+            Inbox.shop_id == shop_id,
+            InboxReply.sender == "customer",
+            InboxReply.shop_read_at.is_(None),
+        )
+        .group_by(Inbox.id)
+    )).all()
+    return [r for r in rows]
+
+
+async def shop_unread_total(db: AsyncSession, shop_id: UUID) -> int:
+    """Count of customer-sender replies under this shop that haven't
+    been opened by the operator yet — drives the dock badge."""
+    n = (await db.exec(
+        select(func.count())
+        .select_from(InboxReply)
+        .join(Inbox, Inbox.id == InboxReply.inbox_id)
+        .where(
+            Inbox.shop_id == shop_id,
+            InboxReply.sender == "customer",
+            InboxReply.shop_read_at.is_(None),
+        )
+    )).one()
+    return int(n or 0)
+
+
+async def customer_unread_total(
+    db: AsyncSession, customer_id: UUID
+) -> int:
+    """Inbox rows for this customer with read_at IS NULL — the count
+    drives the customer-side dock badge. When the shop replies on a
+    broadcast we reset Inbox.read_at to None (see send_reply), so a
+    shop reply bumps this counter the same way a fresh broadcast does."""
+    n = (await db.exec(
+        select(func.count()).select_from(Inbox).where(
+            Inbox.customer_id == customer_id,
+            Inbox.read_at.is_(None),
+        )
+    )).one()
+    return int(n or 0)
+
+
+def _comment_html(reply: InboxReply, *, viewer: str) -> str:
+    """Render one ix-comment row that the SSE listener appends to the
+    open detail page. `viewer` is 'customer' or 'shop' — drives the
+    me/them side, mirroring the chat-bubble pattern.
+
+    Customer-side detail page sees customer's own replies as `me` and
+    shop replies as `them`. Shop-side detail flips that.
+    """
+    side = "me" if reply.sender == viewer else "them"
+    body_html = _html.escape(reply.body or "")
+    time_str = reply.created_at.strftime("%H:%M")
+    return (
+        f'<div class="ix-comment ix-comment--{side}" data-reply-id="{reply.id}">'
+        f'<div class="ixc-text">{body_html}</div>'
+        f'<div class="ixc-time">{time_str}</div>'
+        f'</div>'
+    )
+
+
+async def _publish_reply_events(
+    db: AsyncSession,
+    inbox: Inbox,
+    reply: InboxReply,
+) -> None:
+    """Fire SSE events to the side that DIDN'T just send so their open
+    detail page picks the comment up live. No web push for replies —
+    only the broadcast itself ever sends a push."""
+    from loguru import logger
+    from app.services.events import publish, publish_customer
+
+    comment_for_customer = _comment_html(reply, viewer="customer")
+    comment_for_shop = _comment_html(reply, viewer="shop")
+
+    if reply.sender == "customer":
+        publish(inbox.shop_id, "inbox-reply-in", json.dumps({
+            "inbox_id": str(inbox.id),
+            "html": comment_for_shop,
+        }))
+        new_total = await shop_unread_total(db, inbox.shop_id)
+        publish(inbox.shop_id, "messages-update", str(new_total))
+        logger.info(
+            f"📬 inbox reply (customer→shop): shop={inbox.shop_id} "
+            f"inbox={inbox.id} reply={reply.id} new_unread={new_total}"
+        )
+    else:  # shop reply
+        publish_customer(inbox.customer_id, "inbox-reply-in", json.dumps({
+            "inbox_id": str(inbox.id),
+            "html": comment_for_customer,
+        }))
+        merged = await customer_unread_total(db, inbox.customer_id)
+        publish_customer(inbox.customer_id, "inbox-update", str(merged))
+        logger.info(
+            f"📬 inbox reply (shop→customer): customer={inbox.customer_id} "
+            f"inbox={inbox.id} reply={reply.id} new_unread={merged}"
+        )

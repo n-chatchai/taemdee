@@ -1086,31 +1086,20 @@
   }
 
   /* ============================================== */
-  /* Chat thread · 2-way conversation               */
+  /* Inbox detail · post + comments + compose       */
+  /* (NOT chat · NOT bubbles · just notification)   */
   /* ============================================== */
-  .chat-header {
+  .ix-shop-strip {
     display: flex;
     align-items: center;
     gap: 12px;
-    padding: 10px 14px;
-    background: var(--bg);
+    padding: 12px 16px;
+    background: var(--surface);
     border-bottom: 1px solid rgba(17,17,17,0.08);
-    flex-shrink: 0;
   }
-  .chat-header .ch-back {
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink);
-    cursor: pointer;
-  }
-  .chat-header .ch-back svg {
-    width: 18px; height: 18px;
-    stroke: currentColor; fill: none;
-    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
-  }
-  .chat-header .ch-avatar {
-    width: 36px; height: 36px;
-    border-radius: 10px;
+  .ix-shop-strip .ix-logo {
+    width: 38px; height: 38px;
+    border-radius: 11px;
     background: var(--ink);
     color: #fff;
     display: flex; align-items: center; justify-content: center;
@@ -1120,96 +1109,57 @@
     letter-spacing: -0.04em;
     flex-shrink: 0;
   }
-  .chat-header .ch-avatar .dot { color: var(--accent); }
-  .chat-header .ch-info { flex: 1; min-width: 0; }
-  .chat-header .ch-name {
+  .ix-shop-strip .ix-logo .dot { color: var(--accent); }
+  .ix-shop-strip .ix-info { flex: 1; min-width: 0; }
+  .ix-shop-strip .ix-name {
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
-    font-size: 14.5px;
+    font-size: 14px;
     color: var(--ink);
     line-height: 1.2;
-    letter-spacing: -0.005em;
   }
-  .chat-header .ch-status {
+  .ix-shop-strip .ix-time {
     font-family: 'Prompt', sans-serif;
     font-size: 11px;
     color: var(--ink-soft);
     margin-top: 1px;
   }
-  .chat-header .ch-action {
-    width: 36px; height: 36px;
-    display: flex; align-items: center; justify-content: center;
-    color: var(--ink-soft);
-    cursor: pointer;
+  .ix-shop-strip .ix-contact {
+    flex-shrink: 0;
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 6px 11px;
+    background: var(--bg);
+    border: 1px solid rgba(17,17,17,0.12);
+    border-radius: 99px;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--ink);
+    text-decoration: none;
   }
-  .chat-header .ch-action svg {
-    width: 18px; height: 18px;
-    fill: currentColor;
+  .ix-shop-strip .ix-contact svg {
+    width: 11px; height: 11px;
+    stroke: currentColor; fill: none;
+    stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
   }
 
-  .chat-thread {
+  /* Body container · scrollable */
+  .ix-body {
     flex: 1;
     overflow-y: auto;
-    padding: 14px 14px 12px;
-    display: flex;
-    flex-direction: column;
-    gap: 4px;
-  }
-  .chat-date {
-    align-self: center;
-    margin: 8px 0 4px;
-    font-family: 'Prompt', sans-serif;
-    font-size: 10.5px;
-    color: var(--ink-softer);
-    background: rgba(17,17,17,0.05);
-    padding: 3px 12px;
-    border-radius: 99px;
+    padding: 16px;
   }
 
-  /* Bubble base */
-  .chat-bubble {
-    max-width: 76%;
-    padding: 9px 13px;
-    border-radius: 16px;
-    font-family: 'Prompt', sans-serif;
-    font-size: 13.5px;
-    line-height: 1.45;
-    color: var(--ink);
-    word-wrap: break-word;
-    margin-top: 2px;
-  }
-  .chat-bubble.me {
-    align-self: flex-end;
-    background: var(--ink);
-    color: var(--bg);
-    border-bottom-right-radius: 4px;
-  }
-  .chat-bubble.them {
-    align-self: flex-start;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.08);
-    border-bottom-left-radius: 4px;
-  }
-  .chat-time {
-    font-family: 'Prompt', sans-serif;
-    font-size: 10px;
-    color: var(--ink-softer);
-    margin-top: 2px;
-    margin-bottom: 6px;
-  }
-  .chat-time.me { align-self: flex-end; margin-right: 8px; }
-  .chat-time.them { align-self: flex-start; margin-left: 8px; }
-
-  /* DeeReach broadcast card · stretches full width */
-  .chat-deereach {
-    align-self: stretch;
+  /* DeeReach as the post · BIG centerpiece */
+  .ix-deereach {
     background: var(--butter-soft, #FFF6D9);
     border: 1px solid rgba(255, 217, 82, 0.55);
     border-radius: 16px;
-    padding: 14px 16px;
-    margin: 6px 0 2px;
+    padding: 18px 20px;
   }
-  .chat-deereach .cd-tag {
+  .ix-deereach .ixd-tag {
     display: inline-flex;
     align-items: center;
     gap: 5px;
@@ -1222,19 +1172,43 @@
     font-weight: 700;
     letter-spacing: 0.04em;
     text-transform: uppercase;
-    margin-bottom: 10px;
+    margin-bottom: 12px;
   }
-  .chat-deereach .cd-tag svg {
-    width: 11px; height: 11px;
+  .ix-deereach .ixd-tag svg {
+    width: 10px; height: 10px;
     fill: currentColor;
   }
-  .chat-deereach .cd-text {
+  .ix-deereach .ixd-headline {
     font-family: 'Prompt', sans-serif;
-    font-size: 14px;
-    line-height: 1.55;
+    font-weight: 700;
+    font-size: 17px;
     color: var(--ink);
+    line-height: 1.35;
+    letter-spacing: -0.01em;
+    margin-bottom: 6px;
   }
-  .chat-deereach .cd-voucher {
+  .ix-deereach .ixd-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13.5px;
+    line-height: 1.55;
+    color: var(--ink-soft);
+  }
+  .ix-deereach .ixd-stats {
+    margin-top: 12px;
+    padding-top: 12px;
+    border-top: 1px dashed rgba(176, 130, 30, 0.35);
+    display: flex;
+    gap: 14px;
+    flex-wrap: wrap;
+    font-family: 'Prompt', sans-serif;
+    font-size: 11px;
+    color: var(--ink-soft);
+  }
+  .ix-deereach .ixd-stats strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .ix-deereach .ixd-voucher {
     margin-top: 12px;
     display: flex;
     align-items: center;
@@ -1244,7 +1218,7 @@
     border-radius: 10px;
     border: 1px dashed rgba(176, 130, 30, 0.35);
   }
-  .chat-deereach .cd-voucher .vc-icon {
+  .ix-deereach .ixd-voucher .ixv-icon {
     width: 32px; height: 32px;
     border-radius: 8px;
     background: var(--accent);
@@ -1252,69 +1226,141 @@
     display: flex; align-items: center; justify-content: center;
     flex-shrink: 0;
   }
-  .chat-deereach .cd-voucher .vc-icon svg {
+  .ix-deereach .ixd-voucher .ixv-icon svg {
     width: 16px; height: 16px;
     stroke: currentColor; fill: none;
     stroke-width: 2; stroke-linecap: round; stroke-linejoin: round;
   }
-  .chat-deereach .cd-voucher .vc-info { flex: 1; min-width: 0; }
-  .chat-deereach .cd-voucher .vc-name {
+  .ix-deereach .ixd-voucher .ixv-info { flex: 1; min-width: 0; }
+  .ix-deereach .ixd-voucher .ixv-name {
     font-family: 'Prompt', sans-serif;
     font-weight: 700;
     font-size: 13px;
     color: var(--ink);
-    line-height: 1.25;
+    line-height: 1.2;
   }
-  .chat-deereach .cd-voucher .vc-meta {
+  .ix-deereach .ixd-voucher .ixv-meta {
     font-family: 'Prompt', sans-serif;
     font-size: 10.5px;
     color: var(--ink-soft);
     margin-top: 2px;
   }
 
-  /* Input bar at bottom · sticky */
-  .chat-input-bar {
-    flex-shrink: 0;
+  /* Comments section · "การตอบกลับ" */
+  .ix-comments-h {
+    margin: 24px 4px 12px;
     display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 12px 12px;
-    background: var(--bg);
-    border-top: 1px solid rgba(17,17,17,0.08);
+    align-items: baseline;
+    justify-content: space-between;
   }
-  .chat-input {
-    flex: 1;
-    background: var(--surface);
-    border: 1px solid rgba(17,17,17,0.12);
-    border-radius: 99px;
-    padding: 9px 16px;
+  .ix-comments-h .lab {
     font-family: 'Prompt', sans-serif;
-    font-size: 13.5px;
+    font-weight: 600;
+    font-size: 13px;
     color: var(--ink);
-    outline: none;
-    min-width: 0;
+    letter-spacing: -0.005em;
   }
-  .chat-input::placeholder {
+  .ix-comments-h .count {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+  }
+
+  /* Comment row · NOT a bubble · NO card · plain text-style */
+  .ix-comment {
+    display: flex;
+    gap: 12px;
+    padding: 10px 4px 10px;
+    border-top: 1px solid rgba(17,17,17,0.06);
+  }
+  .ix-comment:first-of-type {
+    border-top: none;
+    padding-top: 4px;
+  }
+  .ix-comment .ixc-avatar {
+    width: 28px; height: 28px;
+    border-radius: 50%;
+    background: var(--ink);
+    color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 11px;
+    flex-shrink: 0;
+  }
+  .ix-comment.shop .ixc-avatar { background: var(--accent); }
+  .ix-comment .ixc-body { flex: 1; min-width: 0; }
+  .ix-comment .ixc-head {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+    margin-bottom: 2px;
+  }
+  .ix-comment .ixc-author {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 12.5px;
+    color: var(--ink);
+    letter-spacing: -0.005em;
+  }
+  .ix-comment .ixc-time {
+    font-family: 'Prompt', sans-serif;
+    font-size: 10.5px;
     color: var(--ink-softer);
   }
-  .chat-send {
-    flex-shrink: 0;
-    width: 38px; height: 38px;
-    background: var(--ink);
-    color: var(--bg);
-    border: none;
+  .ix-comment .ixc-text {
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    line-height: 1.5;
+    color: var(--ink);
+  }
+
+  /* Compose CTA · button (not always-visible textarea) */
+  .ix-compose {
+    margin-top: 20px;
+    padding: 14px 16px;
+    background: var(--surface);
+    border: 1.5px dashed rgba(17,17,17,0.18);
+    border-radius: 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    cursor: text;
+  }
+  .ix-compose .ixco-icon {
+    width: 30px; height: 30px;
     border-radius: 50%;
-    cursor: pointer;
-    display: flex; align-items: center; justify-content: center;
-  }
-  .chat-send.active {
-    background: var(--accent);
+    background: var(--ink);
     color: #fff;
+    display: flex; align-items: center; justify-content: center;
+    flex-shrink: 0;
   }
-  .chat-send svg {
-    width: 16px; height: 16px;
+  .ix-compose .ixco-icon svg {
+    width: 14px; height: 14px;
     stroke: currentColor; fill: none;
     stroke-width: 2.2; stroke-linecap: round; stroke-linejoin: round;
+  }
+  .ix-compose .ixco-text {
+    flex: 1;
+    font-family: 'Prompt', sans-serif;
+    font-size: 13px;
+    color: var(--ink-soft);
+  }
+  .ix-compose .ixco-text strong {
+    color: var(--ink);
+    font-weight: 700;
+  }
+  .ix-compose .ixco-text .free {
+    display: inline-block;
+    margin-left: 4px;
+    background: rgba(111, 168, 130, 0.18);
+    color: var(--mint-ink, #2a4f44);
+    padding: 1px 7px;
+    border-radius: 99px;
+    font-size: 9.5px;
+    font-weight: 700;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
   }
 
   /* Inbox empty state */
@@ -10068,7 +10114,17 @@
                     <div class="ic-shop">ร้านกาแฟลุงหมี</div>
                     <div class="ic-time">2 ชม.</div>
                   </div>
-                  <div class="ic-preview">เปิด 7 โมง ปิด 5 โมงเย็นครับ · เสาร์-อาทิตย์...</div>
+                  <div class="ic-preview">คิดถึงพี่สมศรีนะ ☕ แวะมาทักหน่อยสิ</div>
+                  <div class="ic-offer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 12 20 22 4 22 4 12"/>
+                      <rect x="2" y="7" width="20" height="5"/>
+                      <line x1="12" y1="22" x2="12" y2="7"/>
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                    </svg>
+                    ของฝาก: ลด ฿20
+                  </div>
                 </div>
               </a>
 
@@ -10081,16 +10137,6 @@
                     <div class="ic-time">เมื่อวาน</div>
                   </div>
                   <div class="ic-preview">อีก 2 ครั้ง พี่ก็ครบแล้วนะ — รอพี่อยู่ค่ะ</div>
-                  <div class="ic-offer">
-                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                      <polyline points="20 12 20 22 4 22 4 12"/>
-                      <rect x="2" y="7" width="20" height="5"/>
-                      <line x1="12" y1="22" x2="12" y2="7"/>
-                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-                    </svg>
-                    ของฝาก: นวด 30 นาที ฟรี
-                  </div>
                 </div>
               </a>
 
@@ -10101,7 +10147,7 @@
                     <div class="ic-shop">Orchid &amp; Oat</div>
                     <div class="ic-time">3 วัน</div>
                   </div>
-                  <div class="ic-preview">พี่: ขอแบบไม่หวานได้มั้ยคะ?</div>
+                  <div class="ic-preview">เมนูใหม่ Matcha Yuzu มาแล้ว 🍵</div>
                 </div>
               </a>
 
@@ -10219,77 +10265,95 @@
       </div>
     </div>
 
-    <!-- inbox.message — Conversation thread (DeeReach + 2-way chat) -->
+
+    <!-- inbox.message — Post + comments + compose CTA (NOT chat) -->
     <div class="mockup">
       <div class="mockup-caption">
-        <div class="kicker"><span class="n">inbox.message</span>แชทกับร้าน · DeeReach + Chat</div>
-        <h3>คุยกับร้านได้ทั้งสองทาง</h3>
-        <p>เปิดจาก inbox.list — thread เดียวต่อร้าน · ผสม DeeReach broadcast (butter card · special tag) + chat bubbles 2 ทาง · ลูกค้าเริ่มทักร้านได้เลยถ้ามีคำถาม · messaging ฟรี (ไม่ใช้เครดิต) · shop ใช้เครดิตเฉพาะตอนส่ง broadcast/DeeReach ใหม่</p>
+        <div class="kicker"><span class="n">inbox.message</span>ข้อความจากร้าน · ตอบกลับได้</div>
+        <h3>โพสต์ + ตอบกลับ + ตอบเพิ่ม</h3>
+        <p>เปิดจาก inbox.list · DeeReach = "post" เด่นบนสุด · ตอบกลับ = comment rows (text-only · ไม่มี bubble · avatar เล็ก + author + time inline) · ตอบเพิ่ม = compose CTA card (ไม่ใช่ pinned textarea) · "ติดต่อร้าน" link สำหรับ Q&A ทั่วไป · ฟรี · auto-archive 7 วัน</p>
       </div>
       <div class="phone">
         <div class="phone-screen">
           <div class="td">
 
-            <div class="chat-header">
-              <a class="ch-back" aria-label="ย้อนกลับ">
-                <svg viewBox="0 0 24 24"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
+            <div class="app-bar">
+              <a class="x" aria-label="ย้อนกลับ">
+                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round"><path d="M19 12H5M12 19l-7-7 7-7"/></svg>
               </a>
-              <div class="ch-avatar">m<span class="dot">.</span></div>
-              <div class="ch-info">
-                <div class="ch-name">ร้านกาแฟลุงหมี</div>
-                <div class="ch-status">เปิดอยู่ · ตอบใน ~10 นาที</div>
+              <div class="title-mid">ข้อความ</div>
+              <div class="placeholder"></div>
+            </div>
+
+            <div class="ix-shop-strip">
+              <div class="ix-logo">m<span class="dot">.</span></div>
+              <div class="ix-info">
+                <div class="ix-name">ร้านกาแฟลุงหมี</div>
+                <div class="ix-time">2 ชม.ที่แล้ว</div>
               </div>
-              <a class="ch-action" aria-label="ดูร้าน">
-                <svg viewBox="0 0 24 24"><path d="M3 21h18M5 21V7l8-4v18M19 21V11l-6-4"/><circle cx="9" cy="9" r="1"/><circle cx="9" cy="13" r="1"/><circle cx="9" cy="17" r="1"/></svg>
+              <a class="ix-contact" title="ติดต่อร้านผ่าน LINE/โทร">
+                <svg viewBox="0 0 24 24"><path d="M22 16.92v3a2 2 0 01-2.18 2 19.79 19.79 0 01-8.63-3.07 19.5 19.5 0 01-6-6 19.79 19.79 0 01-3.07-8.67A2 2 0 014.11 2h3a2 2 0 012 1.72 12.84 12.84 0 00.7 2.81 2 2 0 01-.45 2.11L8.09 9.91a16 16 0 006 6l1.27-1.27a2 2 0 012.11-.45 12.84 12.84 0 002.81.7A2 2 0 0122 16.92z"/></svg>
+                ติดต่อร้าน
               </a>
             </div>
 
-            <div class="chat-thread">
+            <div class="ix-body">
 
-              <div class="chat-date">วันนี้</div>
-
-              <!-- DeeReach broadcast (shop sent · with voucher) -->
-              <div class="chat-deereach">
-                <span class="cd-tag">
+              <div class="ix-deereach">
+                <span class="ixd-tag">
                   <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
                   ข้อความจากร้าน
                 </span>
-                <div class="cd-text">คิดถึงพี่สมศรีนะครับ ☕ ห่างหายไปเดือนนึงแล้ว ลุงหมีคิดถึง — แวะมาเก็บแต้มต่อได้ทุกเมื่อ เครื่องดื่มร้อนๆ รออยู่</div>
-                <div class="cd-voucher">
-                  <div class="vc-icon">
+                <div class="ixd-headline">คิดถึงพี่สมศรีนะ ☕</div>
+                <div class="ixd-text">ห่างหายไปเดือนนึงแล้ว ลุงหมีคิดถึงนะครับ แวะมาเก็บแต้มต่อได้ทุกเมื่อ — เครื่องดื่มร้อนๆ รออยู่</div>
+                <div class="ixd-voucher">
+                  <div class="ixv-icon">
                     <svg viewBox="0 0 24 24"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/><path d="M12 7H7.5a2.5 2.5 0 010-5C11 2 12 7 12 7z"/><path d="M12 7h4.5a2.5 2.5 0 000-5C13 2 12 7 12 7z"/></svg>
                   </div>
-                  <div class="vc-info">
-                    <div class="vc-name">ลด ฿20 เมื่อซื้อกาแฟ</div>
-                    <div class="vc-meta">เก็บไว้ใช้แล้ว · หมด 30 พ.ค.</div>
+                  <div class="ixv-info">
+                    <div class="ixv-name">ลด ฿20 เมื่อซื้อกาแฟ</div>
+                    <div class="ixv-meta">เก็บไว้ใช้แล้ว · หมด 30 พ.ค.</div>
                   </div>
                 </div>
               </div>
-              <div class="chat-time them">14:23</div>
 
-              <!-- Customer reply -->
-              <div class="chat-bubble me">ขอบคุณค่ะลุงหมี เดี๋ยวพรุ่งนี้แวะไปนะ</div>
-              <div class="chat-time me">14:30</div>
+              <div class="ix-comments-h">
+                <span class="lab">การตอบกลับ</span>
+                <span class="count">2 ครั้ง</span>
+              </div>
 
-              <!-- Shop reply -->
-              <div class="chat-bubble them">รออยู่นะครับพี่สมศรี ✨</div>
-              <div class="chat-time them">14:31</div>
+              <div class="ix-comment">
+                <div class="ixc-avatar">ส</div>
+                <div class="ixc-body">
+                  <div class="ixc-head">
+                    <span class="ixc-author">คุณ</span>
+                    <span class="ixc-time">14:30</span>
+                  </div>
+                  <div class="ixc-text">ขอบคุณค่ะลุงหมี เดี๋ยวพรุ่งนี้แวะไปนะ</div>
+                </div>
+              </div>
 
-              <!-- Customer asks question -->
-              <div class="chat-bubble me">ปกติร้านปิดกี่โมงคะ?</div>
-              <div class="chat-time me">14:32</div>
+              <div class="ix-comment shop">
+                <div class="ixc-avatar">ม</div>
+                <div class="ixc-body">
+                  <div class="ixc-head">
+                    <span class="ixc-author">ลุงหมี</span>
+                    <span class="ixc-time">14:31</span>
+                  </div>
+                  <div class="ixc-text">รออยู่นะครับพี่สมศรี ✨</div>
+                </div>
+              </div>
 
-              <!-- Shop reply -->
-              <div class="chat-bubble them">เปิด 7 โมง ปิด 5 โมงเย็นครับ · เสาร์-อาทิตย์เปิดถึง 6 โมง</div>
-              <div class="chat-time them">14:33</div>
+              <div class="ix-compose">
+                <div class="ixco-icon">
+                  <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+                </div>
+                <div class="ixco-text">
+                  <strong>ตอบเพิ่ม</strong>
+                  <span class="free">ฟรี</span>
+                </div>
+              </div>
 
-            </div>
-
-            <div class="chat-input-bar">
-              <input type="text" class="chat-input" placeholder="พิมพ์ข้อความถึงร้าน..." />
-              <button class="chat-send active" aria-label="ส่ง">
-                <svg viewBox="0 0 24 24"><line x1="22" y1="2" x2="11" y2="13"/><polygon points="22 2 15 22 11 13 2 9 22 2" fill="currentColor" stroke="none"/></svg>
-              </button>
             </div>
 
           </div>
