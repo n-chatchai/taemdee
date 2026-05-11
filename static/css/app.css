@@ -4361,14 +4361,6 @@ body {
   margin: 12px 0 0;
 }
 .page-container > div:first-of-type { margin: 0; }
-/* Profile section reads as the page hero (avatar + name + button),
-   not a settings row card — strip the labelled-card chrome so the
-   form sits flush on the page surface. */
-.page-container > div:has(.profile-edit-inline) {
-  background: transparent;
-  border: none;
-  padding: 0;
-}
 .page-container > div > .label {
   font-size: 16px;
   font-weight: 700;
