@@ -102,7 +102,7 @@ def _send_web_push(
                 },
             },
             data=json.dumps({
-                "title": shop.name or "แต้มดี",
+                "title": f"ร้าน{shop.name or 'แต้มดี'}",
                 "body": message,
                 "url": f"/my-inbox/{inbox_id}",
             }),
