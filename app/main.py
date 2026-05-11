@@ -2,10 +2,11 @@ from contextlib import asynccontextmanager
 from http.cookies import SimpleCookie
 
 from fastapi import Depends, FastAPI, HTTPException, Request, status
-from fastapi.responses import RedirectResponse, FileResponse
+from fastapi.responses import RedirectResponse, FileResponse, JSONResponse
 from fastapi.staticfiles import StaticFiles
 from sqlmodel.ext.asyncio.session import AsyncSession
 from starlette.datastructures import MutableHeaders
+from starlette.exceptions import HTTPException as StarletteHTTPException
 from starlette.middleware.gzip import GZipMiddleware
 
 from loguru import logger
@@ -421,6 +422,85 @@ async def permission_denied_handler(request: Request, exc: HTTPException):
         )
     from fastapi.exception_handlers import http_exception_handler
     return await http_exception_handler(request, exc)
+
+
+def _wants_html(request: Request) -> bool:
+    """Browser navigations send `Accept: text/html,...`; fetch() and
+    most XHR clients send `Accept: */*` (or set application/json).
+    Render HTML only when the Accept header explicitly says so,
+    otherwise the global handlers below leak HTML into JSON callers."""
+    accept = request.headers.get("accept", "")
+    return "text/html" in accept
+
+
+_ERR_COPY = {
+    404: ("ไม่พบหน้านี้", "หน้าที่พี่ค้นหาอาจถูกย้ายหรือลบไปแล้ว — ลองกลับหน้าแรกแล้วเริ่มใหม่นะครับ"),
+    405: ("วิธีเข้าหน้านี้ไม่ถูกต้อง", "ลิงก์อาจหมดอายุ — ลองเริ่มใหม่จากหน้าแรกครับ"),
+    429: ("ส่งคำขอบ่อยเกินไป", "รอสักครู่แล้วลองอีกครั้งนะครับ"),
+    500: ("ขัดข้องชั่วคราว", "ระบบมีปัญหาเล็กน้อย กำลังแก้ไข — ลองอีกครั้งสักครู่นะครับ"),
+}
+
+
+@app.exception_handler(StarletteHTTPException)
+async def http_exception_html_handler(request: Request, exc: StarletteHTTPException):
+    """Render an HTML error page for browser navigations on every
+    HTTPException the app raises (404, 405, 410, 429, etc.). 401
+    and 403 are caught by their dedicated handlers above; everything
+    else lands here. JSON callers still see the FastAPI default
+    {"detail": "..."} body."""
+    # 401 / 403 already routed to specialised handlers above.
+    if exc.status_code in (
+        status.HTTP_401_UNAUTHORIZED,
+        status.HTTP_403_FORBIDDEN,
+    ):
+        from fastapi.exception_handlers import http_exception_handler
+        return await http_exception_handler(request, exc)
+    if _wants_html(request):
+        title, message = _ERR_COPY.get(
+            exc.status_code,
+            ("เกิดข้อผิดพลาด", str(exc.detail or "ลองอีกครั้งสักครู่นะครับ")),
+        )
+        return templates.TemplateResponse(
+            request=request,
+            name="error_page.html",
+            status_code=exc.status_code,
+            context={
+                "status_code": exc.status_code,
+                "title": title,
+                "message": message,
+            },
+        )
+    from fastapi.exception_handlers import http_exception_handler
+    return await http_exception_handler(request, exc)
+
+
+@app.exception_handler(Exception)
+async def global_500_handler(request: Request, exc: Exception):
+    """Catch-all for unhandled exceptions — keeps customers from ever
+    seeing the FastAPI default `{"detail": "Internal Server Error"}`
+    JSON blob. Logs the traceback to the loguru sink so the actual
+    error reaches the engineer, then renders the friendly HTML page
+    (or returns a generic JSON body for XHR callers)."""
+    from loguru import logger
+    logger.exception(
+        f"unhandled exception on {request.method} {request.url.path}"
+    )
+    if _wants_html(request):
+        title, message = _ERR_COPY[500]
+        return templates.TemplateResponse(
+            request=request,
+            name="error_page.html",
+            status_code=500,
+            context={
+                "status_code": 500,
+                "title": title,
+                "message": message,
+            },
+        )
+    return JSONResponse(
+        {"detail": "Internal Server Error"},
+        status_code=500,
+    )
 
 
 app.mount("/static", StaticFiles(directory="static"), name="static")

@@ -1,0 +1,85 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>ลาก่อน · TaemDee</title>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  {# Post-PDPA-delete confirmation. Voiced as น้องแต้ม so the
+     customer reads a goodbye, not just a "your data is gone" notice.
+     Single CTA points back at the marketing root — landing on
+     /my-cards would mint a fresh anonymous customer and undo the
+     mental model of "I deleted my account". #}
+  <div class="td">
+    <div class="gb-page">
+      <div class="gb-avatar" aria-hidden="true">
+        <svg viewBox="0 0 100 100">
+          <rect x="6" y="6" width="88" height="88" rx="22" fill="#FF5E3A"/>
+          <circle cx="36" cy="44" r="7" fill="#FFD952"/>
+          <circle cx="64" cy="44" r="7" fill="#FFD952"/>
+          {# Soft frown — replaces the smile so น้องแต้ม reads as
+             sad-to-see-you-go rather than cheery. #}
+          <path d="M30 68 Q50 56 70 68" stroke="#FFD952" stroke-width="7" fill="none" stroke-linecap="round"/>
+        </svg>
+      </div>
+      <div class="gb-h">เราเสียใจที่พี่ลบบัญชี</div>
+      <div class="gb-msg">
+        น้องแต้มยินดีต้อนรับเสมอ<br>
+        ถ้าพี่อยากกลับมาใช้แต้ม
+      </div>
+      <a class="gb-cta" href="/">กลับไปหน้าแรก</a>
+    </div>
+  </div>
+
+  <style>
+    .gb-page {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 40px 24px calc(env(safe-area-inset-bottom, 0px) + 40px);
+      text-align: center;
+    }
+    .gb-avatar {
+      width: 96px;
+      height: 96px;
+      margin-bottom: 24px;
+    }
+    .gb-avatar svg { width: 100%; height: 100%; display: block; }
+    .gb-h {
+      font-family: 'Prompt', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      margin-bottom: 10px;
+    }
+    .gb-msg {
+      font-family: 'Prompt', sans-serif;
+      font-size: 15px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+      max-width: 280px;
+      margin-bottom: 32px;
+    }
+    .gb-cta {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 180px;
+      padding: 13px 28px;
+      border-radius: 999px;
+      font-family: 'Prompt', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      text-decoration: none;
+      background: var(--ink);
+      color: var(--bg);
+    }
+  </style>
+</body>
+</html>

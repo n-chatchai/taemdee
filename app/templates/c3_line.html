@@ -60,10 +60,17 @@
             <span class="c3-name-opt-label">ใช้ชื่อ LINE</span>
             <span class="c3-name-opt-value" x-text="lineName || 'พี่'"></span>
           </label>
+          {# Label flips on whether the onboarding flow captured a real
+             nickname. Empty or the default placeholder "ลูกค้า" means
+             the customer never typed one, so the option reads as
+             "ใช้ชื่อใหม่" (a fresh input). Otherwise "ใช้ชื่อที่พิมพ์ไว้"
+             with the captured value previewed beside it. #}
+          {% set _ob = (onboard_name or '').strip() %}
+          {% set _has_onboard_name = _ob and _ob != 'ลูกค้า' %}
           <label class="c3-name-opt">
             <input type="radio" name="name_mode" value="custom" x-model="mode">
-            <span class="c3-name-opt-label">ใช้ชื่อที่พิมพ์ไว้</span>
-            <span class="c3-name-opt-value" x-text="onboardName || 'พี่'"></span>
+            <span class="c3-name-opt-label">{% if _has_onboard_name %}ใช้ชื่อที่พิมพ์ไว้{% else %}ใช้ชื่อใหม่{% endif %}</span>
+            {% if _has_onboard_name %}<span class="c3-name-opt-value" x-text="onboardName || 'พี่'"></span>{% endif %}
             <input class="c3-input c3-input-inline" type="text" maxlength="40" placeholder="แก้ไขชื่อ…" x-model="customName" @focus="mode = 'custom'">
           </label>
         </div>

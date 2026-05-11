@@ -1,0 +1,100 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>{{ title }} · TaemDee</title>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  {# Catch-all error page rendered by the global 500 / generic
+     HTTPException handler in app/main.py. Same chrome on every code
+     so customers + shop staff never see a raw FastAPI JSON
+     {"detail": "..."} blob. The status code drives the headline
+     copy; the body message is whatever the handler passed in. #}
+  <div class="td">
+    <div class="err-page">
+      <div class="err-mark" aria-hidden="true">
+        <span class="err-mark-num">{{ status_code }}</span>
+        <span class="err-mark-dot">.</span>
+      </div>
+      <div class="err-h">{{ title }}</div>
+      <div class="err-msg">{{ message }}</div>
+      <div class="err-actions">
+        <a class="err-btn primary" href="/">กลับหน้าแรก</a>
+        <a class="err-btn" href="javascript:history.back()">ย้อนกลับ</a>
+      </div>
+    </div>
+  </div>
+
+  <style>
+    .err-page {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px 24px calc(env(safe-area-inset-bottom, 0px) + 32px);
+      text-align: center;
+    }
+    .err-mark {
+      font-family: 'Host Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 96px;
+      line-height: 0.9;
+      letter-spacing: -0.06em;
+      color: var(--ink);
+      margin: 0 0 20px;
+      display: inline-flex;
+      align-items: baseline;
+    }
+    .err-mark-dot {
+      color: var(--accent);
+      margin-left: 2px;
+    }
+    .err-h {
+      font-family: 'Prompt', sans-serif;
+      font-weight: 800;
+      font-size: 22px;
+      color: var(--ink);
+      letter-spacing: -0.01em;
+      margin-bottom: 8px;
+    }
+    .err-msg {
+      font-family: 'Prompt', sans-serif;
+      font-size: 14px;
+      color: var(--ink-soft);
+      line-height: 1.6;
+      max-width: 320px;
+      margin-bottom: 28px;
+    }
+    .err-actions {
+      display: flex;
+      gap: 10px;
+      flex-wrap: wrap;
+      justify-content: center;
+    }
+    .err-btn {
+      display: inline-flex;
+      align-items: center;
+      justify-content: center;
+      min-width: 140px;
+      padding: 12px 22px;
+      border-radius: 999px;
+      font-family: 'Prompt', sans-serif;
+      font-weight: 700;
+      font-size: 14px;
+      text-decoration: none;
+      color: var(--ink);
+      background: var(--surface);
+      border: 1px solid rgba(17,17,17,0.12);
+    }
+    .err-btn.primary {
+      background: var(--ink);
+      color: var(--bg);
+      border-color: var(--ink);
+    }
+  </style>
+</body>
+</html>

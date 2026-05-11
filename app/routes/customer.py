@@ -1428,12 +1428,29 @@ async def delete_my_account(
     customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
     db: AsyncSession = Depends(get_session),
 ):
-    """PDPA: scrub the current customer's identity; stamps stay (anonymized)."""
+    """PDPA: scrub the current customer's identity; stamps stay (anonymized).
+    Redirect to /card/account/goodbye so the customer lands on a
+    n้องแต้ม-voiced goodbye page rather than the marketing root."""
     customer, _ = await find_or_create_customer(customer_cookie, db)
     await delete_customer_account(db, customer)
-    response = RedirectResponse(url="/", status_code=status.HTTP_303_SEE_OTHER)
+    response = RedirectResponse(
+        url="/card/account/goodbye", status_code=status.HTTP_303_SEE_OTHER,
+    )
     response.delete_cookie(CUSTOMER_COOKIE_NAME, path="/")
     return response
+
+
+@router.get("/card/account/goodbye", response_class=HTMLResponse)
+async def account_deleted_goodbye(request: Request):
+    """Post-delete confirmation. No DB lookup — cookie is already
+    cleared at this point and we deliberately don't create a fresh
+    anonymous customer here (that's what landing on /my-cards would
+    do). Single page, single CTA back to the marketing root."""
+    return templates.TemplateResponse(
+        request=request,
+        name="account_goodbye.html",
+        context={},
+    )
 
 
 @router.get("/my-cards", response_class=HTMLResponse)
