@@ -1949,8 +1949,14 @@ async def my_inbox_mark_read(
         )
         # Engagement log — list-level mark-read also counts as an
         # "opened" event (the customer saw enough to dismiss it).
-        from app.services.deereach_events import KIND_OPENED, log_event
+        # Voucher claimed mirrors the detail path: present offer
+        # text on the row → opening from the list still claims it.
+        from app.services.deereach_events import (
+            KIND_OPENED, KIND_VOUCHER_CLAIMED, log_event,
+        )
         await log_event(db, inbox=row, kind=KIND_OPENED)
+        if (row.offer_text or "").strip():
+            await log_event(db, inbox=row, kind=KIND_VOUCHER_CLAIMED)
     return JSONResponse({"ok": True}, status_code=200)
 
 
@@ -1981,10 +1987,17 @@ async def my_inbox_detail(
             str(await _inbox_unread_count(db, customer.id)),
         )
         # Engagement track — first-open is the canonical "opened"
-        # signal. The log_event helper dedupes per (inbox, kind) so
-        # this is safe to call on every first-open path.
-        from app.services.deereach_events import KIND_OPENED, log_event
+        # signal. log_event dedupes per (inbox, kind) so the calls
+        # below are safe on every first-open path. When the broadcast
+        # had a voucher attached, the open also counts as the
+        # voucher being claimed (auto-receive model: there's no
+        # explicit claim button; seeing the offer = owning it).
+        from app.services.deereach_events import (
+            KIND_OPENED, KIND_VOUCHER_CLAIMED, log_event,
+        )
         await log_event(db, inbox=row, kind=KIND_OPENED)
+        if (row.offer_text or "").strip():
+            await log_event(db, inbox=row, kind=KIND_VOUCHER_CLAIMED)
 
     from app.models import CustomerShopMute
     from app.services.inbox_reply import list_replies

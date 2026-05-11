@@ -33,7 +33,10 @@ from sqlmodel import and_, func, or_, select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
 from app.core.redis_queue import task_queue
-from app.models import CreditLog, Customer, CustomerShopMute, DeeReachCampaign, Redemption, Shop, Point, User
+from app.models import (
+    CreditLog, Customer, CustomerShopMute, DeeReachCampaign,
+    Inbox, Redemption, Shop, Point, User,
+)
 from app.models.deereach import DeeReachMessage
 from app.models.util import utcnow
 
@@ -96,6 +99,14 @@ UNREDEEMED_DAYS_MIN = 7
 # New-customer: first stamp at this shop within the last K days. Encourages
 # the shop to thank brand-new visitors and convert them into regulars.
 NEW_CUSTOMER_DAYS = 7
+
+# Re-engage: customers who showed engagement (replied / claimed a voucher
+# in the last 90d engagement window) but the shop hasn't messaged them
+# in the last 30d. These are the high-value "warming up but cooling" set
+# — the suggestion engine surfaces them so the shop can lock in the
+# relationship before it slips back to silent.
+RE_ENGAGE_QUIET_DAYS = 30
+RE_ENGAGE_MIN_SCORE = 3  # at least one reply (3 pts) or a voucher claim (5)
 
 
 @dataclass
@@ -284,6 +295,88 @@ async def find_new_customers(
     return list(result.all())
 
 
+async def find_re_engage_customers(
+    db: AsyncSession,
+    shop: Shop,
+    *,
+    min_score: int = RE_ENGAGE_MIN_SCORE,
+    quiet_days: int = RE_ENGAGE_QUIET_DAYS,
+) -> List[Customer]:
+    """Customers who recently engaged (replied to a broadcast or claimed
+    a voucher) but the shop has gone quiet on for `quiet_days`. The
+    suggestion engine surfaces these as 're_engage' so the shop closes
+    the gap before the customer's engagement signal decays.
+
+    Lower bar than warm tier (score ≥ 1) on purpose — we want customers
+    who took a *meaningful* action (reply = 3, voucher claim = 5), not
+    just opens. `min_score` defaults to 3 so a single reply qualifies.
+
+    A customer is excluded if the shop already messaged them within
+    the standard 14-day rate-limit window — the outer suggestion
+    composer reapplies that filter, so this query is allowed to be
+    a bit looser.
+    """
+    from app.models import DeeReachEvent
+
+    cutoff_event = utcnow() - timedelta(days=90)  # match engagement window
+    cutoff_quiet = utcnow() - timedelta(days=quiet_days)
+
+    # Per-customer engagement signal — events with point-weight in the
+    # last 90 days, scoped to this shop.
+    event_rows = (await db.exec(
+        select(DeeReachEvent).where(
+            DeeReachEvent.shop_id == shop.id,
+            DeeReachEvent.created_at >= cutoff_event,
+        )
+    )).all()
+    weights = {"opened": 1, "replied": 3, "voucher_claimed": 5}
+    score_by_customer: dict = {}
+    for e in event_rows:
+        score_by_customer[e.customer_id] = (
+            score_by_customer.get(e.customer_id, 0) + weights.get(e.kind, 0)
+        )
+
+    # When was the shop's last outbound to this customer? We look at
+    # Inbox.created_at (every broadcast lands one row), not the event
+    # log — events are *customer-side*, we want *shop-side* quiet.
+    last_outbound_rows = (await db.exec(
+        select(
+            Inbox.customer_id.label("cid"),
+            func.max(Inbox.created_at).label("last_at"),
+        )
+        .where(Inbox.shop_id == shop.id)
+        .group_by(Inbox.customer_id)
+    )).all()
+    last_outbound_by_customer: dict = {
+        cid: last_at for cid, last_at in last_outbound_rows
+    }
+
+    eligible_ids = [
+        cid for cid, score in score_by_customer.items()
+        if score >= min_score
+        and (
+            last_outbound_by_customer.get(cid) is None
+            or last_outbound_by_customer[cid] < cutoff_quiet
+        )
+    ]
+    if not eligible_ids:
+        return []
+
+    # Hydrate the customer rows + filter to reachable identities
+    # (LINE / phone — anonymous inbox-only customers would still
+    # receive but the suggestion is about warming a real relationship,
+    # not pinging anonymous cookies).
+    customers = (await db.exec(
+        select(Customer)
+        .join(User, Customer.user_id == User.id)
+        .where(
+            Customer.id.in_(eligible_ids),
+            (User.line_id.is_not(None)) | (User.phone.is_not(None)),
+        )
+    )).all()
+    return list(customers)
+
+
 async def find_all_reachable_customers(
     db: AsyncSession,
     shop: Shop,
@@ -404,6 +497,25 @@ async def compute_suggestions(
             )
         )
 
+    # 5. Re-engage — customers who recently replied / claimed a voucher
+    # but the shop has gone quiet on for 30 days. Uses the phase-1
+    # event log to spot warming customers before they cool back to
+    # silent. Lower-priority than the others (it surfaces a "nice to
+    # have" follow-up, not an urgent loyalty signal) but still
+    # actionable — these are people who proved they engage.
+    re_engage = _eligible(await find_re_engage_customers(db, shop))
+    if re_engage:
+        out.append(
+            Suggestion(
+                kind="re_engage",
+                label="กลับมาคุยกัน",
+                head=f"ทักกลับ {len(re_engage)} คนที่เคยตอบ broadcast",
+                body=f"พวกเขาเคยตอบกลับ / รับของฝาก แต่ร้านเงียบไปนาน {RE_ENGAGE_QUIET_DAYS}+ วัน",
+                audience_count=len(re_engage),
+                cost_credit=_line_cost(len(re_engage)),
+            )
+        )
+
     return out[:max_suggestions]
 
 
@@ -426,6 +538,8 @@ async def render_message(kind: str, shop: Shop) -> str:
         return f"คุณมี {shop.reward_description} รออยู่ที่ {shop.name} — แวะมารับได้เลย"
     if kind == "new_customer":
         return f"ขอบคุณที่แวะมา {shop.name} นะ — แวะอีกครั้งครบ {shop.reward_threshold} แต้ม รับ {shop.reward_description}"
+    if kind == "re_engage":
+        return f"คิดถึง {{name}} เลย! ขอบคุณที่ตอบกลับเรานะ — {shop.name} มีอะไรใหม่อยากให้แวะมาดู"
     if kind == "manual":
         # Empty seed — owner is writing their own copy. The textarea
         # placeholder + send-disabled-when-blank guard handles the UX.
@@ -479,6 +593,8 @@ async def _audience_for(db: AsyncSession, shop: Shop, kind: str) -> List[Custome
         candidates = await find_unredeemed_reward_customers(db, shop)
     elif kind == "new_customer":
         candidates = await find_new_customers(db, shop)
+    elif kind == "re_engage":
+        candidates = await find_re_engage_customers(db, shop)
     elif kind == "manual":
         # Manual campaigns are owner-composed (explicit human intent +
         # per-recipient toggle in the editor) so they bypass the

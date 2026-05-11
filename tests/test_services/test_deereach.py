@@ -335,6 +335,114 @@ async def test_pick_channel_falls_back_to_inbox_for_anonymous(db, shop):
     assert _pick_channel(c) == "inbox"
 
 
+# ── re_engage suggestion (phase 5b — uses engagement event log) ────────────
+
+
+async def test_re_engage_finds_engaged_quiet_customers(db, shop):
+    """A customer who replied (score 3) AND the shop hasn't sent any
+    inbox to them in 30+ days qualifies for re_engage."""
+    from datetime import timedelta
+    from app.models import DeeReachEvent, Inbox
+    from app.services.deereach import find_re_engage_customers
+
+    c = await _customer(db, line_id="U_engaged_quiet")
+    # Old inbox (>30 days ago) — last outbound is stale.
+    db.add(Inbox(
+        customer_id=c.id, shop_id=shop.id, body="old",
+        created_at=utcnow() - timedelta(days=45),
+    ))
+    # Need a recent inbox to be the parent of the event row (FK).
+    ibx = Inbox(
+        customer_id=c.id, shop_id=shop.id, body="anchor",
+        created_at=utcnow() - timedelta(days=45),
+    )
+    db.add(ibx)
+    await db.commit()
+    await db.refresh(ibx)
+    # Customer replied recently (last 90 days) → engagement score = 3.
+    db.add(DeeReachEvent(
+        inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id, kind="replied",
+        created_at=utcnow() - timedelta(days=10),
+    ))
+    await db.commit()
+
+    hits = await find_re_engage_customers(db, shop)
+    assert [h.id for h in hits] == [c.id]
+
+
+async def test_re_engage_excludes_recently_messaged(db, shop):
+    """Same engaged customer, but the shop sent them an inbox last
+    week — they're not 'quiet', skip."""
+    from datetime import timedelta
+    from app.models import DeeReachEvent, Inbox
+    from app.services.deereach import find_re_engage_customers
+
+    c = await _customer(db, line_id="U_engaged_recent")
+    ibx = Inbox(
+        customer_id=c.id, shop_id=shop.id, body="last week",
+        created_at=utcnow() - timedelta(days=3),  # < 30d → fresh
+    )
+    db.add(ibx)
+    await db.commit()
+    await db.refresh(ibx)
+    db.add(DeeReachEvent(
+        inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id, kind="replied",
+    ))
+    await db.commit()
+
+    assert await find_re_engage_customers(db, shop) == []
+
+
+async def test_re_engage_excludes_silent_customers(db, shop):
+    """Customer engagement score below RE_ENGAGE_MIN_SCORE (just opens)
+    doesn't qualify — re_engage targets meaningful actions, not curiosity."""
+    from datetime import timedelta
+    from app.models import DeeReachEvent, Inbox
+    from app.services.deereach import find_re_engage_customers
+
+    c = await _customer(db, line_id="U_just_opener")
+    ibx = Inbox(
+        customer_id=c.id, shop_id=shop.id, body="x",
+        created_at=utcnow() - timedelta(days=45),
+    )
+    db.add(ibx)
+    await db.commit()
+    await db.refresh(ibx)
+    # Two opens = score 2; need ≥ 3.
+    db.add_all([
+        DeeReachEvent(inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id, kind="opened"),
+        DeeReachEvent(inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id, kind="opened"),
+    ])
+    await db.commit()
+
+    assert await find_re_engage_customers(db, shop) == []
+
+
+async def test_re_engage_appears_in_compute_suggestions(db, shop):
+    """compute_suggestions wires the re_engage finder — when there's a
+    qualifying audience, a Suggestion(kind='re_engage') is emitted."""
+    from datetime import timedelta
+    from app.models import DeeReachEvent, Inbox
+
+    c = await _customer(db, line_id="U_for_suggest")
+    ibx = Inbox(
+        customer_id=c.id, shop_id=shop.id, body="old",
+        created_at=utcnow() - timedelta(days=45),
+    )
+    db.add(ibx)
+    await db.commit()
+    await db.refresh(ibx)
+    db.add(DeeReachEvent(
+        inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id,
+        kind="voucher_claimed", created_at=utcnow() - timedelta(days=20),
+    ))
+    await db.commit()
+
+    suggestions = await compute_suggestions(db, shop)
+    kinds = [s.kind for s in suggestions]
+    assert "re_engage" in kinds
+
+
 async def test_compute_suggestions_excludes_recently_messaged(db, shop):
     """Per PRD §10 anti-spam — a customer messaged within the last 14 days
     must drop out of every suggestion's audience until the cooldown clears."""

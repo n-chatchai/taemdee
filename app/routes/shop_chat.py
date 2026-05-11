@@ -43,6 +43,7 @@ _DEEREACH_KIND_LABELS = {
     "almost_there": "ใกล้ครบ",
     "unredeemed_reward": "เตือนรับรางวัล",
     "new_customer": "ขอบคุณลูกค้าใหม่",
+    "re_engage": "กลับมาคุยกัน",
     "birthday": "อวยพรวันเกิด",
     "manual": "ข้อความสร้างเอง",
 }

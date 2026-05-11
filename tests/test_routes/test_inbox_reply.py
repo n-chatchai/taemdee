@@ -445,6 +445,66 @@ async def test_my_inbox_mark_read_logs_opened_event(
     assert len(rows) == 1
 
 
+async def test_my_inbox_detail_logs_voucher_claimed_when_offer_set(
+    client, db, shop, customer, inbox_row
+):
+    """A broadcast with offer_text → opening it logs BOTH 'opened' and
+    'voucher_claimed' (auto-receive model: viewing the offer = claiming
+    it; no explicit claim button)."""
+    from sqlmodel import select
+    from app.models import DeeReachEvent
+
+    inbox_row.offer_text = "ลด ฿20"
+    db.add(inbox_row)
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    await client.get(f"/my-inbox/{inbox_row.id}")
+
+    kinds = (await db.exec(
+        select(DeeReachEvent.kind).where(DeeReachEvent.inbox_id == inbox_row.id)
+    )).all()
+    assert set(kinds) == {"opened", "voucher_claimed"}
+
+
+async def test_my_inbox_detail_no_voucher_event_without_offer(
+    client, db, shop, customer, inbox_row
+):
+    """Broadcast with no offer_text → only 'opened' logs; no voucher
+    event is fabricated."""
+    from sqlmodel import select
+    from app.models import DeeReachEvent
+
+    _set_customer_cookie(client, customer.id)
+    await client.get(f"/my-inbox/{inbox_row.id}")
+
+    kinds = (await db.exec(
+        select(DeeReachEvent.kind).where(DeeReachEvent.inbox_id == inbox_row.id)
+    )).all()
+    assert set(kinds) == {"opened"}
+
+
+async def test_my_inbox_mark_read_logs_voucher_claimed_when_offer_set(
+    client, db, shop, customer, inbox_row
+):
+    """List-level mark-read also fires voucher_claimed when the
+    broadcast carries an offer — symmetric with the detail GET path."""
+    from sqlmodel import select
+    from app.models import DeeReachEvent
+
+    inbox_row.offer_text = "ครัวซองต์ฟรี"
+    db.add(inbox_row)
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    await client.post(f"/my-inbox/{inbox_row.id}/read")
+
+    kinds = (await db.exec(
+        select(DeeReachEvent.kind).where(DeeReachEvent.inbox_id == inbox_row.id)
+    )).all()
+    assert set(kinds) == {"opened", "voucher_claimed"}
+
+
 async def test_customer_reply_logs_replied_event(
     client, db, shop, customer, inbox_row, stub_events_publish
 ):
