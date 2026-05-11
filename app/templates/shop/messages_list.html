@@ -5,19 +5,20 @@
 {# Per design/taemdee-shop.html → inbox.list (L11999). One
    .ib-broadcast card per campaign, with the customers who replied
    listed underneath. Replies are scoped per broadcast — there is no
-   general chat anymore. #}
+   general chat anymore.
+
+   Page chrome matches the other shop dock pages (s3-top "สวัสดี"
+   greeting + bell), with an inbox-specific section title under it
+   that surfaces the unread-reply count. #}
+{% include "_partials/page_top.html" %}
+
 <div class="page-scroll">
 <div class="page-container">
 
-  {# .page-head with inbox-specific h1 + count sub line ("N ยังไม่ได้ตอบ
-     · M broadcasts") — replaces the shared s3-top "สวัสดี" chrome for
-     this surface so the operator sees their reply-queue load at a glance. #}
-  <div class="page-head">
-    <div class="ph-text">
-      <h1>ข้อความตอบกลับ<span class="dot">.</span></h1>
-      <div class="ph-sub">
-        {% if unread_total %}{{ unread_total }} ยังไม่ได้ตอบ · {% endif %}{{ broadcasts_total }} broadcast{% if broadcasts_total != 1 %}s{% endif %}
-      </div>
+  <div class="ib-section-h">
+    <div class="ibsh-title">ข้อความตอบกลับ<span class="dot">.</span></div>
+    <div class="ibsh-sub">
+      {% if unread_total %}{{ unread_total }} ยังไม่ได้ตอบ · {% endif %}{{ broadcasts_total }} broadcast{% if broadcasts_total != 1 %}s{% endif %}
     </div>
   </div>
 
@@ -31,11 +32,8 @@
       <div class="ib-broadcast">
         <div class="ib-bh">
           <div class="ibh-text">
-            <div class="ibh-tag">
-              <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
-              ข้อความ
-            </div>
-            <div class="ibh-title">{{ b.headline }}{% if b.tag and b.tag != b.headline and b.tag != 'ทั่วไป' %} · {{ b.tag }}{% endif %}</div>
+            <div class="ibh-tag">{{ b.tag or 'ทั่วไป' }}</div>
+            <div class="ibh-title">{{ b.headline }}{% if b.tag and b.tag != b.headline and b.tag != 'ทั่วไป' %}{% endif %}</div>
             <div class="ibh-meta">
               {% if b.sent_at %}ส่งเมื่อ {{ b.sent_at|bkk_relative_time }}{% endif %}
               {% if b.sent_at and b.delivered %} · {% endif %}

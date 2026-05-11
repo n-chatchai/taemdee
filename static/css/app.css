@@ -4354,10 +4354,6 @@ body {
    can be removed in a follow-up once the cache settles.)
    ============================================================ */
 .page-container > div {
-  background: var(--surface);
-  border: 1px solid var(--line);
-  border-radius: 16px;
-  padding: 14px;
   margin: 12px 0 0;
 }
 .page-container > div:first-of-type { margin: 0; }
@@ -13403,6 +13399,33 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   word-wrap: break-word;
 }
 
+/* Shop /shop/messages — section title under the shared s3-top
+   greeting. Keeps the inbox page consistent with the other dock
+   pages (greeting + bell on top), then drops a slim section header
+   below carrying the unread-reply count so the operator's queue
+   load is the first specific thing they see. */
+.ib-section-h {
+  margin: 8px 20px 12px;
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  gap: 8px;
+}
+.ib-section-h .ibsh-title {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 18px;
+  color: var(--ink);
+  letter-spacing: -0.01em;
+}
+.ib-section-h .ibsh-title .dot { color: var(--accent); }
+.ib-section-h .ibsh-sub {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px;
+  color: var(--ink-soft);
+  flex-shrink: 0;
+}
+
 /* Shop /shop/messages — one .ib-broadcast card per campaign with the
    customers who replied listed underneath. Matches design's
    inbox.list (taemdee-shop.html L11999): butter-soft header strip
@@ -13448,7 +13471,6 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   color: var(--ink);
   letter-spacing: -0.005em;
   line-height: 1.25;
-  white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
 }
