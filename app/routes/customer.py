@@ -1989,6 +1989,13 @@ async def my_inbox_detail(
         )).first() is not None
     replies = await list_replies(db, row.id)
 
+    # "Ball in whose court" gate — the customer can only reply when the
+    # last message wasn't theirs. Zero replies after a broadcast counts
+    # as shop-having-spoken (the broadcast itself), so the customer can
+    # respond. After they've replied once, the form hides until the
+    # shop comes back — stops the customer from chaining messages.
+    can_reply = (not replies) or replies[-1].sender == "shop"
+
     return templates.TemplateResponse(
         request=request,
         name="my_inbox_detail.html",
@@ -1998,6 +2005,7 @@ async def my_inbox_detail(
             "row": row,
             "replies": replies,
             "is_muted": is_muted,
+            "can_reply": can_reply,
             "nav_inbox_badge": await _inbox_unread_count(db, customer.id),
             "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },

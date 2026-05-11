@@ -281,6 +281,13 @@ async def test_shop_reply_resets_customer_inbox_read_at(
     db.add(inbox_row)
     await db.commit()
 
+    # Seed a customer reply so the shop is allowed to respond (the
+    # can_reply gate requires the last message to be from the
+    # customer; sending the route still works either way, but render
+    # the form precondition here for realism).
+    db.add(InboxReply(inbox_id=inbox_row.id, sender="customer", body="hi"))
+    await db.commit()
+
     r = await auth_client.post(
         f"/shop/messages/{inbox_row.id}/reply",
         data={"body": "ทักกลับค่ะ"},
@@ -290,3 +297,99 @@ async def test_shop_reply_resets_customer_inbox_read_at(
 
     await db.refresh(inbox_row)
     assert inbox_row.read_at is None
+
+
+# ── "Ball in whose court" gate ─────────────────────────────────────────────
+
+
+async def test_customer_can_reply_to_fresh_broadcast(
+    client, db, shop, customer, inbox_row
+):
+    """Zero replies after a broadcast = shop spoke last (the broadcast
+    itself). Customer should see the inline reply form."""
+    shop.allow_customer_messages = True
+    db.add(shop)
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get(f"/my-inbox/{inbox_row.id}")).text
+    assert 'id="ix-compose"' in body
+    # The waiting placeholder div must not be present when the form is
+    # shown. (The string "รอร้านตอบกลับ" also appears in the optimistic
+    # JS handler, so check the wrapper div instead.)
+    assert 'class="ix-compose-waiting"' not in body
+
+
+async def test_customer_form_hides_after_their_own_reply(
+    client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """After the customer replies, the form swaps for the waiting
+    placeholder until the shop responds — stops the customer from
+    chaining messages."""
+    shop.allow_customer_messages = True
+    db.add(shop)
+    db.add(InboxReply(inbox_id=inbox_row.id, sender="customer", body="แวะแน่"))
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get(f"/my-inbox/{inbox_row.id}")).text
+    assert 'id="ix-compose"' not in body
+    assert 'class="ix-compose-waiting"' in body
+
+
+async def test_customer_form_returns_after_shop_replies(
+    client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """Once the shop responds, the ball is back in the customer's
+    court and the reply form re-appears."""
+    shop.allow_customer_messages = True
+    db.add(shop)
+    db.add_all([
+        InboxReply(inbox_id=inbox_row.id, sender="customer", body="แวะแน่"),
+        InboxReply(inbox_id=inbox_row.id, sender="shop", body="ขอบคุณค่ะ"),
+    ])
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    body = (await client.get(f"/my-inbox/{inbox_row.id}")).text
+    assert 'id="ix-compose"' in body
+
+
+async def test_shop_form_hidden_when_no_replies_yet(
+    auth_client, db, shop, customer, inbox_row
+):
+    """Right after the shop sent a broadcast (zero replies), the shop
+    must NOT see a reply form — they spoke last, ball is with the
+    customer."""
+    body = (await auth_client.get(f"/shop/messages/{inbox_row.id}")).text
+    assert 'id="ix-compose"' not in body
+    # The waiting div is what gates the form; the "รอลูกค้าตอบกลับ"
+    # copy also appears in the optimistic JS handler so check the
+    # wrapper class.
+    assert 'class="ix-compose-waiting"' in body
+
+
+async def test_shop_form_shows_after_customer_reply(
+    auth_client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """Customer reply puts the ball in the shop's court — form appears."""
+    db.add(InboxReply(inbox_id=inbox_row.id, sender="customer", body="ขอบคุณค่ะ"))
+    await db.commit()
+
+    body = (await auth_client.get(f"/shop/messages/{inbox_row.id}")).text
+    assert 'id="ix-compose"' in body
+
+
+async def test_shop_form_hides_after_their_own_reply(
+    auth_client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """Once the shop responds, the form hides again until the customer
+    replies back."""
+    db.add_all([
+        InboxReply(inbox_id=inbox_row.id, sender="customer", body="ขอบคุณค่ะ"),
+        InboxReply(inbox_id=inbox_row.id, sender="shop", body="ยินดีค่ะ"),
+    ])
+    await db.commit()
+
+    body = (await auth_client.get(f"/shop/messages/{inbox_row.id}")).text
+    assert 'id="ix-compose"' not in body

@@ -99,8 +99,10 @@
 
   {# Inline compose card per design — textarea + quick-reply chips
      + char counter + send. Hidden when the shop has turned off
-     customer messaging. #}
-  {% if shop and shop.allow_customer_messages %}
+     customer messaging, OR when the last message in the thread was
+     already from the customer (the "ball is in the shop's court"
+     gate — see can_reply in routes/customer.py). #}
+  {% if shop and shop.allow_customer_messages and can_reply %}
     <form class="ix-compose-active" method="POST" action="/my-inbox/{{ row.id }}/reply" id="ix-compose">
       <div class="ixca-head">
         <span class="ixca-label">ตอบกลับร้าน</span>
@@ -118,13 +120,15 @@
         <button type="submit" class="ixca-send" id="ixca-send" disabled>ส่งตอบกลับ</button>
       </div>
     </form>
-  {% else %}
+  {% elif not (shop and shop.allow_customer_messages) %}
     <div class="ix-compose" aria-disabled="true" style="cursor:default;">
       <div class="ixco-icon">
         <svg viewBox="0 0 24 24"><circle cx="12" cy="12" r="10"/><line x1="4.93" y1="4.93" x2="19.07" y2="19.07"/></svg>
       </div>
       <div class="ixco-text">ร้านนี้<strong>ปิดรับ</strong>การตอบกลับ</div>
     </div>
+  {% else %}
+    <div class="ix-compose-waiting">ส่งข้อความไปแล้ว · รอร้านตอบกลับนะครับ</div>
   {% endif %}
 </div>
 
@@ -217,6 +221,15 @@
           method: 'POST', body: fd,
           credentials: 'same-origin', redirect: 'manual',
         }).catch(function (err) { console.warn('[reply] send failed', err); });
+
+        // Ball flips to the shop — swap the form for the
+        // waiting-state placeholder so the customer can't chain
+        // follow-ups. Matches the server-side can_reply gate that
+        // would hide the form on the next render anyway.
+        var waiting = document.createElement('div');
+        waiting.className = 'ix-compose-waiting';
+        waiting.textContent = 'ส่งข้อความไปแล้ว · รอร้านตอบกลับนะครับ';
+        form.parentNode.replaceChild(waiting, form);
       });
     }
 

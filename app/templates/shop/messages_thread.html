@@ -81,12 +81,17 @@
     </div>
 
     {# Inline reply textbox — same .ix-compose-active pattern the
-       customer side uses. Always visible at the bottom of the thread
-       so the operator can reply without an extra tap. The "ฟรี · ไม่
-       ใช้เครดิต" pill is the design's reassurance that broadcasts
-       cost credits but replies don't. Quick chips prepend stock
-       openers without forcing the operator to type. POST →
-       /shop/messages/<inbox_id>/reply; optimistic insert + clear. #}
+       customer side uses. The "ฟรี · ไม่ใช้เครดิต" pill is the
+       design's reassurance that broadcasts cost credits but replies
+       don't. Quick chips prepend stock openers without forcing the
+       operator to type. POST → /shop/messages/<inbox_id>/reply;
+       optimistic insert + clear.
+
+       "Ball in whose court" gate: only shows when the last message
+       was from the customer (or hidden otherwise — see can_reply in
+       routes/shop_chat.py). Stops the operator from stacking
+       follow-ups on a customer who hasn't responded yet. #}
+    {% if can_reply %}
     <form class="ix-compose-active" method="POST" action="/shop/messages/{{ inbox.id }}/reply" id="ix-compose">
       <div class="ixca-head">
         <span class="ixca-label">
@@ -106,6 +111,15 @@
         <button type="submit" class="ixca-send" id="ixca-send" disabled>ส่งตอบกลับ</button>
       </div>
     </form>
+    {% else %}
+    <div class="ix-compose-waiting">
+      {% if replies %}
+        ส่งตอบกลับไปแล้ว · รอลูกค้าตอบกลับก่อนนะครับ
+      {% else %}
+        ส่ง broadcast แล้ว · รอลูกค้าตอบกลับก่อน
+      {% endif %}
+    </div>
+    {% endif %}
 
   </div>
 </div>
@@ -195,6 +209,15 @@
           method: 'POST', body: fd,
           credentials: 'same-origin', redirect: 'manual',
         }).catch(function (err) { console.warn('[reply] send failed', err); });
+
+        // Ball flips to the customer — swap the form for the
+        // waiting-state placeholder so the operator can't immediately
+        // send another follow-up. Matches the server-side gate that
+        // would hide the form on the next render anyway.
+        var waiting = document.createElement('div');
+        waiting.className = 'ix-compose-waiting';
+        waiting.textContent = 'ส่งตอบกลับไปแล้ว · รอลูกค้าตอบกลับก่อนนะครับ';
+        form.parentNode.replaceChild(waiting, form);
       });
     }
 

@@ -228,6 +228,13 @@ async def shop_messages_thread(
         )).one()
         visit_count = int(visit_count or 0)
 
+    # "Ball in whose court" gate — the shop can only reply when the
+    # last message wasn't theirs. Initial state (zero replies after a
+    # broadcast) counts as shop-having-spoken, so the form stays hidden
+    # until the customer replies. Prevents the operator from stacking
+    # follow-ups on a customer who hasn't responded yet.
+    can_reply = bool(replies) and replies[-1].sender == "customer"
+
     return templates.TemplateResponse(
         request=request,
         name="shop/messages_thread.html",
@@ -238,6 +245,7 @@ async def shop_messages_thread(
             "campaign": campaign,
             "replies": replies,
             "visit_count": visit_count,
+            "can_reply": can_reply,
         },
     )
 
