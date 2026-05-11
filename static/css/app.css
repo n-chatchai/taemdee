@@ -13730,6 +13730,94 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   cursor: not-allowed;
 }
 
+/* Per-broadcast engagement stats page — light wrapper for the
+   ix-deereach card at the top + the per-customer drill-down list
+   below. Reuses .s3-cust-stat for the 4-up grid + .ib-reply for
+   the customer rows so the page reads as a sibling of /shop/messages. */
+.bs-broadcast {
+  margin: 4px 20px 18px;
+  padding: 16px 18px;
+  background: var(--butter-soft, #FFF6D9);
+  border: 1px solid rgba(255, 217, 82, 0.55);
+  border-radius: 16px;
+  font-family: 'Prompt', sans-serif;
+}
+.bs-broadcast .ixd-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 5px;
+  font-size: 10px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 8px;
+}
+.bs-broadcast .ixd-tag svg { width: 10px; height: 10px; fill: currentColor; }
+.bs-broadcast .ixd-headline {
+  font-size: 16px; font-weight: 700;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+  line-height: 1.3;
+  margin-bottom: 4px;
+}
+.bs-broadcast .ixd-text {
+  font-size: 13.5px;
+  color: var(--ink);
+  line-height: 1.5;
+}
+.bs-broadcast .ixd-stats {
+  display: flex; flex-wrap: wrap; gap: 4px 14px;
+  margin-top: 12px;
+  font-size: 11.5px;
+  color: var(--ink-soft);
+}
+.bs-broadcast .ixd-stats strong {
+  color: var(--ink);
+  font-weight: 700;
+}
+
+.bs-rows-h {
+  margin: 18px 20px 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--ink-soft);
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+}
+.bs-rows {
+  margin: 0 16px 24px;
+  background: var(--surface);
+  border: 1px solid rgba(17,17,17,0.08);
+  border-radius: 16px;
+  overflow: hidden;
+}
+.bs-marks {
+  display: flex; flex-wrap: wrap; gap: 4px;
+  margin-top: 4px;
+}
+.bs-mark {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10px;
+  font-weight: 600;
+  padding: 1px 7px;
+  border-radius: 99px;
+  letter-spacing: 0.02em;
+}
+.bs-mark.replied { background: rgba(111, 168, 130, 0.18); color: var(--mint-ink, #2a4f44); }
+.bs-mark.opened  { background: rgba(255, 217, 82, 0.45); color: var(--ink); }
+.bs-mark.silent  { background: rgba(17,17,17,0.05); color: var(--ink-softer); }
+.bs-mark.voucher { background: rgba(255, 94, 58, 0.12); color: var(--accent); }
+
+.bs-empty {
+  padding: 40px 20px;
+  text-align: center;
+  color: var(--ink-soft);
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px;
+}
+
 /* "Ball in whose court" placeholder — replaces the active compose
    form when it's the other side's turn to reply. Quiet ink-soft
    text in a subtle pill so the thread doesn't end abruptly but

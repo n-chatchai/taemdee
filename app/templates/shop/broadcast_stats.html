@@ -1,0 +1,127 @@
+{% extends "_layouts/s_base.html" %}
+{% block title %}สถิติ broadcast · {{ shop.name }} · TaemDee{% endblock %}
+
+{% block content %}
+{# Per-broadcast engagement stats — reached from the /shop/messages
+   list's "ดู →" link on each .ib-broadcast card. Numbers come off
+   the DeeReachEvent log (opened / replied / voucher_claimed) +
+   Inbox row count for audience. Per-customer drill-down below
+   sorts replied > opened > silent so the operator scans the wins
+   first. #}
+{% include "_partials/page_top.html" %}
+
+<div class="page-scroll">
+<div class="page-container">
+
+  <div class="ib-section-h">
+    <div class="ibsh-title">สถิติ broadcast<span class="dot">.</span></div>
+    <div class="ibsh-sub"><a href="/shop/messages" style="color:var(--ink-soft); text-decoration:none;">← ข้อความตอบกลับ</a></div>
+  </div>
+
+  {# Broadcast header card — same ix-deereach look as the thread page
+     so this surface reads as "the broadcast itself" plus stats. #}
+  <div class="bs-broadcast">
+    <span class="ixd-tag">
+      <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
+      ข้อความที่คุณส่ง
+      {% if campaign.kind != 'manual' %}· {{ kind_label }}{% endif %}
+    </span>
+    {% if campaign.message_text %}
+      {% set _src = (campaign.message_text or '').strip() %}
+      {% set _split = _src.split('\n', 1) %}
+      {% if _split|length > 1 and _split[0] %}
+        <div class="ixd-headline">{{ _split[0] }}</div>
+        <div class="ixd-text">{{ _split[1] }}</div>
+      {% else %}
+        <div class="ixd-text">{{ _src }}</div>
+      {% endif %}
+    {% endif %}
+    <div class="ixd-stats">
+      <span><strong>✓</strong> ส่ง {{ campaign.sent_at.strftime('%d/%m %H:%M') if campaign.sent_at else '—' }}</span>
+      {% if campaign.offer_label %}
+        <span>ของฝาก: <strong>{{ campaign.offer_label }}</strong></span>
+      {% endif %}
+      {% if campaign.final_credits_satang %}
+        {% set _credits = campaign.final_credits_satang / 100 %}
+        <span>ค่าใช้: <strong>{{ '%.1f'|format(_credits) }} เครดิต</strong></span>
+      {% endif %}
+    </div>
+  </div>
+
+  {# 4-up engagement stats grid — reuses .s3-cust-stat chrome from
+     /shop/customers so the dock pages share the same visual language. #}
+  <div class="s3-cust-stats">
+    <div class="s3-cust-stat">
+      <div class="num">{{ audience }}</div>
+      <div class="lab">ส่ง</div>
+    </div>
+    <div class="s3-cust-stat accent">
+      <div class="num">{{ opened_count }}</div>
+      <div class="lab">เปิดอ่าน</div>
+    </div>
+    <div class="s3-cust-stat mint">
+      <div class="num">{{ replied_count }}</div>
+      <div class="lab">ตอบกลับ</div>
+    </div>
+    {% if voucher_count or campaign.offer_label %}
+      <div class="s3-cust-stat">
+        <div class="num">{{ voucher_count }}</div>
+        <div class="lab">รับของฝาก</div>
+      </div>
+    {% else %}
+      <div class="s3-cust-stat">
+        <div class="num">{{ reply_total }}</div>
+        <div class="lab">รวมตอบ</div>
+      </div>
+    {% endif %}
+  </div>
+
+  {# Per-customer drill-down — one row per recipient with engagement
+     markers + tap-to-thread. Sorted by engagement (replied > opened
+     > silent) so the operator scans the wins first. #}
+  <div class="bs-rows-h">รายชื่อลูกค้า · {{ audience }} คน</div>
+  <div class="ib-replies bs-rows">
+    {% if not rows %}
+      <div class="bs-empty">broadcast นี้ยังไม่มีผู้รับ</div>
+    {% else %}
+      {% for r in rows %}
+        <a class="ib-reply" href="/shop/messages/{{ r.inbox.id }}">
+          {% set _initial = (r.name[0] if r.name else 'ก')|upper %}
+          <div class="ibr-avatar">{{ _initial }}</div>
+          <div class="ibr-body">
+            <div class="ibr-row">
+              <div class="ibr-name">{{ r.name }}</div>
+              <div class="ibr-time">
+                {% if r.replied_at %}ตอบ {{ r.replied_at|bkk_relative_time }}
+                {% elif r.opened_at %}เปิด {{ r.opened_at|bkk_relative_time }}
+                {% else %}ส่งเมื่อ {{ r.inbox.created_at|bkk_relative_time }}{% endif %}
+              </div>
+            </div>
+            <div class="bs-marks">
+              {% if r.replied %}
+                <span class="bs-mark replied">ตอบกลับแล้ว</span>
+              {% elif r.opened %}
+                <span class="bs-mark opened">เปิดอ่านแล้ว</span>
+              {% else %}
+                <span class="bs-mark silent">ยังไม่เปิด</span>
+              {% endif %}
+              {% if r.voucher_claimed %}
+                <span class="bs-mark voucher">รับของฝากแล้ว</span>
+              {% endif %}
+            </div>
+          </div>
+        </a>
+      {% endfor %}
+    {% endif %}
+  </div>
+
+</div>
+</div>
+{% endblock %}
+
+{% block td_class %} td-tabbed td-pinned{% endblock %}
+
+{% block nav %}
+  {% set nav_active = 'messages' %}
+  {% include "_partials/glass_nav.html" %}
+{% endblock %}

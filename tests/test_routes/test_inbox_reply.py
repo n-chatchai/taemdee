@@ -9,7 +9,7 @@ fixtures + the stub_events_publish autouse fixture so the SSE publish
 calls don't try to reach a real Postgres."""
 
 from app.core.auth import CUSTOMER_COOKIE_NAME
-from app.models import Customer, InboxReply, User
+from app.models import Customer, Inbox, InboxReply, User
 from app.services.auth import issue_customer_token
 
 
@@ -506,3 +506,152 @@ async def test_shop_reply_does_not_log_replied_event(
     # call), so no engagement event was logged for it either. Net
     # count after the shop's reply path must remain zero.
     assert len(events) == 0
+
+
+# ── Broadcast stats page ───────────────────────────────────────────────────
+
+
+async def _seed_campaign_with_inboxes(db, shop, customer_count: int = 2):
+    """Build a campaign + N inbox rows tied to it. Each inbox gets
+    its own User+Customer (audience needs distinct customer_ids for
+    the dedup-by-customer aggregate to mean anything)."""
+    from app.models import DeeReachCampaign
+    from app.models.util import utcnow
+    from tests._helpers import make_customer
+
+    campaign = DeeReachCampaign(
+        shop_id=shop.id,
+        kind="win_back",
+        audience_count=customer_count,
+        message_text="คิดถึงพี่ครับ\nแวะมานะ",
+        offer_label="ลด ฿20",
+        final_credits_satang=50,
+        sent_at=utcnow(),
+    )
+    db.add(campaign)
+    await db.commit()
+    await db.refresh(campaign)
+
+    inboxes = []
+    for i in range(customer_count):
+        c = await make_customer(db, line_id=f"U_aud_{i}", display_name=f"พี่ {i}")
+        ibx = Inbox(
+            customer_id=c.id,
+            shop_id=shop.id,
+            campaign_id=campaign.id,
+            body=f"คิดถึงพี่ {i}\nแวะมานะ",
+        )
+        db.add(ibx)
+        await db.commit()
+        await db.refresh(ibx)
+        inboxes.append((c, ibx))
+    return campaign, inboxes
+
+
+async def test_broadcast_stats_empty_engagement(
+    auth_client, db, shop
+):
+    """Right after send (no opens, no replies) — all engagement
+    counters render zero against the seeded audience."""
+    campaign, inboxes = await _seed_campaign_with_inboxes(db, shop, customer_count=3)
+
+    r = await auth_client.get(f"/shop/messages/broadcast/{campaign.id}")
+    assert r.status_code == 200
+    body = r.text
+    # Audience = 3, opens / replies = 0
+    assert ">3<" in body
+    assert "เปิดอ่าน" in body
+    assert "ตอบกลับ" in body
+    # Each customer row renders with the "silent" mark.
+    assert body.count("ยังไม่เปิด") == 3
+
+
+async def test_broadcast_stats_counts_dedup_per_customer(
+    auth_client, db, shop, stub_events_publish
+):
+    """Multiple opens by the same customer count once — engagement
+    is per-customer for the headline numbers."""
+    from app.models import DeeReachEvent
+    from app.services.deereach_events import KIND_OPENED, log_event
+
+    campaign, inboxes = await _seed_campaign_with_inboxes(db, shop, customer_count=2)
+    (c1, ibx1), (c2, ibx2) = inboxes
+
+    # c1 opens twice (dedup short-circuits the second log), c2 once.
+    await log_event(db, inbox=ibx1, kind=KIND_OPENED)
+    await log_event(db, inbox=ibx1, kind=KIND_OPENED)
+    await log_event(db, inbox=ibx2, kind=KIND_OPENED)
+
+    r = await auth_client.get(f"/shop/messages/broadcast/{campaign.id}")
+    body = r.text
+    # Both customers opened — count is 2 even with 3 attempted log calls.
+    from sqlmodel import select
+    events = (await db.exec(
+        select(DeeReachEvent).where(DeeReachEvent.campaign_id == campaign.id)
+    )).all()
+    assert len(events) == 2  # dedup kicked in
+    assert "เปิดอ่านแล้ว" in body
+    # 2 of 2 customers show the opened mark
+    assert body.count("เปิดอ่านแล้ว") == 2
+
+
+async def test_broadcast_stats_replied_outranks_opened(
+    auth_client, db, shop, stub_events_publish
+):
+    """Customer who replied surfaces above customers who only opened
+    — operators scan the wins first."""
+    from app.services.deereach_events import KIND_OPENED, KIND_REPLIED, log_event
+
+    campaign, inboxes = await _seed_campaign_with_inboxes(db, shop, customer_count=3)
+    (c1, ibx1), (c2, ibx2), (c3, ibx3) = inboxes
+
+    # c1 stays silent, c2 opens only, c3 replies (which implies opened).
+    await log_event(db, inbox=ibx2, kind=KIND_OPENED)
+    await log_event(db, inbox=ibx3, kind=KIND_OPENED)
+    await log_event(db, inbox=ibx3, kind=KIND_REPLIED, payload={"reply_id": "x"})
+
+    r = await auth_client.get(f"/shop/messages/broadcast/{campaign.id}")
+    body = r.text
+    # Order in HTML: replied first, opened next, silent last.
+    pos_replied = body.index(c3.display_name)
+    pos_opened = body.index(c2.display_name)
+    pos_silent = body.index(c1.display_name)
+    assert pos_replied < pos_opened < pos_silent
+
+
+async def test_broadcast_stats_404_for_other_shop(auth_client, db):
+    """Campaign that belongs to a different shop must 404."""
+    from app.models import DeeReachCampaign, Shop
+    from app.models.util import utcnow
+    other = Shop(name="Other", phone="0899999999", reward_threshold=5)
+    db.add(other)
+    await db.commit()
+    await db.refresh(other)
+
+    cp = DeeReachCampaign(
+        shop_id=other.id, kind="manual", audience_count=0,
+        sent_at=utcnow(),
+    )
+    db.add(cp)
+    await db.commit()
+    await db.refresh(cp)
+
+    r = await auth_client.get(f"/shop/messages/broadcast/{cp.id}")
+    assert r.status_code == 404
+
+
+async def test_broadcast_stats_404_for_missing_campaign(auth_client):
+    from uuid import uuid4
+    r = await auth_client.get(f"/shop/messages/broadcast/{uuid4()}")
+    assert r.status_code == 404
+
+
+async def test_messages_list_links_to_broadcast_stats(
+    auth_client, db, shop
+):
+    """The ibh-link "ดู →" on /shop/messages now deep-links to the
+    broadcast stats page (used to point at /shop/deereach/sent)."""
+    campaign, _ = await _seed_campaign_with_inboxes(db, shop, customer_count=1)
+    body = (await auth_client.get("/shop/messages")).text
+    assert f"/shop/messages/broadcast/{campaign.id}" in body
+    assert f"/shop/deereach/sent?campaign_id={campaign.id}" not in body

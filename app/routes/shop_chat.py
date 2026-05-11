@@ -20,7 +20,14 @@ from app.core.auth import (
 )
 from app.core.database import get_session
 from app.core.templates import templates
-from app.models import Customer, DeeReachCampaign, Inbox, InboxReply, Shop
+from app.models import (
+    Customer,
+    DeeReachCampaign,
+    DeeReachEvent,
+    Inbox,
+    InboxReply,
+    Shop,
+)
 from app.services.branch import s3_top_context
 from app.services.inbox_reply import (
     list_replies,
@@ -273,4 +280,115 @@ async def shop_messages_reply(
     return RedirectResponse(
         url=f"/shop/messages/{inbox_id}",
         status_code=status.HTTP_303_SEE_OTHER,
+    )
+
+
+@router.get("/messages/broadcast/{campaign_id}", response_class=HTMLResponse)
+async def shop_broadcast_stats(
+    request: Request,
+    campaign_id: UUID,
+    shop: Shop = Depends(get_current_shop),
+    _: SessionContext = Depends(get_session_context),
+    db: AsyncSession = Depends(get_session),
+):
+    """Engagement stats for one broadcast — reads off the DeeReachEvent
+    log (audience / opened / replied / voucher_claimed) + the inbox rows
+    themselves for the per-customer drill-down. Linked from the
+    /shop/messages list's ibh-link "ดู →" so the operator can review
+    how a campaign landed without leaving the messages tab."""
+    campaign = await db.get(DeeReachCampaign, campaign_id)
+    if campaign is None or campaign.shop_id != shop.id:
+        raise HTTPException(status.HTTP_404_NOT_FOUND, "ไม่พบข้อความนี้")
+
+    # Pull all inbox rows for this campaign — drives the audience
+    # total + per-customer drill-down. audience_count on the campaign
+    # is the snapshot at send time, which can drift from reality if
+    # rows got purged; we prefer the live count.
+    inbox_rows = (await db.exec(
+        select(Inbox)
+        .where(Inbox.campaign_id == campaign_id, Inbox.shop_id == shop.id)
+        .order_by(Inbox.created_at.desc())
+    )).all()
+    audience = len(inbox_rows)
+
+    # Engagement aggregates — distinct customers per event kind so
+    # one customer who opens twice doesn't double-count. The events
+    # table indexes (campaign_id, kind) so this is cheap.
+    events = (await db.exec(
+        select(DeeReachEvent).where(DeeReachEvent.campaign_id == campaign_id)
+    )).all()
+    opened_customers: set = set()
+    replied_customers: set = set()
+    voucher_customers: set = set()
+    last_event_by_customer: dict = {}  # (cust_id, kind) → datetime
+    for e in events:
+        if e.kind == "opened":
+            opened_customers.add(e.customer_id)
+        elif e.kind == "replied":
+            replied_customers.add(e.customer_id)
+        elif e.kind == "voucher_claimed":
+            voucher_customers.add(e.customer_id)
+        key = (e.customer_id, e.kind)
+        prev = last_event_by_customer.get(key)
+        if prev is None or e.created_at > prev:
+            last_event_by_customer[key] = e.created_at
+
+    # Hydrate customers in one query so the drill-down list doesn't
+    # lazy-load N+1.
+    customer_by_id: dict = {}
+    if inbox_rows:
+        cids = [r.customer_id for r in inbox_rows]
+        cs = (await db.exec(
+            select(Customer).where(Customer.id.in_(cids))
+        )).all()
+        customer_by_id = {c.id: c for c in cs}
+
+    # Per-customer row view — sort the engaged ones first (replied >
+    # opened > nothing) so the operator scans the wins before the
+    # silence. Within each band, fall back to most-recent-open then
+    # inbox creation order.
+    def _engagement_rank(cid):
+        if cid in replied_customers:
+            return 0
+        if cid in opened_customers:
+            return 1
+        return 2
+
+    rows_view = []
+    for r in inbox_rows:
+        c = customer_by_id.get(r.customer_id)
+        rows_view.append({
+            "inbox": r,
+            "customer": c,
+            "name": (c and c.display_name) or "ลูกค้า",
+            "opened": r.customer_id in opened_customers,
+            "replied": r.customer_id in replied_customers,
+            "voucher_claimed": r.customer_id in voucher_customers,
+            "opened_at": last_event_by_customer.get((r.customer_id, "opened")),
+            "replied_at": last_event_by_customer.get((r.customer_id, "replied")),
+            "rank": _engagement_rank(r.customer_id),
+        })
+    rows_view.sort(key=lambda v: (v["rank"], v["inbox"].created_at), reverse=False)
+
+    # Reply count (not unique customers — every reply event) — gives
+    # the operator a feel for conversation depth on top of reach.
+    reply_total = sum(1 for e in events if e.kind == "replied")
+
+    _is_owner = bool(request.state.staff and request.state.staff.is_owner)
+    s3_top = await s3_top_context(db, shop, is_owner=_is_owner)
+    return templates.TemplateResponse(
+        request=request,
+        name="shop/broadcast_stats.html",
+        context={
+            "shop": shop,
+            "campaign": campaign,
+            "kind_label": _DEEREACH_KIND_LABELS.get(campaign.kind, "ส่งให้ลูกค้า"),
+            "audience": audience,
+            "opened_count": len(opened_customers),
+            "replied_count": len(replied_customers),
+            "voucher_count": len(voucher_customers),
+            "reply_total": reply_total,
+            "rows": rows_view,
+            **s3_top,
+        },
     )
