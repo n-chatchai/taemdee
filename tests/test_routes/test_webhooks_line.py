@@ -47,6 +47,24 @@ def _enable_line_secret(monkeypatch):
     monkeypatch.setattr(settings, "line_oa_channel_secret", "test-line-secret")
 
 
+@pytest.fixture(autouse=True)
+def _stub_mark_as_read(monkeypatch):
+    """The webhook fires LINE markAsRead after a successful mirror.
+    Stub the network call to a capture-list so tests don't try to
+    reach api.line.me. Individual tests can read `called_with` to
+    assert the API was hit (or wasn't, for drop paths)."""
+    called_with: list = []
+
+    async def fake_mark_as_read(line_id):
+        called_with.append(line_id)
+        return True
+
+    monkeypatch.setattr(
+        "app.routes.webhooks.mark_as_read", fake_mark_as_read,
+    )
+    return called_with
+
+
 async def test_line_message_mirrors_into_recent_broadcast(
     client, db, shop, stub_events_publish
 ):
@@ -243,6 +261,42 @@ async def test_line_message_marks_inbox_as_read(
     # tab updates without a refresh.
     names = [t[2] for t in stub_events_publish if t[0] == "customer"]
     assert "inbox-update" in names
+
+
+async def test_line_message_calls_mark_as_read_after_mirror(
+    client, db, shop, stub_events_publish, _stub_mark_as_read
+):
+    """Successful reply mirror also pings LINE markAsRead so the OA
+    Manager inbox stops nagging the operator."""
+    cust = await make_customer(db, line_id="U_markread")
+    db.add(Inbox(
+        customer_id=cust.id, shop_id=shop.id, body="x",
+        created_at=utcnow() - timedelta(hours=1),
+    ))
+    await db.commit()
+
+    await _post_event(client, event={
+        "type": "message",
+        "source": {"userId": "U_markread"},
+        "message": {"type": "text", "text": "got it"},
+    })
+
+    assert _stub_mark_as_read == ["U_markread"]
+
+
+async def test_line_message_skips_mark_as_read_on_drop(
+    client, db, _stub_mark_as_read
+):
+    """Drop paths (no user / no broadcast in window) must NOT call
+    markAsRead — we only drop the LINE-side badge when our side
+    actually captured the message."""
+    await _post_event(client, event={
+        "type": "message",
+        "source": {"userId": "U_nonexistent"},
+        "message": {"type": "text", "text": "hi"},
+    })
+
+    assert _stub_mark_as_read == []
 
 
 async def test_line_message_rejects_bad_signature(client, db):

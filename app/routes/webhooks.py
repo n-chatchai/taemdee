@@ -33,7 +33,7 @@ from app.core.database import get_session
 from app.models import Customer, Inbox, User
 from app.models.util import utcnow
 from app.services.inbox_reply import RateLimited, send_reply
-from app.services.line_messaging import verify_signature
+from app.services.line_messaging import mark_as_read, verify_signature
 
 router = APIRouter()
 log = logging.getLogger(__name__)
@@ -61,7 +61,10 @@ async def line_webhook(
     """
     body = await request.body()
     if not verify_signature(body, x_line_signature):
-        log.warning("line webhook signature verify failed")
+        log.warning(
+            "line webhook signature verify failed (header=%s body_bytes=%d)",
+            "present" if x_line_signature else "missing", len(body),
+        )
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
     # LINE sends a JSON envelope: {"destination": "...", "events": [...]}
@@ -73,12 +76,16 @@ async def line_webhook(
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
 
     events = envelope.get("events") or []
+    log.info(
+        "line webhook received: events=%d destination=%s",
+        len(events), envelope.get("destination") or "?",
+    )
     for ev in events:
         ev_type = ev.get("type")
         source = ev.get("source") or {}
         line_id = source.get("userId")
         if not line_id:
-            log.debug("line webhook event without userId: %s", ev_type)
+            log.info("line webhook event without userId: type=%s", ev_type)
             continue
 
         if ev_type == "follow":
@@ -90,16 +97,21 @@ async def line_webhook(
         elif ev_type == "message":
             # Only text messages get mirrored — stickers / images /
             # location etc. don't have a clean translation to an
-            # InboxReply.body so they fall through to debug.
+            # InboxReply.body so they fall through.
             message = ev.get("message") or {}
-            if message.get("type") == "text":
+            msg_type = message.get("type")
+            if msg_type == "text":
+                log.info(
+                    "line message.text received: line_id=%s len=%d",
+                    line_id, len(message.get("text") or ""),
+                )
                 await _attribute_line_message_to_inbox(
                     db, line_id=line_id, text=(message.get("text") or ""),
                 )
             else:
-                log.debug("line webhook ignored message.type=%s", message.get("type"))
+                log.info("line webhook ignored message.type=%s", msg_type)
         else:
-            log.debug("line webhook ignored event type=%s", ev_type)
+            log.info("line webhook ignored event type=%s", ev_type)
 
     return Response(status_code=status.HTTP_200_OK)
 
@@ -134,7 +146,11 @@ async def _attribute_line_message_to_inbox(
             select(User).where(User.line_id == line_id)
         )).first()
         if user is None:
-            log.debug("line message: no user row for line_id=%s", line_id)
+            log.info(
+                "line message attribution: NO USER for line_id=%s "
+                "(customer never linked LINE via OAuth or line_id mismatch)",
+                line_id,
+            )
             return
 
         customer = (await db.exec(
@@ -144,7 +160,11 @@ async def _attribute_line_message_to_inbox(
             )
         )).first()
         if customer is None:
-            log.debug("line message: no customer for line_id=%s", line_id)
+            log.info(
+                "line message attribution: NO CUSTOMER for user=%s line_id=%s "
+                "(user row exists but no Customer attached, or all merged)",
+                user.id, line_id,
+            )
             return
 
         cutoff = utcnow() - timedelta(hours=LINE_REPLY_ATTRIBUTION_HOURS)
@@ -155,29 +175,42 @@ async def _attribute_line_message_to_inbox(
             ).order_by(Inbox.created_at.desc()).limit(1)
         )).first()
         if inbox is None:
-            log.debug(
-                "line message: no broadcast in window for customer=%s, dropping",
-                customer.id,
+            log.info(
+                "line message attribution: NO BROADCAST in last %dh for "
+                "customer=%s — message dropped, customer is likely chatting "
+                "general (no broadcast context to attach the reply to)",
+                LINE_REPLY_ATTRIBUTION_HOURS, customer.id,
             )
             return
 
         try:
-            await send_reply(db, inbox, sender="customer", body=body)
+            reply = await send_reply(db, inbox, sender="customer", body=body)
             log.info(
-                "line message mirrored → customer=%s inbox=%s shop=%s",
-                customer.id, inbox.id, inbox.shop_id,
+                "line message MIRRORED → customer=%s inbox=%s shop=%s reply=%s "
+                "(broadcast was %s; now marked read)",
+                customer.id, inbox.id, inbox.shop_id, reply.id,
+                "already read" if inbox.read_at else "unread before",
             )
+            # Drop the LINE OA Manager unread badge — operator has
+            # already seen the message on /shop/messages, no need
+            # for LINE's own inbox UI to keep flagging it. Best-
+            # effort; failure here doesn't roll back the mirror.
+            await mark_as_read(line_id)
         except RateLimited:
             # send_reply enforces 3 customer replies per inbox per
             # minute. Hitting it via LINE means the customer just
             # spammed; drop silently — they already got their first
             # 3 mirrored.
             log.info(
-                "line message rate-limited on inbox=%s for customer=%s",
+                "line message RATE-LIMITED on inbox=%s for customer=%s "
+                "(>3 replies/min on same broadcast)",
                 inbox.id, customer.id,
             )
     except Exception as e:  # noqa: BLE001
-        log.warning("line message attribution failed line_id=%s: %s", line_id, e)
+        log.warning(
+            "line message attribution FAILED line_id=%s: %s", line_id, e,
+            exc_info=True,
+        )
         try:
             await db.rollback()
         except Exception:
@@ -202,7 +235,10 @@ async def _set_friend_status(
     result = await db.exec(select(User).where(User.line_id == line_id))
     user = result.first()
     if user is None:
-        log.debug("line webhook: no user row for line_id=%s yet", line_id)
+        log.info(
+            "line webhook friend status: no User row for line_id=%s yet "
+            "(will be backfilled on next OAuth login)", line_id,
+        )
         return
     user.line_friend_status = status_value
     if clear_blocked:

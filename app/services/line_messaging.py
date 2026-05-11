@@ -32,6 +32,12 @@ from app.core.config import settings
 log = logging.getLogger(__name__)
 
 PUSH_URL = "https://api.line.me/v2/bot/message/push"
+# Drop the unread count in LINE OA Manager (the operator-facing app
+# the OA team uses outside TaemDee). Called after we've mirrored a
+# customer's reply into /shop/messages — the operator has already
+# seen it on our side, so the LINE OA Manager badge shouldn't keep
+# nagging them.
+MARK_AS_READ_URL = "https://api.line.me/v2/bot/message/markAsRead"
 # Generous timeout — LINE's API is normally <500ms but the worker can
 # absorb a slow response without dropping the queue.
 _HTTP_TIMEOUT = 8.0
@@ -98,6 +104,50 @@ def push_text(line_id: str, text: str) -> LineSendResult:
         friend_gated=friend_gated,
         detail=body,
     )
+
+
+async def mark_as_read(line_id: str) -> bool:
+    """Mark all messages from this user as read in LINE OA Manager.
+
+    Asynchronous (webhook handler is async-native). Caller fires this
+    after a successful reply mirror — the operator has already seen
+    the message on /shop/messages, no need for LINE OA Manager to keep
+    flagging it as unread. Best-effort: any failure logs at WARNING
+    and returns False; we never want a missed mark-read to error the
+    webhook response since the customer-visible work already succeeded.
+
+    Endpoint:  POST /v2/bot/message/markAsRead
+    Auth:      Bearer LINE_OA_CHANNEL_ACCESS_TOKEN
+    Body:      {"chat": {"chatId": "<line_id>"}}
+    Returns 200 OK on success; 4xx on bad input / unauthorized.
+    """
+    if not settings.line_messaging_configured:
+        log.info("line mark_as_read skipped — OA token not configured")
+        return False
+    if not line_id:
+        return False
+
+    payload = {"chat": {"chatId": line_id}}
+    headers = {
+        "Authorization": f"Bearer {settings.line_oa_channel_access_token}",
+        "Content-Type": "application/json",
+    }
+    try:
+        async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT) as client:
+            resp = await client.post(MARK_AS_READ_URL, json=payload, headers=headers)
+    except httpx.HTTPError as e:
+        log.warning("line mark_as_read network error → line_id=%s: %s", line_id, e)
+        return False
+
+    if resp.status_code == 200:
+        log.info("line mark_as_read → line_id=%s ok", line_id)
+        return True
+
+    log.warning(
+        "line mark_as_read failed → line_id=%s status=%s body=%r",
+        line_id, resp.status_code, resp.text[:300],
+    )
+    return False
 
 
 def verify_signature(body: bytes, signature_header: Optional[str]) -> bool:
