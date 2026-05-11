@@ -11509,12 +11509,15 @@ body:has(.td-pinned) {
 /* Profile avatar button in the page-head action row. Picture or
    initial-on-accent fallback. Tap opens the profile-edit sheet. */
 .page-head .ph-avatar {
-  width: 40px;
-  height: 40px;
+  width: 44px;
+  height: 44px;
   border-radius: 50%;
   border: 0;
-  background: var(--accent);
-  color: #fff;
+  /* Match .ph-icon-btn (search / QR) so the action row reads as one
+     uniform chrome — three discs in a line. The accent fill we used
+     to use stuck out as a fourth visual element. */
+  background: rgba(17,17,17,0.05);
+  color: var(--ink);
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
   font-size: 16px;
@@ -11535,22 +11538,24 @@ body:has(.td-pinned) {
   border-radius: 50%;
 }
 .page-head .ph-avatar:active { transform: scale(0.94); }
-/* Pending-todos count chip — accent-orange disc at the top-right
-   of the avatar, white number, no border. Mirrors the system
-   "notification dot with count" pattern (bell + 4 chip). */
+/* Pending-todos count chip — same shape + ring as the shop side's
+   .gn-badge.has-count so both surfaces' "X notifications" chip
+   reads with one visual language. Accent fill, ring punched out of
+   the page bg, soft pulse. */
 .page-head .ph-avatar-badge {
   position: absolute;
-  top: -3px; right: -3px;
-  min-width: 18px; height: 18px;
-  padding: 0 5px;
-  border-radius: 999px;
-  background: var(--ink); color: #fff;
+  top: -4px; right: -4px;
+  min-width: 16px; height: 16px;
+  padding: 0 4px;
+  border-radius: 99px;
+  background: var(--accent); color: #fff;
   font-family: 'Prompt', sans-serif;
-  font-size: 11px; font-weight: 700;
+  font-size: 9px; font-weight: 700;
   line-height: 1;
   display: flex; align-items: center; justify-content: center;
   pointer-events: none;
-  box-shadow: 0 1px 4px -1px rgba(0,0,0,0.25);
+  box-shadow: 0 0 0 2px var(--bg);
+  animation: gn-badge-pulse 1.6s ease-out infinite;
 }
 
 /* Profile-edit bottom sheet — display name + picture uploader.

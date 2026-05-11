@@ -38,14 +38,15 @@
           </svg>
         </a>
       {% endif %}
-      {% if 'search' in _ph_kinds %}
-        <a href="/find-shops" class="ph-icon-btn" title="ค้นหาร้าน" aria-label="ค้นหาร้าน">
-          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-            <circle cx="11" cy="11" r="7"/>
-            <path d="M21 21l-4.35-4.35"/>
-          </svg>
-        </a>
-      {% endif %}
+      {# Search icon now renders on every page that mounts page_head —
+         finding a shop is a navigation primitive (story / scan / etc.),
+         not a per-page action. Drop the ph_action_kind gate. #}
+      <a href="/find-shops" class="ph-icon-btn" title="ค้นหาร้าน" aria-label="ค้นหาร้าน">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.35-4.35"/>
+        </svg>
+      </a>
       {# Profile avatar — tap opens the bottom sheet to edit display
          name + picture (and act on suggested todos, which moved into
          the sheet from /my-cards). The badge dot shows a count of
