@@ -20,7 +20,7 @@ from app import models  # noqa: F401, E402 — registers all model tables
 from app.core.auth import SESSION_COOKIE_NAME  # noqa: E402
 from app.core.config import settings  # noqa: E402
 from app.core.database import get_session  # noqa: E402
-from app.models import Customer, Shop  # noqa: E402
+from app.models import Customer, Shop, User  # noqa: E402
 from app.services.auth import issue_session_token  # noqa: E402
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -47,7 +47,7 @@ def _isolate_dev_settings(monkeypatch):
 
 
 @pytest.fixture
-async def engine():
+async def engine(monkeypatch):
     # StaticPool keeps all connections sharing the same in-memory DB so the test code
     # and the route handler see the same data.
     engine = create_async_engine(
@@ -57,6 +57,19 @@ async def engine():
     )
     async with engine.begin() as conn:
         await conn.run_sync(SQLModel.metadata.create_all)
+
+    # Middleware (CustomerContextMiddleware, ShopContextMiddleware) opens
+    # sessions via app.core.database.SessionFactory directly — those calls
+    # bypass FastAPI dependency_overrides, so without this patch the
+    # middleware reaches a separate empty in-memory DB and 404s every
+    # cookie. Re-bind SessionFactory + engine to the test engine for the
+    # duration of the test.
+    test_sessionmaker = async_sessionmaker(
+        engine, class_=AsyncSession, expire_on_commit=False,
+    )
+    monkeypatch.setattr("app.core.database.engine", engine)
+    monkeypatch.setattr("app.core.database.SessionFactory", test_sessionmaker)
+
     yield engine
     await engine.dispose()
 
@@ -79,7 +92,14 @@ async def shop(db: AsyncSession) -> Shop:
 
 @pytest.fixture
 async def customer(db: AsyncSession) -> Customer:
-    c = Customer(is_anonymous=True)
+    # Customer is User-backed since the identity refactor — every
+    # customer needs a backing User row even if anonymous, since
+    # NOT NULL constraint on customers.user_id.
+    u = User()
+    db.add(u)
+    await db.commit()
+    await db.refresh(u)
+    c = Customer(user_id=u.id, is_anonymous=True)
     db.add(c)
     await db.commit()
     await db.refresh(c)
@@ -121,7 +141,55 @@ async def named_client(client):
 
 
 @pytest.fixture
-async def auth_client(client, shop):
-    """Client with a session cookie for the shop owner."""
-    client.cookies.set(SESSION_COOKIE_NAME, issue_session_token(shop.id))
-    return client
+async def auth_client(app_for_test, shop):
+    """Client with a session cookie for the shop owner. Base URL is the
+    shop subdomain so the subdomain middleware doesn't 303-bounce
+    /shop/* away to the main host."""
+    transport = ASGITransport(app=app_for_test)
+    async with AsyncClient(transport=transport, base_url="https://shop.test") as c:
+        c.cookies.set(SESSION_COOKIE_NAME, issue_session_token(shop.id))
+        yield c
+
+
+@pytest.fixture
+async def inbox_row(db: AsyncSession, shop, customer):
+    """A single DeeReach-style Inbox row for (customer, shop) — the
+    persistent landing zone that broadcasts write to. Used as the
+    parent for InboxReply tests + the /my-inbox detail route tests."""
+    from app.models import Inbox
+    row = Inbox(
+        customer_id=customer.id,
+        shop_id=shop.id,
+        body="คิดถึงพี่นะ\nแวะมาเก็บแต้มต่อได้เลย",
+    )
+    db.add(row)
+    await db.commit()
+    await db.refresh(row)
+    return row
+
+
+@pytest.fixture(autouse=True)
+def stub_events_publish(monkeypatch):
+    """Postgres LISTEN/NOTIFY isn't available in the in-memory SQLite
+    test setup, so every call into services.events.publish would
+    asyncpg-error. Stub the two publish helpers to a captured-list so
+    individual tests can assert on what would have been broadcast.
+    Auto-applied; tests that care about events read `published`."""
+    published: list = []
+
+    def fake_publish(target_id, name, data):
+        published.append(("shop", str(target_id), name, data))
+
+    def fake_publish_customer(target_id, name, data):
+        published.append(("customer", str(target_id), name, data))
+
+    async def fake_publish_async(target_id, name, data):
+        published.append(("customer", str(target_id), name, data))
+
+    monkeypatch.setattr("app.services.events.publish", fake_publish)
+    monkeypatch.setattr("app.services.events.publish_customer", fake_publish_customer)
+    monkeypatch.setattr(
+        "app.services.events.publish_customer_async", fake_publish_async,
+        raising=False,
+    )
+    return published
