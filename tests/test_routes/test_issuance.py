@@ -4,16 +4,17 @@ from sqlmodel import select
 
 from app.models import Customer, Point
 from app.models.util import utcnow
+from tests._helpers import make_customer
 
 
 async def test_issue_page_renders_full_hub_with_glass_nav(auth_client):
-    """GET /shop/issue is now the S3.issue full-page action hub —
-    headline 'ออกแต้ม' + recent feed + 3 method buttons + glass nav.
-    The old toggle-config UI moved to /shop/issue/methods."""
+    """GET /shop/issue is the S3.issue full-page action hub — recent
+    feed + 3 method buttons + glass nav. Headline text moved into the
+    shared s3-top "สวัสดี <shop>" chrome; the page-top no longer
+    carries a literal 'ออกแต้ม' tag."""
     response = await auth_client.get("/shop/issue")
     assert response.status_code == 200
     body = response.text
-    assert ">ออกแต้ม<" in body
     assert "s3-glass-nav" in body  # 4-tab nav
     assert "ลูกค้าล่าสุด" in body
     # All 3 method buttons present (default config has all toggled on)
@@ -32,13 +33,18 @@ async def test_issue_methods_page_renders_toggle_config(auth_client):
 
 
 async def test_phone_entry_creates_customer(auth_client, db):
+    from app.models import User
     response = await auth_client.post(
         "/shop/issue", data={"method": "phone_entry", "phone": "0822222222"}
     )
     assert response.status_code == 200
 
-    result = await db.exec(select(Customer).where(Customer.phone == "0822222222"))
-    customer = result.first()
+    # phone moved onto User — go through it to find the customer.
+    user = (await db.exec(select(User).where(User.phone == "0822222222"))).first()
+    assert user is not None
+    customer = (await db.exec(
+        select(Customer).where(Customer.user_id == user.id)
+    )).first()
     assert customer is not None
     assert customer.is_anonymous is False
 
@@ -120,12 +126,12 @@ async def test_save_issuance_methods_clears_when_all_off(auth_client, db, shop):
 
 
 async def test_search_customers_returns_match_by_name(auth_client, db, shop):
-    from app.models import Customer
-    c1 = Customer(is_anonymous=False, display_name="สมศรี", phone="0812345678")
-    c2 = Customer(is_anonymous=False, display_name="John", phone="0899999999")
-    c3 = Customer(is_anonymous=True, display_name="Anon")
-    db.add_all([c1, c2, c3])
-    await db.commit()
+    c1 = await make_customer(db, display_name="สมศรี", phone="0812345678")
+    c2 = await make_customer(db, display_name="John", phone="0899999999")
+    # is_anonymous=True overrides display_name presence — the test
+    # specifically wants an anon customer to verify it stays out of
+    # search results.
+    c3 = await make_customer(db, display_name="Anon", is_anonymous=True)
 
     r = await auth_client.get("/shop/issue/grant/customers?q=สมศรี")
     assert r.status_code == 200
@@ -138,9 +144,7 @@ async def test_search_customers_returns_match_by_name(auth_client, db, shop):
 
 
 async def test_search_customers_returns_match_by_phone(auth_client, db, shop):
-    from app.models import Customer
-    db.add(Customer(is_anonymous=False, display_name="X", phone="0812345678"))
-    await db.commit()
+    await make_customer(db, display_name="X", phone="0812345678")
 
     r = await auth_client.get("/shop/issue/grant/customers?q=0812")
     assert r.status_code == 200
@@ -159,10 +163,7 @@ async def test_search_grant_issues_n_points_and_publishes_feed_rows(auth_client,
     received = []
     monkeypatch.setattr(issuance_routes, "publish", lambda sid, name, html: received.append((name, html)))
 
-    c = Customer(is_anonymous=False, display_name="สมศรี", phone="0812345678")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="สมศรี", phone="0812345678")
 
     response = await auth_client.post(
         "/shop/issue/grant",
@@ -176,18 +177,15 @@ async def test_search_grant_issues_n_points_and_publishes_feed_rows(auth_client,
     points = (await db.exec(select(Point).where(Point.customer_id == c.id))).all()
     assert len(list(points)) == 3
 
-    # One feed-row event per granted point (S6 toast is gone — dock detail sheet replaces it).
-    assert sum(1 for n, _ in received if n == "feed-row") == 3
+    # Grant publishes a single feed-row for the last point of the batch
+    # (the dock detail sheet aggregates via point_ids, no per-point fan-out).
+    assert sum(1 for n, _ in received if n == "feed-row") == 1
 
 
 async def test_issue_scan_grant_decodes_customer_url_and_issues(auth_client, db, shop):
     """S3.scan camera POST accepts the customer's `/c/<uuid>` URL, extracts
     the id, and issues a point via shop_scan."""
-    from app.models import Customer
-    c = Customer(is_anonymous=False, display_name="ส้มศรี", phone="0812345678")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="ส้มศรี", phone="0812345678")
 
     response = await auth_client.post(
         "/shop/issue/scan",
@@ -222,10 +220,7 @@ async def test_issue_scan_publishes_stamped_event_to_customer(auth_client, db, s
     from app.models import Customer
     from app.services import events
 
-    c = Customer(is_anonymous=False, display_name="พี่ส้ม", phone="0812345678")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="พี่ส้ม", phone="0812345678")
 
     q = events.subscribe_customer(c.id)
     try:
@@ -255,10 +250,7 @@ async def test_issue_scan_publishes_redeemed_event_when_threshold_hit(auth_clien
     db.add(shop)
     await db.commit()
 
-    c = Customer(is_anonymous=False, display_name="พี่ครบ", phone="0822233344")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="พี่ครบ", phone="0822233344")
     # Seed 2 stamps so the next /issue/scan is the threshold-hit.
     for _ in range(2):
         db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
@@ -312,10 +304,7 @@ async def test_issue_phone_entry_publishes_gifts_update_when_threshold_hit(auth_
     db.add(shop)
     await db.commit()
 
-    c = Customer(is_anonymous=False, phone="0866677788")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, phone="0866677788")
     for _ in range(2):
         db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="phone_entry"))
     await db.commit()
@@ -354,10 +343,7 @@ async def test_issue_grant_publishes_gifts_update_when_threshold_hit(auth_client
     db.add(shop)
     await db.commit()
 
-    c = Customer(is_anonymous=False, phone="0877788899")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, phone="0877788899")
     # Already at 4/5; granting 3 more pushes through threshold (5 consumed,
     # 2 stay as the next card's progress).
     for _ in range(4):
@@ -403,10 +389,7 @@ async def test_issue_scan_serves_pending_voucher_instead_of_stamping(auth_client
     fresh stamp — powers the C5 'ใช้แล้ว' state."""
     from app.models import Customer, Redemption
 
-    c = Customer(is_anonymous=False, display_name="คุณกาแฟ", phone="0855555555")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="คุณกาแฟ", phone="0855555555")
 
     redemption = Redemption(customer_id=c.id, shop_id=shop.id)
     db.add(redemption)
@@ -439,10 +422,7 @@ async def test_issue_scan_serves_only_redemption_younger_than_30min(auth_client,
     from app.models import Customer, Redemption
     from app.models.util import utcnow
 
-    c = Customer(is_anonymous=False, display_name="คุณกาแฟ", phone="0866666666")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="คุณกาแฟ", phone="0866666666")
 
     redemption = Redemption(
         customer_id=c.id, shop_id=shop.id,
@@ -468,10 +448,7 @@ async def test_issue_scan_skips_already_served_redemption(auth_client, db, shop)
     from app.models import Customer, Redemption
     from app.models.util import utcnow
 
-    c = Customer(is_anonymous=False, display_name="คุณกาแฟ", phone="0877777777")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="คุณกาแฟ", phone="0877777777")
 
     redemption = Redemption(customer_id=c.id, shop_id=shop.id, served_at=utcnow())
     db.add(redemption)
@@ -514,11 +491,7 @@ async def test_my_id_renders_identity_qr(client):
 
 
 async def test_search_grant_caps_points_at_10(auth_client, db, shop):
-    from app.models import Customer
-    c = Customer(is_anonymous=False, display_name="X", phone="0812345678")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, display_name="X", phone="0812345678")
 
     response = await auth_client.post(
         "/shop/issue/grant",
@@ -550,11 +523,20 @@ async def test_invalid_method_400(auth_client):
     assert response.status_code == 400
 
 
-async def test_unauthenticated_issue_401(client):
-    response = await client.post(
-        "/shop/issue", data={"method": "phone_entry", "phone": "0811"}
-    )
-    assert response.status_code == 401
+async def test_unauthenticated_issue_redirects_to_login(app_for_test):
+    """SessionAuthError now 303s to /shop/login (the auth_error_handler
+    redirects rather than returning a raw 401 so PWA users don't see
+    a JSON error)."""
+    from httpx import ASGITransport, AsyncClient
+    transport = ASGITransport(app=app_for_test)
+    async with AsyncClient(transport=transport, base_url="https://shop.test") as c:
+        response = await c.post(
+            "/shop/issue",
+            data={"method": "phone_entry", "phone": "0811"},
+            follow_redirects=False,
+        )
+        assert response.status_code == 303
+        assert "/shop/login" in response.headers["location"]
 
 
 async def test_void_recent_point(auth_client, db, shop, customer):

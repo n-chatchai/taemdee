@@ -81,10 +81,8 @@ async def test_insights_history_skips_old_campaigns_outside_30day_window(auth_cl
 
 async def test_insights_suggestions_view_renders_compute_suggestions(auth_client, db, shop):
     """When there are eligible audiences, suggestions cards render."""
-    c = Customer(is_anonymous=False, line_id="U_lapsed", display_name="หาย")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    from tests._helpers import make_customer
+    c = await make_customer(db, line_id="U_lapsed", display_name="หาย")
     db.add(Point(
         shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan",
         created_at=utcnow() - timedelta(days=60),

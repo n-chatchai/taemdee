@@ -17,9 +17,12 @@ async def test_line_start_configured_redirects_to_line(client, monkeypatch):
 
     response = await client.get("/auth/line/start", follow_redirects=False)
     assert response.status_code == 302
-    assert response.headers["location"].startswith("https://access.line.me/oauth2/v2.1/authorize?")
-    # The state cookie was set
-    assert "line_oauth_state" in response.cookies
+    location = response.headers["location"]
+    assert location.startswith("https://access.line.me/oauth2/v2.1/authorize?")
+    # State is now a signed JWT carried in the URL state= param —
+    # cookie-bound storage was retired with the migration to stateless
+    # OAuth state. Just confirm the URL carries a state value.
+    assert "state=" in location
 
 
 async def test_line_callback_bad_state_400(client):

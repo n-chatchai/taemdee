@@ -3,7 +3,8 @@ async def test_privacy_page_renders(client):
     assert response.status_code == 200
     body = response.text
     assert "นโยบายความเป็นส่วนตัว" in body
-    assert "ข้อมูลที่เราจัดเก็บ" in body
+    # Section heading was reworded from "ข้อมูลที่เราจัดเก็บ" → "ข้อมูลที่เราเก็บ"
+    assert "ข้อมูลที่เราเก็บ" in body
     assert "support@taemdee.com" in body
 
 

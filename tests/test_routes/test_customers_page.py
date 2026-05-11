@@ -7,18 +7,11 @@ from datetime import timedelta
 
 from app.models import Customer, Point, Redemption
 from app.models.util import utcnow
+from tests._helpers import make_customer
 
 
 async def _customer(db, name, *, line_id=None):
-    c = Customer(
-        is_anonymous=False,
-        display_name=name,
-        line_id=line_id or f"U_{name}",
-    )
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
-    return c
+    return await make_customer(db, display_name=name, line_id=line_id or f"U_{name}")
 
 
 async def _stamp(db, shop, customer, *, days_ago=0):
@@ -38,9 +31,9 @@ async def test_customers_page_renders_empty_state(auth_client):
     assert response.status_code == 200
     body = response.text
     assert "ลูกค้า" in body
-    # Glass nav links to all 4 sibling tabs
+    # Glass nav surfaces the sibling tabs. /shop/issue was retired
+    # from the dock — issuance lives behind the action hub now.
     assert 'href="/shop/dashboard"' in body
-    assert 'href="/shop/issue"' in body
     assert 'href="/shop/insights"' in body
     assert "0 คน" in body
 
@@ -76,15 +69,17 @@ async def test_customers_filter_near_only_returns_near_ready(auth_client, db, sh
 
 async def test_customers_filter_lapsed_returns_only_old_visits(auth_client, db, shop):
     """`?filter=lapsed` — last visit older than 14 days."""
-    lapsed = await _customer(db, "หาย")
+    # Use names that won't collide with page chrome (the stats card
+    # labels "หายไป"/"ใหม่" surface unconditionally).
+    lapsed = await _customer(db, "ลาภินทร์")
     await _stamp(db, shop, lapsed, days_ago=30)
-    fresh = await _customer(db, "ใหม่")
+    fresh = await _customer(db, "เฟรชชี่")
     await _stamp(db, shop, fresh, days_ago=1)
 
     response = await auth_client.get("/shop/customers?filter=lapsed")
     body = response.text
-    assert "หาย" in body
-    assert "ใหม่" not in body
+    assert "ลาภินทร์" in body
+    assert "เฟรชชี่" not in body
 
 
 async def test_customers_search_substring_matches_display_name(auth_client, db, shop):

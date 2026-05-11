@@ -8,14 +8,12 @@ from app.core.auth import SESSION_COOKIE_NAME
 from app.models import Customer, DeeReachCampaign, Point, StaffMember
 from app.models.util import utcnow
 from app.services.auth import issue_session_token
+from tests._helpers import make_customer
 
 
 async def _seed_unredeemed(db, shop):
     """Point count at goal, last visit ≥7 days ago — qualifies for unredeemed_reward."""
-    c = Customer(is_anonymous=False, line_id="U_target")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, line_id="U_target")
     for _ in range(shop.reward_threshold):
         db.add(Point(
             shop_id=shop.id,
@@ -115,13 +113,9 @@ async def test_deereach_manual_detail_renders(auth_client, db, shop):
     """The 'สร้างแคมเปญเอง' editor opens on /shop/deereach/manual even when
     no auto-suggestion fires; audience = every reachable customer of the
     shop, message defaults to empty so the owner writes their own."""
-    from app.models import Customer
     from datetime import timedelta
 
-    c = Customer(is_anonymous=False, line_id="U_picked")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db, line_id="U_picked")
     db.add(Point(
         shop_id=shop.id, customer_id=c.id,
         issuance_method="customer_scan",
@@ -140,16 +134,13 @@ async def test_deereach_manual_detail_renders(auth_client, db, shop):
 async def test_send_with_customer_subset_records_only_selected(auth_client, db, shop):
     """Owner deselects half the audience — only selected ids end up in the
     campaign + DeeReachMessage rows."""
-    from app.models import Customer, DeeReachMessage
+    from app.models import DeeReachMessage
     from app.models.util import utcnow
     from datetime import timedelta
 
     # Two reachable + at-goal customers — both qualify for unredeemed_reward.
-    c1 = Customer(is_anonymous=False, line_id="U_a")
-    c2 = Customer(is_anonymous=False, line_id="U_b")
-    db.add_all([c1, c2])
-    await db.commit()
-    await db.refresh(c1); await db.refresh(c2)
+    c1 = await make_customer(db, line_id="U_a")
+    c2 = await make_customer(db, line_id="U_b")
     for c in (c1, c2):
         for _ in range(shop.reward_threshold):
             db.add(Point(
@@ -231,11 +222,18 @@ async def test_send_insufficient_credits_400(auth_client, db, shop):
     assert response.status_code == 400
 
 
-async def test_staff_without_permission_403(client, db, shop):
-    """Staff session without can_deereach must be blocked."""
+async def test_staff_without_permission_403(app_for_test, db, shop):
+    """Staff session without can_deereach must be blocked. Use a shop-host
+    client so the subdomain bouncer doesn't 303 us before the perm gate."""
+    from app.models import User
+    from httpx import ASGITransport, AsyncClient
+    staff_user = User(phone="0899999999")
+    db.add(staff_user)
+    await db.commit()
+    await db.refresh(staff_user)
     staff = StaffMember(
         shop_id=shop.id,
-        phone="0899999999",
+        user_id=staff_user.id,
         can_void=True,
         can_deereach=False,  # ← explicit
         accepted_at=utcnow(),
@@ -244,10 +242,12 @@ async def test_staff_without_permission_403(client, db, shop):
     await db.commit()
     await db.refresh(staff)
 
-    client.cookies.set(
-        SESSION_COOKIE_NAME, issue_session_token(shop.id, staff_id=staff.id)
-    )
-    response = await client.post(
-        "/shop/deereach/send", data={"kind": "unredeemed_reward"}, follow_redirects=False
-    )
-    assert response.status_code == 403
+    transport = ASGITransport(app=app_for_test)
+    async with AsyncClient(transport=transport, base_url="https://shop.test") as c:
+        c.cookies.set(
+            SESSION_COOKIE_NAME, issue_session_token(shop.id, staff_id=staff.id)
+        )
+        response = await c.post(
+            "/shop/deereach/send", data={"kind": "unredeemed_reward"}, follow_redirects=False
+        )
+        assert response.status_code == 403

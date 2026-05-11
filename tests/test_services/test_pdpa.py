@@ -10,13 +10,13 @@ from app.services.pdpa import (
     delete_customer_account,
     find_inactive_anonymous_customers,
 )
+from tests._helpers import make_customer
 
 
 async def test_delete_scrubs_pii_keeps_stamps(db, shop):
-    c = Customer(is_anonymous=False, line_id="U_keepme", phone="0811", display_name="Ann")
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(
+        db, line_id="U_keepme", phone="0811", display_name="Ann",
+    )
     db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
     await db.commit()
 
@@ -34,12 +34,8 @@ async def test_delete_scrubs_pii_keeps_stamps(db, shop):
 
 async def test_inactive_anonymous_finder(db, shop):
     """Anonymous customers whose latest stamp is >365 days old → eligible for purge."""
-    old = Customer(is_anonymous=True)
-    fresh = Customer(is_anonymous=True)
-    db.add_all([old, fresh])
-    await db.commit()
-    await db.refresh(old)
-    await db.refresh(fresh)
+    old = await make_customer(db)
+    fresh = await make_customer(db)
 
     db.add(Point(
         shop_id=shop.id,

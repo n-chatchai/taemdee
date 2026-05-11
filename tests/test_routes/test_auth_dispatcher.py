@@ -6,27 +6,33 @@ from app.routes import auth
 @pytest.mark.asyncio
 async def test_line_callback_dispatcher_bounces_to_shop(client, monkeypatch):
     """
-    Test that when a shop login callback lands on the main domain, 
-    it redirects to the shop subdomain.
+    Test that when a shop login callback lands on the main domain,
+    it exchanges the code locally then bounces to the shop subdomain
+    with a signed transfer token.
     """
-    # 1. Mock verify_oauth_state to simulate a valid shop login state
-    monkeypatch.setattr(auth, "verify_oauth_state", lambda state, cookie: {"role": "shop"})
-    
-    # 2. Mock the Host header to be the main domain
+    # verify_oauth_state's signature changed — only takes the URL state now.
+    monkeypatch.setattr(auth, "verify_oauth_state", lambda state, cookie=None: {"role": "shop"})
+
+    # The route exchanges the code on the main domain before bouncing,
+    # so both network helpers need stubs.
+    async def fake_exchange(*args, **kwargs):
+        return {"access_token": "fake_token"}
+    async def fake_profile(*args, **kwargs):
+        return {"userId": "line_shop_123", "displayName": "Test Shop"}
+    monkeypatch.setattr(auth, "exchange_code_for_token", fake_exchange)
+    monkeypatch.setattr(auth, "fetch_profile", fake_profile)
+
     headers = {"Host": settings.main_domain}
-    
-    # 3. Call the callback on the main domain
     response = await client.get(
         "/auth/line/callback?code=fake_code&state=fake_state",
         headers=headers,
         follow_redirects=False
     )
-    
-    # 4. Assert it redirects to shop domain
+
+    # Cross-host bounce with a transfer JWT in the URL.
     assert response.status_code == 303
     assert response.headers["location"].startswith(f"https://{settings.shop_domain}/auth/line/callback")
-    assert "code=fake_code" in response.headers["location"]
-    assert "state=fake_state" in response.headers["location"]
+    assert "transfer=" in response.headers["location"]
 
 @pytest.mark.asyncio
 async def test_line_callback_dispatcher_proceeds_on_shop_domain(client, monkeypatch):
@@ -35,7 +41,7 @@ async def test_line_callback_dispatcher_proceeds_on_shop_domain(client, monkeypa
     it proceeds to exchange the token instead of redirecting again.
     """
     # 1. Mock verify_oauth_state
-    monkeypatch.setattr(auth, "verify_oauth_state", lambda state, cookie: {"role": "shop"})
+    monkeypatch.setattr(auth, "verify_oauth_state", lambda state, cookie=None: {"role": "shop"})
     
     # 2. Mock exchange_code_for_token to avoid real network calls
     mock_exchange = MagicMock()
@@ -67,13 +73,20 @@ async def test_line_callback_dispatcher_proceeds_on_shop_domain(client, monkeypa
     assert "session" in response.cookies
 
 @pytest.mark.asyncio
-async def test_line_callback_customer_proceeds_on_main_domain(client, monkeypatch):
+async def test_line_callback_customer_proceeds_on_main_domain(client, monkeypatch, customer):
     """
     Test that when a customer login callback lands on the main domain,
     it proceeds normally without bouncing to the shop domain.
     """
-    # 1. Mock verify_oauth_state as customer
-    monkeypatch.setattr(auth, "verify_oauth_state", lambda state, cookie: {"role": "customer"})
+    # connect-originator gate requires the connect_customer_id to map to
+    # a real Customer row, so seed one via the fixture and reference it.
+    monkeypatch.setattr(
+        auth, "verify_oauth_state",
+        lambda state, cookie=None: {
+            "role": "customer",
+            "connect_customer_id": str(customer.id),
+        },
+    )
     
     # 2. Mock token exchange and profile
     async def fake_exchange(*args, **kwargs):

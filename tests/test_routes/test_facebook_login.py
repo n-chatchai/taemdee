@@ -15,8 +15,10 @@ async def test_facebook_customer_start_configured_redirects(client, monkeypatch)
 
     response = await client.get("/auth/facebook/customer/start", follow_redirects=False)
     assert response.status_code == 302
-    assert response.headers["location"].startswith("https://www.facebook.com/v22.0/dialog/oauth?")
-    assert "facebook_oauth_state" in response.cookies
+    location = response.headers["location"]
+    assert location.startswith("https://www.facebook.com/v22.0/dialog/oauth?")
+    # Stateless OAuth state: signed JWT in the URL, no companion cookie.
+    assert "state=" in location
 
 
 async def test_facebook_callback_bad_state_400(client):

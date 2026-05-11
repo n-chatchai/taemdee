@@ -48,7 +48,13 @@ async def test_team_add_post_persists_permission_flags(auth_client, db, shop):
         follow_redirects=False,
     )
     assert response.status_code == 303
-    staff = (await db.exec(select(StaffMember).where(StaffMember.shop_id == shop.id))).first()
+    # is_owner=False filters out the owner row the auth_client fixture seeds.
+    staff = (await db.exec(
+        select(StaffMember).where(
+            StaffMember.shop_id == shop.id,
+            StaffMember.is_owner == False,  # noqa: E712
+        )
+    )).first()
     assert staff.can_void is True
     assert staff.can_deereach is True
     assert staff.can_topup is False
@@ -66,7 +72,14 @@ async def test_team_add_post_creates_staff_and_redirects_to_invite(auth_client, 
     assert location.startswith("/shop/team/")
     assert location.endswith("/invite")
 
-    members = (await db.exec(select(StaffMember).where(StaffMember.shop_id == shop.id))).all()
+    # Filter out the owner StaffMember seeded by the auth_client
+    # fixture — count only the open-seat invites this test created.
+    members = (await db.exec(
+        select(StaffMember).where(
+            StaffMember.shop_id == shop.id,
+            StaffMember.is_owner == False,  # noqa: E712
+        )
+    )).all()
     members = list(members)
     assert len(members) == 1
     assert members[0].display_name == "น้องบี"
@@ -84,7 +97,13 @@ async def test_team_add_post_rejects_blank_name(auth_client):
 
 async def test_team_invite_page_renders_qr_and_share_buttons(auth_client, db, shop):
     await auth_client.post("/shop/team/add", data={"display_name": "น้องเอ"})
-    staff = (await db.exec(select(StaffMember).where(StaffMember.shop_id == shop.id))).first()
+    # is_owner=False filters out the owner row the auth_client fixture seeds.
+    staff = (await db.exec(
+        select(StaffMember).where(
+            StaffMember.shop_id == shop.id,
+            StaffMember.is_owner == False,  # noqa: E712
+        )
+    )).first()
 
     response = await auth_client.get(f"/shop/team/{staff.id}/invite")
     assert response.status_code == 200
@@ -106,7 +125,13 @@ async def test_team_invite_page_remints_expired_token(auth_client, db, shop):
     from app.models.util import utcnow
 
     await auth_client.post("/shop/team/add", data={"display_name": "น้องซี"})
-    staff = (await db.exec(select(StaffMember).where(StaffMember.shop_id == shop.id))).first()
+    # is_owner=False filters out the owner row the auth_client fixture seeds.
+    staff = (await db.exec(
+        select(StaffMember).where(
+            StaffMember.shop_id == shop.id,
+            StaffMember.is_owner == False,  # noqa: E712
+        )
+    )).first()
     old_token = staff.invite_token
 
     # Force-expire
@@ -122,7 +147,13 @@ async def test_team_invite_page_remints_expired_token(auth_client, db, shop):
 
 async def test_revoke_marks_staff_and_redirects(auth_client, db, shop):
     await auth_client.post("/shop/team/add", data={"display_name": "น้องดี"})
-    staff = (await db.exec(select(StaffMember).where(StaffMember.shop_id == shop.id))).first()
+    # is_owner=False filters out the owner row the auth_client fixture seeds.
+    staff = (await db.exec(
+        select(StaffMember).where(
+            StaffMember.shop_id == shop.id,
+            StaffMember.is_owner == False,  # noqa: E712
+        )
+    )).first()
 
     response = await auth_client.post(
         f"/shop/team/{staff.id}/revoke", follow_redirects=False,
@@ -135,7 +166,9 @@ async def test_revoke_marks_staff_and_redirects(auth_client, db, shop):
 async def test_staff_join_page_with_valid_token(client, db, shop):
     """Valid invite token → Staff.join page shows shop name + nickname +
     LINE/phone login buttons."""
-    staff = StaffMember(shop_id=shop.id, display_name="น้องอี")
+    # display_name moved to User; open-seat invites label themselves via
+    # display_name_hint until a user claims the token.
+    staff = StaffMember(shop_id=shop.id, display_name_hint="น้องอี")
     db.add(staff)
     await db.commit()
     await db.refresh(staff)
@@ -147,8 +180,9 @@ async def test_staff_join_page_with_valid_token(client, db, shop):
     body = response.text
     assert shop.name in body
     assert "น้องอี" in body
+    # Login buttons are gated by settings.shop_logins. The conftest pin
+    # holds it to "line,google" so phone/username buttons are absent.
     assert "เข้าด้วย LINE" in body
-    assert "เข้าด้วยเบอร์โทร" in body
 
 
 async def test_staff_join_page_with_expired_token_shows_friendly_state(client, db, shop):
@@ -157,7 +191,7 @@ async def test_staff_join_page_with_expired_token_shows_friendly_state(client, d
     from app.models.util import utcnow
 
     staff = StaffMember(
-        shop_id=shop.id, display_name="น้องเก่า",
+        shop_id=shop.id, display_name_hint="น้องเก่า",
         invite_token="EXPIRED_TOKEN",
         invite_token_expires_at=utcnow() - timedelta(hours=1),
     )

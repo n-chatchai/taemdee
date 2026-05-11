@@ -5,13 +5,11 @@ from sqlmodel import select
 from app.core.auth import CUSTOMER_COOKIE_NAME
 from app.models import Customer, Inbox
 from app.services.auth import issue_customer_token
+from tests._helpers import make_customer
 
 
 async def _make_customer_with_inbox(db, shop, count: int = 1):
-    c = Customer(is_anonymous=True)
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db)
     rows = []
     for i in range(count):
         row = Inbox(customer_id=c.id, shop_id=shop.id, body=f"msg {i}")
@@ -69,8 +67,10 @@ async def test_my_inbox_detail_renders_and_auto_marks_read(client, db, shop):
     assert row.body in body
     assert shop.name in body
     # Single primary CTA → /story/<shop>, no per-row mute affordance.
+    # Post-May 1 design replaced .idc-btn with the .ix-shop-strip layout
+    # whose "ดูร้าน" anchor links to the story page.
     assert f'href="/story/{shop.id}"' in body
-    assert "idc-btn primary" in body
+    assert "ดูร้าน" in body
     assert "data-mute-shop" not in body
     # And the row was flipped to read
     await db.refresh(row)
@@ -81,10 +81,7 @@ async def test_my_inbox_detail_blocks_other_customer(client, db, shop):
     """A different customer must not be able to view someone else's row."""
     from app.models import Customer
     owner, [row] = await _make_customer_with_inbox(db, shop, count=1)
-    intruder = Customer(is_anonymous=True)
-    db.add(intruder)
-    await db.commit()
-    await db.refresh(intruder)
+    intruder = await make_customer(db)
 
     _set_customer_cookie(client, intruder.id)
     r = await client.get(f"/my-inbox/{row.id}")
@@ -118,34 +115,27 @@ async def test_my_inbox_detail_renders_offer_card_when_offer_text_set(client, db
 
     _set_customer_cookie(client, customer.id)
     body = (await client.get(f"/my-inbox/{row.id}")).text
-    assert "inbox-detail-offer" in body
-    assert "ของฝากจากร้าน" in body
+    # Post-May 1 design replaced .inbox-detail-offer with .ixd-voucher
+    # rendered inside the ix-deereach card. The offer body + bkk_short_date
+    # condition should still surface.
+    assert "ixd-voucher" in body
     assert "ลด ฿20 เมื่อซื้อกาแฟ" in body
-    # bkk_short_date filter formats the expiry — expect "ใช้ก่อน " prefix
-    assert "ใช้ก่อน " in body
+    assert "หมด " in body  # bkk_short_date formatted "หมด <date>"
 
 
 async def test_my_inbox_detail_no_offer_card_when_offer_text_unset(client, db, shop):
-    """Plain DeeReach message without an offer renders body only — the
-    .inbox-detail-offer block is omitted entirely (not just empty)."""
+    """Plain DeeReach message without an offer omits the .ixd-voucher
+    block entirely."""
     customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
     # offer_text stays NULL by default
     _set_customer_cookie(client, customer.id)
     body = (await client.get(f"/my-inbox/{row.id}")).text
-    # The offer card container + kicker are absent. (The push prompt
-    # overlay also has "มีของฝากจากร้าน" copy, so check the .ido-label
-    # kicker class specifically rather than the substring alone.)
-    assert "inbox-detail-offer" not in body
-    assert "ido-label" not in body
+    assert "ixd-voucher" not in body
 
 
 async def test_my_inbox_detail_offer_no_expiry_omits_condition(client, db, shop):
-    """offer_text set but offer_until NULL → render the offer card
-    without the .ido-condition expiry line. The retired
-    'โชว์หน้านี้ที่ร้านได้เลยครับ' fallback copy made sense when the
-    inbox screen was the redemption surface; auto-receive moved that
-    job to /my-gifts so the offer block on the message page is
-    purely confirmation."""
+    """offer_text set but offer_until NULL → render the voucher card
+    without the expiry suffix ('หมด <date>')."""
     customer, [row] = await _make_customer_with_inbox(db, shop, count=1)
     row.offer_text = "ครัวซองต์ฟรี 1 ชิ้น"
     db.add(row)
@@ -154,9 +144,8 @@ async def test_my_inbox_detail_offer_no_expiry_omits_condition(client, db, shop)
     _set_customer_cookie(client, customer.id)
     body = (await client.get(f"/my-inbox/{row.id}")).text
     assert "ครัวซองต์ฟรี 1 ชิ้น" in body
-    assert "ใช้ก่อน " not in body
-    # "ดูใน ของขวัญของพี่ →" replaces the retired show-at-shop copy.
-    assert "ของขวัญของพี่" in body
+    assert "ixd-voucher" in body
+    assert "หมด " not in body
 
 
 async def test_my_inbox_includes_push_prompt_partial(client):
@@ -183,10 +172,7 @@ async def test_my_inbox_list_rows_link_to_detail(client, db, shop):
 async def test_my_inbox_mark_read_blocks_other_customer(client, db, shop):
     """A different customer must not be able to flip someone else's row."""
     owner, [row] = await _make_customer_with_inbox(db, shop, count=1)
-    intruder = Customer(is_anonymous=True)
-    db.add(intruder)
-    await db.commit()
-    await db.refresh(intruder)
+    intruder = await make_customer(db)
 
     _set_customer_cookie(client, intruder.id)
     r = await client.post(f"/my-inbox/{row.id}/read")
@@ -268,10 +254,7 @@ async def test_notifications_page_renders_with_muted_shops(client, db, shop):
     """C6.notifications lists every shop the customer has muted; the
     template links each to the unmute POST."""
     from app.models import Customer, CustomerShopMute
-    c = Customer(is_anonymous=True)
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db)
     db.add(CustomerShopMute(customer_id=c.id, shop_id=shop.id))
     await db.commit()
 
@@ -288,10 +271,7 @@ async def test_notifications_page_renders_with_muted_shops(client, db, shop):
 async def test_notifications_unmute_deletes_row(client, db, shop):
     from app.models import Customer, CustomerShopMute
     from sqlmodel import select as _select
-    c = Customer(is_anonymous=True)
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
+    c = await make_customer(db)
     db.add(CustomerShopMute(customer_id=c.id, shop_id=shop.id))
     await db.commit()
 
@@ -315,9 +295,10 @@ async def test_notifications_channel_save_clears_for_taemdee(client, db):
     'taemdee' (the default radio) always clears preferred_channel."""
     from app.models import Customer
 
-    _set_customer_cookie(client, "fake")  # no-op; route ignores invalid token
-    # Subscribe creates anonymous customer + cookie. Use that path so the
-    # customer exists for the channel POST.
+    # /push/subscribe mints a fresh anonymous customer + cookie when
+    # the request arrives without one. The old test seeded a bogus
+    # cookie first; the new auth path raises CustomerAuthError on
+    # invalid cookies and 303s out, so start clean.
     sub = await client.post(
         "/push/subscribe",
         data={"endpoint": "https://x", "p256dh": "p", "auth": "a"},
@@ -325,9 +306,10 @@ async def test_notifications_channel_save_clears_for_taemdee(client, db):
     assert sub.status_code == 200
 
     # Give the customer a phone so 'sms' is allowed by the gating rule.
+    # phone moved onto the backing User row.
     customer = (await db.exec(select(Customer))).first()
-    customer.phone = "0855512345"
-    db.add(customer)
+    customer.user.phone = "0855512345"
+    db.add(customer.user)
     await db.commit()
 
     r1 = await client.post("/card/account/notifications", data={"channel": "sms"}, follow_redirects=False)
@@ -371,9 +353,10 @@ async def test_my_inbox_renders_design_aligned_card_markup(client, db, shop):
     _set_customer_cookie(client, customer.id)
     body = (await client.get("/my-inbox")).text
 
-    # Design-aligned classes
+    # Design-aligned classes — .ic-logo was retired in favour of the
+    # shared .shop-avatar chip partial.
     assert "inbox-card" in body
-    assert "ic-logo" in body
+    assert "shop-avatar" in body
     assert "ic-preview" in body
     assert "page-head" in body
     assert "inbox-filters" in body
@@ -385,10 +368,7 @@ async def test_my_inbox_renders_design_aligned_card_markup(client, db, shop):
 
 async def test_mute_endpoint_creates_row_and_is_idempotent(client, db, shop):
     from app.models import Customer, CustomerShopMute
-    customer = Customer(is_anonymous=True)
-    db.add(customer)
-    await db.commit()
-    await db.refresh(customer)
+    customer = await make_customer(db)
     _set_customer_cookie(client, customer.id)
 
     r = await client.post(f"/card/account/mute/{shop.id}/mute")

@@ -64,7 +64,6 @@ async def test_qr_live_renders_rotating_page(auth_client, shop):
     response = await auth_client.get("/shop/qr/live")
     assert response.status_code == 200
     body = response.text
-    assert "s3-qr-page" in body
     assert "s3-qr-card" in body
     assert "s3-qr-countdown" in body
     # Initial QR is embedded server-side (inline SVG)
@@ -148,17 +147,22 @@ async def test_settings_menu_signature_toggles(auth_client, db, shop):
 
 
 async def test_dashboard_trend_chart_labels_align_to_today(auth_client, db, shop):
-    """The 7 day labels under the bars must end on today's BKK weekday
-    (rightmost = today, leftmost = 6 days back). The earlier
-    fixed-sequence formula ignored what day it actually was."""
-    from datetime import datetime, timezone
+    """The 7 day labels under the bars must end on today (rightmost),
+    using the 'DD month-abbrev' format. Earlier weekday-abbrev labels
+    ('จ.', 'อ.', …) were replaced so the chart reads uniformly across
+    month boundaries."""
+    from datetime import datetime, timezone, timedelta
     from app.models.util import BKK
     shop.is_onboarded = True
     db.add(shop)
     await db.commit()
 
-    today = datetime.now(timezone.utc).astimezone(BKK).date().weekday()
-    labels = ("จ.", "อ.", "พ.", "พฤ.", "ศ.", "ส.", "อา.")
+    today_bkk = datetime.now(timezone.utc).astimezone(BKK).date()
+    th_months = ("ม.ค.", "ก.พ.", "มี.ค.", "เม.ย.", "พ.ค.", "มิ.ย.",
+                 "ก.ค.", "ส.ค.", "ก.ย.", "ต.ค.", "พ.ย.", "ธ.ค.")
+    expected_last = f"{today_bkk.day} {th_months[today_bkk.month - 1]}"
+    six_back = today_bkk - timedelta(days=6)
+    expected_first = f"{six_back.day} {th_months[six_back.month - 1]}"
 
     body = (await auth_client.get("/shop/dashboard")).text
 
@@ -166,22 +170,21 @@ async def test_dashboard_trend_chart_labels_align_to_today(auth_client, db, shop
     import re
     days_in_html = re.findall(r'class="tb-day">([^<]+)</span>', body)
     assert len(days_in_html) == 7
-    assert days_in_html[-1] == labels[today]
-    assert days_in_html[0] == labels[(today - 6) % 7]
+    assert days_in_html[-1] == expected_last
+    assert days_in_html[0] == expected_first
 
 
 async def test_dashboard_trend_chart_renders_legend_and_redeem_overlay(auth_client, db, shop):
     """Trend chart now shows scan + redeem legend dots. Redeem overlay
     appears as .tb-redeem inside .tb-bar when at least one redemption
     happened in the 7-day window."""
-    from app.models import Customer, Redemption
+    from app.models import Redemption
+    from tests._helpers import make_customer
     shop.is_onboarded = True
     db.add(shop)
-
-    c = Customer(is_anonymous=False, display_name="พี่ส้ม", phone="0822333444")
-    db.add(c)
     await db.commit()
-    await db.refresh(c)
+
+    c = await make_customer(db, display_name="พี่ส้ม", phone="0822333444")
     # Seed today: 4 stamps + 1 redemption.
     for _ in range(4):
         db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))

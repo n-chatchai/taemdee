@@ -14,14 +14,11 @@ from app.services.deereach import (
     find_new_customers,
     find_unredeemed_reward_customers,
 )
+from tests._helpers import make_customer
 
 
 async def _customer(db, *, line_id: str | None = None, phone: str | None = None) -> Customer:
-    c = Customer(is_anonymous=line_id is None and phone is None, line_id=line_id, phone=phone)
-    db.add(c)
-    await db.commit()
-    await db.refresh(c)
-    return c
+    return await make_customer(db, line_id=line_id, phone=phone)
 
 
 async def _stamp(db, shop, customer, *, days_ago: int):
@@ -316,25 +313,25 @@ async def test_pick_channel_prefers_web_push_over_line(db, shop):
     even though line (1 Cr) is also reachable."""
     from app.services.deereach import _pick_channel
 
-    c = Customer(
-        is_anonymous=False,
-        line_id="U_both",
-        web_push_endpoint="https://example.push/sub-abc",
-    )
+    c = await make_customer(db, line_id="U_both")
+    c.user.web_push_endpoint = "https://example.push/sub-abc"
+    db.add(c.user)
+    await db.commit()
+    await db.refresh(c)
     assert _pick_channel(c) == "web_push"
 
 
 async def test_pick_channel_falls_back_to_line_without_web_push(db, shop):
     from app.services.deereach import _pick_channel
 
-    c = Customer(is_anonymous=False, line_id="U_line_only")
+    c = await make_customer(db, line_id="U_line_only")
     assert _pick_channel(c) == "line"
 
 
 async def test_pick_channel_falls_back_to_inbox_for_anonymous(db, shop):
     from app.services.deereach import _pick_channel
 
-    c = Customer(is_anonymous=True)
+    c = await make_customer(db)
     assert _pick_channel(c) == "inbox"
 
 
@@ -378,17 +375,18 @@ async def test_send_campaign_writes_inbox_for_anonymous_customer(db, shop):
     in the inbox table when the dispatcher runs."""
     from app.models import Inbox
     from app.services.deereach import _pick_channel
-    from app.tasks.deereach import _send_inbox
+    from app.tasks.deereach import _create_inbox_row
     from uuid import uuid4
 
     anon = await _customer(db)
     assert _pick_channel(anon) == "inbox"
 
     fake_campaign_id = uuid4()
-    delivered = await _send_inbox(
+    row = await _create_inbox_row(
         db, anon.id, shop.id, fake_campaign_id, "ทดสอบกล่องข้อความ",
+        offer_text=None, offer_until=None,
     )
-    assert delivered is True
+    assert row.id is not None
     await db.commit()
 
     rows = (await db.exec(select(Inbox).where(Inbox.customer_id == anon.id))).all()
@@ -403,8 +401,8 @@ async def test_dispatch_loop_always_copies_to_inbox_for_non_inbox_channels(db, s
     customer's inbox even when the primary delivery channel is something
     else (web_push / line / sms). Inbox is the source of truth so a
     customer who missed the push notification can still find the message."""
-    from app.models import Customer, DeeReachCampaign, DeeReachMessage, Inbox
-    from app.tasks.deereach import _dispatch_channel, _send_inbox
+    from app.models import Inbox
+    from app.tasks.deereach import _create_inbox_row
 
     # Customer who would normally be reached via LINE
     line_customer = await _customer(db, line_id="U_line_test")
@@ -415,8 +413,9 @@ async def test_dispatch_loop_always_copies_to_inbox_for_non_inbox_channels(db, s
 
     # Primary channel = line → _dispatch_channel returns True (stub) and
     # the loop then writes a parallel inbox row. Reproduce that here.
-    await _send_inbox(
+    await _create_inbox_row(
         db, line_customer.id, shop.id, fake_campaign_id, "ฝากบอกพี่",
+        offer_text=None, offer_until=None,
     )
     await db.commit()
 

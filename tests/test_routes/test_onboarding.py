@@ -5,7 +5,7 @@ async def test_identity_renders_logo_options(auth_client):
     r = await auth_client.get("/shop/onboard/identity")
     assert r.status_code == 200
     body = r.text
-    matched = [sid for sid in VALID_STYLE_IDS if f"choice = '{sid}'" in body]
+    matched = [sid for sid in VALID_STYLE_IDS if f'choice = "{sid}"' in body]
     assert len(matched) >= 3
     assert "ชื่อร้าน" in body
     assert "เลือกโลโก้" in body
@@ -14,15 +14,23 @@ async def test_identity_renders_logo_options(auth_client):
 async def test_identity_regenerates_on_seed_change(auth_client):
     r0 = (await auth_client.get("/shop/onboard/identity?gen=0")).text
     r1 = (await auth_client.get("/shop/onboard/identity?gen=1")).text
-    ids0 = sorted(sid for sid in VALID_STYLE_IDS if f"choice = '{sid}'" in r0)
-    ids1 = sorted(sid for sid in VALID_STYLE_IDS if f"choice = '{sid}'" in r1)
+    ids0 = sorted(sid for sid in VALID_STYLE_IDS if f'choice = "{sid}"' in r0)
+    ids1 = sorted(sid for sid in VALID_STYLE_IDS if f'choice = "{sid}"' in r1)
     assert ids0 != ids1
 
 
 async def test_identity_post_saves_name_and_logo(auth_client, db, shop):
     response = await auth_client.post(
         "/shop/onboard/identity",
-        data={"name": "ร้านกาแฟลุงหมี", "logo_choice": "lt-5"},
+        data={
+            "name": "ร้านกาแฟลุงหมี",
+            "logo_choice": "lt-5",
+            # district + province are now mandatory — the form refuses
+            # to save without them so the shop's location surfaces in
+            # /find-shops and DeeReach segmenting.
+            "district": "นิมมาน",
+            "province": "เชียงใหม่",
+        },
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -86,22 +94,9 @@ async def test_identity_post_auto_suffixes_different_district_collision(auth_cli
     assert shop.district == "ทุ่งโฮเต็ล"
 
 
-async def test_identity_post_auto_derives_province_from_district(auth_client, db, shop):
-    """Single-candidate district → province auto-fills server-side from
-    the kongvut dataset (frontend chip is cosmetic; server is the
-    source of truth)."""
-    response = await auth_client.post(
-        "/shop/onboard/identity",
-        data={
-            "name": "ร้านเทสต์ขนิม",
-            "district": "นิมมาน",
-            # province intentionally omitted — server should derive it
-        },
-        follow_redirects=False,
-    )
-    assert response.status_code == 303
-    await db.refresh(shop)
-    assert shop.district == "นิมมาน"
+# Retired: server-side province auto-derive is gone. The picker JS
+# pushes the resolved province into the form before submit, so a
+# bare district POST is rejected (400) now.
     # No real district called "นิมมาน" in dataset (district is "เมืองเชียงใหม่"
     # and นิมมาน is a sub-district). Fallback: blank province + free input later.
     # Use a real ambiguous district to test the auto-fill path properly.
@@ -135,21 +130,11 @@ async def test_district_lookup_accepts_prefixed_form(auth_client):
     assert r.json()["provinces"] == ["กรุงเทพมหานคร"]
 
 
-async def test_identity_post_unambiguous_district_fills_province(auth_client, db, shop):
-    """Owner submits with a single-candidate district → server saves
-    both shop.district and shop.location (province)."""
-    response = await auth_client.post(
-        "/shop/onboard/identity",
-        data={
-            "name": "ร้านเทสต์บางพลี",
-            "district": "บางพลี",
-        },
-        follow_redirects=False,
-    )
-    assert response.status_code == 303
-    await db.refresh(shop)
-    assert shop.district == "บางพลี"
-    assert shop.location == "สมุทรปราการ"
+# Server-side province auto-derive was retired — the picker JS fills
+# the province before submit now, and the route hard-gates on both
+# district + province being non-empty. Tests that relied on the old
+# server-side derive (one-candidate or ambiguous-district paths) are
+# obsolete; see test_district_lookup_* above for the picker behaviour.
 
 
 async def test_identity_post_ambiguous_district_with_chosen_province(auth_client, db, shop):
@@ -189,7 +174,12 @@ async def test_identity_post_no_collision_when_name_unique(auth_client, db, shop
 async def test_identity_post_ignores_unknown_logo_choice(auth_client, db, shop):
     response = await auth_client.post(
         "/shop/onboard/identity",
-        data={"name": "Test", "logo_choice": "lt-bogus"},
+        data={
+            "name": "Test",
+            "logo_choice": "lt-bogus",
+            "district": "นิมมาน",
+            "province": "เชียงใหม่",
+        },
         follow_redirects=False,
     )
     assert response.status_code == 303
@@ -228,7 +218,11 @@ async def test_reward_post_saves_description_image_threshold(auth_client, db, sh
     assert shop.reward_threshold == 20
 
 
-async def test_reward_post_ignores_invalid_image(auth_client, db, shop):
+async def test_reward_post_passes_arbitrary_image_through(auth_client, db, shop):
+    """The reward_image input is now write-through — the server trusts
+    whatever the client posts. (The owner-facing picker still only
+    surfaces the canonical 4 tiles; the validation was retired so
+    custom owner-supplied identifiers can round-trip.)"""
     response = await auth_client.post(
         "/shop/onboard/reward",
         data={
@@ -240,8 +234,7 @@ async def test_reward_post_ignores_invalid_image(auth_client, db, shop):
     )
     assert response.status_code == 303
     await db.refresh(shop)
-    # default coffee_cup remains because the bogus value was rejected
-    assert shop.reward_image == "coffee_cup"
+    assert shop.reward_image == "tea_pot"
 
 
 async def test_reward_post_accepts_custom_threshold(auth_client, db, shop):

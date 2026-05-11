@@ -21,6 +21,7 @@ from app.core.auth import SESSION_COOKIE_NAME  # noqa: E402
 from app.core.config import settings  # noqa: E402
 from app.core.database import get_session  # noqa: E402
 from app.models import Customer, Shop, User  # noqa: E402
+from app.models.util import utcnow  # noqa: E402
 from app.services.auth import issue_session_token  # noqa: E402
 
 TEST_DATABASE_URL = "sqlite+aiosqlite:///:memory:"
@@ -141,13 +142,35 @@ async def named_client(client):
 
 
 @pytest.fixture
-async def auth_client(app_for_test, shop):
+async def auth_client(app_for_test, db, shop):
     """Client with a session cookie for the shop owner. Base URL is the
     shop subdomain so the subdomain middleware doesn't 303-bounce
-    /shop/* away to the main host."""
+    /shop/* away to the main host.
+
+    Seeds an owner StaffMember + sets a session token with that staff
+    id so require_owner / is_owner gates pass without depending on the
+    middleware's lazy owner-staff creation."""
+    from app.models import StaffMember
+    owner_user = User()
+    db.add(owner_user)
+    await db.commit()
+    await db.refresh(owner_user)
+    owner_staff = StaffMember(
+        shop_id=shop.id,
+        user_id=owner_user.id,
+        is_owner=True,
+        accepted_at=utcnow(),
+    )
+    db.add(owner_staff)
+    await db.commit()
+    await db.refresh(owner_staff)
+
     transport = ASGITransport(app=app_for_test)
     async with AsyncClient(transport=transport, base_url="https://shop.test") as c:
-        c.cookies.set(SESSION_COOKIE_NAME, issue_session_token(shop.id))
+        c.cookies.set(
+            SESSION_COOKIE_NAME,
+            issue_session_token(shop.id, staff_id=owner_staff.id, is_owner=True),
+        )
         yield c
 
 
@@ -168,13 +191,16 @@ async def inbox_row(db: AsyncSession, shop, customer):
     return row
 
 
-@pytest.fixture(autouse=True)
+@pytest.fixture
 def stub_events_publish(monkeypatch):
     """Postgres LISTEN/NOTIFY isn't available in the in-memory SQLite
     test setup, so every call into services.events.publish would
     asyncpg-error. Stub the two publish helpers to a captured-list so
     individual tests can assert on what would have been broadcast.
-    Auto-applied; tests that care about events read `published`."""
+
+    Opt-in (not autouse) because the SSE roundtrip tests need the real
+    publisher to drive in-process subscribers. Tests that go through
+    routes that touch publish_customer should request this fixture."""
     published: list = []
 
     def fake_publish(target_id, name, data):

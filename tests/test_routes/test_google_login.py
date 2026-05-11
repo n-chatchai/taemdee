@@ -18,8 +18,10 @@ async def test_google_customer_start_configured_redirects(client, monkeypatch):
 
     response = await client.get("/auth/google/customer/start", follow_redirects=False)
     assert response.status_code == 302
-    assert response.headers["location"].startswith("https://accounts.google.com/o/oauth2/v2/auth?")
-    assert "google_oauth_state" in response.cookies
+    location = response.headers["location"]
+    assert location.startswith("https://accounts.google.com/o/oauth2/v2/auth?")
+    # Stateless OAuth state: signed JWT in the URL, no companion cookie.
+    assert "state=" in location
 
 
 async def test_google_callback_bad_state_400(client):

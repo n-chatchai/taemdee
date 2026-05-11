@@ -29,8 +29,10 @@ async def test_customer_auth_error_redirects_to_customer_login(client):
     response = await client.get("/my-cards", headers=headers, follow_redirects=False)
     
     assert response.status_code == 303
-    assert "/customer/login" in response.headers["location"]
-    assert "reason=token_invalid" in response.headers["location"]
+    # CustomerAuthError now bounces to /my-cards (which mints a fresh
+    # anonymous customer in the same round-trip) rather than to a
+    # /customer/login wall — PWA users never see an auth wall.
+    assert response.headers["location"] == "/my-cards"
     # Check that the bad cookie is cleared
     assert CUSTOMER_COOKIE_NAME in response.headers.get("set-cookie", "")
     assert 'expires=' in response.headers.get("set-cookie", "")

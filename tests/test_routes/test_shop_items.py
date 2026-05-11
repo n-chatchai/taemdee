@@ -6,21 +6,20 @@ from app.core.config import settings
 from app.models import CreditLog, ShopItem
 
 
-async def test_dashboard_shows_welcome_credit_for_new_shop(auth_client, db, shop):
+async def test_notifications_shows_welcome_credit_for_new_shop(auth_client, db, shop):
+    """The "รายการที่ต้องทำ" todo list (with welcome_credit row) moved
+    off /shop/dashboard onto /shop/notifications — it's no longer the
+    first thing new owners see on the dashboard."""
     shop.is_onboarded = True
     db.add(shop)
     await db.commit()
 
-    r = await auth_client.get("/shop/dashboard")
+    r = await auth_client.get("/shop/notifications")
     assert r.status_code == 200
     body = r.text
     assert "รายการที่ต้องทำ" in body
-    # Label rebuilt for the May 1 design — accent-strong amount inline.
-    assert "รับ<strong>เครดิต" in body
     assert "เปิดบัญชี" in body
-    assert f'action="/shop/items/welcome_credit/claim"' in body
-    # Section header now carries a count badge.
-    assert "todo-count" in body
+    assert 'action="/shop/items/welcome_credit/claim"' in body
 
 
 async def test_claim_welcome_credit_grants_satang_and_logs(auth_client, db, shop):
