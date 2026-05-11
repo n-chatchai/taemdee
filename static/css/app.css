@@ -11840,35 +11840,6 @@ body:has(.td-pinned) {
   gap: 8px;
   flex: 1;
 }
-
-/* Per-shop section header — /my-inbox groups its cards by shop so
-   the customer scans which shop is reaching out before drilling into
-   individual broadcasts. Section is hidden by JS when the active
-   filter (ยังไม่อ่าน / มีของฝาก) leaves no visible cards inside. */
-.inbox-shop-section { margin-bottom: 18px; }
-.inbox-shop-header {
-  display: flex;
-  align-items: center;
-  gap: 10px;
-  padding: 14px 22px 8px;
-}
-.inbox-shop-header .ish-info { flex: 1; min-width: 0; }
-.inbox-shop-header .ish-name {
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  color: var(--ink);
-  letter-spacing: -0.005em;
-  white-space: nowrap;
-  overflow: hidden;
-  text-overflow: ellipsis;
-}
-.inbox-shop-header .ish-meta {
-  font-family: 'Prompt', sans-serif;
-  font-size: 11px;
-  color: var(--ink-soft);
-  margin-top: 1px;
-}
 .inbox-card {
   background: var(--surface);
   border-radius: 14px;
