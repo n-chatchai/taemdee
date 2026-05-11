@@ -1,0 +1,34 @@
+{% extends "admin/_base.html" %}
+{% block title %}DeeReach · Admin · TaemDee{% endblock %}
+
+{% block content %}
+<h1 class="adm-h">DeeReach broadcasts · {{ campaigns|length }}</h1>
+<div class="adm-card" style="padding: 0; overflow: auto;">
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Shop</th>
+        <th>Kind</th>
+        <th>Audience</th>
+        <th>Credits</th>
+        <th>Sent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in campaigns %}
+      {% set _shop = shops_by_id.get(c.shop_id) %}
+      <tr>
+        <td>
+          <strong>{{ _shop.name if _shop else c.shop_id }}</strong>
+          {% if c.message_text %}<div class="adm-mini">{{ (c.message_text|striptags)[:60] }}{% if c.message_text|length > 60 %}…{% endif %}</div>{% endif %}
+        </td>
+        <td><span class="adm-pill">{{ c.kind }}</span></td>
+        <td>{{ c.audience_count }}</td>
+        <td>{{ c.final_credits_satang / 100 if c.final_credits_satang else 0 }}</td>
+        <td><span class="adm-mini">{{ c.sent_at.strftime('%Y-%m-%d %H:%M') if c.sent_at else '—' }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

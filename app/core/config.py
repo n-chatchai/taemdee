@@ -30,6 +30,14 @@ class Settings(BaseSettings):
     def shop_domain(self) -> str:
         return f"shop.{self.domain_name}"
 
+    @property
+    def admin_domain(self) -> str:
+        return f"admin.{self.domain_name}"
+
+    # Hard-coded PIN for /admin login — separate from customer/shop OAuth.
+    # Empty string disables the admin surface entirely (login returns 503).
+    admin_pin: str = ""
+
     # --- Redirect URIs (automatically derived from domain_name) ---
     @property
     def line_redirect_uri(self) -> str:

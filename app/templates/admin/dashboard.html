@@ -1,0 +1,37 @@
+{% extends "admin/_base.html" %}
+{% block title %}Dashboard · Admin · TaemDee{% endblock %}
+
+{% block content %}
+<h1 class="adm-h">Dashboard</h1>
+
+<div class="adm-grid">
+  <div class="adm-stat">
+    <div class="adm-stat-label">Shops</div>
+    <div class="adm-stat-num">{{ shop_count }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Customers</div>
+    <div class="adm-stat-num">{{ customer_count }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Users</div>
+    <div class="adm-stat-num">{{ user_count }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Active points</div>
+    <div class="adm-stat-num">{{ point_count }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Inbox rows</div>
+    <div class="adm-stat-num">{{ inbox_count }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Broadcasts · 7d</div>
+    <div class="adm-stat-num">{{ broadcasts_7d }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Pending topups</div>
+    <div class="adm-stat-num">{{ pending_topups }}</div>
+  </div>
+</div>
+{% endblock %}

@@ -1,0 +1,37 @@
+{% extends "admin/_base.html" %}
+{% block title %}Shops · Admin · TaemDee{% endblock %}
+
+{% block content %}
+<h1 class="adm-h">Shops · {{ shops|length }}</h1>
+<div class="adm-card" style="padding: 0; overflow: auto;">
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Location</th>
+        <th>Credits</th>
+        <th>Created</th>
+        <th></th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in shops %}
+      <tr>
+        <td>
+          <a class="adm-link" href="/admin/shops/{{ s.id }}"><strong>{{ s.name }}</strong></a>
+          <div class="adm-mini">{{ s.id }}</div>
+        </td>
+        <td>{{ s.location or '—' }}</td>
+        <td>{{ s.credit_balance }}</td>
+        <td><span class="adm-mini">{{ s.created_at.strftime('%Y-%m-%d') }}</span></td>
+        <td>
+          <form method="POST" action="/admin/impersonate/shop/{{ s.id }}" style="margin:0;">
+            <button type="submit" class="adm-btn">เข้าร้าน →</button>
+          </form>
+        </td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

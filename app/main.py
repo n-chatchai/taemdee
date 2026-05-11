@@ -22,6 +22,7 @@ from app.core.database import engine, get_session
 from app.core.templates import ASSET_VERSION, templates
 from app.models import Customer, Shop
 from app.routes import (
+    admin,
     auth,
     branches,
     customer,
@@ -243,11 +244,14 @@ class ShopContextMiddleware:
 
 
 class SubdomainRoutingMiddleware:
-    """Separate shop.taemdee.com from taemdee.com.
+    """Separate shop.taemdee.com / admin.taemdee.com / taemdee.com.
 
     - shop.* domain → only /shop, /auth, /staff allowed. Root / redirects to
       /shop/dashboard. Other paths bounce to the main domain.
-    - main domain → marketing + customer routes. /shop/* redirects to shop.*.
+    - admin.* domain → only /admin, /auth, /static allowed. Root / redirects
+      to /admin/dashboard. Other paths bounce to the main domain.
+    - main domain → marketing + customer routes. /shop/* and /admin/* paths
+      hit there get redirected to the matching subdomain.
     """
 
     # System/static routes always allowed on both hosts. /sw.js needs to be
@@ -291,11 +295,27 @@ class SubdomainRoutingMiddleware:
                 break
         query = scope.get("query_string", b"").decode("latin-1")
         suffix = f"?{query}" if query else ""
-        # In local dev, taemdee.local is main, shop.taemdee.local is shop.
+        # In local dev, taemdee.local is main, shop.taemdee.local is shop,
+        # admin.taemdee.local is admin.
         is_shop_host = host.startswith("shop.") or host == settings.shop_domain
+        is_admin_host = host.startswith("admin.") or host == settings.admin_domain
 
         redirect_url = None
-        if is_shop_host:
+        if is_admin_host:
+            if path == "/":
+                redirect_url = "/admin/dashboard"
+            elif not (
+                path.startswith("/admin")
+                or path.startswith("/auth")
+            ):
+                main_host = (
+                    settings.main_domain
+                    if settings.environment == "production"
+                    else host.replace("admin.", "")
+                )
+                proto = scope.get("scheme", "http")
+                redirect_url = f"{proto}://{main_host}{path}{suffix}"
+        elif is_shop_host:
             if path == "/":
                 redirect_url = "/shop/dashboard"
             elif not (
@@ -313,6 +333,14 @@ class SubdomainRoutingMiddleware:
                 )
                 proto = scope.get("scheme", "http")
                 redirect_url = f"{proto}://{main_host}{path}{suffix}"
+        elif path.startswith("/admin"):
+            admin_host = (
+                settings.admin_domain
+                if settings.environment == "production"
+                else f"admin.{host}"
+            )
+            proto = scope.get("scheme", "http")
+            redirect_url = f"{proto}://{admin_host}{path}{suffix}"
         elif path.startswith("/shop"):
             shop_host = (
                 settings.shop_domain
@@ -595,4 +623,5 @@ app.include_router(branches.router, prefix="/shop/branches", tags=["branches"])
 app.include_router(team.router, prefix="/shop/team", tags=["team"])
 app.include_router(staff_join.router, tags=["staff-join"])
 app.include_router(deereach.router, prefix="/shop/deereach", tags=["deereach"])
+app.include_router(admin.router, prefix="/admin", tags=["admin"])
 app.include_router(webhooks.router, prefix="/webhooks", tags=["webhooks"])

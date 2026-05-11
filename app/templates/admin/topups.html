@@ -1,0 +1,38 @@
+{% extends "admin/_base.html" %}
+{% block title %}Topups · Admin · TaemDee{% endblock %}
+
+{% block content %}
+<h1 class="adm-h">Topup slips · {{ slips|length }}</h1>
+<div class="adm-card" style="padding: 0; overflow: auto;">
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Shop</th>
+        <th>Amount</th>
+        <th>Credits</th>
+        <th>Status</th>
+        <th>Created</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in slips %}
+      {% set _shop = shops_by_id.get(s.shop_id) %}
+      <tr>
+        <td>
+          <strong>{{ _shop.name if _shop else s.shop_id }}</strong>
+          <div class="adm-mini">{{ s.shop_id }}</div>
+        </td>
+        <td>{{ s.amount_baht|default('—') }} ฿</td>
+        <td>{{ s.credits_satang // 100 if s.credits_satang else '—' }}</td>
+        <td>
+          {% if s.status == 'approved' %}<span class="adm-pill ok">approved</span>
+          {% elif s.status == 'rejected' %}<span class="adm-pill">rejected</span>
+          {% else %}<span class="adm-pill warn">{{ s.status }}</span>{% endif %}
+        </td>
+        <td><span class="adm-mini">{{ s.created_at.strftime('%Y-%m-%d %H:%M') }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endblock %}

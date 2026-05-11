@@ -1,0 +1,92 @@
+<!DOCTYPE html>
+<html lang="th">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0, maximum-scale=1.0, user-scalable=no, viewport-fit=cover">
+  <title>Admin Login · TaemDee</title>
+  {% include "_partials/pwa_head.html" %}
+  <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
+</head>
+<body>
+  <div class="td">
+    <div class="adm-login">
+      <div class="adm-login-brand">A<span class="dot">.</span></div>
+      <h1 class="adm-login-h">Admin</h1>
+      {% if error %}
+        <div class="adm-login-err">PIN ไม่ถูกต้อง</div>
+      {% endif %}
+      <form method="POST" action="/admin/login" class="adm-login-form">
+        <input type="password" name="pin" class="adm-login-input" autofocus
+               placeholder="PIN" autocomplete="current-password" required>
+        <button type="submit" class="adm-login-btn">เข้าสู่ระบบ</button>
+      </form>
+    </div>
+  </div>
+
+  <style>
+    .adm-login {
+      min-height: 100dvh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      padding: 32px;
+    }
+    .adm-login-brand {
+      font-family: 'Host Grotesk', sans-serif;
+      font-weight: 800;
+      font-size: 64px;
+      letter-spacing: -0.05em;
+      color: var(--ink);
+      margin-bottom: 12px;
+    }
+    .adm-login-brand .dot { color: var(--accent); }
+    .adm-login-h {
+      font-family: 'Prompt', sans-serif;
+      font-weight: 700;
+      font-size: 18px;
+      color: var(--ink-soft);
+      margin: 0 0 24px;
+    }
+    .adm-login-err {
+      background: #FFE9E2;
+      color: #B0331C;
+      padding: 8px 14px;
+      border-radius: 10px;
+      font-family: 'Prompt', sans-serif;
+      font-size: 13px;
+      margin-bottom: 14px;
+    }
+    .adm-login-form {
+      display: flex;
+      flex-direction: column;
+      gap: 10px;
+      width: 100%;
+      max-width: 260px;
+    }
+    .adm-login-input {
+      padding: 14px 18px;
+      border-radius: 99px;
+      border: 1px solid var(--line);
+      background: var(--surface);
+      font-family: 'Prompt', sans-serif;
+      font-size: 16px;
+      text-align: center;
+      letter-spacing: 0.3em;
+      outline: none;
+    }
+    .adm-login-btn {
+      appearance: none;
+      background: var(--ink);
+      color: var(--bg);
+      border: none;
+      border-radius: 99px;
+      padding: 13px 22px;
+      font-family: 'Prompt', sans-serif;
+      font-weight: 700;
+      font-size: 15px;
+      cursor: pointer;
+    }
+  </style>
+</body>
+</html>

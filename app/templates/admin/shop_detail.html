@@ -1,0 +1,109 @@
+{% extends "admin/_base.html" %}
+{% block title %}{{ shop.name }} · Admin · TaemDee{% endblock %}
+
+{% block content %}
+<div style="display:flex; align-items:center; gap:14px; margin-bottom:8px;">
+  <a class="adm-mini" href="/admin/shops">← Shops</a>
+</div>
+<h1 class="adm-h">{{ shop.name }}</h1>
+
+<div class="adm-grid" style="margin-bottom:18px;">
+  <div class="adm-stat">
+    <div class="adm-stat-label">Credit balance</div>
+    <div class="adm-stat-num">{{ shop.credit_balance }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Active points</div>
+    <div class="adm-stat-num">{{ point_total }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Unique customers</div>
+    <div class="adm-stat-num">{{ customer_count }}</div>
+  </div>
+  <div class="adm-stat">
+    <div class="adm-stat-label">Reward threshold</div>
+    <div class="adm-stat-num">{{ shop.reward_threshold }}</div>
+  </div>
+</div>
+
+<div class="adm-card">
+  <div style="display:flex; justify-content:space-between; align-items:baseline; margin-bottom:10px;">
+    <strong>ข้อมูลร้าน</strong>
+    <form method="POST" action="/admin/impersonate/shop/{{ shop.id }}" style="margin:0;">
+      <button type="submit" class="adm-btn">เข้าร้านนี้ →</button>
+    </form>
+  </div>
+  <table class="adm-table">
+    <tbody>
+      <tr><td style="width:160px; color:var(--ink-soft);">Shop id</td><td><span class="adm-mini">{{ shop.id }}</span></td></tr>
+      <tr><td style="color:var(--ink-soft);">Reward</td><td>{{ shop.reward_description }}</td></tr>
+      <tr><td style="color:var(--ink-soft);">Theme</td><td>{{ shop.theme_name or '—' }}</td></tr>
+      <tr><td style="color:var(--ink-soft);">Location</td><td>{{ shop.location or '—' }}</td></tr>
+      <tr><td style="color:var(--ink-soft);">District</td><td>{{ shop.district or '—' }}</td></tr>
+      <tr><td style="color:var(--ink-soft);">Phone</td><td>{{ shop.shop_phone or '—' }}</td></tr>
+      <tr><td style="color:var(--ink-soft);">Allow customer messages</td>
+        <td>{% if shop.allow_customer_messages %}<span class="adm-pill ok">on</span>{% else %}<span class="adm-pill">off</span>{% endif %}</td></tr>
+      <tr><td style="color:var(--ink-soft);">Created</td><td>{{ shop.created_at.strftime('%Y-%m-%d %H:%M') }}</td></tr>
+    </tbody>
+  </table>
+</div>
+
+<div class="adm-card" style="padding: 0; overflow: auto;">
+  <div style="padding:14px 16px 8px;"><strong>Staff · {{ staff_rows|length }}</strong></div>
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Name</th>
+        <th>Role</th>
+        <th>Phone</th>
+        <th>Joined</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for s in staff_rows %}
+      {% set _u = users_by_id.get(s.user_id) if s.user_id else None %}
+      <tr>
+        <td>
+          <strong>{% if _u and _u.display_name %}{{ _u.display_name }}{% elif s.display_name_hint %}{{ s.display_name_hint }}{% else %}— invite open —{% endif %}</strong>
+          {% if s.user_id %}<div class="adm-mini">{{ s.user_id }}</div>{% endif %}
+        </td>
+        <td>
+          {% if s.is_owner %}<span class="adm-pill warn">owner</span>{% else %}<span class="adm-pill">staff</span>{% endif %}
+        </td>
+        <td>{{ (_u.phone if _u else None) or '—' }}</td>
+        <td><span class="adm-mini">{{ (s.accepted_at or s.invited_at).strftime('%Y-%m-%d') }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+
+{% if campaigns %}
+<div class="adm-card" style="padding: 0; overflow: auto;">
+  <div style="padding:14px 16px 8px;"><strong>Recent broadcasts</strong></div>
+  <table class="adm-table">
+    <thead>
+      <tr>
+        <th>Kind</th>
+        <th>Audience</th>
+        <th>Credits</th>
+        <th>Sent</th>
+      </tr>
+    </thead>
+    <tbody>
+      {% for c in campaigns %}
+      <tr>
+        <td>
+          <span class="adm-pill">{{ c.kind }}</span>
+          {% if c.message_text %}<div class="adm-mini" style="margin-top:4px;">{{ (c.message_text|striptags)[:60] }}{% if c.message_text|length > 60 %}…{% endif %}</div>{% endif %}
+        </td>
+        <td>{{ c.audience_count }}</td>
+        <td>{{ c.final_credits_satang / 100 if c.final_credits_satang else 0 }}</td>
+        <td><span class="adm-mini">{{ c.sent_at.strftime('%Y-%m-%d %H:%M') }}</span></td>
+      </tr>
+      {% endfor %}
+    </tbody>
+  </table>
+</div>
+{% endif %}
+{% endblock %}
