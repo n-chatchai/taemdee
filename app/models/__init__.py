@@ -4,6 +4,7 @@ from app.models.credit import CreditLog, TopupSlip
 from app.models.customer import Customer, CustomerShopMute
 from app.models.customer_item import CustomerItem
 from app.models.deereach import DeeReachCampaign, DeeReachMessage
+from app.models.deereach_event import DeeReachEvent
 from app.models.inbox import Inbox
 from app.models.inbox_reply import InboxReply
 from app.models.offer import Offer, Referral
@@ -25,6 +26,7 @@ __all__ = [
     "CustomerItem",
     "CustomerShopMute",
     "DeeReachCampaign",
+    "DeeReachEvent",
     "DeeReachMessage",
     "Inbox",
     "InboxReply",

@@ -1947,6 +1947,10 @@ async def my_inbox_mark_read(
             customer.id, "inbox-update",
             str(await _inbox_unread_count(db, customer.id)),
         )
+        # Engagement log — list-level mark-read also counts as an
+        # "opened" event (the customer saw enough to dismiss it).
+        from app.services.deereach_events import KIND_OPENED, log_event
+        await log_event(db, inbox=row, kind=KIND_OPENED)
     return JSONResponse({"ok": True}, status_code=200)
 
 
@@ -1976,6 +1980,11 @@ async def my_inbox_detail(
             customer.id, "inbox-update",
             str(await _inbox_unread_count(db, customer.id)),
         )
+        # Engagement track — first-open is the canonical "opened"
+        # signal. The log_event helper dedupes per (inbox, kind) so
+        # this is safe to call on every first-open path.
+        from app.services.deereach_events import KIND_OPENED, log_event
+        await log_event(db, inbox=row, kind=KIND_OPENED)
 
     from app.models import CustomerShopMute
     from app.services.inbox_reply import list_replies

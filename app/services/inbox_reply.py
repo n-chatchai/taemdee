@@ -111,6 +111,17 @@ async def send_reply(
     await db.commit()
     await db.refresh(reply)
 
+    # Engagement log — only customer-side replies count as engagement
+    # signal (shop replies are the operator working their queue, not
+    # a signal from the audience). Log AFTER commit so the reply id
+    # is stable enough to reference in the payload.
+    if sender == "customer":
+        from app.services.deereach_events import KIND_REPLIED, log_event
+        await log_event(
+            db, inbox=inbox, kind=KIND_REPLIED,
+            payload={"reply_id": str(reply.id)},
+        )
+
     await _publish_reply_events(db, inbox, reply)
     return reply
 

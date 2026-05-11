@@ -393,3 +393,116 @@ async def test_shop_form_hides_after_their_own_reply(
 
     body = (await auth_client.get(f"/shop/messages/{inbox_row.id}")).text
     assert 'id="ix-compose"' not in body
+
+
+# ── Engagement event log integration ───────────────────────────────────────
+
+
+async def test_my_inbox_detail_logs_opened_event(
+    client, db, shop, customer, inbox_row
+):
+    """First GET on /my-inbox/<id> flips read_at + logs an 'opened'
+    DeeReachEvent. Subsequent opens dedupe — exactly one row stays."""
+    from sqlmodel import select
+    from app.models import DeeReachEvent
+    from app.services.deereach_events import KIND_OPENED
+
+    _set_customer_cookie(client, customer.id)
+    await client.get(f"/my-inbox/{inbox_row.id}")
+    await client.get(f"/my-inbox/{inbox_row.id}")  # second open — no-op log
+
+    rows = (await db.exec(
+        select(DeeReachEvent).where(
+            DeeReachEvent.inbox_id == inbox_row.id,
+            DeeReachEvent.kind == KIND_OPENED,
+        )
+    )).all()
+    assert len(rows) == 1
+    assert rows[0].customer_id == customer.id
+    assert rows[0].shop_id == shop.id
+
+
+async def test_my_inbox_mark_read_logs_opened_event(
+    client, db, shop, customer, inbox_row
+):
+    """The list-level POST /my-inbox/<id>/read endpoint also logs
+    'opened' — the customer dismissing from the list still counts as
+    engagement."""
+    from sqlmodel import select
+    from app.models import DeeReachEvent
+    from app.services.deereach_events import KIND_OPENED
+
+    _set_customer_cookie(client, customer.id)
+    r = await client.post(f"/my-inbox/{inbox_row.id}/read")
+    assert r.status_code == 200
+
+    rows = (await db.exec(
+        select(DeeReachEvent).where(
+            DeeReachEvent.inbox_id == inbox_row.id,
+            DeeReachEvent.kind == KIND_OPENED,
+        )
+    )).all()
+    assert len(rows) == 1
+
+
+async def test_customer_reply_logs_replied_event(
+    client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """A successful customer reply leaves an audit trail in the
+    engagement log — kind='replied' with the reply id in payload."""
+    from sqlmodel import select
+    from app.models import DeeReachEvent, InboxReply
+    from app.services.deereach_events import KIND_REPLIED
+
+    shop.allow_customer_messages = True
+    db.add(shop)
+    await db.commit()
+
+    _set_customer_cookie(client, customer.id)
+    r = await client.post(
+        f"/my-inbox/{inbox_row.id}/reply",
+        data={"body": "ไปแน่ครับ"},
+        follow_redirects=False,
+    )
+    assert r.status_code == 303
+
+    events = (await db.exec(
+        select(DeeReachEvent).where(
+            DeeReachEvent.inbox_id == inbox_row.id,
+            DeeReachEvent.kind == KIND_REPLIED,
+        )
+    )).all()
+    assert len(events) == 1
+    # Payload carries the reply id for timeline drill-down.
+    reply = (await db.exec(
+        select(InboxReply).where(InboxReply.inbox_id == inbox_row.id)
+    )).first()
+    assert events[0].payload is not None
+    assert str(reply.id) in events[0].payload
+
+
+async def test_shop_reply_does_not_log_replied_event(
+    auth_client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """Shop-sender replies are operator workflow, not audience
+    engagement — they must NOT show up in the engagement log."""
+    from sqlmodel import select
+    from app.models import DeeReachEvent
+
+    # Seed a customer reply so the shop is allowed to respond.
+    db.add(InboxReply(inbox_id=inbox_row.id, sender="customer", body="hi"))
+    await db.commit()
+
+    await auth_client.post(
+        f"/shop/messages/{inbox_row.id}/reply",
+        data={"body": "ขอบคุณค่ะ"},
+        follow_redirects=False,
+    )
+
+    events = (await db.exec(
+        select(DeeReachEvent).where(DeeReachEvent.kind == "replied")
+    )).all()
+    # The customer's seeded reply went straight to db.add (no service
+    # call), so no engagement event was logged for it either. Net
+    # count after the shop's reply path must remain zero.
+    assert len(events) == 0
