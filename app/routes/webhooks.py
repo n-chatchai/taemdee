@@ -21,11 +21,11 @@ Console: https://taemdee.com/webhooks/line
 
 from __future__ import annotations
 
-import logging
 from datetime import timedelta
 from typing import Optional
 
 from fastapi import APIRouter, Depends, Header, Request, Response, status
+from loguru import logger as log
 from sqlmodel import select
 from sqlmodel.ext.asyncio.session import AsyncSession
 
@@ -35,8 +35,12 @@ from app.models.util import utcnow
 from app.services.inbox_reply import RateLimited, send_reply
 from app.services.line_messaging import mark_as_read, verify_signature
 
+# loguru `logger` is configured at app startup with the project's
+# global level/format — stdlib `logging.getLogger(__name__)` was
+# defaulting to WARNING here and silently filtering the INFO drop
+# paths a prod operator needs to see. Aliasing as `log` keeps every
+# existing `log.info(...)` callsite intact.
 router = APIRouter()
-log = logging.getLogger(__name__)
 
 # How far back we'll attribute a LINE reply to a broadcast. Most
 # replies arrive same-day; 48h covers next-morning catch-up replies
@@ -61,9 +65,10 @@ async def line_webhook(
     """
     body = await request.body()
     if not verify_signature(body, x_line_signature):
+        header_state = "present" if x_line_signature else "missing"
         log.warning(
-            "line webhook signature verify failed (header=%s body_bytes=%d)",
-            "present" if x_line_signature else "missing", len(body),
+            f"line webhook signature verify failed "
+            f"(header={header_state} body_bytes={len(body)})"
         )
         return Response(status_code=status.HTTP_401_UNAUTHORIZED)
 
@@ -76,24 +81,22 @@ async def line_webhook(
         return Response(status_code=status.HTTP_400_BAD_REQUEST)
 
     events = envelope.get("events") or []
-    log.info(
-        "line webhook received: events=%d destination=%s",
-        len(events), envelope.get("destination") or "?",
-    )
+    destination = envelope.get("destination") or "?"
+    log.info(f"line webhook received: events={len(events)} destination={destination}")
     for ev in events:
         ev_type = ev.get("type")
         source = ev.get("source") or {}
         line_id = source.get("userId")
         if not line_id:
-            log.info("line webhook event without userId: type=%s", ev_type)
+            log.info(f"line webhook event without userId: type={ev_type}")
             continue
 
         if ev_type == "follow":
             await _set_friend_status(db, line_id, "friended", clear_blocked=True)
-            log.info("line follow → line_id=%s", line_id)
+            log.info(f"line follow → line_id={line_id}")
         elif ev_type == "unfollow":
             await _set_friend_status(db, line_id, "unfollowed", set_blocked=True)
-            log.info("line unfollow → line_id=%s", line_id)
+            log.info(f"line unfollow → line_id={line_id}")
         elif ev_type == "message":
             # Only text messages get mirrored — stickers / images /
             # location etc. don't have a clean translation to an
@@ -101,17 +104,17 @@ async def line_webhook(
             message = ev.get("message") or {}
             msg_type = message.get("type")
             if msg_type == "text":
+                text_len = len(message.get("text") or "")
                 log.info(
-                    "line message.text received: line_id=%s len=%d",
-                    line_id, len(message.get("text") or ""),
+                    f"line message.text received: line_id={line_id} len={text_len}"
                 )
                 await _attribute_line_message_to_inbox(
                     db, line_id=line_id, text=(message.get("text") or ""),
                 )
             else:
-                log.info("line webhook ignored message.type=%s", msg_type)
+                log.info(f"line webhook ignored message.type={msg_type}")
         else:
-            log.info("line webhook ignored event type=%s", ev_type)
+            log.info(f"line webhook ignored event type={ev_type}")
 
     return Response(status_code=status.HTTP_200_OK)
 
@@ -147,9 +150,8 @@ async def _attribute_line_message_to_inbox(
         )).first()
         if user is None:
             log.info(
-                "line message attribution: NO USER for line_id=%s "
-                "(customer never linked LINE via OAuth or line_id mismatch)",
-                line_id,
+                f"line message attribution: NO USER for line_id={line_id} "
+                f"(customer never linked LINE via OAuth or line_id mismatch)"
             )
             return
 
@@ -161,9 +163,9 @@ async def _attribute_line_message_to_inbox(
         )).first()
         if customer is None:
             log.info(
-                "line message attribution: NO CUSTOMER for user=%s line_id=%s "
-                "(user row exists but no Customer attached, or all merged)",
-                user.id, line_id,
+                f"line message attribution: NO CUSTOMER for user={user.id} "
+                f"line_id={line_id} (user row exists but no Customer attached, "
+                f"or all merged)"
             )
             return
 
@@ -176,20 +178,20 @@ async def _attribute_line_message_to_inbox(
         )).first()
         if inbox is None:
             log.info(
-                "line message attribution: NO BROADCAST in last %dh for "
-                "customer=%s — message dropped, customer is likely chatting "
-                "general (no broadcast context to attach the reply to)",
-                LINE_REPLY_ATTRIBUTION_HOURS, customer.id,
+                f"line message attribution: NO BROADCAST in last "
+                f"{LINE_REPLY_ATTRIBUTION_HOURS}h for customer={customer.id} "
+                f"— message dropped, customer is likely chatting general "
+                f"(no broadcast context to attach the reply to)"
             )
             return
 
         try:
             reply = await send_reply(db, inbox, sender="customer", body=body)
+            read_state = "already read" if inbox.read_at else "unread before"
             log.info(
-                "line message MIRRORED → customer=%s inbox=%s shop=%s reply=%s "
-                "(broadcast was %s; now marked read)",
-                customer.id, inbox.id, inbox.shop_id, reply.id,
-                "already read" if inbox.read_at else "unread before",
+                f"line message MIRRORED → customer={customer.id} "
+                f"inbox={inbox.id} shop={inbox.shop_id} reply={reply.id} "
+                f"(broadcast was {read_state}; now marked read)"
             )
             # Drop the LINE OA Manager unread badge — operator has
             # already seen the message on /shop/messages, no need
@@ -202,15 +204,13 @@ async def _attribute_line_message_to_inbox(
             # spammed; drop silently — they already got their first
             # 3 mirrored.
             log.info(
-                "line message RATE-LIMITED on inbox=%s for customer=%s "
-                "(>3 replies/min on same broadcast)",
-                inbox.id, customer.id,
+                f"line message RATE-LIMITED on inbox={inbox.id} "
+                f"for customer={customer.id} (>3 replies/min on same broadcast)"
             )
     except Exception as e:  # noqa: BLE001
-        log.warning(
-            "line message attribution FAILED line_id=%s: %s", line_id, e,
-            exc_info=True,
-        )
+        # loguru doesn't accept the stdlib `exc_info` kwarg; use
+        # .exception() instead so the traceback still shows up.
+        log.exception(f"line message attribution FAILED line_id={line_id}: {e}")
         try:
             await db.rollback()
         except Exception:
@@ -236,8 +236,8 @@ async def _set_friend_status(
     user = result.first()
     if user is None:
         log.info(
-            "line webhook friend status: no User row for line_id=%s yet "
-            "(will be backfilled on next OAuth login)", line_id,
+            f"line webhook friend status: no User row for line_id={line_id} "
+            f"yet (will be backfilled on next OAuth login)"
         )
         return
     user.line_friend_status = status_value

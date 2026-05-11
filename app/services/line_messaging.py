@@ -21,15 +21,18 @@ from __future__ import annotations
 import base64
 import hashlib
 import hmac
-import logging
 from dataclasses import dataclass
 from typing import Optional
 
 import httpx
+from loguru import logger as log
 
 from app.core.config import settings
 
-log = logging.getLogger(__name__)
+# loguru `log` — same `.info` / `.warning` API but the project's
+# global log config picks up these lines. stdlib `logging` was
+# defaulting to WARNING here and dropping all the INFO breadcrumbs
+# the operator needs when debugging the LINE pipeline.
 
 PUSH_URL = "https://api.line.me/v2/bot/message/push"
 # Drop the unread count in LINE OA Manager (the operator-facing app
@@ -83,7 +86,7 @@ def push_text(line_id: str, text: str) -> LineSendResult:
     try:
         resp = httpx.post(PUSH_URL, json=payload, headers=headers, timeout=_HTTP_TIMEOUT)
     except httpx.HTTPError as e:
-        log.warning("line push network error → line_id=%s: %s", line_id, e)
+        log.warning(f"line push network error → line_id={line_id}: {e}")
         return LineSendResult(delivered=False, status_code=0, detail=f"network: {e}")
 
     # 200 = accepted by LINE. 403 with this body shape = "the user hasn't
@@ -95,8 +98,8 @@ def push_text(line_id: str, text: str) -> LineSendResult:
     body = resp.text[:500]
     friend_gated = resp.status_code == 403
     log.warning(
-        "line push failed → line_id=%s status=%s body=%r",
-        line_id, resp.status_code, body,
+        f"line push failed → line_id={line_id} "
+        f"status={resp.status_code} body={body!r}"
     )
     return LineSendResult(
         delivered=False,
@@ -136,16 +139,29 @@ async def mark_as_read(line_id: str) -> bool:
         async with httpx.AsyncClient(timeout=_HTTP_TIMEOUT) as client:
             resp = await client.post(MARK_AS_READ_URL, json=payload, headers=headers)
     except httpx.HTTPError as e:
-        log.warning("line mark_as_read network error → line_id=%s: %s", line_id, e)
+        log.warning(f"line mark_as_read network error → line_id={line_id}: {e}")
         return False
 
     if resp.status_code == 200:
-        log.info("line mark_as_read → line_id=%s ok", line_id)
+        log.info(f"line mark_as_read → line_id={line_id} ok")
         return True
 
+    # 403 "Access to this API is not available for your account" is
+    # LINE's response for OAs that don't have the markAsRead feature
+    # enabled (premium / verified-only on some plans). It's not a bug
+    # in our integration — log at INFO so the log noise stays low.
+    # The reply mirror itself already succeeded by the time this runs.
+    body_text = resp.text[:300]
+    if resp.status_code == 403 and "not available for your account" in body_text:
+        log.info(
+            f"line mark_as_read not enabled on this OA "
+            f"(line_id={line_id}) — feature unavailable on the plan"
+        )
+        return False
+
     log.warning(
-        "line mark_as_read failed → line_id=%s status=%s body=%r",
-        line_id, resp.status_code, resp.text[:300],
+        f"line mark_as_read failed → line_id={line_id} "
+        f"status={resp.status_code} body={body_text!r}"
     )
     return False
 
