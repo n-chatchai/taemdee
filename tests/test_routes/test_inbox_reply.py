@@ -166,11 +166,14 @@ async def test_shop_messages_list_shows_inboxes(
     the design surface lets the operator verify the send landed."""
     r = await auth_client.get("/shop/messages")
     assert r.status_code == 200
-    # Row link routes to the broadcast detail page. The headline path
-    # only fires for campaign-linked rows; this inbox has no campaign so
-    # it lands in the "ทั่วไป" bucket — the row card still appears.
+    # Reply row routes to the (broadcast, customer) thread; the
+    # inbox row has no campaign so it lands under the "ทั่วไป" bucket
+    # but the row link itself uses the inbox id.
     assert f'href="/shop/messages/{inbox_row.id}"' in r.text
     assert "ทั่วไป" in r.text
+    # Design-aligned class names for the new grouped layout.
+    assert "ib-broadcast" in r.text
+    assert "ib-reply" in r.text
 
 
 async def test_shop_messages_list_unread_chip_on_customer_reply(
@@ -180,9 +183,12 @@ async def test_shop_messages_list_unread_chip_on_customer_reply(
     await db.commit()
 
     body = (await auth_client.get("/shop/messages")).text
-    # New chip → unread count of 1 surfaces on the row.
-    assert "ctx-unread" in body
-    assert "1 ใหม่" in body
+    # Per design's inbox.list refactor: unread customers wear the
+    # .ib-reply.unread modifier (pulsing dot via ::before, no count
+    # chip) instead of a per-row "N ใหม่" chip. The aggregate unread
+    # count surfaces on the page-head sub line.
+    assert "ib-reply unread" in body
+    assert "1 ยังไม่ได้ตอบ" in body
 
 
 async def test_shop_messages_thread_marks_read_and_renders(

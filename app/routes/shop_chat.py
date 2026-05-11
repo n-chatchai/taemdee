@@ -127,13 +127,15 @@ async def shop_messages_page(
             "unread": unread_by_inbox.get(r.id, 0),
         })
 
-    # Section headers — one per campaign, "ทั่วไป" bucket for inboxes
-    # with no campaign link (manual sends sometimes lack one).
-    # Headline preview reads the first inbox row's body (already
-    # expanded by the dispatcher), not campaign.message_text — that
-    # one still carries `{name}` / `{shop_name}` placeholders that
-    # would leak into the section header if rendered raw.
-    sections: list = []
+    # Broadcasts — one .ib-broadcast card per campaign (the "ทั่วไป"
+    # bucket holds inboxes with no campaign link, which only happens
+    # for manual sends that didn't get a campaign row). Each broadcast
+    # carries: headline (the body's first line — already placeholder-
+    # expanded by the dispatcher; cp.message_text would still have
+    # raw {name}/{shop_name}), the offer-label-or-kind tag for the
+    # title suffix, sent_at, delivered/opened counts, and the flat
+    # list of customer rows underneath.
+    broadcasts: list = []
     seen: set = set()
     for v in rows_view:
         cp = v["campaign"]
@@ -142,28 +144,39 @@ async def shop_messages_page(
             continue
         seen.add(key)
         section_rows = [r for r in rows_view if (r["campaign"].id if r["campaign"] else None) == key]
-        # Tag in each row prefers the campaign's offer label
-        # ("ลด ฿20") over the kind label ("ชวนกลับ"), so the eye
-        # groups by what was on offer first.
+        delivered = len(section_rows)
+        opened = sum(1 for r in section_rows if r["inbox"].read_at is not None)
         if cp is not None:
             tag = (cp.offer_label or "").strip() or _DEEREACH_KIND_LABELS.get(cp.kind, "ส่งให้ลูกค้า")
             sample_inbox = section_rows[0]["inbox"] if section_rows else None
             sample_body = (sample_inbox.body if sample_inbox else (cp.message_text or "")) or ""
             headline = sample_body.strip().splitlines()[0] if sample_body else tag
-            section = {
+            broadcasts.append({
+                "campaign_id": cp.id,
                 "headline": headline[:48],
-                "sent_at": cp.sent_at,
                 "tag": tag,
+                "sent_at": cp.sent_at or (sample_inbox.created_at if sample_inbox else None),
+                "delivered": delivered,
+                "opened": opened,
                 "rows": section_rows,
-            }
+            })
         else:
-            section = {
+            sample_inbox = section_rows[0]["inbox"] if section_rows else None
+            broadcasts.append({
+                "campaign_id": None,
                 "headline": "ทั่วไป",
-                "sent_at": None,
                 "tag": "ทั่วไป",
+                "sent_at": sample_inbox.created_at if sample_inbox else None,
+                "delivered": delivered,
+                "opened": opened,
                 "rows": section_rows,
-            }
-        sections.append(section)
+            })
+
+    # Page-head counts — total unread customer replies + total
+    # broadcasts (sections). Surfaced in messages_list.html's page-head
+    # sub line ("N ยังไม่ได้ตอบ · M broadcasts") per design.
+    unread_total = sum(unread_by_inbox.values())
+    broadcasts_total = len(broadcasts)
 
     _is_owner = bool(request.state.staff and request.state.staff.is_owner)
     s3_top = await s3_top_context(db, shop, is_owner=_is_owner)
@@ -172,8 +185,9 @@ async def shop_messages_page(
         name="shop/messages_list.html",
         context={
             "shop": shop,
-            "sections": sections,
-            "kind_labels": _DEEREACH_KIND_LABELS,
+            "broadcasts": broadcasts,
+            "unread_total": unread_total,
+            "broadcasts_total": broadcasts_total,
             **s3_top,
         },
     )

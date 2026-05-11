@@ -2,42 +2,71 @@
 {% block title %}ลูกค้าตอบกลับข้อความ · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
-{% include "_partials/page_top.html" %}
-
-{# Per design/taemdee-shop.html → inbox.list. Shop sees their own
-   broadcasts grouped by campaign with a list of customers who
-   replied under each. Replies are scoped per broadcast — there is
-   no general chat anymore. #}
+{# Per design/taemdee-shop.html → inbox.list (L11999). One
+   .ib-broadcast card per campaign, with the customers who replied
+   listed underneath. Replies are scoped per broadcast — there is no
+   general chat anymore. #}
 <div class="page-scroll">
 <div class="page-container">
-  {% if not sections %}
+
+  {# .page-head with inbox-specific h1 + count sub line ("N ยังไม่ได้ตอบ
+     · M broadcasts") — replaces the shared s3-top "สวัสดี" chrome for
+     this surface so the operator sees their reply-queue load at a glance. #}
+  <div class="page-head">
+    <div class="ph-text">
+      <h1>ข้อความตอบกลับ<span class="dot">.</span></h1>
+      <div class="ph-sub">
+        {% if unread_total %}{{ unread_total }} ยังไม่ได้ตอบ · {% endif %}{{ broadcasts_total }} broadcast{% if broadcasts_total != 1 %}s{% endif %}
+      </div>
+    </div>
+  </div>
+
+  {% if not broadcasts %}
     <div class="ib-empty">
       <strong>ยังไม่มีลูกค้าตอบกลับ</strong><br>
       ส่งข้อความผ่าน "<a href="/shop/deereach">แนะนำ</a>" — ลูกค้าตอบกลับจะมาแสดงที่นี่
     </div>
   {% else %}
-    {% for section in sections %}
-      <div class="ib-context-h">
-        ข้อความ · "{{ section.headline }}"{% if section.sent_at %} — ส่งเมื่อ {{ section.sent_at|bkk_relative_time }}{% endif %}
-      </div>
-      <div class="ib-list">
-        {% for r in section.rows %}
-          <a class="ib-card{% if r.unread %} unread{% endif %}" href="{{ r.href }}">
-            {% set _initial = (r.name[0] if r.name else 'ก')|upper %}
-            <div class="ib-avatar">{{ _initial }}</div>
-            <div class="ib-body">
-              <div class="ib-row">
-                <div class="ib-name">{{ r.name }}</div>
-                <div class="ib-time">{{ r.sort_at|bkk_relative_time }}</div>
-              </div>
-              <div class="ib-preview">{{ r.preview }}</div>
-              <div class="ib-context">
-                <span class="ctx-tag">{{ section.tag }}</span>
-                {% if r.unread %}<span class="ctx-unread">{{ r.unread }} ใหม่</span>{% endif %}
-              </div>
+    {% for b in broadcasts %}
+      <div class="ib-broadcast">
+        <div class="ib-bh">
+          <div class="ibh-text">
+            <div class="ibh-tag">
+              <svg viewBox="0 0 16 16"><path d="M8 0L9.5 6.5 16 8 9.5 9.5 8 16 6.5 9.5 0 8 6.5 6.5z"/></svg>
+              ข้อความ
             </div>
-          </a>
-        {% endfor %}
+            <div class="ibh-title">{{ b.headline }}{% if b.tag and b.tag != b.headline and b.tag != 'ทั่วไป' %} · {{ b.tag }}{% endif %}</div>
+            <div class="ibh-meta">
+              {% if b.sent_at %}ส่งเมื่อ {{ b.sent_at|bkk_relative_time }}{% endif %}
+              {% if b.sent_at and b.delivered %} · {% endif %}
+              {% if b.delivered %}เปิดอ่าน {{ b.opened }}/{{ b.delivered }}{% endif %}
+            </div>
+          </div>
+          {% if b.campaign_id %}
+            <a class="ibh-link" href="/shop/deereach/sent?campaign_id={{ b.campaign_id }}">ดู →</a>
+          {% endif %}
+        </div>
+        <div class="ib-replies">
+          {% for r in b.rows %}
+            <a class="ib-reply{% if r.unread %} unread{% endif %}" href="{{ r.href }}">
+              {% set _initial = (r.name[0] if r.name else 'ก')|upper %}
+              <div class="ibr-avatar">{{ _initial }}</div>
+              <div class="ibr-body">
+                <div class="ibr-row">
+                  <div class="ibr-name">{{ r.name }}</div>
+                  <div class="ibr-time">{{ r.sort_at|bkk_relative_time }}</div>
+                </div>
+                <div class="ibr-preview">
+                  {% if r.preview %}
+                    {{ r.preview }}
+                  {% else %}
+                    <em style="color:var(--ink-softer);">ยังไม่มีการตอบกลับ</em>
+                  {% endif %}
+                </div>
+              </div>
+            </a>
+          {% endfor %}
+        </div>
       </div>
     {% endfor %}
   {% endif %}

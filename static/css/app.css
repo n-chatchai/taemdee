@@ -13403,75 +13403,138 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   word-wrap: break-word;
 }
 
-/* Shop /shop/messages — section per broadcast + reply rows. */
-.ib-context-h {
-  margin: 12px 16px 6px;
-  font-family: 'Prompt', sans-serif;
-  font-size: 11px;
-  color: var(--ink-soft);
-  text-transform: uppercase;
-  letter-spacing: 0.04em;
-  font-weight: 700;
-}
-.ib-list {
-  margin: 0 16px 16px;
-  display: flex;
-  flex-direction: column;
-  gap: 6px;
-}
-.ib-card {
-  display: flex;
-  align-items: center;
-  gap: 12px;
-  padding: 12px 14px;
+/* Shop /shop/messages — one .ib-broadcast card per campaign with the
+   customers who replied listed underneath. Matches design's
+   inbox.list (taemdee-shop.html L11999): butter-soft header strip
+   carrying the broadcast tag/title/meta + "ดู →" deep link, then a
+   flat .ib-replies list of customer rows beneath. */
+.ib-broadcast {
+  margin: 12px 16px;
   background: var(--surface);
   border: 1px solid rgba(17,17,17,0.08);
-  border-radius: 14px;
-  text-decoration: none;
-  color: var(--ink);
-  cursor: pointer;
+  border-radius: 16px;
+  overflow: hidden;
 }
-.ib-card.unread {
-  background: var(--butter-soft, #FFF6D9);
-  border-color: rgba(255, 217, 82, 0.45);
-}
-.ib-card .ib-avatar {
-  width: 36px; height: 36px;
-  border-radius: 50%;
-  background: var(--ink);
-  color: #fff;
+.ib-broadcast .ib-bh {
   display: flex;
   align-items: center;
-  justify-content: center;
-  font-family: 'Prompt', sans-serif;
-  font-weight: 700;
-  font-size: 14px;
-  flex-shrink: 0;
-}
-.ib-card.unread .ib-avatar {
-  background: var(--accent);
-}
-.ib-card .ib-body { flex: 1; min-width: 0; }
-.ib-card .ib-row {
-  display: flex;
   justify-content: space-between;
-  align-items: baseline;
-  gap: 8px;
+  gap: 12px;
+  padding: 12px 16px 10px;
+  background: var(--butter-soft, #FFF6D9);
+  border-bottom: 1px solid rgba(255, 217, 82, 0.55);
 }
-.ib-card .ib-name {
+.ib-broadcast .ib-bh .ibh-text { flex: 1; min-width: 0; }
+.ib-broadcast .ib-bh .ibh-tag {
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 9.5px;
+  font-weight: 700;
+  color: var(--accent);
+  letter-spacing: 0.04em;
+  text-transform: uppercase;
+  margin-bottom: 3px;
+}
+.ib-broadcast .ib-bh .ibh-tag svg {
+  width: 9px; height: 9px;
+  fill: currentColor;
+}
+.ib-broadcast .ib-bh .ibh-title {
   font-family: 'Prompt', sans-serif;
   font-weight: 700;
   font-size: 13.5px;
   color: var(--ink);
   letter-spacing: -0.005em;
+  line-height: 1.25;
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
 }
-.ib-card .ib-time {
+.ib-broadcast .ib-bh .ibh-meta {
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  color: var(--ink-soft);
+  margin-top: 1px;
+}
+.ib-broadcast .ib-bh .ibh-link {
+  flex-shrink: 0;
+  font-family: 'Prompt', sans-serif;
+  font-size: 11.5px;
+  font-weight: 700;
+  color: var(--accent);
+  cursor: pointer;
+  padding: 4px 8px;
+  text-decoration: none;
+}
+
+.ib-replies {
+  display: flex;
+  flex-direction: column;
+}
+.ib-reply {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 11px 14px;
+  border-top: 1px solid rgba(17,17,17,0.06);
+  cursor: pointer;
+  background: var(--surface);
+  text-decoration: none;
+  color: var(--ink);
+  position: relative;
+}
+.ib-reply:first-child { border-top: none; }
+.ib-reply.unread::before {
+  content: '';
+  position: absolute;
+  left: 6px; top: 50%;
+  transform: translateY(-50%);
+  width: 6px; height: 6px;
+  background: var(--accent);
+  border-radius: 50%;
+  box-shadow: 0 0 0 0 rgba(255, 94, 58, 0.5);
+  animation: ib-dot-pulse 1.8s ease-out infinite;
+}
+.ib-reply.unread {
+  padding-left: 20px;
+}
+.ib-reply .ibr-avatar {
+  width: 32px; height: 32px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 12.5px;
+  flex-shrink: 0;
+}
+.ib-reply.unread .ibr-avatar {
+  background: var(--accent);
+}
+.ib-reply .ibr-body { flex: 1; min-width: 0; }
+.ib-reply .ibr-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: baseline;
+  gap: 8px;
+}
+.ib-reply .ibr-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: 13px;
+  color: var(--ink);
+  letter-spacing: -0.005em;
+}
+.ib-reply .ibr-time {
   font-family: 'Prompt', sans-serif;
   font-size: 10.5px;
   color: var(--ink-soft);
   flex-shrink: 0;
 }
-.ib-card .ib-preview {
+.ib-reply .ibr-preview {
   font-family: 'Prompt', sans-serif;
   font-size: 12px;
   color: var(--ink-soft);
@@ -13480,34 +13543,19 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   white-space: nowrap;
   overflow: hidden;
   text-overflow: ellipsis;
-}
-.ib-card.unread .ib-preview { color: var(--ink); }
-.ib-card .ib-context {
-  font-family: 'Prompt', sans-serif;
-  font-size: 10px;
-  color: var(--ink-softer);
-  margin-top: 3px;
   display: flex;
   align-items: center;
-  gap: 6px;
+  gap: 4px;
 }
-.ib-card .ib-context .ctx-tag {
-  background: rgba(255, 217, 82, 0.4);
+.ib-reply.unread .ibr-preview {
   color: var(--ink);
-  padding: 1px 6px;
-  border-radius: 99px;
-  font-weight: 600;
+  font-weight: 500;
 }
-.ib-card.unread .ib-context .ctx-tag {
-  background: rgba(255, 255, 255, 0.7);
+@keyframes ib-dot-pulse {
+  0% { box-shadow: 0 0 0 0 rgba(255, 94, 58, 0.5); }
+  100% { box-shadow: 0 0 0 5px rgba(255, 94, 58, 0); }
 }
-.ib-card .ib-context .ctx-unread {
-  background: var(--accent);
-  color: #fff;
-  padding: 1px 7px;
-  border-radius: 99px;
-  font-weight: 700;
-}
+
 .ib-empty {
   padding: 50px 24px;
   text-align: center;
@@ -13582,6 +13630,19 @@ html.fs-lg { font-size: 18px; }   /* +12.5% */
   display: flex;
   align-items: center;
   gap: 6px;
+}
+/* "ฟรี · ไม่ใช้เครดิต" reassurance pill on the shop-side reply
+   composer — broadcasts cost credits, replies don't, and the design
+   surfaces that explicitly so operators don't hesitate to follow up. */
+.ix-compose-active .ixca-label .free {
+  background: rgba(111, 168, 130, 0.18);
+  color: var(--mint-ink, #2a4f44);
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-size: 9.5px;
+  font-weight: 700;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
 }
 .ix-compose-active .ixca-textarea {
   width: 100%;

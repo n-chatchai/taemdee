@@ -82,14 +82,27 @@
 
     {# Inline reply textbox — same .ix-compose-active pattern the
        customer side uses. Always visible at the bottom of the thread
-       so the operator can reply without an extra tap. POST →
+       so the operator can reply without an extra tap. The "ฟรี · ไม่
+       ใช้เครดิต" pill is the design's reassurance that broadcasts
+       cost credits but replies don't. Quick chips prepend stock
+       openers without forcing the operator to type. POST →
        /shop/messages/<inbox_id>/reply; optimistic insert + clear. #}
     <form class="ix-compose-active" method="POST" action="/shop/messages/{{ inbox.id }}/reply" id="ix-compose">
-      <div class="ixca-head"><span class="ixca-label">ตอบกลับลูกค้า</span></div>
+      <div class="ixca-head">
+        <span class="ixca-label">
+          ตอบกลับลูกค้า
+          <span class="free">ฟรี · ไม่ใช้เครดิต</span>
+        </span>
+      </div>
       <textarea class="ixca-textarea" name="body" id="ixca-textarea"
-                placeholder="พิมพ์ข้อความถึงลูกค้า..." maxlength="500" rows="3"></textarea>
+                placeholder="พิมพ์ข้อความถึงลูกค้า..." maxlength="200" rows="3"></textarea>
+      <div class="ixca-quicks">
+        <button type="button" class="ixca-quick" data-snippet="ขอบคุณครับ">+ ขอบคุณครับ</button>
+        <button type="button" class="ixca-quick" data-snippet="รออยู่นะครับ">+ รออยู่นะ</button>
+        <button type="button" class="ixca-quick" data-snippet="มาได้เลยครับ">+ มาได้เลย</button>
+      </div>
       <div class="ixca-foot">
-        <span class="ixca-count" id="ixca-count">0 / 500</span>
+        <span class="ixca-count" id="ixca-count">0 / 200</span>
         <button type="submit" class="ixca-send" id="ixca-send" disabled>ส่งตอบกลับ</button>
       </div>
     </form>
@@ -135,11 +148,24 @@
     if (ta && sendBtn) {
       function updateCounter() {
         var n = (ta.value || '').length;
-        if (counter) counter.textContent = n + ' / 500';
+        if (counter) counter.textContent = n + ' / 200';
         sendBtn.disabled = !ta.value.trim();
       }
       ta.addEventListener('input', updateCounter);
       ta.addEventListener('change', updateCounter);
+
+      // Quick-reply chips prepend a stock opener + a space if the
+      // textarea already has content; pure-prepend if it's empty.
+      // Focus the textarea after so the operator can keep typing.
+      document.querySelectorAll('.ixca-quick').forEach(function (chip) {
+        chip.addEventListener('click', function () {
+          var snippet = chip.getAttribute('data-snippet') || '';
+          var existing = ta.value || '';
+          ta.value = existing ? snippet + ' ' + existing : snippet;
+          ta.focus();
+          updateCounter();
+        });
+      });
     }
 
     if (form) {
@@ -161,8 +187,8 @@
           '</div>'
         );
         ta.value = '';
+        if (counter) counter.textContent = '0 / 200';
         sendBtn.disabled = true;
-        closeSheet();
         var fd = new FormData();
         fd.set('body', body);
         fetch(form.action, {
