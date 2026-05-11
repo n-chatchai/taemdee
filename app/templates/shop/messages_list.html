@@ -1,5 +1,5 @@
 {% extends "_layouts/s_base.html" %}
-{% block title %}ลูกค้าตอบกลับ DeeReach · {{ shop.name }} · TaemDee{% endblock %}
+{% block title %}ลูกค้าตอบกลับข้อความ · {{ shop.name }} · TaemDee{% endblock %}
 
 {% block content %}
 {% include "_partials/page_top.html" %}
@@ -13,7 +13,7 @@
   {% if not sections %}
     <div class="ib-empty">
       <strong>ยังไม่มีลูกค้าตอบกลับ</strong><br>
-      ส่ง DeeReach ผ่าน "<a href="/shop/deereach">แนะนำ</a>" — ลูกค้าตอบกลับจะมาแสดงที่นี่
+      ส่งข้อความผ่าน "<a href="/shop/deereach">แนะนำ</a>" — ลูกค้าตอบกลับจะมาแสดงที่นี่
     </div>
   {% else %}
     {% for section in sections %}
