@@ -80,81 +80,36 @@
       {% endfor %}
     </div>
 
-    {# Compose CTA — design pattern: tap the dashed card to open the
-       bottom sheet below. Keeps the detail page tight (no always-
-       visible textarea) and matches the operator's "ตอบเพิ่ม" mental
-       model. #}
-    <button type="button" class="ix-compose" id="ix-compose-cta" aria-label="ตอบเพิ่ม">
-      <div class="ixco-icon">
-        <svg viewBox="0 0 24 24"><path d="M12 20h9M16.5 3.5a2.121 2.121 0 113 3L7 19l-4 1 1-4L16.5 3.5z"/></svg>
+    {# Inline reply textbox — same .ix-compose-active pattern the
+       customer side uses. Always visible at the bottom of the thread
+       so the operator can reply without an extra tap. POST →
+       /shop/messages/<inbox_id>/reply; optimistic insert + clear. #}
+    <form class="ix-compose-active" method="POST" action="/shop/messages/{{ inbox.id }}/reply" id="ix-compose">
+      <div class="ixca-head"><span class="ixca-label">ตอบกลับลูกค้า</span></div>
+      <textarea class="ixca-textarea" name="body" id="ixca-textarea"
+                placeholder="พิมพ์ข้อความถึงลูกค้า..." maxlength="500" rows="3"></textarea>
+      <div class="ixca-foot">
+        <span class="ixca-count" id="ixca-count">0 / 500</span>
+        <button type="submit" class="ixca-send" id="ixca-send" disabled>ส่งตอบกลับ</button>
       </div>
-      <div class="ixco-text"><strong>ตอบเพิ่ม</strong></div>
-    </button>
+    </form>
 
   </div>
 </div>
 </div>
 
-{# Bottom-sheet compose — opened by the .ix-compose CTA. POST to the
-   reply endpoint; on submit we optimistically render the operator's
-   ix-comment in the thread above and close the sheet. #}
-<div class="rc-overlay" id="ixco-overlay" hidden>
-  <form class="rc-sheet" method="POST" action="/shop/messages/{{ inbox.id }}/reply" id="ixco-form">
-    <div class="sheet-handle"></div>
-    <div class="ix-compose-active" style="margin-top:0; border:none; padding:0;">
-      <div class="ixca-head"><span class="ixca-label">ตอบเพิ่มลูกค้า</span></div>
-      <textarea class="ixca-textarea" name="body" id="ixco-textarea"
-                placeholder="พิมพ์ข้อความถึงลูกค้า..." maxlength="500" rows="4"></textarea>
-      <div class="ixca-foot">
-        <button type="button" class="ixca-cancel" id="ixco-cancel"
-                style="background:transparent;border:none;font-family:'Prompt',sans-serif;font-size:13px;color:var(--ink-soft);cursor:pointer;">
-          ยกเลิก
-        </button>
-        <button type="submit" class="ixca-send" id="ixco-send" disabled>ส่งตอบกลับ</button>
-      </div>
-    </div>
-  </form>
-</div>
-
 <style>
-  .ix-detail { padding-bottom: 120px; }
-  .rc-overlay {
-    position: fixed; inset: 0;
-    background: rgba(17,17,17,0.5);
-    z-index: 9000;
-    display: flex;
-    align-items: flex-end;
-    justify-content: center;
-  }
-  .rc-overlay[hidden] { display: none; }
-  .rc-sheet {
-    background: var(--bg);
-    border-top-left-radius: 24px;
-    border-top-right-radius: 24px;
-    padding: 14px 20px 20px;
-    width: 100%;
-    max-width: 480px;
-    box-shadow: 0 -8px 24px -8px rgba(0,0,0,0.25);
-  }
-  .rc-sheet .sheet-handle {
-    width: 36px; height: 4px;
-    border-radius: 999px;
-    background: var(--ink-softer);
-    margin: 0 auto 16px;
-    opacity: 0.4;
-  }
+  .ix-detail { padding-bottom: 40px; }
 </style>
 
 <script>
   (function () {
     var INBOX_ID = "{{ inbox.id }}";
     var thread = document.getElementById('ix-thread');
-    var cta    = document.getElementById('ix-compose-cta');
-    var overlay = document.getElementById('ixco-overlay');
-    var form   = document.getElementById('ixco-form');
-    var ta     = document.getElementById('ixco-textarea');
-    var sendBtn = document.getElementById('ixco-send');
-    var cancelBtn = document.getElementById('ixco-cancel');
+    var form   = document.getElementById('ix-compose');
+    var ta     = document.getElementById('ixca-textarea');
+    var sendBtn = document.getElementById('ixca-send');
+    var counter = document.getElementById('ixca-count');
     if (!thread) return;
 
     function escapeHtml(s) {
@@ -177,30 +132,14 @@
       node.scrollIntoView({ behavior: 'smooth', block: 'end' });
     }
 
-    function openSheet() {
-      if (!overlay) return;
-      overlay.removeAttribute('hidden');
-      document.body.style.overflow = 'hidden';
-      setTimeout(function () { ta && ta.focus(); }, 50);
-    }
-    function closeSheet() {
-      if (!overlay) return;
-      overlay.setAttribute('hidden', '');
-      document.body.style.overflow = '';
-    }
-
-    if (cta && overlay) {
-      cta.addEventListener('click', openSheet);
-      cancelBtn && cancelBtn.addEventListener('click', closeSheet);
-      overlay.addEventListener('click', function (e) {
-        if (e.target === overlay) closeSheet();
-      });
-    }
-
     if (ta && sendBtn) {
-      ta.addEventListener('input', function () {
+      function updateCounter() {
+        var n = (ta.value || '').length;
+        if (counter) counter.textContent = n + ' / 500';
         sendBtn.disabled = !ta.value.trim();
-      });
+      }
+      ta.addEventListener('input', updateCounter);
+      ta.addEventListener('change', updateCounter);
     }
 
     if (form) {

@@ -52,15 +52,13 @@ async def shop_messages_page(
     campaign with the customers who replied listed under each. Per
     design/taemdee-shop.html → inbox.list. Replies are scoped per
     broadcast (no general chat); customers can't initiate."""
-    # Inbox rows that have at least one reply, joined back to their
-    # campaign so we can section by broadcast. Inbox rows without
-    # replies are skipped — there's nothing to show for them on the
-    # shop side. Cap at 50 inboxes to keep render snappy.
+    # Every Inbox row this shop has sent — design wants the operator
+    # to see broadcasts even before anyone replies, so they can verify
+    # the send landed and pre-empt the conversation. Cap at 50 to keep
+    # render snappy.
     inbox_rows = (await db.exec(
         select(Inbox)
-        .join(InboxReply, InboxReply.inbox_id == Inbox.id)
         .where(Inbox.shop_id == shop.id)
-        .group_by(Inbox.id)
         .order_by(Inbox.created_at.desc())
         .limit(50)
     )).all()
