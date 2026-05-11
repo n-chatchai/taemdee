@@ -6956,6 +6956,75 @@ form.s10-row { margin: 0 0 4px; }
   font-size: 12px;
   color: var(--ink-softer);
 }
+
+/* Customer detail · broadcast-engagement timeline (phase 5).
+   Mirrors .cd-act-row chrome so the engagement section reads as a
+   sibling of "ออกแต้มล่าสุด" / "รางวัลล่าสุด". Per-kind icon tint
+   matches the chip palette used on /shop/customers + the campaign
+   stats page so a customer's engagement signal is the same colour
+   wherever it surfaces. */
+.cd-engagement {
+  margin-top: 18px;
+}
+.cd-eng-row {
+  display: flex;
+  align-items: center;
+  gap: 12px;
+  padding: 10px 0;
+  border-bottom: 1px solid rgba(17, 17, 17, 0.04);
+}
+.cd-eng-row:last-child { border-bottom: none; }
+.cd-eng-icon {
+  flex-shrink: 0;
+  width: 32px; height: 32px;
+  border-radius: 10px;
+  display: flex; align-items: center; justify-content: center;
+  background: rgba(17,17,17,0.05);
+  color: var(--ink-softer);
+}
+.cd-eng-icon.opened          { background: rgba(255, 217, 82, 0.45); color: var(--ink); }
+.cd-eng-icon.replied         { background: rgba(111, 168, 130, 0.20); color: var(--mint-ink, #2a4f44); }
+.cd-eng-icon.voucher_claimed { background: rgba(255, 94, 58, 0.12);  color: var(--accent); }
+.cd-eng-icon svg { width: 16px; height: 16px; }
+.cd-eng-info { flex: 1; min-width: 0; }
+.cd-eng-label {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 600;
+  font-size: 13px;
+  color: var(--ink);
+  white-space: nowrap;
+  overflow: hidden;
+  text-overflow: ellipsis;
+}
+.cd-eng-time {
+  font-family: 'Prompt', sans-serif;
+  font-size: 11px;
+  color: var(--ink-softer);
+  margin-top: 1px;
+}
+.cd-eng-link {
+  flex-shrink: 0;
+  font-family: 'Prompt', sans-serif;
+  font-size: 18px;
+  color: var(--ink-softer);
+  text-decoration: none;
+  padding: 4px 6px;
+}
+/* Tier badge in the section header — same palette as the customers
+   list chip so the operator pattern-matches the colour even before
+   reading the label. */
+.cd-eng-badge {
+  display: inline-block;
+  padding: 1px 7px;
+  border-radius: 99px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 10.5px;
+  font-weight: 700;
+  letter-spacing: 0.02em;
+}
+.cd-eng-badge.hot  { background: rgba(111, 168, 130, 0.18); color: var(--mint-ink, #2a4f44); }
+.cd-eng-badge.warm { background: rgba(255, 217, 82, 0.45); color: var(--ink); }
+.cd-eng-badge.cold { background: rgba(17,17,17,0.06); color: var(--ink-softer); }
 /* Activity pager — sits below the activity rows. Disabled state
    (already on first/last page) keeps the same footprint so the
    pager doesn't reflow when toggling between pages. */

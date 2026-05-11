@@ -140,3 +140,107 @@ async def test_customers_engagement_chip_hidden_when_cold(auth_client, db, shop)
     assert "เงียบ" in body
     # The "เงียบ" tier label must NOT appear as a chip class on the row.
     assert "cust-tag eng" not in body
+
+
+# ── Customer detail · broadcast engagement timeline (phase 5) ──────────────
+
+
+async def test_customer_detail_omits_engagement_for_cold_customer(
+    auth_client, db, shop
+):
+    """A customer with zero DeeReachEvents — the engagement section
+    is hidden entirely so cold customers stay visually quiet."""
+    c = await _customer(db, "สงบ")
+    await _stamp(db, shop, c, days_ago=2)
+    await db.commit()
+
+    body = (await auth_client.get(f"/shop/customers/{c.id}")).text
+    assert "การตอบ broadcast" not in body
+    assert "cd-engagement" not in body
+
+
+async def test_customer_detail_renders_engagement_timeline(
+    auth_client, db, shop
+):
+    """Customer with events sees: tier badge + score + per-event rows
+    with the broadcast headline + deep-link to the broadcast stats."""
+    from app.models import DeeReachCampaign, DeeReachEvent, Inbox
+    from app.models.util import utcnow
+
+    c = await _customer(db, "ฮีโร่")
+    await _stamp(db, shop, c, days_ago=2)
+
+    # Real campaign + inbox so the timeline can deep-link to
+    # /shop/messages/broadcast/<id>.
+    cp = DeeReachCampaign(
+        shop_id=shop.id, kind="win_back", audience_count=1,
+        message_text="คิดถึงพี่\nแวะมานะ",
+        offer_label="ลด ฿20", sent_at=utcnow(),
+    )
+    db.add(cp)
+    await db.commit()
+    await db.refresh(cp)
+
+    ibx = Inbox(
+        customer_id=c.id, shop_id=shop.id, campaign_id=cp.id,
+        body="คิดถึงพี่\nแวะมานะ",
+    )
+    db.add(ibx)
+    await db.commit()
+    await db.refresh(ibx)
+
+    db.add_all([
+        DeeReachEvent(
+            inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id,
+            campaign_id=cp.id, kind="opened",
+        ),
+        DeeReachEvent(
+            inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id,
+            campaign_id=cp.id, kind="replied",
+        ),
+    ])
+    await db.commit()
+
+    body = (await auth_client.get(f"/shop/customers/{c.id}")).text
+    # Section header + tier badge — score = opened(1) + replied(3) = 4 → warm.
+    assert "การตอบ broadcast" in body
+    assert "cd-eng-badge warm" in body
+    assert "เริ่มสนใจ" in body
+    assert "4 คะแนน" in body
+    # Per-event rows render with the broadcast headline.
+    assert "เปิดอ่าน" in body
+    assert "ตอบกลับ" in body
+    assert "คิดถึงพี่" in body
+    # Deep-link to broadcast stats — campaign_id present.
+    assert f"/shop/messages/broadcast/{cp.id}" in body
+
+
+async def test_customer_detail_engagement_scoped_to_this_shop(
+    auth_client, db, shop
+):
+    """Engagement events at OTHER shops don't surface on this shop's
+    customer detail — even if the customer is the same person."""
+    from app.models import DeeReachEvent, Inbox, Shop
+
+    c = await _customer(db, "ข้ามร้าน")
+    await _stamp(db, shop, c, days_ago=2)
+
+    other = Shop(name="OtherShop", phone="0800000000", reward_threshold=5)
+    db.add(other)
+    await db.commit()
+    await db.refresh(other)
+
+    # Event at a different shop with a parent inbox there.
+    other_ibx = Inbox(customer_id=c.id, shop_id=other.id, body="hi")
+    db.add(other_ibx)
+    await db.commit()
+    await db.refresh(other_ibx)
+    db.add(DeeReachEvent(
+        inbox_id=other_ibx.id, customer_id=c.id, shop_id=other.id, kind="replied",
+    ))
+    await db.commit()
+
+    # On `shop`'s detail page — no engagement section since events
+    # belong to `other`.
+    body = (await auth_client.get(f"/shop/customers/{c.id}")).text
+    assert "การตอบ broadcast" not in body

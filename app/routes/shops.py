@@ -1699,6 +1699,78 @@ async def customer_detail(
 
     redemption_count = sum(1 for _, _, _, voided in redemption_rows if not voided)
 
+    # ── Broadcast engagement timeline ──────────────────────────────────────
+    # Pull this customer's DeeReachEvents at this shop (newest first)
+    # so the detail page can surface a per-customer drill-down. The
+    # engaged/cold chip on /shop/customers drills down HERE for context.
+    # Bounded at 50 — anything older falls off the live score window
+    # anyway (90d) so deeper history isn't useful to the operator.
+    from app.models import DeeReachCampaign, DeeReachEvent, Inbox
+    from app.services.engagement import (
+        engagement_score, engagement_tier, tier_label,
+    )
+    event_rows = (await db.exec(
+        select(DeeReachEvent).where(
+            DeeReachEvent.shop_id == shop.id,
+            DeeReachEvent.customer_id == customer_id,
+        ).order_by(DeeReachEvent.created_at.desc()).limit(50)
+    )).all()
+
+    # Hydrate the parent broadcasts (campaign + inbox) in one query so
+    # the timeline rows can deep-link to the broadcast stats page and
+    # show the broadcast title. inbox_id is denormalised on every
+    # event row so we don't need to traverse Inbox → Campaign on
+    # render.
+    inbox_ids = {e.inbox_id for e in event_rows}
+    inbox_by_id: dict = {}
+    if inbox_ids:
+        ibx_rows = (await db.exec(
+            select(Inbox).where(Inbox.id.in_(inbox_ids))
+        )).all()
+        inbox_by_id = {r.id: r for r in ibx_rows}
+    campaign_ids = {e.campaign_id for e in event_rows if e.campaign_id}
+    campaign_by_id: dict = {}
+    if campaign_ids:
+        cp_rows = (await db.exec(
+            select(DeeReachCampaign).where(DeeReachCampaign.id.in_(campaign_ids))
+        )).all()
+        campaign_by_id = {r.id: r for r in cp_rows}
+
+    # Thai labels for each kind — match the chip labels used elsewhere.
+    _EVENT_LABELS = {
+        "opened": "เปิดอ่าน",
+        "replied": "ตอบกลับ",
+        "voucher_claimed": "รับของฝาก",
+    }
+    engagement_timeline = []
+    for e in event_rows:
+        ibx = inbox_by_id.get(e.inbox_id)
+        # Headline preference: campaign offer label > inbox body first
+        # line > generic kind label. Mirrors how the messages list
+        # picks a row title.
+        headline = ""
+        if ibx is not None:
+            body_first = (ibx.body or "").strip().splitlines()
+            if body_first:
+                headline = body_first[0]
+        if not headline:
+            cp = campaign_by_id.get(e.campaign_id) if e.campaign_id else None
+            headline = (cp.offer_label if cp and cp.offer_label else "ข้อความ")
+        engagement_timeline.append({
+            "kind": e.kind,
+            "label": _EVENT_LABELS.get(e.kind, e.kind),
+            "at": e.created_at,
+            "broadcast_headline": headline[:60],
+            "campaign_id": e.campaign_id,
+            "inbox_id": e.inbox_id,
+        })
+
+    eng_score = await engagement_score(
+        db, shop_id=shop.id, customer_id=customer_id,
+    )
+    eng_tier = engagement_tier(eng_score)
+    eng_label = tier_label(eng_tier)
+
     # All non-voided gifts (newest first) — rendered as a paginated
     # list under "รางวัลล่าสุด". Each entry carries enough state for
     # the พร้อมใช้ / ใช้แล้ว badge + timestamps.
@@ -1775,6 +1847,11 @@ async def customer_detail(
             "activity_total_pages": activity_total_pages,
             "activity_has_prev": activity_has_prev,
             "activity_has_next": activity_has_next,
+            # Broadcast engagement (phase 5)
+            "engagement_score": eng_score,
+            "engagement_tier": eng_tier,
+            "engagement_label": eng_label,
+            "engagement_timeline": engagement_timeline,
         },
     )
 

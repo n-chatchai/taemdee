@@ -106,6 +106,44 @@
     </div>
   {% endif %}
 
+  {# Broadcast engagement — surfaces the customer's response to the
+     shop's DeeReach broadcasts. Score + tier badge mirror the chip
+     on /shop/customers; timeline drill-down lists each engagement
+     event (opened / ตอบกลับ / รับของฝาก) newest-first with a
+     tap-to-broadcast-stats link. Hidden when there's no activity to
+     show — keeps the page tight for cold customers. #}
+  {% if engagement_timeline %}
+  <div class="cd-engagement" id="engagement">
+    <div class="cd-activity-h">
+      <span class="lab">การตอบ broadcast</span>
+      <span class="count">
+        <span class="cd-eng-badge {{ engagement_tier }}">{{ engagement_label }}</span>
+        · {{ engagement_score }} คะแนน
+      </span>
+    </div>
+    {% for e in engagement_timeline %}
+      <div class="cd-eng-row">
+        <div class="cd-eng-icon {{ e.kind }}">
+          {% if e.kind == 'replied' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="9 17 4 12 9 7"/><path d="M20 18v-2a4 4 0 00-4-4H4"/></svg>
+          {% elif e.kind == 'voucher_claimed' %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><polyline points="20 12 20 22 4 22 4 12"/><rect x="2" y="7" width="20" height="5"/><line x1="12" y1="22" x2="12" y2="7"/></svg>
+          {% else %}
+            <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M2 6c0-1.1.9-2 2-2h16a2 2 0 012 2v12a2 2 0 01-2 2H4a2 2 0 01-2-2V6z"/><polyline points="22 7 12 13 2 7"/></svg>
+          {% endif %}
+        </div>
+        <div class="cd-eng-info">
+          <div class="cd-eng-label">{{ e.label }} · "{{ e.broadcast_headline }}"</div>
+          <div class="cd-eng-time">{{ e.at|bkk_feed_time_short }}</div>
+        </div>
+        {% if e.campaign_id %}
+          <a class="cd-eng-link" href="/shop/messages/broadcast/{{ e.campaign_id }}" aria-label="ดูสถิติ broadcast">›</a>
+        {% endif %}
+      </div>
+    {% endfor %}
+  </div>
+  {% endif %}
+
   <div class="cd-activity" id="points">
     <div class="cd-activity-h">
       <span class="lab">ออกแต้มล่าสุด</span>
