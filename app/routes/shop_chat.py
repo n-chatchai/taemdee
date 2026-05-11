@@ -37,7 +37,7 @@ _DEEREACH_KIND_LABELS = {
     "unredeemed_reward": "เตือนรับรางวัล",
     "new_customer": "ขอบคุณลูกค้าใหม่",
     "birthday": "อวยพรวันเกิด",
-    "manual": "ข้อความเอง",
+    "manual": "ข้อความสร้างเอง",
 }
 
 
@@ -153,7 +153,7 @@ async def shop_messages_page(
             headline = sample_body.strip().splitlines()[0] if sample_body else tag
             broadcasts.append({
                 "campaign_id": cp.id,
-                "headline": headline[:48],
+                "headline": headline,
                 "tag": tag,
                 "sent_at": cp.sent_at or (sample_inbox.created_at if sample_inbox else None),
                 "delivered": delivered,
