@@ -1913,16 +1913,19 @@ async def my_inbox(
             seen_shop_ids.append(sid)
         grouped[sid].append(it)
     for sid in seen_shop_ids:
-        section_items = grouped[sid]
+        section_cards = grouped[sid]
         shop = shops_by_id.get(sid)
+        # Use `cards` (not `items`) for the per-section list — Jinja
+        # resolves `section.items` as dict.items() (the built-in
+        # method), which then 500s when the template hits |length.
         shop_sections.append({
             "shop": shop,
             "shop_id": sid,
             "name": (shop.name if shop else "TaemDee"),
-            "items": section_items,
-            "unread_count": sum(1 for it in section_items if it["unread"]),
-            "offer_count": sum(1 for it in section_items if it["has_offer"]),
-            "latest_at": section_items[0]["sort_at"],
+            "cards": section_cards,
+            "unread_count": sum(1 for it in section_cards if it["unread"]),
+            "offer_count": sum(1 for it in section_cards if it["has_offer"]),
+            "latest_at": section_cards[0]["sort_at"],
         })
 
     # Greeting context for the page-head ("สวัสดีครับพี่X · วันศุกร์ ขอให้

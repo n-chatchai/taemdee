@@ -34,12 +34,12 @@
           <div class="ish-info">
             <div class="ish-name">{{ section.name }}</div>
             <div class="ish-meta">
-              {{ section.items|length }} ข้อความ{% if section.unread_count %} · {{ section.unread_count }} ยังไม่อ่าน{% endif %}
+              {{ section.cards|length }} ข้อความ{% if section.unread_count %} · {{ section.unread_count }} ยังไม่อ่าน{% endif %}
             </div>
           </div>
         </div>
         <div class="inbox-list">
-          {% for it in section.items %}
+          {% for it in section.cards %}
             <a class="inbox-card{% if not it.unread %} read{% endif %}"
                href="{{ it.href }}"
                data-unread="{{ '1' if it.unread else '0' }}"
