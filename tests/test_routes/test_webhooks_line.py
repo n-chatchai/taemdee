@@ -212,6 +212,39 @@ async def test_line_message_fires_engagement_event(
     assert len(events) == 1
 
 
+async def test_line_message_marks_inbox_as_read(
+    client, db, shop, stub_events_publish
+):
+    """LINE reply flips Inbox.read_at — customer obviously read the
+    broadcast before replying in the LINE chat. Without this, the
+    customer's own /my-inbox dock badge would still show 1 unread
+    after they already engaged."""
+    cust = await make_customer(db, line_id="U_mark_read")
+    ibx = Inbox(
+        customer_id=cust.id, shop_id=shop.id, body="cm",
+        created_at=utcnow() - timedelta(hours=1),
+    )
+    db.add(ibx)
+    await db.commit()
+    await db.refresh(ibx)
+    assert ibx.read_at is None
+
+    r = await _post_event(client, event={
+        "type": "message",
+        "source": {"userId": "U_mark_read"},
+        "message": {"type": "text", "text": "อ่านแล้วน้า"},
+    })
+    assert r.status_code == 200
+
+    await db.refresh(ibx)
+    assert ibx.read_at is not None
+
+    # And the customer-side dock badge SSE was fired so any open web
+    # tab updates without a refresh.
+    names = [t[2] for t in stub_events_publish if t[0] == "customer"]
+    assert "inbox-update" in names
+
+
 async def test_line_message_rejects_bad_signature(client, db):
     """A request with a forged X-Line-Signature is rejected before
     any DB lookup — 401, no InboxReply created."""

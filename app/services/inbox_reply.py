@@ -104,9 +104,21 @@ async def send_reply(
     # When the shop replies, kick the broadcast back to "unread" on the
     # customer side — the shop's reply IS new content for the customer
     # to read, even if the original broadcast was already opened.
+    #
+    # When the customer replies, the broadcast is implicitly read —
+    # the customer obviously saw it before composing a reply. For
+    # in-app replies the GET handler already flipped Inbox.read_at,
+    # so this branch is a no-op there; the path that matters is
+    # LINE-attributed replies (no preceding GET) where the broadcast
+    # would otherwise stay marked unread on the customer's dock.
+    customer_read_flipped = False
     if sender == "shop":
         inbox.read_at = None
         db.add(inbox)
+    elif sender == "customer" and inbox.read_at is None:
+        inbox.read_at = utcnow()
+        db.add(inbox)
+        customer_read_flipped = True
 
     await db.commit()
     await db.refresh(reply)
@@ -122,7 +134,10 @@ async def send_reply(
             payload={"reply_id": str(reply.id)},
         )
 
-    await _publish_reply_events(db, inbox, reply)
+    await _publish_reply_events(
+        db, inbox, reply,
+        customer_inbox_count_changed=customer_read_flipped,
+    )
     return reply
 
 
@@ -237,10 +252,18 @@ async def _publish_reply_events(
     db: AsyncSession,
     inbox: Inbox,
     reply: InboxReply,
+    *,
+    customer_inbox_count_changed: bool = False,
 ) -> None:
     """Fire SSE events to the side that DIDN'T just send so their open
     detail page picks the comment up live. No web push for replies —
-    only the broadcast itself ever sends a push."""
+    only the broadcast itself ever sends a push.
+
+    `customer_inbox_count_changed=True` (set when send_reply flipped
+    Inbox.read_at as a side-effect of the customer's reply — typically
+    a LINE-attributed reply) also fires an `inbox-update` to the
+    customer side so their own dock badge decrements live, matching
+    what the my_inbox_detail GET handler does on in-app open."""
     from loguru import logger
     from app.models import Customer, Shop
     from app.services.events import publish, publish_customer
@@ -271,6 +294,16 @@ async def _publish_reply_events(
             f"📬 inbox reply (customer→shop): shop={inbox.shop_id} "
             f"inbox={inbox.id} reply={reply.id} new_unread={new_total}"
         )
+        # Customer-side dock badge update — only fires when this reply
+        # also moved Inbox.read_at from NULL to now (LINE-attributed
+        # reply path). In-app replies don't need it because the GET
+        # handler that opened the detail page already published this
+        # event before the reply was composed.
+        if customer_inbox_count_changed:
+            customer_unread = await customer_unread_total(db, inbox.customer_id)
+            publish_customer(
+                inbox.customer_id, "inbox-update", str(customer_unread),
+            )
     else:  # shop reply
         publish_customer(inbox.customer_id, "inbox-reply-in", json.dumps({
             "inbox_id": str(inbox.id),

@@ -60,18 +60,62 @@ async def test_send_reply_customer_persists_and_publishes_to_shop(
     assert all(t[1] == shop_id for t in targets)
 
 
-async def test_send_reply_customer_does_not_touch_inbox_read_at(
+async def test_send_reply_customer_preserves_existing_read_at(
     db, inbox_row, stub_events_publish
 ):
-    """Only the shop's reply should reset Inbox.read_at — a customer
-    follow-up shouldn't ping their own dock."""
-    inbox_row.read_at = utcnow()
+    """When read_at is already set (typical in-app flow: GET handler
+    flipped it before the reply POST), a customer reply preserves
+    that timestamp — doesn't bump it forward."""
+    pre = utcnow() - timedelta(hours=1)
+    inbox_row.read_at = pre
     db.add(inbox_row)
     await db.commit()
 
     await send_reply(db, inbox_row, sender="customer", body="x")
     await db.refresh(inbox_row)
+    assert inbox_row.read_at == pre
+
+
+async def test_send_reply_customer_flips_read_at_when_null(
+    db, inbox_row, stub_events_publish
+):
+    """LINE-attributed replies skip the my_inbox_detail GET handler
+    that normally flips read_at, so send_reply itself flips it from
+    NULL → utcnow() when a customer replies — they obviously read
+    the broadcast before composing the reply."""
+    assert inbox_row.read_at is None
+    await send_reply(db, inbox_row, sender="customer", body="x")
+    await db.refresh(inbox_row)
     assert inbox_row.read_at is not None
+
+
+async def test_send_reply_customer_flip_publishes_inbox_update(
+    db, inbox_row, stub_events_publish
+):
+    """The read_at flip also fires a customer-side inbox-update SSE
+    event so the dock badge on the customer's web tabs drops live."""
+    assert inbox_row.read_at is None
+    await send_reply(db, inbox_row, sender="customer", body="x")
+
+    customer_evts = [t for t in stub_events_publish if t[0] == "customer"]
+    names = [t[2] for t in customer_evts]
+    assert "inbox-update" in names
+
+
+async def test_send_reply_customer_no_inbox_update_when_already_read(
+    db, inbox_row, stub_events_publish
+):
+    """When read_at was already set (in-app GET path) the reply path
+    must NOT re-publish inbox-update — the GET handler already did."""
+    inbox_row.read_at = utcnow()
+    db.add(inbox_row)
+    await db.commit()
+
+    await send_reply(db, inbox_row, sender="customer", body="x")
+
+    customer_evts = [t for t in stub_events_publish if t[0] == "customer"]
+    names = [t[2] for t in customer_evts]
+    assert "inbox-update" not in names
 
 
 async def test_send_reply_shop_resets_inbox_read_at(
