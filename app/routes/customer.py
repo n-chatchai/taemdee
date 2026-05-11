@@ -2032,6 +2032,40 @@ async def my_inbox_reply(
     )
 
 
+@router.get("/find-shops", response_class=HTMLResponse)
+async def find_shops_page(
+    request: Request,
+    q: Optional[str] = None,
+    customer_cookie: Optional[str] = Cookie(None, alias=CUSTOMER_COOKIE_NAME),
+    db: AsyncSession = Depends(get_session),
+):
+    """Customer-facing shop search. Renders an empty state when q is
+    blank so first-time arrival doesn't query for every shop in the
+    system. Tap a result → /story/<shop>. This page replaces the
+    customer-initiated chat search that lived here when chat was a
+    thread — the new model is broadcast-only, so search exists purely
+    to help customers find a shop's story page."""
+    customer, _ = await find_or_create_customer(customer_cookie, db)
+    term = (q or "").strip()
+    results: list = []
+    if term:
+        results = (await db.exec(
+            select(Shop)
+            .where(Shop.name.ilike(f"%{term}%"))
+            .order_by(Shop.name)
+            .limit(30)
+        )).all()
+    return templates.TemplateResponse(
+        request=request,
+        name="customer/find_shops.html",
+        context={
+            "customer": customer,
+            "q": term,
+            "results": results,
+        },
+    )
+
+
 # ── Web Push subscription (VAPID) ────────────────────────────────────────────
 
 @router.get("/push/vapid-public")

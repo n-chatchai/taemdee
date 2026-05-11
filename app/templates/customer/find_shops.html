@@ -1,0 +1,114 @@
+{% extends "_layouts/c_base.html" %}
+{% set nav_active = 'inbox' %}
+{% block title %}ค้นหาร้าน · TaemDee แต้มดี{% endblock %}
+
+{% block content %}
+{% set app_bar_back = '/my-cards' %}
+{% set app_bar_title = 'ค้นหาร้าน' %}
+{% include "_partials/app_bar.html" %}
+
+<form class="fs-search" method="GET" action="/find-shops" autocomplete="off">
+  <svg class="fs-search-icon" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+    <circle cx="11" cy="11" r="7"/>
+    <path d="M21 21l-4.35-4.35"/>
+  </svg>
+  <input type="text" name="q" value="{{ q }}" placeholder="ชื่อร้าน..."
+         autocomplete="off" autofocus>
+</form>
+
+{% if q and not results %}
+  <div class="fs-empty">
+    <strong>ไม่เจอร้าน "{{ q }}"</strong><br>
+    ลองพิมพ์ชื่ออื่น หรือสแกน QR ที่ร้านเพื่อเก็บแต้ม
+  </div>
+{% elif results %}
+  <div class="fs-list">
+    {% for s in results %}
+      <a class="fs-row" href="/story/{{ s.id }}">
+        {% with shop=s, size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
+        <div class="fs-info">
+          <div class="fs-name">{{ s.name }}</div>
+          {% if s.location %}<div class="fs-meta">{{ s.location }}</div>{% endif %}
+        </div>
+        <span class="fs-arrow" aria-hidden="true">›</span>
+      </a>
+    {% endfor %}
+  </div>
+{% else %}
+  <div class="fs-hint">พิมพ์ชื่อร้านเพื่อค้นหา</div>
+{% endif %}
+
+<style>
+  .fs-search {
+    margin: 12px 16px;
+    position: relative;
+    display: flex;
+    align-items: center;
+  }
+  .fs-search-icon {
+    position: absolute;
+    left: 14px;
+    width: 16px; height: 16px;
+    color: var(--ink-softer);
+    pointer-events: none;
+  }
+  .fs-search input {
+    flex: 1;
+    padding: 12px 16px 12px 38px;
+    border-radius: 99px;
+    border: 1px solid rgba(17,17,17,0.12);
+    background: var(--surface);
+    font-family: 'Prompt', sans-serif;
+    font-size: 16px;
+    color: var(--ink);
+    outline: none;
+  }
+  .fs-search input::placeholder { color: var(--ink-softer); }
+
+  .fs-list {
+    margin: 0 16px 100px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  .fs-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 14px;
+    background: var(--surface);
+    border: 1px solid rgba(17,17,17,0.06);
+    text-decoration: none;
+    color: var(--ink);
+  }
+  .fs-info { flex: 1; min-width: 0; }
+  .fs-name {
+    font-family: 'Prompt', sans-serif;
+    font-weight: 700;
+    font-size: 14px;
+    color: var(--ink);
+    line-height: 1.25;
+  }
+  .fs-meta {
+    font-family: 'Prompt', sans-serif;
+    font-size: 11.5px;
+    color: var(--ink-soft);
+    margin-top: 2px;
+  }
+  .fs-arrow {
+    font-size: 18px;
+    color: var(--ink-softer);
+    flex-shrink: 0;
+  }
+
+  .fs-hint, .fs-empty {
+    margin: 50px 24px;
+    text-align: center;
+    color: var(--ink-soft);
+    font-size: 14px;
+    line-height: 1.7;
+  }
+  .fs-empty strong { color: var(--ink); }
+</style>
+{% endblock %}
