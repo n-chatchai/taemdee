@@ -186,7 +186,9 @@ async def _attribute_line_message_to_inbox(
             return
 
         try:
-            reply = await send_reply(db, inbox, sender="customer", body=body)
+            reply = await send_reply(
+                db, inbox, sender="customer", body=body, source="line",
+            )
             read_state = "already read" if inbox.read_at else "unread before"
             log.info(
                 f"line message MIRRORED → customer={customer.id} "

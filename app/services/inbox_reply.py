@@ -76,6 +76,7 @@ async def send_reply(
     *,
     sender: str,
     body: str,
+    source: str = "app",
 ) -> InboxReply:
     """Append a reply onto the broadcast and notify the other side via
     SSE. Returns the persisted InboxReply.
@@ -86,6 +87,12 @@ async def send_reply(
       · 'shop'     → operator reply; resets Inbox.read_at to NULL so
         the customer sees the broadcast as unread again on next list
         render.
+
+    source: where the reply originated. Default 'app' covers the
+    in-app POST endpoints; 'line' marks replies mirrored from the
+    @taemdee OA chat webhook. The shop-side thread renders a small
+    "ผ่าน LINE" pill on non-'app' rows so the operator knows the
+    customer used the external channel.
     """
     text = (body or "").strip()
     if not text:
@@ -98,7 +105,7 @@ async def send_reply(
         if recent >= CUSTOMER_RATE_LIMIT:
             raise RateLimited()
 
-    reply = InboxReply(inbox_id=inbox.id, sender=sender, body=text)
+    reply = InboxReply(inbox_id=inbox.id, sender=sender, body=text, source=source)
     db.add(reply)
 
     # When the shop replies, kick the broadcast back to "unread" on the
@@ -234,12 +241,24 @@ def _comment_html(
     author = _html.escape(shop_label if is_shop else customer_label)
     body_html = _html.escape(reply.body or "")
     time_str = reply.created_at.strftime("%H:%M")
+    # Source pill — only non-'app' origins get marked, so in-app
+    # replies stay visually quiet and out-of-band channels (LINE
+    # today, SMS / web_push later) surface with a small chip.
+    source = (reply.source or "app").lower()
+    via_html = ""
+    if source == "line":
+        via_html = '<span class="ixc-via line">ผ่าน LINE</span>'
+    elif source != "app":
+        # Forward-compat: any unknown source still gets a chip with
+        # the raw label so it's visible during integration testing.
+        via_html = f'<span class="ixc-via">ผ่าน {_html.escape(source)}</span>'
     return (
         f'<div class="{cls}" data-reply-id="{reply.id}">'
         f'<div class="ixc-avatar">{initial}</div>'
         f'<div class="ixc-body">'
         f'<div class="ixc-head">'
         f'<span class="ixc-author">{author}</span>'
+        f'{via_html}'
         f'<span class="ixc-time">{time_str}</span>'
         f'</div>'
         f'<div class="ixc-text">{body_html}</div>'

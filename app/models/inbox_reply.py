@@ -33,6 +33,14 @@ class InboxReply(SQLModel, table=True):
     sender: str = Field(index=True)  # 'customer' | 'shop'
     body: str = Field(default="")
 
+    # Origin of the reply — defaults to 'app' (in-app POST on
+    # /my-inbox/<id>/reply or /shop/messages/<id>/reply). 'line' is
+    # set by the LINE Messaging API webhook when a customer reply
+    # arrives via the @taemdee OA chat. The shop-side thread surfaces
+    # a small "ผ่าน LINE" pill on non-'app' rows so the operator
+    # knows the customer used the external channel.
+    source: str = Field(default="app", index=True)
+
     created_at: datetime = Field(default_factory=utcnow, index=True)
     # Set when the shop opens the broadcast detail page; only meaningful
     # for sender='customer' rows. Lets the shop list show an unread badge

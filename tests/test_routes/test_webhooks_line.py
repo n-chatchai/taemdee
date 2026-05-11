@@ -263,6 +263,56 @@ async def test_line_message_marks_inbox_as_read(
     assert "inbox-update" in names
 
 
+async def test_line_message_persists_source_line(
+    client, db, shop, stub_events_publish
+):
+    """The mirrored InboxReply carries source='line' so the shop-side
+    thread can render the "ผ่าน LINE" pill — separating it from
+    in-app replies (source='app')."""
+    cust = await make_customer(db, line_id="U_src")
+    db.add(Inbox(
+        customer_id=cust.id, shop_id=shop.id, body="x",
+        created_at=utcnow() - timedelta(hours=1),
+    ))
+    await db.commit()
+
+    await _post_event(client, event={
+        "type": "message",
+        "source": {"userId": "U_src"},
+        "message": {"type": "text", "text": "ผ่าน LINE มา"},
+    })
+
+    from sqlmodel import select
+    reply = (await db.exec(select(InboxReply))).first()
+    assert reply is not None
+    assert reply.source == "line"
+
+
+async def test_in_app_reply_persists_source_app(
+    client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """The /my-inbox/<id>/reply POST path doesn't pass a source, so
+    send_reply's 'app' default applies — in-app replies stay quiet
+    (no pill rendered)."""
+    shop.allow_customer_messages = True
+    db.add(shop)
+    await db.commit()
+
+    from app.core.auth import CUSTOMER_COOKIE_NAME
+    from app.services.auth import issue_customer_token
+    client.cookies.set(CUSTOMER_COOKIE_NAME, issue_customer_token(customer.id))
+    await client.post(
+        f"/my-inbox/{inbox_row.id}/reply",
+        data={"body": "ในแอป"},
+        follow_redirects=False,
+    )
+
+    from sqlmodel import select
+    reply = (await db.exec(select(InboxReply))).first()
+    assert reply is not None
+    assert reply.source == "app"
+
+
 async def test_line_message_calls_mark_as_read_after_mirror(
     client, db, shop, stub_events_publish, _stub_mark_as_read
 ):

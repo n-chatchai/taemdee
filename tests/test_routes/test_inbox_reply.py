@@ -380,6 +380,30 @@ async def test_shop_form_shows_after_customer_reply(
     assert 'id="ix-compose"' in body
 
 
+async def test_shop_thread_renders_line_pill_for_line_sourced_reply(
+    auth_client, db, shop, customer, inbox_row, stub_events_publish
+):
+    """Replies with source='line' render the "ผ่าน LINE" pill on the
+    shop's thread page — operator can spot which channel the customer
+    used at a glance. In-app replies (source='app') stay pill-less."""
+    db.add_all([
+        InboxReply(
+            inbox_id=inbox_row.id, sender="customer",
+            body="from LINE", source="line",
+        ),
+        InboxReply(
+            inbox_id=inbox_row.id, sender="customer",
+            body="from app", source="app",
+        ),
+    ])
+    await db.commit()
+
+    body = (await auth_client.get(f"/shop/messages/{inbox_row.id}")).text
+    # Pill renders for the LINE reply only.
+    assert body.count("ผ่าน LINE") == 1
+    assert "ixc-via line" in body
+
+
 async def test_shop_form_hides_after_their_own_reply(
     auth_client, db, shop, customer, inbox_row, stub_events_publish
 ):
