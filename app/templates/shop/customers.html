@@ -90,6 +90,15 @@
               </span>
             {% elif r.tag == 'lapsed' %}<span class="cust-tag soft">หายไป</span>
             {% endif %}
+            {# DeeReach engagement chip — opt-in signal layered on top
+               of the loyalty tag. Only renders for warm/hot tiers so
+               cold customers (the silent majority) don't get a noisy
+               "เงียบ" label on every row. #}
+            {% if r.engagement_tier == 'hot' %}
+              <span class="cust-tag eng hot" title="คะแนน engagement {{ r.engagement_score }}">{{ r.engagement_label }}</span>
+            {% elif r.engagement_tier == 'warm' %}
+              <span class="cust-tag eng warm" title="คะแนน engagement {{ r.engagement_score }}">{{ r.engagement_label }}</span>
+            {% endif %}
           </div>
           <div class="cust-meta">{{ r.last_visit_str }} · {{ r.visits }} ครั้ง</div>
         </div>

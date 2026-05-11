@@ -1501,6 +1501,15 @@ async def customers_page(
     lapsed_cutoff = now - timedelta(days=_LAPSED_DAYS)
     just_claimed_cutoff = now - timedelta(days=1)
 
+    # Engagement scores in one bulk query — gives every row a
+    # broadcast-engagement tier badge alongside its loyalty stats.
+    from app.services.engagement import (
+        engagement_scores_bulk, engagement_tier, tier_label,
+    )
+    eng_scores = await engagement_scores_bulk(
+        db, shop_id=shop.id, customer_ids=list(aggs.keys()),
+    )
+
     # Active points cap at threshold for display (post-redemption resets):
     # if customer just redeemed, their active_count returned to 0 and
     # claimed status takes priority.
@@ -1522,6 +1531,9 @@ async def customers_page(
         elif agg["last_at"] is not None and agg["last_at"] < lapsed_cutoff:
             tag = "lapsed"
 
+        eng = eng_scores.get(cid, 0)
+        eng_tier = engagement_tier(eng)
+
         rows.append({
             "id": cid,
             "name": (cust.display_name or "ลูกค้า") if not cust.is_anonymous else "ลูกค้า",
@@ -1534,6 +1546,12 @@ async def customers_page(
             "first_at": agg["first_at"],
             "tag": tag,
             "just_claimed": just_claimed,
+            # Broadcast-engagement signal — surfaces alongside the
+            # loyalty tag as a small chip. Score is raw weighted
+            # count; tier maps score → cold/warm/hot.
+            "engagement_score": eng,
+            "engagement_tier": eng_tier,
+            "engagement_label": tier_label(eng_tier),
         })
 
     # Per-shop counts for the 4-up stats band — computed BEFORE the

@@ -6672,6 +6672,18 @@ form.s10-row { margin: 0 0 4px; }
   color: var(--ink-softer);
   background: rgba(17, 17, 17, 0.06);
 }
+/* DeeReach engagement chips — sit alongside the loyalty tag.
+   "hot" = mint (replied / claimed offers), "warm" = butter
+   (opened a few broadcasts). Cold customers render no chip so
+   the row stays quiet. */
+.cust-row .cust-tag.eng.hot {
+  color: var(--mint-ink, #2a4f44);
+  background: rgba(111, 168, 130, 0.18);
+}
+.cust-row .cust-tag.eng.warm {
+  color: var(--ink);
+  background: rgba(255, 217, 82, 0.45);
+}
 .cust-row .cust-meta {
   font-family: 'Prompt', sans-serif;
   font-size: 11.5px;

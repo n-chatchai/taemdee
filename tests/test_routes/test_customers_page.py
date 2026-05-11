@@ -105,3 +105,38 @@ async def test_customers_just_claimed_renders_check_badge(auth_client, db, shop)
     body = response.text
     assert "ก้อง" in body
     assert "รับแล้ว" in body
+
+
+async def test_customers_engagement_chip_hot_when_replied(auth_client, db, shop):
+    """A customer with engagement score ≥ 5 gets the 'ขาประจำส่ง' hot
+    chip (mint). One replied = 3 + one voucher_claimed = 5 → 8 → hot."""
+    from app.models import DeeReachEvent, Inbox
+    c = await _customer(db, "ขยัน")
+    await _stamp(db, shop, c, days_ago=1)
+    # Need a parent inbox row for the event FK.
+    ibx = Inbox(customer_id=c.id, shop_id=shop.id, body="hi")
+    db.add(ibx)
+    await db.commit()
+    await db.refresh(ibx)
+    db.add_all([
+        DeeReachEvent(inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id, kind="replied"),
+        DeeReachEvent(inbox_id=ibx.id, customer_id=c.id, shop_id=shop.id, kind="voucher_claimed"),
+    ])
+    await db.commit()
+
+    body = (await auth_client.get("/shop/customers")).text
+    assert "ขาประจำส่ง" in body
+    assert "cust-tag eng hot" in body
+
+
+async def test_customers_engagement_chip_hidden_when_cold(auth_client, db, shop):
+    """Customer with zero engagement events shows no chip — keeps
+    the row visually quiet (cold is the majority case)."""
+    c = await _customer(db, "เงียบ")
+    await _stamp(db, shop, c, days_ago=1)
+    await db.commit()
+
+    body = (await auth_client.get("/shop/customers")).text
+    assert "เงียบ" in body
+    # The "เงียบ" tier label must NOT appear as a chip class on the row.
+    assert "cust-tag eng" not in body
