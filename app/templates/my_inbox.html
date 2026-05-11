@@ -5,59 +5,71 @@
 {% block content %}
   {% include "_partials/page_head.html" %}
 
-  {% if items %}
+  {% if shop_sections %}
     {% set _all_count = items|length %}
-    {% set _unread_count = items|selectattr('unread')|list|length %}
-    {% set _offer_count = items|selectattr('has_offer')|list|length %}
     {# Filter pills mirror design/taemdee-customer.html → inbox.list.
-       JS toggles row visibility by `unread` / `has_offer` flags
-       on data-* attrs. Default = ทั้งหมด. #}
+       JS toggles row visibility by `unread` / `has_offer` flags on
+       data-* attrs. Default = ทั้งหมด. JS also hides sections whose
+       cards all filter out. #}
     <div class="inbox-filters" role="tablist">
       <button type="button" class="inbox-filter-pill active" data-filter="all" role="tab">
         ทั้งหมด · {{ _all_count }}
       </button>
-      {% if _unread_count %}
+      {% if unread_count %}
       <button type="button" class="inbox-filter-pill" data-filter="unread" role="tab">
-        ยังไม่อ่าน · {{ _unread_count }}
+        ยังไม่อ่าน · {{ unread_count }}
       </button>
       {% endif %}
-      {% if _offer_count %}
+      {% if offer_count %}
       <button type="button" class="inbox-filter-pill" data-filter="offer" role="tab">
-        มีของฝาก · {{ _offer_count }}
+        มีของฝาก · {{ offer_count }}
       </button>
       {% endif %}
     </div>
 
-    <div class="inbox-list">
-      {% for it in items %}
-        <a class="inbox-card{% if not it.unread %} read{% endif %}"
-           href="{{ it.href }}"
-           data-unread="{{ '1' if it.unread else '0' }}"
-           data-offer="{{ '1' if it.has_offer else '0' }}">
-          {% if it.unread %}<span class="ic-unread-dot"></span>{% endif %}
-          {% with shop=it.shop, size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
-          <div class="ic-body">
-            <div class="ic-row">
-              <div class="ic-shop">{{ it.shop.name if it.shop else 'TaemDee' }}</div>
-              <div class="ic-time">{{ it.sort_at|bkk_feed_time }}</div>
+    {% for section in shop_sections %}
+      <div class="inbox-shop-section" data-shop-id="{{ section.shop_id }}">
+        <div class="inbox-shop-header">
+          {% with shop=section.shop, size='sm' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
+          <div class="ish-info">
+            <div class="ish-name">{{ section.name }}</div>
+            <div class="ish-meta">
+              {{ section.items|length }} ข้อความ{% if section.unread_count %} · {{ section.unread_count }} ยังไม่อ่าน{% endif %}
             </div>
-            <div class="ic-preview">{{ it.preview }}</div>
-            {% if it.has_offer %}
-              <div class="ic-offer">
-                <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
-                  <polyline points="20 12 20 22 4 22 4 12"/>
-                  <rect x="2" y="7" width="20" height="5"/>
-                  <line x1="12" y1="22" x2="12" y2="7"/>
-                  <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
-                  <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
-                </svg>
-                ของฝาก{% if it.offer_text %}: {{ it.offer_text }}{% endif %}
-              </div>
-            {% endif %}
           </div>
-        </a>
-      {% endfor %}
-    </div>
+        </div>
+        <div class="inbox-list">
+          {% for it in section.items %}
+            <a class="inbox-card{% if not it.unread %} read{% endif %}"
+               href="{{ it.href }}"
+               data-unread="{{ '1' if it.unread else '0' }}"
+               data-offer="{{ '1' if it.has_offer else '0' }}">
+              {% if it.unread %}<span class="ic-unread-dot"></span>{% endif %}
+              {% with shop=it.shop, size='md' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
+              <div class="ic-body">
+                <div class="ic-row">
+                  <div class="ic-shop">{{ it.shop.name if it.shop else 'TaemDee' }}</div>
+                  <div class="ic-time">{{ it.sort_at|bkk_relative_time }}</div>
+                </div>
+                <div class="ic-preview">{{ it.preview }}</div>
+                {% if it.has_offer %}
+                  <div class="ic-offer">
+                    <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round">
+                      <polyline points="20 12 20 22 4 22 4 12"/>
+                      <rect x="2" y="7" width="20" height="5"/>
+                      <line x1="12" y1="22" x2="12" y2="7"/>
+                      <path d="M12 7H7.5a2.5 2.5 0 0 1 0-5C11 2 12 7 12 7z"/>
+                      <path d="M12 7h4.5a2.5 2.5 0 0 0 0-5C13 2 12 7 12 7z"/>
+                    </svg>
+                    ของฝาก{% if it.offer_text %}: {{ it.offer_text }}{% endif %}
+                  </div>
+                {% endif %}
+              </div>
+            </a>
+          {% endfor %}
+        </div>
+      </div>
+    {% endfor %}
 
   {% else %}
     <div class="inbox-empty">
@@ -79,7 +91,7 @@
     // Selection persists across reloads via localStorage.
     (function () {
       const pills = document.querySelectorAll('.inbox-filter-pill[data-filter]');
-      const cards = document.querySelectorAll('.inbox-card');
+      const sections = document.querySelectorAll('.inbox-shop-section');
       if (!pills.length) return;
 
       function matches(card, filter) {
@@ -90,13 +102,23 @@
 
       function apply(filter) {
         pills.forEach((p) => p.classList.toggle('active', p.dataset.filter === filter));
-        cards.forEach((c) => { c.style.display = matches(c, filter) ? '' : 'none'; });
+        sections.forEach((sec) => {
+          const cards = sec.querySelectorAll('.inbox-card');
+          let visible = 0;
+          cards.forEach((c) => {
+            const show = matches(c, filter);
+            c.style.display = show ? '' : 'none';
+            if (show) visible += 1;
+          });
+          // Hide the whole shop section (avatar + header + list) when
+          // every card inside filtered out — leaves no orphan headers.
+          sec.style.display = visible ? '' : 'none';
+        });
         try { localStorage.setItem('td_inbox_filter', filter); } catch (_) {}
       }
 
       let saved = null;
       try { saved = localStorage.getItem('td_inbox_filter'); } catch (_) {}
-      // Only honour saved filter if a pill for it exists this load.
       const valid = Array.from(pills).some((p) => p.dataset.filter === saved);
       apply(valid ? saved : 'all');
 

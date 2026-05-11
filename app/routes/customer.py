@@ -1895,6 +1895,34 @@ async def my_inbox(
             "preview": r.body,
             "has_offer": bool(offer_text),
             "offer_text": offer_text or None,
+            "shop_id": r.shop_id,
+        })
+
+    # Group by shop — design: customer scans a list of shops they
+    # hear from, then drills into messages from a single shop. Section
+    # order = most-recent activity per shop (already reverse-chrono
+    # within each section since `items` came in that order). Items
+    # without a shop fall in an "Unknown" bucket for safety.
+    shop_sections: list = []
+    seen_shop_ids: list = []
+    grouped: dict = {}
+    for it in items:
+        sid = it["shop_id"]
+        if sid not in grouped:
+            grouped[sid] = []
+            seen_shop_ids.append(sid)
+        grouped[sid].append(it)
+    for sid in seen_shop_ids:
+        section_items = grouped[sid]
+        shop = shops_by_id.get(sid)
+        shop_sections.append({
+            "shop": shop,
+            "shop_id": sid,
+            "name": (shop.name if shop else "TaemDee"),
+            "items": section_items,
+            "unread_count": sum(1 for it in section_items if it["unread"]),
+            "offer_count": sum(1 for it in section_items if it["has_offer"]),
+            "latest_at": section_items[0]["sort_at"],
         })
 
     # Greeting context for the page-head ("สวัสดีครับพี่X · วันศุกร์ ขอให้
@@ -1906,15 +1934,18 @@ async def my_inbox(
     ]
 
     unread_count = sum(1 for it in items if it["unread"])
+    offer_count = sum(1 for it in items if it["has_offer"])
 
     response = templates.TemplateResponse(
         request=request,
         name="my_inbox.html",
         context={
             "customer": customer,
-            "items": items,
+            "shop_sections": shop_sections,
+            "items": items,  # kept for filter pill counts
             "weekday_th": weekday_th,
             "unread_count": unread_count,
+            "offer_count": offer_count,
             "nav_inbox_badge": unread_count,
             "nav_gifts_badge": await _active_gifts_count(db, customer.id),
         },
