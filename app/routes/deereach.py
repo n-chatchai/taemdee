@@ -170,10 +170,34 @@ async def deereach_detail(
             if agg["first_at"] is not None and agg["first_at"] >= new_cutoff:
                 new_ids.append(str(cid))
 
+        # Engagement-tier segments — closes the phase 3 loop. Operator
+        # who saw the warm/hot chip on /shop/customers can now send a
+        # targeted broadcast to just those customers in one tap.
+        # We bucket "engaged" = warm + hot (any non-zero score) and
+        # "hot" = score ≥ 5 separately so the operator can pick
+        # breadth vs depth.
+        from app.services.engagement import (
+            engagement_scores_bulk, engagement_tier,
+            TIER_HOT, TIER_WARM,
+        )
+        eng_scores = await engagement_scores_bulk(
+            db, shop_id=shop.id, customer_ids=list(audience_id_set),
+        )
+        engaged_ids: list[str] = []
+        hot_ids: list[str] = []
+        for cid, score in eng_scores.items():
+            tier = engagement_tier(score)
+            if tier in (TIER_WARM, TIER_HOT):
+                engaged_ids.append(str(cid))
+            if tier == TIER_HOT:
+                hot_ids.append(str(cid))
+
         audience_segments = {
-            "near":   near_ids,
-            "lapsed": lapsed_ids,
-            "new":    new_ids,
+            "near":    near_ids,
+            "lapsed":  lapsed_ids,
+            "new":     new_ids,
+            "engaged": engaged_ids,
+            "hot":     hot_ids,
         }
     # Per-customer cost + channel matrix for the editor:
     #   audience_cost[id]      satang the campaign locks for this recipient

@@ -256,18 +256,22 @@
     </div>
 
     {# Manual-only audience-segment chips. Each chip bulk-selects the
-       customers in that bucket — ใกล้ครบ / หายไป / ใหม่. Active
-       state highlights when selection EXACTLY equals the chip's id
-       list. Empty buckets render disabled (greyed out, count 0)
-       rather than hidden so the bucket structure stays discoverable
-       — the owner sees "no one in หายไป today" instead of wondering
-       which buckets exist. Auto kinds skip the strip since their
-       audience is already pre-narrowed by the suggestion engine. #}
+       customers in that bucket. Active state highlights when
+       selection EXACTLY equals the chip's id list. Empty buckets
+       render disabled (greyed out, count 0) so the bucket structure
+       stays discoverable. Auto kinds skip the strip since their
+       audience is pre-narrowed by the suggestion engine.
+
+       Engagement chips ("ตอบบ่อย" / "ขาประจำ") read off the phase-3
+       engagement score — they let the operator follow up specifically
+       with the customers who already engage with broadcasts. #}
     {% if suggestion.kind == 'manual' %}
       {% set _seg_chips = [
-        ('near',   'ใกล้ครบ', audience_segments.get('near', [])),
-        ('lapsed', 'หายไป',   audience_segments.get('lapsed', [])),
-        ('new',    'ใหม่',    audience_segments.get('new', [])),
+        ('near',    'ใกล้ครบ',   audience_segments.get('near', [])),
+        ('lapsed',  'หายไป',     audience_segments.get('lapsed', [])),
+        ('new',     'ใหม่',      audience_segments.get('new', [])),
+        ('engaged', 'ตอบบ่อย',   audience_segments.get('engaged', [])),
+        ('hot',     'ขาประจำ',   audience_segments.get('hot', [])),
       ] %}
       <div class="s13d-segments">
         {% for sid, slabel, sids in _seg_chips %}

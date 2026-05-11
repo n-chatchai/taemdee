@@ -129,6 +129,78 @@ async def test_deereach_manual_detail_renders(auth_client, db, shop):
     assert "ข้อความของคุณเอง" in body
     # Customer row rendered
     assert str(c.id) in body
+    # Engagement segment chips wired (phase 4) — rendered even when
+    # empty so the bucket structure stays discoverable.
+    assert "ตอบบ่อย" in body
+    assert "ขาประจำ" in body
+
+
+async def test_manual_engagement_chip_buckets_warm_and_hot(
+    auth_client, db, shop, stub_events_publish
+):
+    """Engagement chips bucket customers by their phase-3 score:
+       · 'engaged' (warm + hot) — any customer with score ≥ 1
+       · 'hot' — only customers with score ≥ 5
+
+    Seed three customers with distinct engagement levels and verify
+    the chip counts surface correctly in the editor."""
+    from app.models import DeeReachEvent, Inbox
+
+    silent = await make_customer(db, line_id="U_silent")
+    warm = await make_customer(db, line_id="U_warm")
+    hot = await make_customer(db, line_id="U_hot")
+    # Manual audience needs each customer to have at least one stamp
+    # (the _audience_for helper filters out drive-bys with no points).
+    for c in (silent, warm, hot):
+        db.add(Point(shop_id=shop.id, customer_id=c.id, issuance_method="customer_scan"))
+    await db.commit()
+
+    # Need a parent Inbox row per (customer) for the events to FK to.
+    inboxes = {}
+    for c in (warm, hot):
+        ibx = Inbox(customer_id=c.id, shop_id=shop.id, body="hi")
+        db.add(ibx)
+        await db.commit()
+        await db.refresh(ibx)
+        inboxes[c.id] = ibx
+
+    # warm: 1 opened → score 1 → warm tier
+    db.add(DeeReachEvent(
+        inbox_id=inboxes[warm.id].id,
+        customer_id=warm.id, shop_id=shop.id, kind="opened",
+    ))
+    # hot: 1 replied + 1 voucher_claimed → score 8 → hot tier
+    db.add_all([
+        DeeReachEvent(
+            inbox_id=inboxes[hot.id].id,
+            customer_id=hot.id, shop_id=shop.id, kind="replied",
+        ),
+        DeeReachEvent(
+            inbox_id=inboxes[hot.id].id,
+            customer_id=hot.id, shop_id=shop.id, kind="voucher_claimed",
+        ),
+    ])
+    await db.commit()
+
+    body = (await auth_client.get("/shop/deereach/manual")).text
+    # The chips render with counts — the engaged bucket contains both
+    # warm + hot (2), and the hot bucket only the hot customer (1).
+    # Count rendering uses .s13d-seg-count; grep the surrounding chip.
+    import re
+    chips = re.findall(
+        r'@click="selectSegment\((\[[^\]]*\])\)">\s*<span>([^<]+)</span>\s*<span class="s13d-seg-count">(\d+)</span>',
+        body,
+    )
+    by_label = {label.strip(): (ids_json, int(count)) for ids_json, label, count in chips}
+    assert by_label["ตอบบ่อย"][1] == 2
+    assert by_label["ขาประจำ"][1] == 1
+    # The hot customer id appears in both chip lists; warm only in
+    # the engaged chip.
+    assert str(hot.id) in by_label["ตอบบ่อย"][0]
+    assert str(hot.id) in by_label["ขาประจำ"][0]
+    assert str(warm.id) in by_label["ตอบบ่อย"][0]
+    assert str(warm.id) not in by_label["ขาประจำ"][0]
+    assert str(silent.id) not in by_label["ตอบบ่อย"][0]
 
 
 async def test_send_with_customer_subset_records_only_selected(auth_client, db, shop):
