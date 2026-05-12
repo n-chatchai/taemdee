@@ -4,7 +4,7 @@ Revision ID: 0024
 Revises: 0023
 Create Date: 2026-05-11 16:30:00.000000
 
-Adds InboxReply.source so the shop-side thread can render a "ผ่าน LINE"
+Adds InboxReply.source so the shop-side thread can render a "ผ่านไลน์"
 pill on replies that arrived via the @taemdee OA chat webhook,
 distinguishing them from in-app replies POSTed to /my-inbox/<id>/reply.
 

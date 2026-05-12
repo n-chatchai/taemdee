@@ -85,7 +85,7 @@
         <div class="ixc-body">
           <div class="ixc-head">
             <span class="ixc-author">{% if r.sender == 'shop' %}{{ _shop_label }}{% else %}คุณ{% endif %}</span>
-            {% if r.source == 'line' %}<span class="ixc-via line">ผ่าน LINE</span>{% elif r.source and r.source != 'app' %}<span class="ixc-via">ผ่าน {{ r.source }}</span>{% endif %}
+            {% if r.source == 'line' %}<span class="ixc-via line">ผ่านไลน์</span>{% elif r.source and r.source != 'app' %}<span class="ixc-via">ผ่าน {{ r.source }}</span>{% endif %}
             <span class="ixc-time">{{ r.created_at.strftime('%H:%M') }}</span>
           </div>
           <div class="ixc-text">{{ r.body }}</div>

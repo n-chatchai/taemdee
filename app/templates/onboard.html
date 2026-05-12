@@ -6,6 +6,7 @@
   <title>ยินดีต้อนรับ · {{ shop.name }} · TaemDee</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
   {% include "_partials/pwa_head.html" %}
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
   <script defer src="https://unpkg.com/alpinejs@3.x.x/dist/cdn.min.js"></script>
@@ -72,7 +73,7 @@
 
       <div class="ob-bubble">
         สวัสดีครับ ผมชื่อ<span class="ob-name">น้องแต้ม</span><br>
-        <strong>{{ shop.name }}</strong><br>
+        <strong>ร้าน{{ shop.name }}</strong><br>
         ให้ผมมาดูแลแต้มของพี่ครับ
       </div>
 
@@ -143,6 +144,7 @@
       </div>
     </div>
     <div class="ob-bottom stack" x-show="step === 3" x-cloak x-transition>
+      <div class="ob-link-label">ผูกบัญชี<strong>แต้มดี</strong>ด้วย</div>
       {# 4-pill social row — LINE / Google / Facebook / phone. Backend
          for all four is wired (auth.py); the phone pill keeps the
          existing OTP route at /card/save. #}

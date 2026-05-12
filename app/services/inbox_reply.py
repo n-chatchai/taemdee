@@ -91,7 +91,7 @@ async def send_reply(
     source: where the reply originated. Default 'app' covers the
     in-app POST endpoints; 'line' marks replies mirrored from the
     @taemdee OA chat webhook. The shop-side thread renders a small
-    "ผ่าน LINE" pill on non-'app' rows so the operator knows the
+    "ผ่านไลน์" pill on non-'app' rows so the operator knows the
     customer used the external channel.
     """
     text = (body or "").strip()
@@ -247,7 +247,7 @@ def _comment_html(
     source = (reply.source or "app").lower()
     via_html = ""
     if source == "line":
-        via_html = '<span class="ixc-via line">ผ่าน LINE</span>'
+        via_html = '<span class="ixc-via line">ไลน์</span>'
     elif source != "app":
         # Forward-compat: any unknown source still gets a chip with
         # the raw label so it's visible during integration testing.

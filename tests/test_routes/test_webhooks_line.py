@@ -267,7 +267,7 @@ async def test_line_message_persists_source_line(
     client, db, shop, stub_events_publish
 ):
     """The mirrored InboxReply carries source='line' so the shop-side
-    thread can render the "ผ่าน LINE" pill — separating it from
+    thread can render the "ผ่านไลน์" pill — separating it from
     in-app replies (source='app')."""
     cust = await make_customer(db, line_id="U_src")
     db.add(Inbox(
@@ -279,7 +279,7 @@ async def test_line_message_persists_source_line(
     await _post_event(client, event={
         "type": "message",
         "source": {"userId": "U_src"},
-        "message": {"type": "text", "text": "ผ่าน LINE มา"},
+        "message": {"type": "text", "text": "ผ่านไลน์ มา"},
     })
 
     from sqlmodel import select

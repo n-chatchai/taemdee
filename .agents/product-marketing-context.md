@@ -49,7 +49,7 @@
 - Density สูงในเมือง — ยิ่งร้านใกล้กัน ยิ่ง viral ของ QR sticker เกิด
 - เจ้าของอายุน้อย-กลาง · สบายมือถือ · มีบัญชี IG/Threads
 - Visual-friendly = repurpose content ได้ง่าย (latte art, shop interior)
-- คู่แข่งหลักในกลุ่มนี้: PointSpot (ผ่าน LINE OA, ลูกค้าต้อง add)
+- คู่แข่งหลักในกลุ่มนี้: PointSpot (ผ่านไลน์ OA, ลูกค้าต้อง add)
 
 **Expansion segments (post-beachhead):** ร้านนวด/สปา · ร้านตัดผม/บาเบอร์ · เบเกอรี่ · street food (high-volume but tougher acquisition)
 
@@ -125,7 +125,7 @@
 
 ## Competitive Landscape
 **Direct (Loyalty SaaS ในไทย):**
-- **PointSpot** — บัตรสะสมแต้มดิจิทัล · *ตกหล่น:* บังคับใช้ผ่าน LINE OA, UX หนัก, tier subscription
+- **PointSpot** — บัตรสะสมแต้มดิจิทัล · *ตกหล่น:* บังคับใช้ผ่านไลน์ OA, UX หนัก, tier subscription
 - **Choco CRM** — POS+CRM all-in-one · *ตกหล่น:* แพง, hardware-locked, เกินสำหรับร้านกาแฟเดี่ยว
 - **Loga / 1Moby / Wisible** — *ตกหล่น:* คล้ายกัน + เน้นแบรนด์ใหญ่
 

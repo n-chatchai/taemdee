@@ -383,7 +383,7 @@ async def test_shop_form_shows_after_customer_reply(
 async def test_shop_thread_renders_line_pill_for_line_sourced_reply(
     auth_client, db, shop, customer, inbox_row, stub_events_publish
 ):
-    """Replies with source='line' render the "ผ่าน LINE" pill on the
+    """Replies with source='line' render the "ผ่านไลน์" pill on the
     shop's thread page — operator can spot which channel the customer
     used at a glance. In-app replies (source='app') stay pill-less."""
     db.add_all([
@@ -400,7 +400,7 @@ async def test_shop_thread_renders_line_pill_for_line_sourced_reply(
 
     body = (await auth_client.get(f"/shop/messages/{inbox_row.id}")).text
     # Pill renders for the LINE reply only.
-    assert body.count("ผ่าน LINE") == 1
+    assert body.count("ผ่านไลน์") == 1
     assert "ixc-via line" in body
 
 

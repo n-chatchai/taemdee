@@ -6,6 +6,7 @@
   <title>{{ shop.name }} · TaemDee แต้มดี</title>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Host+Grotesk:wght@400;500;600;700;800&family=Prompt:wght@300;400;500;600;700;800&family=JetBrains+Mono:wght@400;500;600;700&display=swap">
   {% include "_partials/pwa_head.html" %}
   <link rel="stylesheet" href="/static/css/app.css?v={{ asset_version }}">
   <style>
@@ -44,7 +45,7 @@
        as a separate line so the wordmark inside the chip and the
        customer-facing name don't compete. Branch / district / location
        stay in .shop-sub. #}
-    <a class="shop-head hero" href="/story/{{ shop.id }}" style="display:block; text-decoration:none; color:inherit;">
+    <a class="shop-head hero" href="/story/{{ shop.id }}" style="text-decoration:none; color:inherit;">
       {% with size='xl' %}{% include "_partials/_shop_avatar_compact.html" %}{% endwith %}
       <div class="shop-name">{{ shop.name }}</div>
       <div class="shop-sub">

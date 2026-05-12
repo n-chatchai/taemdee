@@ -37,7 +37,7 @@ class InboxReply(SQLModel, table=True):
     # /my-inbox/<id>/reply or /shop/messages/<id>/reply). 'line' is
     # set by the LINE Messaging API webhook when a customer reply
     # arrives via the @taemdee OA chat. The shop-side thread surfaces
-    # a small "ผ่าน LINE" pill on non-'app' rows so the operator
+    # a small "ผ่านไลน์" pill on non-'app' rows so the operator
     # knows the customer used the external channel.
     source: str = Field(default="app", index=True)
 
