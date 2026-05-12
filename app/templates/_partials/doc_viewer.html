@@ -1,0 +1,63 @@
+{# Full-screen doc viewer overlay — renders the contact / privacy bodies
+   inline (no iframe) so a PWA in standalone mode, which has no browser
+   back, can read a doc and then X out without leaving the app.
+
+   Trigger: any element with data-doc="contact" | "privacy"
+   (+ optional data-doc-title). #}
+<div class="doc-viewer-overlay" id="doc-viewer" role="dialog" aria-modal="true" aria-hidden="true">
+  <div class="doc-viewer-bar">
+    <span class="dv-title" id="doc-viewer-title"></span>
+    <button type="button" class="dv-close" id="doc-viewer-close" aria-label="ปิด">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round" stroke-linejoin="round">
+        <line x1="18" y1="6" x2="6" y2="18"/><line x1="6" y1="6" x2="18" y2="18"/>
+      </svg>
+    </button>
+  </div>
+  <div class="doc-viewer-body" id="doc-viewer-body">
+    <div class="dv-pane" data-doc="contact" hidden>{% include "_partials/doc_contact.html" %}</div>
+    <div class="dv-pane" data-doc="privacy" hidden>{% include "_partials/doc_privacy.html" %}</div>
+  </div>
+</div>
+<script>
+  (function () {
+    var overlay = document.getElementById('doc-viewer');
+    if (!overlay) return;
+    var bodyEl = document.getElementById('doc-viewer-body');
+    var titleEl = document.getElementById('doc-viewer-title');
+    var panes = overlay.querySelectorAll('.dv-pane');
+
+    function open(doc, title) {
+      var shown = false;
+      panes.forEach(function (p) {
+        var match = p.getAttribute('data-doc') === doc;
+        p.hidden = !match;
+        if (match) shown = true;
+      });
+      if (!shown) return;
+      titleEl.textContent = title || '';
+      bodyEl.scrollTop = 0;
+      overlay.classList.add('open');
+      overlay.setAttribute('aria-hidden', 'false');
+      document.body.classList.add('doc-viewer-locked');
+    }
+    function close() {
+      overlay.classList.remove('open');
+      overlay.setAttribute('aria-hidden', 'true');
+      document.body.classList.remove('doc-viewer-locked');
+    }
+
+    document.addEventListener('click', function (e) {
+      var trigger = e.target.closest('[data-doc]');
+      // Ignore the panes themselves (they also carry data-doc).
+      if (trigger && !trigger.classList.contains('dv-pane')) {
+        e.preventDefault();
+        open(trigger.getAttribute('data-doc'), trigger.getAttribute('data-doc-title'));
+        return;
+      }
+      if (e.target.closest('#doc-viewer-close')) close();
+    });
+    document.addEventListener('keydown', function (e) {
+      if (e.key === 'Escape' && overlay.classList.contains('open')) close();
+    });
+  })();
+</script>

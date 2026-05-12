@@ -3889,6 +3889,33 @@ body {
    C6 — Account menu
    ========================================================== */
 
+/* Profile display card — avatar + name + masked contact, with a butter
+   pencil button that opens the profile edit sheet. Ported from
+   design/taemdee-customer.html (settings). */
+.c6-profile-card {
+  margin: 22px 20px 0;
+  padding: 14px 16px;
+  min-height: 100px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 18px;
+  box-shadow: none;
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  position: relative;
+  overflow: hidden;
+}
+.c6-profile-card::before {
+  content: '';
+  position: absolute;
+  top: -40px;
+  right: -40px;
+  width: 130px;
+  height: 130px;
+  background: radial-gradient(circle, rgba(255, 217, 82, 0.45) 0%, transparent 65%);
+  border-radius: 50%;
+}
 .c6-profile-card .avatar {
   width: 52px;
   height: 52px;
@@ -3904,7 +3931,14 @@ body {
   letter-spacing: -0.02em;
   flex-shrink: 0;
   position: relative;
+  overflow: hidden;
   box-shadow: none;
+}
+.c6-profile-card .avatar img {
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 50%;
 }
 .c6-profile-card .info {
   flex: 1;
@@ -3941,6 +3975,8 @@ body {
   font-size: var(--text-sm);
 }
 .c6-profile-card .edit {
+  appearance: none;
+  -webkit-appearance: none;
   width: 32px;
   height: 32px;
   background: var(--butter);
@@ -4340,23 +4376,21 @@ body {
   text-overflow: ellipsis;
 }
 
-/* iOS-style grouped settings list — each section is a small uppercase
-   mini-header followed by ONE rounded card. Rows inside the card are
-   flat with hairline dividers, no per-row borders or colored icon
-   tiles. Much lighter than the previous "every row is its own card +
-   tinted icon chip" design. */
+/* Settings list — small bold left-aligned label per section, then rows
+   that are each their own rounded card with a tinted icon chip. Ported
+   from design/taemdee-customer.html (settings / settings.notif). */
 .s10-section {
-  padding: 0;
-  margin: 18px 16px 0;
+  padding: 22px 20px 0;
 }
 .s10-section .label {
-  font-weight: 600;
-  font-size: 11px;
-  letter-spacing: 0.08em;
-  text-transform: uppercase;
-  color: var(--ink-softer);
-  margin: 0 6px 6px;
-  padding: 0;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-xs);
+  letter-spacing: 0;
+  text-transform: none;
+  color: var(--ink-soft);
+  margin: 0 0 8px;
+  padding-left: 4px;
 }
 
 /* ============================================================
@@ -4375,25 +4409,11 @@ body {
   margin: 12px 0 0;
 }
 .page-container > div:first-of-type { margin: 0; }
-.page-container > div > .label {
-  font-size: 16px;
-  font-weight: 700;
-  letter-spacing: 0;
-  text-transform: none;
-  color: var(--ink);
-  margin: 0 0 8px;
-  text-align: center;
-}
-/* Round social provider icons (LINE / Google / Facebook / Phone)
-   so the brand colour reads as a chip, not a flat 24px tile. */
-.page-container .connect-row .row-icon {
-  width: 32px;
-  height: 32px;
+/* Connect-status rows carry the provider's own brand-coloured icon
+   (see .connect-icon-* below) — keep that chip round rather than the
+   default rounded-square. */
+.s10-row.connect-row .row-icon {
   border-radius: 50%;
-}
-.page-container .connect-row .row-icon svg {
-  width: 16px;
-  height: 16px;
 }
 
 /* Inline profile edit form at the top of /shop/settings and
@@ -4539,18 +4559,18 @@ body {
   font-weight: 600;
   color: var(--ink);
 }
-/* Lighter row card — no per-row border, single subtle bg, smaller
-   icon glyph (no colored tile). Stacks tightly so a section with 6
-   rows reads as a clean list, not a column of chunky chips. */
+/* Row card — each settings row is its own rounded surface with a
+   tinted icon chip on the left and (usually) a JetBrains-Mono chevron
+   on the right. Ported from design/taemdee-customer.html. */
 .s10-row {
   background: var(--surface);
-  border: none;
-  border-radius: 12px;
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 14px;
   box-shadow: none;
-  padding: 10px 14px;
-  margin: 0 0 4px;
+  padding: 12px 14px;
+  margin: 0 0 8px;
   display: grid;
-  grid-template-columns: 24px 1fr auto;
+  grid-template-columns: 36px 1fr auto;
   gap: 12px;
   align-items: center;
   cursor: pointer;
@@ -4558,46 +4578,145 @@ body {
   color: inherit;
 }
 .s10-row .row-icon {
-  width: 24px;
-  height: 24px;
-  background: transparent;
-  color: var(--ink-soft);
-  border: none;
-  border-radius: 0;
+  width: 36px;
+  height: 36px;
+  background: var(--accent-soft);
+  color: var(--accent);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 10px;
   display: flex;
   align-items: center;
   justify-content: center;
+  flex-shrink: 0;
 }
-.s10-row .row-icon svg { width: 19px; height: 19px; }
+.s10-row .row-icon svg { width: 16px; height: 16px; }
 /* Variant for rows that want no leading icon column — drops the
-   24px slot so the row-info text starts flush left. Used on the
+   icon slot so the row-info text starts flush left. Used on the
    topup history + credit log lists where the status / +N delta
    carries the visual cue instead. */
 .s10-row.no-icon { grid-template-columns: 1fr auto; }
-/* Color variants now drive only the icon stroke color, not a tile. */
-.s10-row .row-icon.butter { color: #BC8B00; }
-.s10-row .row-icon.mint { color: var(--mint-ink); }
-.s10-row .row-info { line-height: 1.2; min-width: 0; }
-.s10-row .row-name {
-  font-weight: 600;
-  font-size: 14.5px;
-  letter-spacing: -0.01em;
-  margin-bottom: 0;
+/* <button class="s10-row"> — rows that fire an action (open a sheet /
+   doc overlay) rather than navigate. Strip the UA button chrome so
+   they line up with the <a> rows. */
+button.s10-row {
+  appearance: none;
+  -webkit-appearance: none;
+  width: 100%;
+  font: inherit;
+  text-align: left;
 }
-.s10-row .row-meta {
-  font-style: normal;
-  font-weight: 400;
-  font-size: 11.5px;
-  color: var(--ink-softer);
-  margin-top: 1px;
+
+/* Doc viewer — full-screen overlay that renders the /contact, /privacy
+   bodies inline (data-doc triggers; see _partials/doc_viewer.html).
+   Exists because a PWA in standalone display mode has no browser back,
+   so navigating to those pages would strand the user; this slides up
+   over the app and X-es back. */
+.doc-viewer-overlay {
+  /* Mounted in body_end — outside any .td — so it can't inherit the
+     mobile-shell theme tokens. Re-declare the default .td palette here
+     (the doc bodies + this chrome read --bg / --surface / --ink / …);
+     without it the overlay paints transparent over the page. */
+  --bg: #F6F1E5;
+  --surface: #FDFAF2;
+  --ink: #111111;
+  --ink-soft: #6B6660;
+  --ink-softer: #A39D92;
+  --accent: #FF5E3A;
+  --accent-soft: #FFE6DF;
+  --line: rgba(17, 17, 17, 0.10);
+  --text-2xs: 0.625rem;
+  --text-xs: 0.75rem;
+  --text-sm: 0.8125rem;
+  --text-base: 0.875rem;
+  --text-md: 1rem;
+  --text-lg: 1.125rem;
+  position: fixed;
+  inset: 0;
+  z-index: 200;
+  display: flex;
+  flex-direction: column;
+  background: var(--bg);
+  transform: translateY(100%);
+  transition: transform 0.26s ease;
+  visibility: hidden;
+}
+.doc-viewer-overlay.open {
+  transform: translateY(0);
+  visibility: visible;
+}
+.doc-viewer-bar {
+  flex-shrink: 0;
+  display: flex;
+  align-items: center;
+  gap: 10px;
+  padding: calc(10px + env(safe-area-inset-top)) 14px 10px;
+  background: var(--surface);
+  border-bottom: 1px solid rgba(17, 17, 17, 0.12);
+}
+.doc-viewer-bar .dv-title {
+  flex: 1;
+  min-width: 0;
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-md);
+  color: var(--ink);
   overflow: hidden;
   text-overflow: ellipsis;
   white-space: nowrap;
 }
+.doc-viewer-bar .dv-close {
+  appearance: none;
+  -webkit-appearance: none;
+  flex-shrink: 0;
+  width: 34px;
+  height: 34px;
+  border: none;
+  border-radius: 50%;
+  background: rgba(17, 17, 17, 0.06);
+  color: var(--ink);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  cursor: pointer;
+}
+.doc-viewer-bar .dv-close svg { width: 18px; height: 18px; }
+.doc-viewer-body {
+  flex: 1;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
+  background: var(--bg);
+}
+/* The contact / privacy bodies ship with marketing-page padding (80px
+   top, sits below a fixed nav). Inside the overlay there's a bar
+   instead — pull the top in. */
+.doc-viewer-body .contact-page,
+.doc-viewer-body .legal-page {
+  padding-top: 24px;
+  padding-bottom: 56px;
+}
+body.doc-viewer-locked { overflow: hidden; }
+.s10-row .row-icon.butter { background: var(--butter); color: var(--ink); }
+.s10-row .row-icon.mint { background: var(--mint); color: var(--mint-ink); }
+.s10-row .row-info { line-height: 1.2; min-width: 0; }
+.s10-row .row-name {
+  font-family: 'Prompt', sans-serif;
+  font-weight: 700;
+  font-size: var(--text-base);
+  letter-spacing: -0.01em;
+  margin-bottom: 1px;
+}
+.s10-row .row-meta {
+  font-family: 'Prompt', sans-serif;
+  font-style: italic;
+  font-weight: 400;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  line-height: 1.3;
+}
 .s10-row .arrow-r {
   font-family: 'JetBrains Mono', monospace;
-  color: var(--ink-softer);
-  font-size: 18px;
+  color: var(--ink-soft);
+  font-size: var(--text-base);
   line-height: 1;
 }
 
