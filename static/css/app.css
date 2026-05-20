@@ -11744,6 +11744,22 @@ body:has(.td-pinned) {
   border-radius: 50%;
 }
 .page-head .ph-avatar:active { transform: scale(0.94); }
+/* Gear overlay — the avatar is now the entry to ตั้งค่า (the dock
+   dropped its settings tab), so a small gear disc on the lower-right
+   flags that tapping it opens settings. Mirrors .ph-avatar-badge's
+   disc + page-bg ring so the two corner chips read as one language. */
+.page-head .ph-avatar-gear {
+  position: absolute;
+  bottom: -3px; right: -3px;
+  width: 17px; height: 17px;
+  border-radius: 50%;
+  background: var(--ink);
+  color: #fff;
+  display: flex; align-items: center; justify-content: center;
+  box-shadow: 0 0 0 2px var(--bg);
+  pointer-events: none;
+}
+.page-head .ph-avatar-gear svg { width: 11px; height: 11px; display: block; }
 /* Pending-todos count chip — same shape + ring as the shop side's
    .gn-badge.has-count so both surfaces' "X notifications" chip
    reads with one visual language. Accent fill, ring punched out of
