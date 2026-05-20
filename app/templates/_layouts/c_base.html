@@ -74,18 +74,9 @@ Child templates fill these blocks:
          pages opt out of the glass dock. #}
       {% block nav %}{% include "_partials/c_dock.html" %}{% endblock %}
 
-      {# Mandatory nickname collection sheet retired — the slide-up
-      was disruptive on every navigation; the inline profile edit
-      sheet (opened from the page-head avatar) is the canonical way
-      to set a display name. #}
-      {% set customer = request.state.customer %}
-
-      {# Profile edit sheet — opened by the page-head avatar. Mounted
-      once at layout level so any page that includes page_head gets the
-      working trigger without re-mounting. #}
-      {% if customer %}
-      {% include "_partials/profile_edit_sheet.html" %}
-      {% endif %}
+      {# Profile editing lives inline on the settings page
+      (card_account.html → /card/account); the page-head avatar links
+      there. No bottom sheet mounted at layout level anymore. #}
     </div>
     {% block body_end %}{% endblock %}
     {% include "_partials/pwa_oauth_reload.html" %}

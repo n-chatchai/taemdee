@@ -3889,109 +3889,6 @@ body {
    C6 — Account menu
    ========================================================== */
 
-/* Profile display card — avatar + name + masked contact, with a butter
-   pencil button that opens the profile edit sheet. Ported from
-   design/taemdee-customer.html (settings). */
-.c6-profile-card {
-  margin: 22px 20px 0;
-  padding: 14px 16px;
-  min-height: 100px;
-  background: var(--surface);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 18px;
-  box-shadow: none;
-  display: flex;
-  align-items: center;
-  gap: 14px;
-  position: relative;
-  overflow: hidden;
-}
-.c6-profile-card::before {
-  content: '';
-  position: absolute;
-  top: -40px;
-  right: -40px;
-  width: 130px;
-  height: 130px;
-  background: radial-gradient(circle, rgba(255, 217, 82, 0.45) 0%, transparent 65%);
-  border-radius: 50%;
-}
-.c6-profile-card .avatar {
-  width: 52px;
-  height: 52px;
-  background: var(--accent);
-  color: #fff;
-  border-radius: 50%;
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  font-weight: 700;
-  font-size: var(--text-xl);
-  letter-spacing: -0.02em;
-  flex-shrink: 0;
-  position: relative;
-  overflow: hidden;
-  box-shadow: none;
-}
-.c6-profile-card .avatar img {
-  width: 100%;
-  height: 100%;
-  object-fit: cover;
-  border-radius: 50%;
-}
-.c6-profile-card .info {
-  flex: 1;
-  line-height: 1.2;
-  position: relative;
-  min-width: 0;
-}
-.c6-profile-card .name {
-  font-weight: 700;
-  font-size: var(--text-md);
-  letter-spacing: -0.02em;
-  margin-bottom: 3px;
-}
-.c6-profile-card .meta {
-  font-family: 'JetBrains Mono', monospace;
-  font-size: var(--text-sm);
-  color: var(--ink-soft);
-  letter-spacing: 0.02em;
-  display: flex;
-  align-items: center;
-  gap: 6px;
-}
-.c6-profile-card .meta .dotsep {
-  width: 3px;
-  height: 3px;
-  background: var(--accent);
-  border-radius: 50%;
-  flex-shrink: 0;
-}
-.c6-profile-card .meta .verified {
-  color: var(--mint-ink);
-  font-weight: 600;
-  font-family: 'Prompt', sans-serif;
-  font-size: var(--text-sm);
-}
-.c6-profile-card .edit {
-  appearance: none;
-  -webkit-appearance: none;
-  width: 32px;
-  height: 32px;
-  background: var(--butter);
-  color: var(--ink);
-  border: 1px solid rgba(17, 17, 17, 0.18);
-  border-radius: 10px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  cursor: pointer;
-  position: relative;
-  flex-shrink: 0;
-}
-.c6-profile-card .edit svg { width: 14px; height: 14px; }
-
 /* Toggle switch (used in c6) */
 .c6-toggle {
   width: 38px;
@@ -4455,6 +4352,82 @@ body {
   padding: 13px 28px;
   font-size: var(--text-md);
 }
+/* /card/account wraps the .profile-edit-inline form itself — that page
+   isn't a .page-container, so the card chrome the shop side inherits
+   has to be spelled out here. Margin matches the old .c6-profile-card. */
+.c6-profile-card-wrap {
+  margin: 22px 20px 0;
+  padding: 18px 16px 16px;
+  background: var(--surface);
+  border: 1px solid rgba(17, 17, 17, 0.18);
+  border-radius: 18px;
+}
+.c6-profile-card-wrap .pe-phone {
+  margin-top: 8px;
+  font-family: 'JetBrains Mono', monospace;
+  font-size: var(--text-sm);
+  color: var(--ink-soft);
+  letter-spacing: 0.02em;
+  text-align: center;
+}
+
+/* รายการแนะนำ todos — onboarding nudges on /card/account. Moved here
+   verbatim from the retired profile_edit_sheet's inline <style>. */
+.pe-todos {
+  margin: 18px 20px 0;
+}
+.pe-todos-h {
+  display: flex; align-items: center; gap: 8px;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px; font-weight: 700;
+  color: var(--ink-soft);
+  margin-bottom: 8px;
+  letter-spacing: 0.02em;
+}
+.pe-todos-count {
+  background: var(--accent-soft, #FFE6DF); color: var(--accent);
+  padding: 1px 8px; border-radius: 999px;
+  font-size: 11px; font-weight: 700;
+}
+.pe-todos-list { display: flex; flex-direction: column; gap: 8px; }
+.pe-todo {
+  background: var(--surface); border: 1px solid var(--line);
+  border-radius: 12px; padding: 12px 14px;
+}
+.pe-todo-title {
+  font-family: 'Prompt', sans-serif;
+  font-size: 14px; font-weight: 600; color: var(--ink);
+}
+.pe-todo-desc {
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px; color: var(--ink-soft);
+  margin-top: 2px;
+}
+.pe-todo-actions {
+  display: flex; align-items: center; gap: 8px;
+  margin-top: 10px;
+}
+.pe-todo-cta {
+  flex: 1 1 auto;
+  appearance: none; -webkit-appearance: none;
+  padding: 9px 14px; border: 0; border-radius: 12px;
+  background: var(--accent); color: #fff;
+  font-family: 'Prompt', sans-serif;
+  font-size: 13px; font-weight: 700;
+  text-align: center; text-decoration: none;
+  cursor: pointer;
+}
+.pe-todo-skip {
+  flex: 0 0 auto;
+  appearance: none; -webkit-appearance: none;
+  padding: 9px 12px; border: 1px solid var(--line);
+  border-radius: 12px;
+  background: transparent; color: var(--ink-soft);
+  font-family: 'Prompt', sans-serif;
+  font-size: 12px; font-weight: 600;
+  cursor: pointer;
+}
+.pe-todo-form { margin: 0; display: contents; }
 
 /* S2.1 / S10.location — province picker (text input styled with chevron). */
 /* S10.location — multi-line address textarea. */
@@ -11780,9 +11753,9 @@ body:has(.td-pinned) {
   animation: gn-badge-pulse 1.6s ease-out infinite;
 }
 
-/* Profile-edit bottom sheet — display name + picture uploader.
-   Reuses .install-sheet-overlay / .install-sheet for the slide-up
-   animation, so only the form internals need fresh styles. */
+/* Profile-edit form — display name + picture uploader. Rendered
+   inline on /card/account (.profile-edit-inline) and /shop/settings,
+   and in the staff profile sheet. */
 .profile-edit-form { padding: 0 8px; }
 .pe-avatar-wrap {
   display: flex;
